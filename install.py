@@ -20,6 +20,116 @@ def find_conda_command():
     return None
 
 
+def check_pytorch_cuda():
+    """
+    Check if PyTorch with CUDA is installed.
+
+    Returns:
+        bool: True if PyTorch with CUDA is available, False otherwise
+    """
+    try:
+        import torch
+        # Check if torch has cuda attribute (may be missing in broken installations)
+        if not hasattr(torch, 'cuda'):
+            print("[SAM3DObjects] WARNING: PyTorch installation is broken (no cuda module)")
+            return False
+
+        if not torch.cuda.is_available():
+            print("[SAM3DObjects] WARNING: PyTorch is installed but CUDA is not available!")
+            print(f"[SAM3DObjects] PyTorch version: {torch.__version__}")
+            cuda_version = torch.version.cuda if hasattr(torch.version, 'cuda') else 'No'
+            print(f"[SAM3DObjects] CUDA compiled: {cuda_version}")
+            return False
+        print(f"[SAM3DObjects] ✓ PyTorch {torch.__version__} with CUDA {torch.version.cuda} detected")
+        return True
+    except (ImportError, AttributeError, OSError) as e:
+        print(f"[SAM3DObjects] PyTorch not installed or broken: {type(e).__name__}")
+        return False
+
+
+def install_pytorch_cuda():
+    """
+    Install PyTorch with CUDA 12.1 support.
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    print("[SAM3DObjects] ")
+    print("[SAM3DObjects] Installing PyTorch with CUDA 12.1 support...")
+    print("[SAM3DObjects] This is required for SAM3DObjects to function properly.")
+    print("[SAM3DObjects] ")
+
+    try:
+        # Clean up any broken installations first
+        print("[SAM3DObjects] Cleaning up any existing/broken PyTorch installation...")
+
+        # Force remove torch directories if they exist
+        import site
+        site_packages = site.getsitepackages()[0] if site.getsitepackages() else None
+        if site_packages:
+            import shutil
+            torch_dirs = [
+                os.path.join(site_packages, 'torch'),
+                os.path.join(site_packages, 'torchvision'),
+                os.path.join(site_packages, 'torchaudio'),
+            ]
+            for torch_dir in torch_dirs:
+                if os.path.exists(torch_dir):
+                    try:
+                        shutil.rmtree(torch_dir)
+                        print(f"[SAM3DObjects]   Removed: {torch_dir}")
+                    except Exception as e:
+                        print(f"[SAM3DObjects]   Could not remove {torch_dir}: {e}")
+
+        # Uninstall via pip
+        subprocess.run([
+            sys.executable,
+            "-m",
+            "pip",
+            "uninstall",
+            "-y",
+            "torch",
+            "torchvision",
+            "torchaudio"
+        ], check=False, capture_output=True)
+
+        # Install CUDA-enabled PyTorch
+        print("[SAM3DObjects] Installing PyTorch with CUDA 12.1...")
+        subprocess.check_call([
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch",
+            "torchvision",
+            "torchaudio",
+            "--index-url",
+            "https://download.pytorch.org/whl/cu121"
+        ])
+
+        # Verify installation
+        print("[SAM3DObjects] Verifying CUDA installation...")
+        result = subprocess.run([
+            sys.executable,
+            "-c",
+            "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+        ], capture_output=True, text=True)
+
+        if "CUDA available: True" in result.stdout:
+            print("[SAM3DObjects] ✓ PyTorch with CUDA installed successfully!")
+            return True
+        else:
+            print("[SAM3DObjects] ✗ CUDA verification failed!")
+            print(f"[SAM3DObjects] Output: {result.stdout}")
+            if result.stderr:
+                print(f"[SAM3DObjects] Error: {result.stderr}")
+            return False
+
+    except subprocess.CalledProcessError as e:
+        print(f"[SAM3DObjects] ✗ Failed to install PyTorch with CUDA: {e}")
+        return False
+
+
 def check_pytorch3d():
     """Check if pytorch3d is already installed."""
     try:
@@ -168,6 +278,35 @@ def install():
         print(f"[SAM3DObjects] Error: requirements.txt not found at {requirements_file}")
         return False
 
+    # Check PyTorch CUDA FIRST - this is critical for all other dependencies
+    print("[SAM3DObjects] ")
+    print("[SAM3DObjects] Step 1/3: Checking PyTorch CUDA installation...")
+    if not check_pytorch_cuda():
+        print("[SAM3DObjects] ")
+        print("[SAM3DObjects] ⚠️  PyTorch with CUDA is REQUIRED for SAM3DObjects")
+        print("[SAM3DObjects] Attempting automatic installation...")
+        print("[SAM3DObjects] ")
+
+        if not install_pytorch_cuda():
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] ✗ ERROR: Failed to install PyTorch with CUDA!")
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] MANUAL INSTALLATION REQUIRED:")
+            print("[SAM3DObjects]   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121")
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] After installing PyTorch with CUDA, run this script again.")
+            return False
+
+        # Verify the installation worked
+        if not check_pytorch_cuda():
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] ✗ ERROR: PyTorch CUDA verification failed after installation!")
+            print("[SAM3DObjects] This may indicate a system CUDA compatibility issue.")
+            print("[SAM3DObjects] Please check that CUDA drivers are properly installed.")
+            return False
+
+    print("[SAM3DObjects] ")
+    print("[SAM3DObjects] Step 2/3: Checking pytorch3d installation...")
     # Check/install pytorch3d separately first
     if not check_pytorch3d():
         if not install_pytorch3d():
@@ -182,8 +321,9 @@ def install():
     print("[SAM3DObjects] No external installation required!")
 
     try:
-        # Install other requirements (excluding pytorch3d line)
-        print("[SAM3DObjects] Installing remaining Python dependencies...")
+        print("[SAM3DObjects] ")
+        print("[SAM3DObjects] Step 3/3: Installing remaining Python dependencies...")
+        print("[SAM3DObjects] ")
 
         # Read requirements and filter out pytorch3d and sam3d_objects (already installed)
         with open(requirements_file) as f:
@@ -197,17 +337,27 @@ def install():
                 and 'sam3d_objects' not in line.lower()
             ]
 
-        # Install each requirement
+        # Install each requirement with proper CUDA support
         for req in requirements:
             try:
                 print(f"[SAM3DObjects] Installing: {req}")
-                subprocess.check_call([
+
+                # Build install command
+                install_cmd = [
                     sys.executable,
                     "-m",
                     "pip",
                     "install",
                     req
-                ])
+                ]
+
+                # For xformers, use CUDA 12.1 index to ensure CUDA-enabled version
+                if "xformers" in req.lower():
+                    install_cmd.extend(["--index-url", "https://download.pytorch.org/whl/cu121"])
+                    print(f"[SAM3DObjects]   → Using CUDA 12.1 index for xformers")
+
+                subprocess.check_call(install_cmd)
+
             except subprocess.CalledProcessError as e:
                 print(f"[SAM3DObjects] Warning: Failed to install {req}: {e}")
                 print("[SAM3DObjects] Continuing with other packages...")

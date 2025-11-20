@@ -1,5 +1,13 @@
 # ComfyUI-SAM3DObjects Requirements
-# Note: PyTorch, torchvision with CUDA support expected from ComfyUI installation
+#
+# ⚠️  IMPORTANT: DO NOT use 'pip install -r requirements.txt' directly!
+# ⚠️  Use 'python install.py' instead for proper CUDA-enabled installation.
+#
+# The install.py script will:
+#   1. Check and install PyTorch with CUDA 12.1 support (if needed)
+#   2. Install pytorch3d via conda/mamba (faster) or build from source
+#   3. Install all dependencies with proper CUDA index URLs
+#
 # Note: sam3d_objects code is VENDORED (included in vendor/ directory) - no external install needed!
 
 # Core dependencies for SAM 3D Objects
@@ -38,3 +46,16 @@ MoGe @ git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb
 # Utilities
 gdown==5.2.0
 huggingface-hub
+
+# Visualization dependencies
+seaborn>=0.13.0
+matplotlib>=3.9.0
+plotly>=5.24.0
+gradio>=4.44.0
+imageio>=2.36.0
+tqdm>=4.67.0
+
+# 3D processing and rendering
+kaolin>=0.17.0
+utils3d @ git+https://github.com/EasternJournalist/utils3d.git
+gsplat>=1.4.0
