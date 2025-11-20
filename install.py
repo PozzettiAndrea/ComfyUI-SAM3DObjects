@@ -5,19 +5,134 @@ import sys
 import os
 import shutil
 from pathlib import Path
+import platform
+import urllib.request
+import tarfile
+import stat
+
+
+def get_micromamba_platform():
+    """
+    Determine the correct micromamba platform string for current OS/architecture.
+
+    Returns:
+        str: Platform string (e.g., 'linux-64', 'osx-arm64', 'win-64')
+
+    Raises:
+        ValueError: If platform is not supported
+    """
+    system = platform.system()
+    machine = platform.machine().lower()
+
+    if system == "Linux":
+        if machine in ["x86_64", "amd64"]:
+            return "linux-64"
+        elif machine in ["aarch64", "arm64"]:
+            return "linux-aarch64"
+        elif machine in ["ppc64le"]:
+            return "linux-ppc64le"
+    elif system == "Darwin":  # macOS
+        if machine in ["x86_64", "amd64"]:
+            return "osx-64"
+        elif machine in ["arm64", "aarch64"]:
+            return "osx-arm64"
+    elif system == "Windows":
+        if machine in ["x86_64", "amd64", "amd64"]:
+            return "win-64"
+
+    raise ValueError(f"Unsupported platform: {system} {machine}")
+
+
+def download_micromamba(install_dir):
+    """
+    Download and install micromamba to the specified directory.
+
+    Args:
+        install_dir (Path): Directory to install micromamba
+
+    Returns:
+        str: Path to the micromamba executable
+
+    Raises:
+        Exception: If download or extraction fails
+    """
+    platform_str = get_micromamba_platform()
+    url = f"https://micro.mamba.pm/api/micromamba/{platform_str}/latest"
+
+    install_path = Path(install_dir)
+    install_path.mkdir(parents=True, exist_ok=True)
+
+    # Download micromamba
+    print(f"[SAM3DObjects] Downloading micromamba for {platform_str}...")
+    tar_path = install_path / "micromamba.tar.bz2"
+
+    urllib.request.urlretrieve(url, tar_path)
+
+    # Extract the binary
+    print("[SAM3DObjects] Extracting micromamba...")
+    with tarfile.open(tar_path, "r:bz2") as tar:
+        # Find and extract the micromamba executable
+        for member in tar.getmembers():
+            if member.name.endswith("bin/micromamba") or member.name.endswith("micromamba.exe"):
+                # Extract with basename only (remove directory structure)
+                member.name = os.path.basename(member.name)
+                tar.extract(member, install_path)
+                break
+
+    # Determine executable name based on platform
+    exe_name = "micromamba.exe" if platform.system() == "Windows" else "micromamba"
+    micromamba_path = install_path / exe_name
+
+    # Make executable on Unix systems
+    if platform.system() != "Windows":
+        current_permissions = os.stat(micromamba_path).st_mode
+        os.chmod(
+            micromamba_path,
+            current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+
+    # Clean up tar file
+    tar_path.unlink()
+
+    print(f"[SAM3DObjects] ✓ Micromamba installed to: {micromamba_path}")
+    return str(micromamba_path)
 
 
 def find_conda_command():
     """
     Find available conda/mamba/micromamba command.
+    Downloads micromamba automatically if none are found.
 
     Returns:
-        str or None: Command name if found, None otherwise
+        str or None: Command name/path if found, None if all methods fail
     """
+    # First check for existing installations in PATH
     for cmd in ['mamba', 'micromamba', 'conda']:
         if shutil.which(cmd):
+            print(f"[SAM3DObjects] Found '{cmd}' package manager in PATH")
             return cmd
-    return None
+
+    # Check if we already downloaded micromamba
+    script_dir = Path(__file__).parent
+    bin_dir = script_dir / ".bin"
+    exe_name = "micromamba.exe" if platform.system() == "Windows" else "micromamba"
+    local_micromamba = bin_dir / exe_name
+
+    if local_micromamba.exists():
+        print(f"[SAM3DObjects] Using previously downloaded micromamba at: {local_micromamba}")
+        return str(local_micromamba)
+
+    # None found - download micromamba automatically
+    print("[SAM3DObjects] No conda/mamba/micromamba found in PATH")
+    print("[SAM3DObjects] Downloading micromamba automatically...")
+
+    try:
+        micromamba_path = download_micromamba(bin_dir)
+        return micromamba_path
+    except Exception as e:
+        print(f"[SAM3DObjects] Failed to download micromamba: {e}")
+        print("[SAM3DObjects] Installation will fall back to pip (slower build from source)")
+        return None
 
 
 def check_pytorch_cuda():
@@ -137,6 +252,28 @@ def check_pytorch3d():
         print(f"[SAM3DObjects] pytorch3d {pytorch3d.__version__} is already installed")
         return True
     except ImportError:
+        return False
+
+
+def check_kaolin():
+    """Check if kaolin is already installed."""
+    try:
+        import kaolin
+        print(f"[SAM3DObjects] ✓ kaolin {kaolin.__version__} is already installed")
+        return True
+    except ImportError:
+        print("[SAM3DObjects] kaolin not installed")
+        return False
+
+
+def check_gsplat():
+    """Check if gsplat is already installed."""
+    try:
+        import gsplat
+        print("[SAM3DObjects] ✓ gsplat is already installed")
+        return True
+    except ImportError:
+        print("[SAM3DObjects] gsplat not installed")
         return False
 
 
@@ -266,6 +403,79 @@ def install_pytorch3d():
     return False
 
 
+def install_kaolin():
+    """
+    Install kaolin using conda (preferred) or pip (fallback).
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    conda_cmd = find_conda_command()
+
+    # Try conda installation first
+    if conda_cmd:
+        print(f"[SAM3DObjects] Installing kaolin via {conda_cmd}...")
+        try:
+            subprocess.check_call([
+                conda_cmd, "install", "-y",
+                "-c", "nvidia",
+                "-c", "conda-forge",
+                "kaolin"
+            ])
+            if check_kaolin():
+                return True
+        except subprocess.CalledProcessError as e:
+            print(f"[SAM3DObjects] Conda installation failed: {e}")
+
+    # Fallback to pip
+    print("[SAM3DObjects] Trying pip installation for kaolin...")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install",
+            "kaolin>=0.17.0"
+        ])
+        return check_kaolin()
+    except subprocess.CalledProcessError as e:
+        print(f"[SAM3DObjects] Pip installation failed: {e}")
+        return False
+
+
+def install_gsplat():
+    """
+    Install gsplat using conda (preferred) or pip (fallback).
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    conda_cmd = find_conda_command()
+
+    # Try conda installation first
+    if conda_cmd:
+        print(f"[SAM3DObjects] Installing gsplat via {conda_cmd}...")
+        try:
+            subprocess.check_call([
+                conda_cmd, "install", "-y",
+                "-c", "conda-forge",
+                "gsplat"
+            ])
+            if check_gsplat():
+                return True
+        except subprocess.CalledProcessError as e:
+            print(f"[SAM3DObjects] Conda installation failed: {e}")
+
+    # Fallback to pip
+    print("[SAM3DObjects] Trying pip installation for gsplat...")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install",
+            "gsplat>=1.4.0"
+        ])
+        return check_gsplat()
+    except subprocess.CalledProcessError as e:
+        print(f"[SAM3DObjects] Pip installation failed: {e}")
+        return False
+
+
 def install():
     """Install dependencies for SAM3DObjects node."""
     print("[SAM3DObjects] Starting installation...")
@@ -306,7 +516,7 @@ def install():
             return False
 
     print("[SAM3DObjects] ")
-    print("[SAM3DObjects] Step 2/3: Checking pytorch3d installation...")
+    print("[SAM3DObjects] Step 2/5: Checking pytorch3d installation...")
     # Check/install pytorch3d separately first
     if not check_pytorch3d():
         if not install_pytorch3d():
@@ -316,16 +526,34 @@ def install():
             print("[SAM3DObjects] Continuing with other dependencies...")
             print("[SAM3DObjects] ")
 
+    print("[SAM3DObjects] ")
+    print("[SAM3DObjects] Step 3/5: Checking kaolin installation...")
+    if not check_kaolin():
+        if not install_kaolin():
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] WARNING: kaolin installation failed!")
+            print("[SAM3DObjects] Visualization features may be limited.")
+            print("[SAM3DObjects] ")
+
+    print("[SAM3DObjects] ")
+    print("[SAM3DObjects] Step 4/5: Checking gsplat installation...")
+    if not check_gsplat():
+        if not install_gsplat():
+            print("[SAM3DObjects] ")
+            print("[SAM3DObjects] WARNING: gsplat installation failed!")
+            print("[SAM3DObjects] Gaussian splatting rendering may not work.")
+            print("[SAM3DObjects] ")
+
     # sam3d_objects is VENDORED (no installation needed!)
     print("[SAM3DObjects] sam3d_objects code is vendored (included in vendor/ directory)")
     print("[SAM3DObjects] No external installation required!")
 
     try:
         print("[SAM3DObjects] ")
-        print("[SAM3DObjects] Step 3/3: Installing remaining Python dependencies...")
+        print("[SAM3DObjects] Step 5/5: Installing remaining Python dependencies...")
         print("[SAM3DObjects] ")
 
-        # Read requirements and filter out pytorch3d and sam3d_objects (already installed)
+        # Read requirements and filter out packages we install separately
         with open(requirements_file) as f:
             requirements = [
                 line.strip()
@@ -333,6 +561,8 @@ def install():
                 if line.strip()
                 and not line.strip().startswith('#')
                 and 'pytorch3d' not in line.lower()
+                and 'kaolin' not in line.lower()
+                and 'gsplat' not in line.lower()
                 and 'sam-3d-objects' not in line.lower()
                 and 'sam3d_objects' not in line.lower()
             ]
