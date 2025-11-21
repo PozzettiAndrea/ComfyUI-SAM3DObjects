@@ -208,16 +208,15 @@ def install_pytorch_cuda():
             "torchaudio"
         ], check=False, capture_output=True)
 
-        # Install CUDA-enabled PyTorch
-        print("[SAM3DObjects] Installing PyTorch with CUDA 12.1...")
+        # Install CUDA-enabled PyTorch (specific versions to match xformers)
+        print("[SAM3DObjects] Installing PyTorch 2.5.1 with CUDA 12.1...")
         subprocess.check_call([
             sys.executable,
             "-m",
             "pip",
             "install",
-            "torch",
-            "torchvision",
-            "torchaudio",
+            "torch==2.5.1+cu121",
+            "torchvision==0.20.1+cu121",
             "--index-url",
             "https://download.pytorch.org/whl/cu121"
         ])

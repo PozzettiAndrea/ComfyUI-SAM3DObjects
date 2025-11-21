@@ -30,8 +30,20 @@ import numpy as np
 import gradio as gr
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from kaolin.visualize import IpyTurntableVisualizer
-from kaolin.render.camera import Camera, CameraExtrinsics, PinholeIntrinsics
+
+# Kaolin is optional - only needed for certain visualization features
+try:
+    from kaolin.visualize import IpyTurntableVisualizer
+    from kaolin.render.camera import Camera, CameraExtrinsics, PinholeIntrinsics
+    KAOLIN_AVAILABLE = True
+except ImportError:
+    print("[SAM3DObjects] Warning: kaolin not available, some visualization features disabled")
+    KAOLIN_AVAILABLE = False
+    IpyTurntableVisualizer = None
+    Camera = None
+    CameraExtrinsics = None
+    PinholeIntrinsics = None
+
 import builtins
 from pytorch3d.transforms import quaternion_multiply, quaternion_invert
 
