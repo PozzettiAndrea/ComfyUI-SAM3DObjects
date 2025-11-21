@@ -54,7 +54,11 @@ astor>=0.8.0
 optree>=0.11.0
 scipy>=1.11.0
 numpy>=1.24.0,<2.0
-# torch and torchvision are installed via conda - do not specify here
+
+# Pin torch and torchvision to prevent version conflicts
+# These versions match environment.yml and prevent pip packages from upgrading them
+torch==2.5.1
+torchvision==0.20.1
 
 # PyTorch Lightning for model management
 lightning>=2.0.0
