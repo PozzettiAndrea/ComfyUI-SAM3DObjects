@@ -13,6 +13,41 @@ from pathlib import Path
 from typing import Optional
 
 
+def _log_subprocess_output(log_file: Path, message: str, stdout: str = "", stderr: str = ""):
+    """Write subprocess output to log file."""
+    with open(log_file, 'a') as f:
+        f.write(f"\n{'='*80}\n")
+        f.write(f"{message}\n")
+        f.write(f"{'='*80}\n")
+        if stdout:
+            f.write(f"STDOUT:\n{stdout}\n")
+        if stderr:
+            f.write(f"STDERR:\n{stderr}\n")
+
+
+def _run_subprocess_logged(cmd: list, log_file: Path, step_name: str, **kwargs):
+    """Run subprocess with output logged to file, minimal console output."""
+    # Force capture_output if not specified
+    kwargs['capture_output'] = True
+    kwargs['text'] = True
+
+    try:
+        result = subprocess.run(cmd, **kwargs)
+        _log_subprocess_output(log_file, f"{step_name} - SUCCESS", result.stdout, result.stderr)
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
+        return result
+    except subprocess.CalledProcessError as e:
+        _log_subprocess_output(log_file, f"{step_name} - FAILED", e.stdout if hasattr(e, 'stdout') else "", e.stderr if hasattr(e, 'stderr') else "")
+        print(f"\n[SAM3DObjects] ERROR: {step_name} failed!")
+        print(f"[SAM3DObjects] Check logs at: {log_file}")
+        if hasattr(e, 'stdout') and e.stdout:
+            print(f"\nLast output:\n{e.stdout[-500:]}")
+        if hasattr(e, 'stderr') and e.stderr:
+            print(f"\nError output:\n{e.stderr[-500:]}")
+        raise
+
+
 class SAM3DEnvironmentManager:
     """Manages the isolated micromamba environment for SAM3D."""
 
@@ -27,6 +62,7 @@ class SAM3DEnvironmentManager:
         self.env_dir = self.node_root / "_env"
         self.micromamba_dir = self.node_root / "_micromamba"
         self.micromamba_bin = self._get_micromamba_path()
+        self.log_file = self.node_root / "install.log"
 
     def _get_micromamba_path(self) -> Path:
         """Get path to micromamba binary based on platform."""
@@ -90,7 +126,7 @@ class SAM3DEnvironmentManager:
             raise RuntimeError(f"Unsupported platform: {system}")
 
         # Download micromamba
-        print(f"[SAM3DObjects] Downloading from {url}...")
+        print("[SAM3DObjects] Downloading micromamba...")
         try:
             import urllib.request
             import tarfile
@@ -102,7 +138,6 @@ class SAM3DEnvironmentManager:
                 urllib.request.urlretrieve(url, archive_path)
 
                 # Extract
-                print("[SAM3DObjects] Extracting micromamba...")
                 with tarfile.open(archive_path, "r:bz2") as tar:
                     tar.extractall(self.micromamba_dir)
 
@@ -110,7 +145,7 @@ class SAM3DEnvironmentManager:
                 if system != "Windows":
                     os.chmod(self.micromamba_bin, 0o755)
 
-                print("[SAM3DObjects] Micromamba installed successfully!")
+                print("[SAM3DObjects] Micromamba installed")
 
         except Exception as e:
             raise RuntimeError(f"Failed to install micromamba: {e}") from e
@@ -123,14 +158,13 @@ class SAM3DEnvironmentManager:
             python_version: Python version to install
         """
         if self.env_dir.exists():
-            print(f"[SAM3DObjects] Environment directory exists: {self.env_dir}")
             if self.is_environment_ready():
-                print("[SAM3DObjects] Environment is ready, skipping creation")
+                print("[SAM3DObjects] Environment already exists, skipping creation")
                 return
             else:
-                print("[SAM3DObjects] Environment exists but incomplete, will recreate")
+                print("[SAM3DObjects] Recreating incomplete environment")
 
-        print(f"[SAM3DObjects] Creating isolated environment: {self.env_dir}")
+        print("[SAM3DObjects] Creating base environment...")
 
         # Create environment with Python
         env = os.environ.copy()
@@ -151,7 +185,7 @@ class SAM3DEnvironmentManager:
                 capture_output=True,
                 text=True
             )
-            print("[SAM3DObjects] Base environment created successfully!")
+            print("[SAM3DObjects] Base environment created")
 
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
@@ -165,7 +199,7 @@ class SAM3DEnvironmentManager:
         python_exe = self.get_python_executable()
 
         # Step 1: Install conda packages from environment.yml (pytorch with CUDA, no pytorch3d)
-        print("[SAM3DObjects] Installing PyTorch with CUDA from environment.yml...")
+        print("[SAM3DObjects] Installing Python environment (this may take several minutes)...")
         env_yml = self.node_root / "environment.yml"
         if not env_yml.exists():
             raise RuntimeError(f"environment.yml not found: {env_yml}")
@@ -173,30 +207,22 @@ class SAM3DEnvironmentManager:
         env = os.environ.copy()
         env["MAMBA_ROOT_PREFIX"] = str(self.micromamba_dir)
 
-        subprocess.run(
+        _run_subprocess_logged(
             [
                 str(self.micromamba_bin),
                 "install",
                 "-p", str(self.env_dir),
                 "-f", str(env_yml),
-                "-y"
+                "-y",
+                "--quiet"
             ],
+            self.log_file,
+            "Install PyTorch and CUDA dependencies",
             env=env,
-            check=True,
-            capture_output=False
-        )
-
-        # Step 2: Get torch version conda installed
-        result = subprocess.run(
-            [str(python_exe), "-c", "import torch; print(torch.__version__)"],
-            capture_output=True,
-            text=True,
             check=True
         )
-        torch_version = result.stdout.strip()
-        print(f"[SAM3DObjects] Conda installed torch {torch_version}")
 
-        # Step 3: Install pip packages from requirements.txt (pytorch3d separately at end)
+        # Step 2: Install pip packages from requirements.txt (pytorch3d separately at end)
         requirements_file = self.node_root / "requirements.txt"
         if requirements_file.exists():
             print("[SAM3DObjects] Installing pip dependencies...")
@@ -215,36 +241,36 @@ class SAM3DEnvironmentManager:
 
             # Install everything except pytorch3d first
             if requirements:
-                print("[SAM3DObjects] Installing pip packages...")
-                subprocess.run(
-                    [str(python_exe), "-m", "pip", "install"] + requirements,
-                    check=True,
-                    capture_output=False
+                _run_subprocess_logged(
+                    [str(python_exe), "-m", "pip", "install", "--quiet", "--no-progress"] + requirements,
+                    self.log_file,
+                    "Install pip dependencies",
+                    check=True
                 )
 
             # Now install pytorch3d from source (it needs torch to be importable during build)
             if pytorch3d_req:
-                print("[SAM3DObjects] Building pytorch3d from source (this will take several minutes)...")
+                print("[SAM3DObjects] Building pytorch3d from source (this may take 10-15 minutes)...")
                 # Set environment variables to help nvcc use g++ as the CUDA host compiler
                 build_env = os.environ.copy()
                 build_env['CC'] = '/usr/bin/gcc'
                 build_env['CXX'] = '/usr/bin/g++'
                 build_env['CUDAHOSTCXX'] = '/usr/bin/g++'  # Force nvcc to use g++ for C++ code
                 build_env['PATH'] = '/usr/bin:' + build_env.get('PATH', '')
-                subprocess.run(
-                    [str(python_exe), "-m", "pip", "install", pytorch3d_req, "--no-build-isolation", "-v"],
+                _run_subprocess_logged(
+                    [str(python_exe), "-m", "pip", "install", pytorch3d_req, "--no-build-isolation", "--quiet"],
+                    self.log_file,
+                    "Build pytorch3d from source",
                     check=True,
-                    capture_output=False,
                     env=build_env
                 )
 
-        print("[SAM3DObjects] All dependencies installed successfully!")
+        print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
 
     def setup_environment(self) -> None:
         """Complete environment setup process."""
-        print("[SAM3DObjects] ========================================")
-        print("[SAM3DObjects] Setting up isolated environment")
-        print("[SAM3DObjects] ========================================")
+        print("[SAM3DObjects] Starting installation...")
+        print(f"[SAM3DObjects] Full logs will be saved to: {self.log_file}")
 
         # Step 1: Install micromamba
         self.install_micromamba()
@@ -257,9 +283,7 @@ class SAM3DEnvironmentManager:
 
         # Step 4: Verify
         if self.is_environment_ready():
-            print("[SAM3DObjects] ========================================")
-            print("[SAM3DObjects] Environment setup complete!")
-            print(f"[SAM3DObjects] Python: {self.get_python_executable()}")
-            print("[SAM3DObjects] ========================================")
+            print("[SAM3DObjects] Installation complete!")
+            print(f"[SAM3DObjects] Full logs: {self.log_file}")
         else:
             raise RuntimeError("Environment setup completed but verification failed")
