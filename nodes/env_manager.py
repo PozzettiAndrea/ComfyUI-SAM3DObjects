@@ -1,14 +1,15 @@
 """
-Environment manager for SAM3D isolated micromamba environment.
+Environment manager for SAM3D isolated venv environment.
 
 This module handles creation, management, and validation of the isolated
-micromamba environment for SAM3D inference.
+Python virtual environment for SAM3D inference.
 """
 
 import os
 import sys
 import subprocess
 import platform
+import venv
 from pathlib import Path
 from typing import Optional
 
@@ -49,7 +50,7 @@ def _run_subprocess_logged(cmd: list, log_file: Path, step_name: str, **kwargs):
 
 
 class SAM3DEnvironmentManager:
-    """Manages the isolated micromamba environment for SAM3D."""
+    """Manages the isolated venv environment for SAM3D."""
 
     def __init__(self, node_root: Path):
         """
@@ -60,23 +61,21 @@ class SAM3DEnvironmentManager:
         """
         self.node_root = Path(node_root)
         self.env_dir = self.node_root / "_env"
-        self.micromamba_dir = self.node_root / "_micromamba"
-        self.micromamba_bin = self._get_micromamba_path()
         self.log_file = self.node_root / "install.log"
-
-    def _get_micromamba_path(self) -> Path:
-        """Get path to micromamba binary based on platform."""
-        if platform.system() == "Windows":
-            return self.micromamba_dir / "micromamba.exe"
-        else:
-            return self.micromamba_dir / "bin" / "micromamba"
 
     def get_python_executable(self) -> Path:
         """Get path to Python executable in isolated environment."""
         if platform.system() == "Windows":
-            return self.env_dir / "python.exe"
+            return self.env_dir / "Scripts" / "python.exe"
         else:
             return self.env_dir / "bin" / "python"
+
+    def get_pip_executable(self) -> Path:
+        """Get path to pip executable in isolated environment."""
+        if platform.system() == "Windows":
+            return self.env_dir / "Scripts" / "pip.exe"
+        else:
+            return self.env_dir / "bin" / "pip"
 
     def is_environment_ready(self) -> bool:
         """Check if the isolated environment is ready to use."""
@@ -97,66 +96,8 @@ class SAM3DEnvironmentManager:
         except Exception:
             return False
 
-    def install_micromamba(self) -> None:
-        """Download and install micromamba if not present."""
-        if self.micromamba_bin.exists():
-            print("[SAM3DObjects] Micromamba already installed")
-            return
-
-        print("[SAM3DObjects] Installing micromamba...")
-        self.micromamba_dir.mkdir(parents=True, exist_ok=True)
-
-        # Determine download URL based on platform
-        system = platform.system()
-        machine = platform.machine().lower()
-
-        if system == "Linux":
-            if "aarch64" in machine or "arm64" in machine:
-                url = "https://micro.mamba.pm/api/micromamba/linux-aarch64/latest"
-            else:
-                url = "https://micro.mamba.pm/api/micromamba/linux-64/latest"
-        elif system == "Darwin":
-            if "arm64" in machine:
-                url = "https://micro.mamba.pm/api/micromamba/osx-arm64/latest"
-            else:
-                url = "https://micro.mamba.pm/api/micromamba/osx-64/latest"
-        elif system == "Windows":
-            url = "https://micro.mamba.pm/api/micromamba/win-64/latest"
-        else:
-            raise RuntimeError(f"Unsupported platform: {system}")
-
-        # Download micromamba
-        print("[SAM3DObjects] Downloading micromamba...")
-        try:
-            import urllib.request
-            import tarfile
-            import tempfile
-
-            with tempfile.TemporaryDirectory() as tmpdir:
-                archive_path = Path(tmpdir) / "micromamba.tar.bz2"
-
-                urllib.request.urlretrieve(url, archive_path)
-
-                # Extract
-                with tarfile.open(archive_path, "r:bz2") as tar:
-                    tar.extractall(self.micromamba_dir)
-
-                # Make executable on Unix
-                if system != "Windows":
-                    os.chmod(self.micromamba_bin, 0o755)
-
-                print("[SAM3DObjects] Micromamba installed")
-
-        except Exception as e:
-            raise RuntimeError(f"Failed to install micromamba: {e}") from e
-
-    def create_environment(self, python_version: str = "3.10") -> None:
-        """
-        Create the isolated micromamba environment.
-
-        Args:
-            python_version: Python version to install
-        """
+    def create_environment(self) -> None:
+        """Create the isolated Python virtual environment."""
         if self.env_dir.exists():
             if self.is_environment_ready():
                 print("[SAM3DObjects] Environment already exists, skipping creation")
@@ -164,115 +105,246 @@ class SAM3DEnvironmentManager:
             else:
                 print("[SAM3DObjects] Recreating incomplete environment")
 
-        print("[SAM3DObjects] Creating base environment...")
+        print("[SAM3DObjects] Creating Python virtual environment...")
 
-        # Create environment with Python
-        env = os.environ.copy()
-        env["MAMBA_ROOT_PREFIX"] = str(self.micromamba_dir)
+        # Find a compatible Python version (3.10-3.12)
+        # PyTorch 2.5.1 doesn't support Python 3.13 yet
+        python_candidates = ["python3.10", "python3.11", "python3.12"]
+        python_exe = None
+
+        for candidate in python_candidates:
+            try:
+                result = subprocess.run(
+                    [candidate, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    python_exe = candidate
+                    print(f"[SAM3DObjects] Using {candidate} for venv")
+                    break
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                continue
+
+        if not python_exe:
+            raise RuntimeError(
+                "Could not find compatible Python version (3.10-3.12). "
+                "PyTorch 2.5.1 requires Python 3.10, 3.11, or 3.12."
+            )
 
         try:
+            # Create venv using compatible Python version
             subprocess.run(
-                [
-                    str(self.micromamba_bin),
-                    "create",
-                    "-p", str(self.env_dir),
-                    f"python={python_version}",
-                    "-c", "conda-forge",
-                    "-y",
-                ],
-                env=env,
+                [python_exe, "-m", "venv", str(self.env_dir)],
                 check=True,
                 capture_output=True,
                 text=True
             )
-            print("[SAM3DObjects] Base environment created")
+            print("[SAM3DObjects] Virtual environment created")
 
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"Failed to create environment: {e}\n"
+                f"Failed to create virtual environment: {e}\n"
                 f"stdout: {e.stdout}\n"
                 f"stderr: {e.stderr}"
             ) from e
 
-    def install_pytorch_and_dependencies(self) -> None:
-        """Install dependencies with REVERSED order: pip first, conda overwrites PyTorch last."""
-        print("[SAM3DObjects] Installing environment with reversed approach...")
-        print("[SAM3DObjects] Step 1: Install pip packages first")
-        print("[SAM3DObjects] Step 2: Conda overwrites PyTorch with correct version")
+    def install_dependencies(self) -> None:
+        """Install all dependencies using pip/uv."""
+        print("[SAM3DObjects] Installing dependencies...")
+        print("[SAM3DObjects] This will take 5-10 minutes...")
 
         python_exe = self.get_python_executable()
+        pip_exe = self.get_pip_executable()
 
-        # Step 1: Install pip packages FIRST (they'll pull in some torch version)
-        print("[SAM3DObjects] Installing pip packages first...")
-        print("[SAM3DObjects] This should take 3-5 minutes...")
+        # Step 1: Upgrade pip
+        print("[SAM3DObjects] Upgrading pip...")
+        _run_subprocess_logged(
+            [str(python_exe), "-m", "pip", "install", "--upgrade", "pip"],
+            self.log_file,
+            "Upgrade pip",
+            check=True
+        )
 
-        requirements_env = self.node_root / "mamba_env" / "requirements_env.txt"
-        if not requirements_env.exists():
-            raise RuntimeError(f"requirements_env.txt not found: {requirements_env}")
+        # Step 2: Install uv for faster package installation
+        print("[SAM3DObjects] Installing uv package manager...")
+        _run_subprocess_logged(
+            [str(pip_exe), "install", "uv"],
+            self.log_file,
+            "Install uv",
+            check=True
+        )
+
+        # Step 3: Install PyTorch with specific CUDA version FIRST
+        print("[SAM3DObjects] Installing PyTorch 2.5.1 with CUDA 12.1...")
+        print("[SAM3DObjects] This ensures binary compatibility...")
+
+        uv_exe = self.env_dir / "bin" / "uv" if platform.system() != "Windows" else self.env_dir / "Scripts" / "uv.exe"
+
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "uv", "pip", "install",
+                "torch==2.5.1",
+                "torchvision==0.20.1",
+                "--index-url", "https://download.pytorch.org/whl/cu121"
+            ],
+            self.log_file,
+            "Install PyTorch with CUDA 12.1",
+            check=True
+        )
+
+        # Step 4: Install all other dependencies
+        print("[SAM3DObjects] Installing remaining dependencies...")
+        print("[SAM3DObjects] (PyTorch version will be locked to 2.5.1)")
+
+        requirements_file = self.node_root / "local_env_settings" / "requirements_env.txt"
+        if not requirements_file.exists():
+            raise RuntimeError(f"requirements_env.txt not found: {requirements_file}")
+
+        # Install with --no-deps for packages that might upgrade PyTorch, then install their deps separately
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "uv", "pip", "install",
+                "--no-deps",  # Don't install dependencies to avoid PyTorch upgrade
+                "-r", str(requirements_file)
+            ],
+            self.log_file,
+            "Install packages (no deps to protect PyTorch)",
+            check=True
+        )
+
+        # Note: We skip `pip check` because some packages (like xformers) may complain
+        # about PyTorch version, but we intentionally pin it to 2.5.1 for PyTorch3D compatibility
+
+        # Install dependencies but with constraints to keep PyTorch at 2.5.1
+        constraints_file = self.node_root / "_pytorch_constraints.txt"
+        with open(constraints_file, 'w') as f:
+            f.write("torch==2.5.1\n")
+            f.write("torchvision==0.20.1\n")
 
         _run_subprocess_logged(
             [
                 str(python_exe), "-m", "pip", "install",
-                "-r", str(requirements_env)
+                "-r", str(requirements_file),
+                "-c", str(constraints_file),  # Use constraints to pin PyTorch
+                "--upgrade",  # Upgrade other packages but respect constraints
             ],
             self.log_file,
-            "Install packages with pip",
+            "Install remaining dependencies with PyTorch constraints",
             check=True
         )
 
-        # Step 2: Remove pip's torch to avoid conflicts
-        print("[SAM3DObjects] Removing pip's torch to avoid conflicts...")
-        try:
-            subprocess.run(
-                [str(python_exe), "-m", "pip", "uninstall", "-y", "torch", "torchvision"],
-                capture_output=True,
-                check=False  # Don't fail if not installed
-            )
-        except Exception:
-            pass  # Ignore errors
+        # Clean up constraints file
+        if constraints_file.exists():
+            constraints_file.unlink()
 
-        # Step 3: Conda installs correct PyTorch stack (LAST!)
-        print("[SAM3DObjects] Installing conda packages (correct PyTorch)...")
-        print("[SAM3DObjects] This should take 2-3 minutes...")
+        # Step 5: Install pytorch3d (download prebuilt from conda-forge)
+        print("[SAM3DObjects] Installing PyTorch3D...")
+        print("[SAM3DObjects] Downloading prebuilt binary from conda-forge...")
 
-        env_yml = self.node_root / "mamba_env" / "environment.yml"
-        if not env_yml.exists():
-            raise RuntimeError(f"environment.yml not found: {env_yml}")
-
-        env = os.environ.copy()
-        env["MAMBA_ROOT_PREFIX"] = str(self.micromamba_dir)
-
-        _run_subprocess_logged(
-            [
-                str(self.micromamba_bin),
-                "env", "update",
-                "-p", str(self.env_dir),
-                "-f", str(env_yml),
-                "-y"
-            ],
-            self.log_file,
-            "Install conda packages (overwrites PyTorch)",
-            env=env,
-            check=True
-        )
+        self._install_pytorch3d_from_conda(python_exe)
 
         print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
+
+    def _install_pytorch3d_from_conda(self, python_exe: Path) -> None:
+        """Download and install prebuilt PyTorch3D from conda-forge."""
+        import urllib.request
+        import tarfile
+        import tempfile
+        import shutil
+
+        # PyTorch3D conda package URL for Python 3.10, PyTorch 2.5.1, CUDA 12.1
+        # From: https://anaconda.org/pytorch3d/pytorch3d
+        pytorch3d_url = "https://conda.anaconda.org/pytorch3d/linux-64/pytorch3d-0.7.7-py310_cu121_pyt251.tar.bz2"
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                archive_path = tmpdir_path / "pytorch3d.tar.bz2"
+
+                # Download conda package
+                print("[SAM3DObjects] Downloading pytorch3d conda package...")
+                urllib.request.urlretrieve(pytorch3d_url, archive_path)
+
+                # Extract tar.bz2
+                print("[SAM3DObjects] Extracting conda package...")
+                extract_dir = tmpdir_path / "extracted"
+                extract_dir.mkdir()
+
+                with tarfile.open(archive_path, "r:bz2") as tar:
+                    tar.extractall(extract_dir)
+
+                # Find the pytorch3d directory in site-packages
+                conda_site_packages = extract_dir / "lib" / "python3.10" / "site-packages"
+
+                if not conda_site_packages.exists():
+                    raise RuntimeError(f"Could not find site-packages in conda package at {conda_site_packages}")
+
+                # Get our venv's site-packages directory
+                if platform.system() == "Windows":
+                    venv_site_packages = self.env_dir / "Lib" / "site-packages"
+                else:
+                    venv_site_packages = self.env_dir / "lib" / "python3.10" / "site-packages"
+
+                # Copy pytorch3d directory
+                pytorch3d_src = conda_site_packages / "pytorch3d"
+                pytorch3d_dst = venv_site_packages / "pytorch3d"
+
+                if not pytorch3d_src.exists():
+                    raise RuntimeError(f"pytorch3d not found in conda package at {pytorch3d_src}")
+
+                print(f"[SAM3DObjects] Copying prebuilt binaries to {venv_site_packages}...")
+                if pytorch3d_dst.exists():
+                    shutil.rmtree(pytorch3d_dst)
+                shutil.copytree(pytorch3d_src, pytorch3d_dst)
+
+                # Also copy any .dist-info directories
+                for item in conda_site_packages.glob("pytorch3d*.dist-info"):
+                    dst_item = venv_site_packages / item.name
+                    if dst_item.exists():
+                        shutil.rmtree(dst_item)
+                    shutil.copytree(item, dst_item)
+
+                print("[SAM3DObjects] PyTorch3D installed successfully from prebuilt binaries!")
+
+        except Exception as e:
+            print(f"[SAM3DObjects] Failed to install prebuilt pytorch3d: {e}")
+            print("[SAM3DObjects] Falling back to building from source...")
+
+            # Fallback: build from source
+            _run_subprocess_logged(
+                [
+                    str(python_exe), "-m", "pip", "install",
+                    "wheel", "setuptools", "ninja"
+                ],
+                self.log_file,
+                "Install build tools for pytorch3d",
+                check=True
+            )
+            _run_subprocess_logged(
+                [
+                    str(python_exe), "-m", "pip", "install",
+                    "--no-build-isolation",
+                    "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.7"
+                ],
+                self.log_file,
+                "Build and install pytorch3d from source",
+                check=True
+            )
 
     def setup_environment(self) -> None:
         """Complete environment setup process."""
         print("[SAM3DObjects] Starting installation...")
         print(f"[SAM3DObjects] Full logs will be saved to: {self.log_file}")
 
-        # Step 1: Install micromamba
-        self.install_micromamba()
-
-        # Step 2: Create environment
+        # Step 1: Create venv
         self.create_environment()
 
-        # Step 3: Install dependencies
-        self.install_pytorch_and_dependencies()
+        # Step 2: Install all dependencies
+        self.install_dependencies()
 
-        # Step 4: Verify
+        # Step 3: Verify
         if self.is_environment_ready():
             print("[SAM3DObjects] Installation complete!")
             print(f"[SAM3DObjects] Full logs: {self.log_file}")

@@ -1,10 +1,20 @@
 # ============================================================================
 # Requirements for SAM3D Inference Worker Environment
 # ============================================================================
-# This file contains all packages installed via UV into the minimal conda env.
-# The conda env (environment.yml) provides only: python, pytorch, pytorch3d, CUDA
-# UV installs everything else (10-100x faster than conda for PyPI packages)
+# This file contains all packages for the isolated venv.
+# PyTorch packages are installed separately with specific CUDA version.
+# All other packages are installed via UV (10-100x faster than pip)
 # ============================================================================
+
+# NOTE: PyTorch packages are installed FIRST in a separate step:
+# uv pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
+# This ensures binary compatibility between torch and torchvision
+
+# PyTorch ecosystem (install after torch/torchvision)
+# pytorch3d - installed separately (see env_manager.py) due to lack of wheels
+fvcore
+iopath
+torchsde
 
 # Core scientific computing
 numpy>=1.24.0,<2.0
@@ -50,7 +60,7 @@ pymeshfix>=0.16.0
 
 # CUDA-specific packages (available on PyPI)
 spconv-cu121>=2.3.8
-xformers>=0.0.28
+# xformers - REMOVED: Optional, causes PyTorch version conflicts, SAM3D uses native PyTorch attention
 gsplat>=1.4.0
 
 # Additional utilities
