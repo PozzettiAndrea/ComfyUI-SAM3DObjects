@@ -62,6 +62,10 @@ pymeshfix>=0.16.0
 spconv-cu121>=2.3.8
 # xformers - REMOVED: Optional, causes PyTorch version conflicts, SAM3D uses native PyTorch attention
 gsplat>=1.4.0
+# kaolin - installed separately via env_manager.py with special find-links URL
+
+# NOTE: CUDA development tools (nvidia-cuda-nvcc-cu12, nvidia-cuda-runtime-cu12) are NOT needed
+# because we use pytorch3d as rendering_engine instead of nvdiffrast, avoiding CUDA compilation
 
 # Additional utilities
 gdown>=5.2.0

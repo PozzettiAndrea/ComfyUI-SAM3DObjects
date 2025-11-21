@@ -207,9 +207,10 @@ marimo/_lsp/
 __marimo__/
 
 # SAM3DObjects specific
-# Downloaded model checkpoints
+# Downloaded model checkpoints (stored in ComfyUI/models/sam3d/)
 checkpoints/
-models/
+# NOTE: Do NOT use "models/" pattern - it breaks vendor/sam3d_objects/model/*/models/ source code
+# Downloaded models are stored outside this directory in ComfyUI/models/sam3d/
 
 # Isolated Python venv (auto-created by install.py)
 _env/

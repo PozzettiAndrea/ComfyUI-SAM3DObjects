@@ -239,11 +239,28 @@ class SAM3DEnvironmentManager:
         if constraints_file.exists():
             constraints_file.unlink()
 
-        # Step 5: Install pytorch3d (download prebuilt from conda-forge)
+        # Step 5: Install kaolin (NVIDIA library with special wheel location)
+        print("[SAM3DObjects] Installing Kaolin...")
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "pip", "install",
+                "kaolin==0.17.0",
+                "-f", "https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu121.html"
+            ],
+            self.log_file,
+            "Install kaolin from NVIDIA S3",
+            check=True
+        )
+
+        # Step 6: Install pytorch3d (download prebuilt from conda-forge)
         print("[SAM3DObjects] Installing PyTorch3D...")
         print("[SAM3DObjects] Downloading prebuilt binary from conda-forge...")
 
         self._install_pytorch3d_from_conda(python_exe)
+
+        # Note: We use pytorch3d as rendering_engine, so nvdiffrast is not needed
+        # and doesn't need to be pre-compiled. This also avoids the complexity of
+        # requiring a full CUDA toolkit installation (nvcc compiler, etc.)
 
         print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
 
