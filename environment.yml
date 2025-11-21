@@ -1,0 +1,14 @@
+name: sam3d
+channels:
+  - pytorch
+  - fvcore
+  - iopath
+  - conda-forge
+  - nvidia
+dependencies:
+  - python=3.10
+  - pytorch
+  - torchvision
+  - pytorch-cuda=12.1
+  - pip
+  # pytorch3d will be built from source via pip for compatibility
