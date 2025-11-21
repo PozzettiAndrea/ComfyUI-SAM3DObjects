@@ -4,39 +4,39 @@
 # ⚠️  Use 'python install.py' instead for proper CUDA-enabled installation.
 #
 # The install.py script will:
-#   1. Check and install PyTorch with CUDA 12.1 support (if needed)
+#   1. Check and install PyTorch with CUDA support (if needed)
 #   2. Install pytorch3d via conda/mamba (faster) or build from source
-#   3. Install all dependencies with proper CUDA index URLs
+#   3. Install all dependencies with proper CUDA support
 #
 # Note: sam3d_objects code is VENDORED (included in vendor/ directory) - no external install needed!
 
 # Core dependencies for SAM 3D Objects
-hydra-core==1.3.2
-einops-exts==0.0.4
-roma==1.5.1
-easydict==1.13
-loguru==0.7.2
+hydra-core>=1.3.2
+einops-exts>=0.0.4
+roma>=1.5.1
+easydict>=1.13
+loguru>=0.7.2
 
 # 3D processing
 # pytorch3d must be installed from source (no pre-built wheels for all platforms)
 pytorch3d @ git+https://github.com/facebookresearch/pytorch3d.git@75ebeeaea0908c5527e7b1e305fbc7681382db47
-open3d==0.18.0
+open3d>=0.18.0
 trimesh
-point-cloud-utils==0.29.5
-xatlas==0.0.9
+point-cloud-utils>=0.29.5
+xatlas>=0.0.9
 
 # Sparse convolutions (CUDA-specific)
-spconv-cu121==2.3.8
+spconv-cu121>=2.3.8
 
 # Attention optimization
-xformers==0.0.28.post3
+xformers>=0.0.28
 
 # Image processing
-opencv-python==4.9.0.80
-scikit-image==0.23.1
+opencv-python>=4.9.0
+scikit-image>=0.23.1
 
 # Model dependencies
-timm==0.9.16
+timm>=0.9.16
 transformers
 diffusers
 
@@ -44,7 +44,7 @@ diffusers
 MoGe @ git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb2bd3e255b
 
 # Utilities
-gdown==5.2.0
+gdown>=5.2.0
 huggingface-hub
 python-igraph>=1.0.0
 torchsde>=0.2.6
@@ -74,3 +74,4 @@ utils3d @ git+https://github.com/EasternJournalist/utils3d.git@bb71df4
 gsplat>=1.4.0
 pyvista>=0.43.0
 pymeshfix>=0.16.0
+nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git
