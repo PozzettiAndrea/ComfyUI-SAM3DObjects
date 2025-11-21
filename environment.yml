@@ -6,9 +6,85 @@ channels:
   - conda-forge
   - nvidia
 dependencies:
+  # ============================================================================
+  # BASE: Python and CUDA
+  # ============================================================================
   - python=3.10
-  - pytorch
-  - torchvision
+  - pytorch=2.5.1
+  - torchvision=0.20.1
   - pytorch-cuda=12.1
+
+  # ============================================================================
+  # 3D PROCESSING: PyTorch3D and dependencies
+  # ============================================================================
+  # CRITICAL: Use prebuilt pytorch3d from conda-forge (no 15-minute build!)
+  - pytorch3d=0.7.7
+  - fvcore
+  - iopath
+
+  # ============================================================================
+  # CONDA-AVAILABLE PACKAGES (from requirements.txt)
+  # ============================================================================
+
+  # Core scientific computing
+  - numpy>=1.24.0,<2.0
+  - scipy>=1.11.0
+
+  # Machine learning frameworks
+  - timm>=0.9.16
+  - transformers
+  - diffusers
+  - lightning>=2.0.0
+
+  # Image processing
+  - opencv>=4.9.0
+  - scikit-image>=0.23.1
+  - imageio>=2.36.0
+
+  # 3D processing libraries
+  - open3d>=0.18.0
+  - trimesh
+  - point_cloud_utils>=0.29.5
+  - pyvista>=0.43.0
+
+  # Visualization
+  - matplotlib>=3.9.0
+  - seaborn>=0.13.0
+  - plotly>=5.24.0
+
+  # Utilities
+  - hydra-core>=1.3.2
+  - easydict>=1.13
+  - loguru>=0.7.2
+  - huggingface_hub
+  - python-igraph>=1.0.0
+  - tqdm>=4.67.0
+  - optree>=0.11.0
+  - astor>=0.8.0
+
+  # ============================================================================
+  # PIP: Packages not available via conda
+  # ============================================================================
   - pip
-  # pytorch3d will be built from source via pip for compatibility
+  - pip:
+    # Core dependencies (pip-only)
+    - einops-exts>=0.0.4
+    - roma>=1.5.1
+
+    # 3D processing (pip-only C++ bindings)
+    - xatlas>=0.0.9
+    - pymeshfix>=0.16.0
+
+    # CUDA-specific packages (pip-only)
+    - spconv-cu121>=2.3.8
+    - xformers>=0.0.28
+    - gsplat>=1.4.0
+
+    # Utilities (pip-only)
+    - torchsde>=0.2.6
+    - gdown>=5.2.0
+    - gradio>=4.44.0
+
+    # Git repositories (must be pip-installed)
+    - git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb2bd3e255b
+    - git+https://github.com/NVlabs/nvdiffrast.git

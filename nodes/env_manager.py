@@ -195,11 +195,11 @@ class SAM3DEnvironmentManager:
             ) from e
 
     def install_pytorch_and_dependencies(self) -> None:
-        """Install dependencies: conda for torch, pip builds pytorch3d from source."""
-        python_exe = self.get_python_executable()
+        """Install all dependencies from environment.yml (conda + pip packages)."""
+        print("[SAM3DObjects] Installing complete environment...")
+        print("[SAM3DObjects] This includes PyTorch, PyTorch3D (prebuilt), and all dependencies.")
+        print("[SAM3DObjects] This may take several minutes...")
 
-        # Step 1: Install conda packages from environment.yml (pytorch with CUDA, no pytorch3d)
-        print("[SAM3DObjects] Installing Python environment (this may take several minutes)...")
         env_yml = self.node_root / "environment.yml"
         if not env_yml.exists():
             raise RuntimeError(f"environment.yml not found: {env_yml}")
@@ -207,63 +207,21 @@ class SAM3DEnvironmentManager:
         env = os.environ.copy()
         env["MAMBA_ROOT_PREFIX"] = str(self.micromamba_dir)
 
+        # Single command installs everything: conda packages + pip section
+        # This handles dependency resolution properly and installs in correct order
         _run_subprocess_logged(
             [
                 str(self.micromamba_bin),
-                "install",
+                "env", "update",
                 "-p", str(self.env_dir),
                 "-f", str(env_yml),
-                "-y",
-                "--quiet"
+                "-y"
             ],
             self.log_file,
-            "Install PyTorch and CUDA dependencies",
+            "Install complete environment (conda + pip)",
             env=env,
             check=True
         )
-
-        # Step 2: Install pip packages from requirements.txt (pytorch3d separately at end)
-        requirements_file = self.node_root / "requirements.txt"
-        if requirements_file.exists():
-            print("[SAM3DObjects] Installing pip dependencies...")
-
-            # Read requirements, separate pytorch3d to install last
-            with open(requirements_file, 'r') as f:
-                requirements = []
-                pytorch3d_req = None
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        if 'pytorch3d' in line.lower():
-                            pytorch3d_req = line
-                        else:
-                            requirements.append(line)
-
-            # Install everything except pytorch3d first
-            if requirements:
-                _run_subprocess_logged(
-                    [str(python_exe), "-m", "pip", "install", "--quiet", "--no-progress"] + requirements,
-                    self.log_file,
-                    "Install pip dependencies",
-                    check=True
-                )
-
-            # Now install pytorch3d from source (it needs torch to be importable during build)
-            if pytorch3d_req:
-                print("[SAM3DObjects] Building pytorch3d from source (this may take 10-15 minutes)...")
-                # Set environment variables to help nvcc use g++ as the CUDA host compiler
-                build_env = os.environ.copy()
-                build_env['CC'] = '/usr/bin/gcc'
-                build_env['CXX'] = '/usr/bin/g++'
-                build_env['CUDAHOSTCXX'] = '/usr/bin/g++'  # Force nvcc to use g++ for C++ code
-                build_env['PATH'] = '/usr/bin:' + build_env.get('PATH', '')
-                _run_subprocess_logged(
-                    [str(python_exe), "-m", "pip", "install", pytorch3d_req, "--no-build-isolation", "--quiet"],
-                    self.log_file,
-                    "Build pytorch3d from source",
-                    check=True,
-                    env=build_env
-                )
 
         print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
 
