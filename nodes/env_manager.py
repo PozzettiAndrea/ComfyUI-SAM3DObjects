@@ -195,20 +195,53 @@ class SAM3DEnvironmentManager:
             ) from e
 
     def install_pytorch_and_dependencies(self) -> None:
-        """Install all dependencies from environment.yml (conda + pip packages)."""
-        print("[SAM3DObjects] Installing complete environment...")
-        print("[SAM3DObjects] This includes PyTorch, PyTorch3D (prebuilt), and all dependencies.")
-        print("[SAM3DObjects] This may take several minutes...")
+        """Install dependencies with REVERSED order: pip first, conda overwrites PyTorch last."""
+        print("[SAM3DObjects] Installing environment with reversed approach...")
+        print("[SAM3DObjects] Step 1: Install pip packages first")
+        print("[SAM3DObjects] Step 2: Conda overwrites PyTorch with correct version")
 
-        env_yml = self.node_root / "environment.yml"
+        python_exe = self.get_python_executable()
+
+        # Step 1: Install pip packages FIRST (they'll pull in some torch version)
+        print("[SAM3DObjects] Installing pip packages first...")
+        print("[SAM3DObjects] This should take 3-5 minutes...")
+
+        requirements_env = self.node_root / "mamba_env" / "requirements_env.txt"
+        if not requirements_env.exists():
+            raise RuntimeError(f"requirements_env.txt not found: {requirements_env}")
+
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "pip", "install",
+                "-r", str(requirements_env)
+            ],
+            self.log_file,
+            "Install packages with pip",
+            check=True
+        )
+
+        # Step 2: Remove pip's torch to avoid conflicts
+        print("[SAM3DObjects] Removing pip's torch to avoid conflicts...")
+        try:
+            subprocess.run(
+                [str(python_exe), "-m", "pip", "uninstall", "-y", "torch", "torchvision"],
+                capture_output=True,
+                check=False  # Don't fail if not installed
+            )
+        except Exception:
+            pass  # Ignore errors
+
+        # Step 3: Conda installs correct PyTorch stack (LAST!)
+        print("[SAM3DObjects] Installing conda packages (correct PyTorch)...")
+        print("[SAM3DObjects] This should take 2-3 minutes...")
+
+        env_yml = self.node_root / "mamba_env" / "environment.yml"
         if not env_yml.exists():
             raise RuntimeError(f"environment.yml not found: {env_yml}")
 
         env = os.environ.copy()
         env["MAMBA_ROOT_PREFIX"] = str(self.micromamba_dir)
 
-        # Single command installs everything: conda packages + pip section
-        # This handles dependency resolution properly and installs in correct order
         _run_subprocess_logged(
             [
                 str(self.micromamba_bin),
@@ -218,7 +251,7 @@ class SAM3DEnvironmentManager:
                 "-y"
             ],
             self.log_file,
-            "Install complete environment (conda + pip)",
+            "Install conda packages (overwrites PyTorch)",
             env=env,
             check=True
         )
