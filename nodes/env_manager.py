@@ -345,6 +345,43 @@ class SAM3DEnvironmentManager:
             check=True
         )
 
+        # Step 4.5: Install nvdiffrast from prebuilt wheel to avoid JIT compilation
+        # Using prebuilt wheel from Unique3D HuggingFace for Python 3.10 + Linux x86_64
+        # Note: The wheel has invalid version format, so we extract and install directly
+        print("[SAM3DObjects] Installing nvdiffrast (prebuilt wheel for Python 3.10)...")
+        import urllib.request
+        import tempfile
+        import zipfile
+        import shutil
+
+        nvdiffrast_wheel_url = "https://huggingface.co/spaces/neil-ni/Unique3D/resolve/69ac8ac1b4c6efd2684d69805e6437b58ab554d3/package/nvdiffrast-0.3.1.torch-cp310-cp310-linux_x86_64.whl"
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
+            wheel_path = tmpdir_path / "nvdiffrast.whl"
+            urllib.request.urlretrieve(nvdiffrast_wheel_url, wheel_path)
+
+            # Extract wheel (it's a zip file)
+            extract_dir = tmpdir_path / "extracted"
+            extract_dir.mkdir()
+            with zipfile.ZipFile(wheel_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+
+            # Find the nvdiffrast package directory
+            nvdiffrast_src = extract_dir / "nvdiffrast"
+            if not nvdiffrast_src.exists():
+                raise RuntimeError("nvdiffrast directory not found in wheel")
+
+            # Copy directly to site-packages
+            site_packages = self.env_dir / "lib" / f"python3.10" / "site-packages"
+            nvdiffrast_dest = site_packages / "nvdiffrast"
+
+            if nvdiffrast_dest.exists():
+                shutil.rmtree(nvdiffrast_dest)
+
+            shutil.copytree(nvdiffrast_src, nvdiffrast_dest)
+            print(f"[SAM3DObjects] nvdiffrast installed to {nvdiffrast_dest}", file=sys.stderr)
+
         # Step 5: Install all other dependencies via pip
         print("[SAM3DObjects] Installing remaining dependencies via pip...")
         print("[SAM3DObjects] (PyTorch is pinned, will not be upgraded)")

@@ -222,6 +222,57 @@ The `+pt24cu121` suffix confirms this is the prebuilt wheel for PyTorch 2.4 + CU
 
 ---
 
+## Problem 7: nvdiffrast JIT Compilation at Runtime
+
+**Date**: 2025-11-22
+
+**Error**:
+```
+fatal error: cusparse.h: No such file or directory
+    7 | #include <cusparse.h>
+      |          ^~~~~~~~~~~~
+compilation terminated.
+```
+
+**Root Cause**:
+nvdiffrast was installed from source via git (`git+https://github.com/NVlabs/nvdiffrast.git`). On first use, it attempts JIT (Just-In-Time) compilation of CUDA extensions. This fails with the same "missing cusparse.h" error as gsplat, because the PyPI CUDA toolkit (`nvidia-cuda-nvcc-cu13`) is incomplete.
+
+**Why nvdiffrast is Needed**:
+Even though we use PyTorch3D as the main rendering engine (not nvdiffrast), the mesh postprocessing step (`_fill_holes`) still uses nvdiffrast through `utils3d.torch.RastContext`.
+
+**Impact**:
+- nvdiffrast compilation fails on first inference attempt
+- JIT compilation takes 5-10 minutes even when successful
+- Requires full CUDA toolkit (~3GB) for compilation
+- Not portable across environments
+
+**Solution**:
+Use prebuilt nvdiffrast wheel from Unique3D HuggingFace project.
+
+**Implementation**:
+1. **In `local_env_settings/requirements_env.txt`**: Removed git install:
+   ```diff
+   - git+https://github.com/NVlabs/nvdiffrast.git
+   + # nvdiffrast - installed separately via env_manager.py from prebuilt wheel
+   ```
+
+2. **In `nodes/env_manager.py`**: Added prebuilt wheel installation (Step 4.5):
+   ```python
+   nvdiffrast_wheel_url = "https://huggingface.co/spaces/neil-ni/Unique3D/resolve/.../nvdiffrast-0.3.1.torch-cp310-cp310-linux_x86_64.whl"
+   pip install <wheel_url>
+   ```
+
+**Prebuilt Wheel Details**:
+- Source: Unique3D HuggingFace project
+- Version: nvdiffrast 0.3.1
+- Platform: Python 3.10 (cp310) + Linux x86_64
+- Size: ~3 MB
+- No compilation needed!
+
+**Status**: ✅ Resolved
+
+---
+
 ## Summary of Changes Made
 
 ### Files Modified:
@@ -238,11 +289,14 @@ The `+pt24cu121` suffix confirms this is the prebuilt wheel for PyTorch 2.4 + CU
 
 3. **`nodes/env_manager.py`**:
    - Downgraded PyTorch from 2.5.1 → 2.4.1 (PyTorch3D compatibility)
+   - Switched Python from 3.11 → 3.10 (gsplat prebuilt wheel compatibility)
    - Added separate gsplat installation step with prebuilt wheel support
-   - Removed gsplat from requirements_env.txt (now installed separately)
+   - Added separate nvdiffrast installation step with prebuilt wheel support
+   - Removed gsplat and nvdiffrast from requirements_env.txt (now installed separately)
 
 4. **`local_env_settings/requirements_env.txt`**:
    - Removed gsplat (line 64) - now installed via env_manager.py
+   - Removed nvdiffrast git install (line 77) - now installed via env_manager.py
    - Added documentation comments
 
 5. **`NODE_DESIGN_RECOMMENDATIONS.md`** (new file):
@@ -302,11 +356,13 @@ When choosing Python versions for ML projects:
 - Kaolin: **0.17.0** ✅
 - CUDA: **12.1** ✅
 - gsplat: **1.5.3+pt24cu121** ✅ (prebuilt wheel, no compilation!)
+- nvdiffrast: **0.3.1** ✅ (prebuilt wheel, no compilation!)
 
 **Installation Method**:
 - Isolated environment via micromamba
 - PyTorch + PyTorch3D via conda-forge
 - gsplat via prebuilt wheels from https://docs.gsplat.studio/whl/pt24cu121/
+- nvdiffrast via prebuilt wheel from Unique3D HuggingFace
 - Other packages via pip/uv
 
 **Completed Steps**:
