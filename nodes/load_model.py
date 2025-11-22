@@ -43,6 +43,14 @@ class LoadSAM3DModel:
                     "multiline": False,
                     "tooltip": "HuggingFace token for private/gated repositories (leave empty for public models)"
                 }),
+                "dtype": (["bfloat16", "float16", "float32", "auto"], {
+                    "default": "bfloat16",
+                    "tooltip": "Model precision: bfloat16 (RTX 30xx+, fastest), float16 (older GPUs), float32 (slowest, most compatible), auto (detect based on GPU)"
+                }),
+                "keep_model_loaded": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Keep model loaded in GPU memory between inferences. Faster but uses VRAM. Disable to free memory after each inference."
+                }),
             }
         }
 
@@ -53,7 +61,7 @@ class LoadSAM3DModel:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
 
-    def load_model(self, model_tag: str, compile: bool, force_reload: bool, hf_token: str = ""):
+    def load_model(self, model_tag: str, compile: bool, force_reload: bool, hf_token: str = "", dtype: str = "bfloat16", keep_model_loaded: bool = True):
         """
         Load the SAM3D model.
 
@@ -62,6 +70,8 @@ class LoadSAM3DModel:
             compile: Whether to compile the model
             force_reload: Force reload even if cached
             hf_token: HuggingFace token for private/gated repos (optional)
+            dtype: Model precision (bfloat16/float16/float32/auto)
+            keep_model_loaded: Keep model in GPU memory between inferences
 
         Returns:
             Loaded inference pipeline
@@ -122,6 +132,7 @@ class LoadSAM3DModel:
                 compile=compile
             )
             print("[SAM3DObjects] Isolated model wrapper created successfully!")
+            print(f"[SAM3DObjects] Note: dtype={dtype}, keep_model_loaded={keep_model_loaded} parameters not yet implemented for isolated mode")
             print("[SAM3DObjects] Inference will run in isolated subprocess")
 
         except Exception as e:

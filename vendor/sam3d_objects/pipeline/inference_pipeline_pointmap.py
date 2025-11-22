@@ -319,12 +319,17 @@ class InferencePipelinePointMap(InferencePipeline):
         mask: Union[None, Image.Image, np.ndarray] = None,
         seed: Optional[int] = None,
         stage1_only=False,
+        stage1_output=None,
         with_mesh_postprocess=True,
         with_texture_baking=True,
         with_layout_postprocess=True,
         use_vertex_color=False,
         stage1_inference_steps=None,
         stage2_inference_steps=None,
+        stage1_cfg_strength=None,
+        stage2_cfg_strength=None,
+        texture_size=1024,
+        simplify=0.95,
         use_stage1_distillation=False,
         use_stage2_distillation=False,
         pointmap=None,
@@ -348,25 +353,48 @@ class InferencePipelinePointMap(InferencePipeline):
             slat_input_dict = self.preprocess_image(image, self.slat_preprocessor)
             if seed is not None:
                 torch.manual_seed(seed)
-            ss_return_dict = self.sample_sparse_structure(
-                ss_input_dict,
-                inference_steps=stage1_inference_steps,
-                use_distillation=use_stage1_distillation,
-            )
 
-            # We could probably use the decoder from the models themselves
-            pointmap_scale = ss_input_dict.get("pointmap_scale", None)
-            pointmap_shift = ss_input_dict.get("pointmap_shift", None)
-            ss_return_dict.update(
-                self.pose_decoder(
-                    ss_return_dict,
-                    scene_scale=pointmap_scale,
-                    scene_shift=pointmap_shift,
+            # Runtime CFG strength override (if provided)
+            if stage1_cfg_strength is not None:
+                self.override_ss_generator_cfg_config(
+                    self.models["ss_generator"],
+                    cfg_strength=stage1_cfg_strength,
+                    inference_steps=stage1_inference_steps or self.ss_inference_steps,
                 )
-            )
+            if stage2_cfg_strength is not None:
+                self.override_slat_generator_cfg_config(
+                    self.models["slat_generator"],
+                    cfg_strength=stage2_cfg_strength,
+                    inference_steps=stage2_inference_steps or self.slat_inference_steps,
+                )
 
-            logger.info(f"Rescaling scale by {ss_return_dict['downsample_factor']} after downsampling")
-            ss_return_dict["scale"] = ss_return_dict["scale"] * ss_return_dict["downsample_factor"]
+            # If stage1_output is provided, skip Stage 1 and use pre-computed result
+            if stage1_output is not None:
+                logger.info("Using provided Stage 1 output, skipping Stage 1 computation")
+                ss_return_dict = stage1_output
+                # Remove pointmap data from stage1_output as we'll use fresh ones
+                pts = ss_return_dict.pop("pointmap", pts)
+                pts_colors = ss_return_dict.pop("pointmap_colors", pts_colors)
+            else:
+                ss_return_dict = self.sample_sparse_structure(
+                    ss_input_dict,
+                    inference_steps=stage1_inference_steps,
+                    use_distillation=use_stage1_distillation,
+                )
+
+                # We could probably use the decoder from the models themselves
+                pointmap_scale = ss_input_dict.get("pointmap_scale", None)
+                pointmap_shift = ss_input_dict.get("pointmap_shift", None)
+                ss_return_dict.update(
+                    self.pose_decoder(
+                        ss_return_dict,
+                        scene_scale=pointmap_scale,
+                        scene_shift=pointmap_shift,
+                    )
+                )
+
+                logger.info(f"Rescaling scale by {ss_return_dict['downsample_factor']} after downsampling")
+                ss_return_dict["scale"] = ss_return_dict["scale"] * ss_return_dict["downsample_factor"]
 
             if stage1_only:
                 logger.info("Finished!")
@@ -389,7 +417,8 @@ class InferencePipelinePointMap(InferencePipeline):
                 slat, self.decode_formats if decode_formats is None else decode_formats
             )
             outputs = self.postprocess_slat_output(
-                outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color
+                outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
+                texture_size=texture_size, simplify=simplify
             )
             glb = outputs.get("glb", None)
 
