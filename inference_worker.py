@@ -43,6 +43,12 @@ def load_model(config_path: str, compile: bool = False):
     import os
     os.environ['LIDRA_SKIP_INIT'] = '1'
 
+    # Force UTF-8 encoding for all file I/O operations
+    # This prevents UnicodeDecodeError during JIT compilation of CUDA extensions (gsplat, nvdiffrast)
+    # PyTorch's cpp_extension_versioner reads source files to hash them, and some contain UTF-8 chars
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    os.environ['PYTHONUTF8'] = '1'  # PEP 540: Force UTF-8 mode in Python 3.7+
+
     # Add venv's bin directory to PATH for ninja (required by nvdiffrast JIT compilation)
     # Note: Even though we use pytorch3d as rendering_engine, postprocessing (_fill_holes)
     # still uses nvdiffrast through utils3d.torch.RastContext
@@ -53,19 +59,39 @@ def load_model(config_path: str, compile: bool = False):
 
     # Add g++ compiler to PATH for CUDA JIT compilation
     # nvcc needs g++ as the host compiler to compile C++ code
-    gcc_bin = (Path(__file__).parent / "_env" / "gcc" / "bin").resolve()
+    # The compilers are installed by micromamba in _env/bin/
+    gcc_bin = (Path(__file__).parent / "_env" / "bin").resolve()
     if gcc_bin.exists():
         os.environ['PATH'] = f"{gcc_bin}:{os.environ['PATH']}"
-        # Set CXX and CC to point to the conda g++/gcc
-        gxx_path = gcc_bin / "x86_64-conda-linux-gnu-g++"
-        gcc_path = gcc_bin / "x86_64-conda-linux-gnu-gcc"
-        if gxx_path.exists():
-            os.environ['CXX'] = str(gxx_path)
-            print(f"[Worker] Set CXX={gxx_path}", file=sys.stderr)
-        if gcc_path.exists():
-            os.environ['CC'] = str(gcc_path)
-            print(f"[Worker] Set CC={gcc_path}", file=sys.stderr)
-        print(f"[Worker] Added {gcc_bin} to PATH for g++", file=sys.stderr)
+
+        # Fix for gsplat JIT: nvcc needs standard g++/gcc names, not conda wrappers
+        # The conda compilers use cross-compilation wrapper names that nvcc doesn't understand
+        # We create symlinks so nvcc can find them by standard names
+        wrapper_gxx = gcc_bin / "x86_64-conda-linux-gnu-g++"
+        wrapper_gcc = gcc_bin / "x86_64-conda-linux-gnu-gcc"
+        symlink_gxx = gcc_bin / "g++"
+        symlink_gcc = gcc_bin / "gcc"
+
+        # Create g++ symlink if it doesn't exist
+        if wrapper_gxx.exists() and not symlink_gxx.exists():
+            try:
+                symlink_gxx.symlink_to(wrapper_gxx.name)  # Relative symlink
+                print(f"[Worker] Created g++ symlink for nvcc", file=sys.stderr)
+            except (FileExistsError, OSError) as e:
+                print(f"[Worker] Could not create g++ symlink: {e}", file=sys.stderr)
+
+        # Create gcc symlink if it doesn't exist
+        if wrapper_gcc.exists() and not symlink_gcc.exists():
+            try:
+                symlink_gcc.symlink_to(wrapper_gcc.name)  # Relative symlink
+                print(f"[Worker] Created gcc symlink for nvcc", file=sys.stderr)
+            except (FileExistsError, OSError) as e:
+                print(f"[Worker] Could not create gcc symlink: {e}", file=sys.stderr)
+
+        # Set environment to use standard names (nvcc will find them in PATH)
+        os.environ['CXX'] = 'g++'
+        os.environ['CC'] = 'gcc'
+        print(f"[Worker] Set CXX=g++, CC=gcc (via symlinks in {gcc_bin})", file=sys.stderr)
 
     # Setup CUDA_HOME for JIT compilation (gsplat, nvdiffrast, etc.)
     # Try to find CUDA toolkit installed by env_manager.py
@@ -245,6 +271,26 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
 
 def main():
     """Main worker loop - reads requests from stdin, writes responses to stdout."""
+
+    # CRITICAL: Suppress all library output to prevent stdout pollution
+    # Libraries like OmegaConf, Hydra, PyTorch, CUDA can print to stdout,
+    # which interferes with our JSON-based IPC protocol
+    import warnings
+    import logging
+    import os
+
+    # Suppress Python warnings from all libraries
+    warnings.filterwarnings("ignore")
+
+    # Suppress TensorFlow logs (if used by any dependency)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+    # Suppress Hydra full error traces
+    os.environ['HYDRA_FULL_ERROR'] = '0'
+
+    # Disable all Python logging from libraries
+    logging.disable(logging.CRITICAL)
+
     print("[Worker] SAM3D inference worker started", file=sys.stderr)
     print(f"[Worker] Python: {sys.executable}", file=sys.stderr)
     print(f"[Worker] Working directory: {Path.cwd()}", file=sys.stderr)

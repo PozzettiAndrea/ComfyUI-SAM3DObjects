@@ -153,12 +153,44 @@ class InferenceWorkerBridge:
         self.process.stdin.write(request_json)
         self.process.stdin.flush()
 
-        # Read response
-        response_line = self.process.stdout.readline()
-        if not response_line:
-            raise RuntimeError("Worker process closed unexpectedly")
+        # Read response with robust JSON parsing
+        # Skip any non-JSON lines that may be polluting stdout from libraries
+        import time
+        start_time = time.time()
+        max_attempts = 100  # Limit attempts to prevent infinite loops
+        attempts = 0
 
-        return json.loads(response_line)
+        while attempts < max_attempts:
+            if time.time() - start_time > timeout:
+                raise TimeoutError(f"Timeout waiting for JSON response after {timeout}s")
+
+            response_line = self.process.stdout.readline()
+            if not response_line:
+                raise RuntimeError("Worker process closed unexpectedly")
+
+            response_line = response_line.strip()
+            if not response_line:
+                # Empty line, skip
+                attempts += 1
+                continue
+
+            # Try to parse as JSON
+            if response_line.startswith('{') or response_line.startswith('['):
+                try:
+                    return json.loads(response_line)
+                except json.JSONDecodeError as e:
+                    # Log the malformed JSON for debugging
+                    print(f"[SAM3DObjects] Warning: Failed to parse JSON response (attempt {attempts + 1}): {response_line[:100]}")
+                    print(f"[SAM3DObjects] JSON error: {e}")
+                    attempts += 1
+                    continue
+            else:
+                # Not JSON - likely a log message that slipped through
+                print(f"[SAM3DObjects] Skipping non-JSON line from worker: {response_line[:100]}")
+                attempts += 1
+                continue
+
+        raise RuntimeError(f"Failed to get valid JSON response after {max_attempts} attempts")
 
     def serialize_image(self, image: Image.Image) -> str:
         """Serialize PIL Image to base64."""
