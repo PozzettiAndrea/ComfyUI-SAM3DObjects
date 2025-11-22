@@ -252,6 +252,16 @@ class InferenceWorkerBridge:
                 print(f"[SAM3DObjects] Warning: GLB file not found: {glb_path}")
                 result["glb_path"] = None
 
+        # Return Gaussian PLY file path
+        if "ply" in saved_output.get("files", {}):
+            ply_path = Path(saved_output["files"]["ply"])
+            if ply_path.exists():
+                result["ply_path"] = str(ply_path)
+                print(f"[SAM3DObjects] Gaussian PLY saved to: {ply_path}")
+            else:
+                print(f"[SAM3DObjects] Warning: PLY file not found: {ply_path}")
+                result["ply_path"] = None
+
         return result
 
     def run_inference(
@@ -261,7 +271,12 @@ class InferenceWorkerBridge:
         mask: np.ndarray,
         seed: int = 42,
         compile: bool = False,
-        with_mesh_postprocess: bool = True,
+        stage1_inference_steps: int = 25,
+        stage2_inference_steps: int = 25,
+        stage1_cfg_strength: float = 7.0,
+        stage2_cfg_strength: float = 5.0,
+        texture_size: int = 1024,
+        simplify: float = 0.95,
         output_dir: str = None
     ) -> Dict[str, Any]:
         """
@@ -273,7 +288,12 @@ class InferenceWorkerBridge:
             mask: Input numpy mask
             seed: Random seed
             compile: Whether to compile model
-            with_mesh_postprocess: Whether to perform mesh postprocessing
+            stage1_inference_steps: Denoising steps for Stage 1
+            stage2_inference_steps: Denoising steps for Stage 2
+            stage1_cfg_strength: CFG strength for Stage 1
+            stage2_cfg_strength: CFG strength for Stage 2
+            texture_size: Texture resolution
+            simplify: Mesh simplification ratio
             output_dir: Directory to save outputs (defaults to ComfyUI output directory)
 
         Returns:
@@ -299,7 +319,12 @@ class InferenceWorkerBridge:
             "image": self.serialize_image(image),
             "mask": self.serialize_mask(mask),
             "seed": seed,
-            "with_mesh_postprocess": with_mesh_postprocess,
+            "stage1_inference_steps": stage1_inference_steps,
+            "stage2_inference_steps": stage2_inference_steps,
+            "stage1_cfg_strength": stage1_cfg_strength,
+            "stage2_cfg_strength": stage2_cfg_strength,
+            "texture_size": texture_size,
+            "simplify": simplify,
             "output_dir": output_dir,  # Pass output directory to worker
         }
 

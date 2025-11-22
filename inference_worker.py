@@ -231,11 +231,24 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
 
         result["files"]["glb"] = str(glb_path)
 
+    # Save Gaussian Splat PLY file (colored point cloud)
+    if "gs" in output and output["gs"] is not None:
+        ply_path = save_dir / "gaussian.ply"
+        try:
+            output["gs"].save_ply(str(ply_path))
+            result["files"]["ply"] = str(ply_path)
+            print(f"[Worker] Saved Gaussian PLY: {ply_path}", file=sys.stderr)
+        except Exception as e:
+            print(f"[Worker] Warning: Failed to save Gaussian PLY: {e}", file=sys.stderr)
+
     # Save metadata (simple types only)
     metadata = {}
     for key, value in output.items():
         if isinstance(value, (int, float, str, bool)):
             metadata[key] = value
+        elif isinstance(value, torch.Tensor):
+            # Convert torch tensors to lists for JSON serialization
+            metadata[key] = value.cpu().tolist()
         elif isinstance(value, np.ndarray):
             # Convert numpy arrays to lists for JSON serialization
             metadata[key] = value.tolist()
@@ -266,7 +279,12 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         image_b64 = request["image"]
         mask_b64 = request["mask"]
         seed = request.get("seed", 42)
-        with_mesh_postprocess = request.get("with_mesh_postprocess", True)
+        stage1_inference_steps = request.get("stage1_inference_steps", 25)
+        stage2_inference_steps = request.get("stage2_inference_steps", 25)
+        stage1_cfg_strength = request.get("stage1_cfg_strength", 7.0)
+        stage2_cfg_strength = request.get("stage2_cfg_strength", 5.0)
+        texture_size = request.get("texture_size", 1024)
+        simplify = request.get("simplify", 0.95)
         output_dir = request.get("output_dir", "/tmp/sam3d_output")  # Default fallback
 
         # Load model
@@ -276,7 +294,10 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         image = deserialize_image(image_b64)
         mask = deserialize_mask(mask_b64)
 
-        print(f"[Worker] Running inference (seed={seed}, with_mesh_postprocess={with_mesh_postprocess})", file=sys.stderr)
+        print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
+        print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}", file=sys.stderr)
+        print(f"[Worker] Stage 2: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}", file=sys.stderr)
+        print(f"[Worker] Postprocess: texture_size={texture_size}, simplify={simplify}", file=sys.stderr)
         print(f"[Worker] Image: mode={image.mode}, size={image.size}", file=sys.stderr)
         print(f"[Worker] Mask: shape={mask.shape}, dtype={mask.dtype}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
@@ -294,8 +315,14 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         output = model.run(
             image, mask,
             seed=seed,
-            with_mesh_postprocess=with_mesh_postprocess,
-            with_texture_baking=True  # Enabled - using compatible TRELLIS wheel
+            ss_inference_steps=stage1_inference_steps,
+            slat_inference_steps=stage2_inference_steps,
+            ss_cfg_strength=stage1_cfg_strength,
+            slat_cfg_strength=stage2_cfg_strength,
+            simplify=simplify,
+            texture_size=texture_size,
+            with_mesh_postprocess=False,  # Keep disabled
+            with_texture_baking=True,  # Enabled - using compatible TRELLIS wheel
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)

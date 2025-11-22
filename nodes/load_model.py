@@ -24,17 +24,31 @@ class LoadSAM3DModel:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_tag": (["hf"], {"default": "hf"}),
-                "compile": ("BOOLEAN", {"default": False}),
-                "force_reload": ("BOOLEAN", {"default": False}),
+                "model_tag": (["hf"], {
+                    "default": "hf",
+                    "tooltip": "Model variant to load (hf = facebook/sam-3d-objects from HuggingFace)"
+                }),
+                "compile": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Enable PyTorch model compilation for faster inference (requires more VRAM)"
+                }),
+                "force_reload": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Force reload model even if already cached in memory"
+                }),
             },
             "optional": {
-                "hf_token": ("STRING", {"default": "", "multiline": False}),
+                "hf_token": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "HuggingFace token for private/gated repositories (leave empty for public models)"
+                }),
             }
         }
 
     RETURN_TYPES = ("SAM3D_MODEL",)
     RETURN_NAMES = ("model",)
+    OUTPUT_TOOLTIPS = ("Loaded SAM3D model ready for 3D generation",)
     FUNCTION = "load_model"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
