@@ -267,7 +267,111 @@ Use prebuilt nvdiffrast wheel from Unique3D HuggingFace project.
 - Version: nvdiffrast 0.3.1
 - Platform: Python 3.10 (cp310) + Linux x86_64
 - Size: ~3 MB
+- Plugins: nvdiffrast_plugin.so, nvdiffrast_plugin_gl.so
 - No compilation needed!
+
+**PyTorch ABI Compatibility Issue**:
+The prebuilt nvdiffrast plugins have PyTorch ABI incompatibility with our PyTorch 2.4.1:
+```
+ImportError: undefined symbol: _ZN3c104cuda9SetDeviceEi
+```
+
+**PyTorch ABI Compatibility Issue (Initial Unique3D Wheel)**:
+The Unique3D prebuilt nvdiffrast plugins had PyTorch ABI incompatibility with our PyTorch 2.4.1:
+```
+ImportError: undefined symbol: _ZN3c104cuda9SetDeviceEi
+```
+
+**Final Solution**:
+Switched to Microsoft TRELLIS nvdiffrast wheel built specifically for PyTorch 2.4.0 (binary compatible with 2.4.1):
+```python
+nvdiffrast_wheel_url = "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl"
+```
+
+**Verification**:
+```bash
+$ _env/bin/python -c "import nvdiffrast.torch as dr; print('Success!')"
+Success!
+```
+
+**Impact**: Texture baking now fully functional! Re-enabled in inference_worker.py:
+```python
+output = model.run(..., with_texture_baking=True)
+```
+
+**Status**: ✅ Resolved - TRELLIS wheel fully compatible
+
+---
+
+## Problem 8: Pickle Deserialization Failure - Module Import Issue
+
+**Date**: 2025-11-22
+
+**Error**:
+```
+ModuleNotFoundError: No module named 'sam3d_objects'
+during unpickling of <class 'sam3d_objects.models.gaussian.GaussianSplat'>
+```
+
+**Root Cause**:
+The inference worker was using `pickle` to serialize complex SAM3D output objects (GaussianSplat, mesh structures, etc.) to send back to the main ComfyUI process over IPC. However, unpickling these objects in the main process failed because:
+
+1. The `sam3d_objects` module only exists in the isolated `_env` environment
+2. The main ComfyUI process doesn't have access to these classes
+3. Pickle requires both serialization and deserialization to have access to the same class definitions
+
+**Impact**:
+- Inference completed successfully but output couldn't be deserialized
+- All inference requests failed at the final deserialization step
+- Complex architecture with module dependency issues
+
+**User Insight**:
+"Take a deep breath. You are a google engineer with 20yroe. Is this the best approach. Or would we rather save them to disk."
+
+**Solution**:
+Complete architecture change from pickle serialization → disk-based output (industry standard ComfyUI pattern):
+
+1. **In `inference_worker.py`**: Replace `serialize_output()` with `save_output_to_disk()`:
+   ```python
+   def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
+       # Save GLB file to disk
+       glb_path = save_dir / "mesh.glb"
+       with open(glb_path, 'wb') as f:
+           f.write(output["glb"])
+
+       # Return only file paths (simple strings!)
+       return {"output_dir": str(save_dir), "files": {"glb": str(glb_path)}}
+   ```
+
+2. **Sequential Directory Naming**: User requested "inference_5 or whatever" format:
+   ```python
+   # Find next available number
+   existing = [d.name for d in output_dir.iterdir() if d.is_dir() and d.name.startswith("inference_")]
+   next_num = max(numbers) + 1 if numbers else 1
+   save_dir = output_dir / f"inference_{next_num}"
+   ```
+
+3. **In `subprocess_bridge.py`**: Replace `deserialize_output()` with `load_output_from_disk()`:
+   ```python
+   def load_output_from_disk(self, saved_output: Dict[str, Any]) -> Dict[str, Any]:
+       # Simply load files from disk paths
+       glb_path = Path(saved_output["files"]["glb"])
+       result["glb"] = glb_path.read_bytes()
+       return result
+   ```
+
+4. **Output Directory**: Automatically use ComfyUI's standard output directory:
+   ```python
+   comfy_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+   output_dir = os.path.join(comfy_dir, "output")
+   ```
+
+**Why This is Better**:
+- ✅ No pickle/module dependency issues - only simple strings (file paths) sent over IPC
+- ✅ Standard ComfyUI pattern - matches how images/videos are handled
+- ✅ User-accessible files - outputs saved to `ComfyUI/output/inference_N/`
+- ✅ Debuggable - intermediate outputs can be inspected on disk
+- ✅ Simpler architecture - file I/O instead of complex serialization
 
 **Status**: ✅ Resolved
 
@@ -282,16 +386,23 @@ Use prebuilt nvdiffrast wheel from Unique3D HuggingFace project.
    - Added UTF-8 encoding environment variables
    - Added g++/gcc symlink creation for nvcc compatibility
    - Added CUDA_HOME detection and PATH configuration
+   - **Replaced `serialize_output()` with `save_output_to_disk()`** - disk-based architecture
+   - **Sequential directory naming** - `inference_1`, `inference_2`, etc.
+   - **Re-enabled texture baking** with compatible TRELLIS nvdiffrast wheel
 
 2. **`nodes/subprocess_bridge.py`**:
    - Added defensive JSON parsing to skip non-JSON lines
    - Added timeout and retry logic for robustness
+   - **Added `load_output_from_disk()` method** - loads files from paths instead of pickle
+   - **Updated `run_inference()`** - auto-detects ComfyUI output directory, passes to worker
+   - **Removed complex `deserialize_output()`** - replaced with simple file loading
 
 3. **`nodes/env_manager.py`**:
    - Downgraded PyTorch from 2.5.1 → 2.4.1 (PyTorch3D compatibility)
    - Switched Python from 3.11 → 3.10 (gsplat prebuilt wheel compatibility)
    - Added separate gsplat installation step with prebuilt wheel support
-   - Added separate nvdiffrast installation step with prebuilt wheel support
+   - **Updated nvdiffrast to TRELLIS wheel** (PyTorch 2.4.0 compatible)
+   - Changed from Unique3D (v0.3.1) → TRELLIS (v0.3.3)
    - Removed gsplat and nvdiffrast from requirements_env.txt (now installed separately)
 
 4. **`local_env_settings/requirements_env.txt`**:
@@ -345,6 +456,15 @@ When choosing Python versions for ML projects:
 - Python 3.10 has better ML library support than 3.11
 - Newer Python versions may lack prebuilt wheels
 
+### 7. **IPC Serialization Architecture**
+When communicating between processes with different module environments:
+- **Never use pickle** for complex objects that require class definitions
+- **Use disk-based I/O** instead - save files, pass paths
+- Matches industry standard patterns (ComfyUI, MLflow, etc.)
+- More debuggable - intermediate outputs visible on disk
+- User-friendly - outputs accessible in standard directories
+- Simpler code - file I/O vs complex serialization/deserialization
+
 ---
 
 ## Current Status
@@ -356,21 +476,32 @@ When choosing Python versions for ML projects:
 - Kaolin: **0.17.0** ✅
 - CUDA: **12.1** ✅
 - gsplat: **1.5.3+pt24cu121** ✅ (prebuilt wheel, no compilation!)
-- nvdiffrast: **0.3.1** ✅ (prebuilt wheel, no compilation!)
+- nvdiffrast: **0.3.3** ✅ (TRELLIS wheel, fully compatible with PyTorch 2.4.1!)
 
 **Installation Method**:
 - Isolated environment via micromamba
 - PyTorch + PyTorch3D via conda-forge
 - gsplat via prebuilt wheels from https://docs.gsplat.studio/whl/pt24cu121/
-- nvdiffrast via prebuilt wheel from Unique3D HuggingFace
+- nvdiffrast via prebuilt wheel from Microsoft TRELLIS
 - Other packages via pip/uv
+
+**Output Architecture**:
+- ✅ Disk-based output (industry standard ComfyUI pattern)
+- ✅ Sequential directory naming (`inference_1`, `inference_2`, etc.)
+- ✅ Outputs saved to `ComfyUI/output/` directory
+- ✅ Simple file paths through IPC (no pickle serialization issues)
 
 **Completed Steps**:
 1. ✅ Documented all problems (this file)
 2. ✅ Switched to Python 3.10 in env_manager.py
 3. ✅ Tested full installation with Python 3.10
 4. ✅ Verified gsplat prebuilt wheel works (version 1.5.3+pt24cu121)
-5. ⏳ Test SAM3D inference end-to-end (ready to test)
+5. ✅ Updated to TRELLIS nvdiffrast wheel (v0.3.3 for PyTorch 2.4.0)
+6. ✅ Verified nvdiffrast compatibility with PyTorch 2.4.1
+7. ✅ Re-enabled texture baking with compatible nvdiffrast
+8. ✅ Implemented disk-based output architecture
+9. ✅ Sequential directory naming in ComfyUI/output/
+10. ⏳ Test SAM3D inference end-to-end (ready for testing with texture baking enabled!)
 
 ---
 

@@ -30,8 +30,8 @@ class SAM3DGenerate:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_GAUSSIAN", "SAM3D_MESH", "SAM3D_POSE")
-    RETURN_NAMES = ("gaussian_splat", "mesh", "pose_data")
+    RETURN_TYPES = ("STRING", "SAM3D_POSE")
+    RETURN_NAMES = ("glb_filepath", "pose_data")
     FUNCTION = "generate"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate 3D object from image and mask using SAM3D."
@@ -75,37 +75,34 @@ class SAM3DGenerate:
         except Exception as e:
             raise RuntimeError(f"SAM3D inference failed: {e}") from e
 
-        # Extract outputs
-        # Based on demo.py, output is a dict containing:
-        # - "gs": Gaussian splat object
-        # - "gaussian": Gaussian model
-        # - "rotation": rotation quaternion
-        # - "translation": translation vector
-        # - "scale": scale value
+        # Extract outputs - now these are file paths!
+        # Output dict now contains:
+        # - "glb_path": Path to saved GLB file
+        # - "output_dir": Directory containing all outputs
+        # - "metadata": Simple metadata from inference
 
-        gaussian_splat = output.get("gs")
-        gaussian_model = output.get("gaussian")
+        glb_path = output.get("glb_path")
+        output_dir = output.get("output_dir")
+        metadata = output.get("metadata", {})
 
-        # Create pose data dict
+        # Create pose data dict from metadata
         pose_data = {
-            "rotation": output.get("rotation"),
-            "translation": output.get("translation"),
-            "scale": output.get("scale"),
+            "rotation": metadata.get("rotation"),
+            "translation": metadata.get("translation"),
+            "scale": metadata.get("scale"),
         }
 
         print("[SAM3DObjects] 3D generation completed!")
-        print(f"[SAM3DObjects] - Gaussian Splat: {type(gaussian_splat)}")
+        print(f"[SAM3DObjects] - GLB file: {glb_path}")
+        print(f"[SAM3DObjects] - Output directory: {output_dir}")
         print(f"[SAM3DObjects] - Rotation: {pose_data['rotation']}")
         print(f"[SAM3DObjects] - Translation: {pose_data['translation']}")
         print(f"[SAM3DObjects] - Scale: {pose_data['scale']}")
 
-        # Return outputs
-        # Note: We pass both gaussian_splat (gs) and the full output dict as "mesh"
-        # since we'll need the full output for mesh export
+        # Return file paths as outputs
         return (
-            gaussian_splat,  # For PLY export and visualization
-            output,          # Full output dict (contains mesh data)
-            pose_data,       # Pose information
+            glb_path,  # Path to GLB mesh file
+            pose_data, # Pose information
         )
 
 
@@ -127,8 +124,8 @@ class SAM3DGenerateRGBA:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_GAUSSIAN", "SAM3D_MESH", "SAM3D_POSE")
-    RETURN_NAMES = ("gaussian_splat", "mesh", "pose_data")
+    RETURN_TYPES = ("STRING", "SAM3D_POSE")
+    RETURN_NAMES = ("glb_filepath", "pose_data")
     FUNCTION = "generate_rgba"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate 3D object from RGBA image (alpha channel as mask)."
@@ -190,19 +187,24 @@ class SAM3DGenerateRGBA:
         except Exception as e:
             raise RuntimeError(f"SAM3D inference failed: {e}") from e
 
-        # Extract outputs
-        gaussian_splat = output.get("gs")
+        # Extract outputs - now these are file paths!
+        glb_path = output.get("glb_path")
+        output_dir = output.get("output_dir")
+        metadata = output.get("metadata", {})
 
+        # Create pose data dict from metadata
         pose_data = {
-            "rotation": output.get("rotation"),
-            "translation": output.get("translation"),
-            "scale": output.get("scale"),
+            "rotation": metadata.get("rotation"),
+            "translation": metadata.get("translation"),
+            "scale": metadata.get("scale"),
         }
 
         print("[SAM3DObjects] 3D generation completed!")
+        print(f"[SAM3DObjects] - GLB file: {glb_path}")
+        print(f"[SAM3DObjects] - Output directory: {output_dir}")
 
+        # Return file paths as outputs
         return (
-            gaussian_splat,
-            output,
-            pose_data,
+            glb_path,  # Path to GLB mesh file
+            pose_data, # Pose information
         )
