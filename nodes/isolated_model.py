@@ -41,7 +41,7 @@ class IsolatedSAM3DModel:
 
         return self._bridge
 
-    def __call__(self, image: Image.Image, mask: np.ndarray, seed: int = 42) -> dict[str, Any]:
+    def __call__(self, image: Image.Image, mask: np.ndarray, seed: int = 42, with_mesh_postprocess: bool = True) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
 
@@ -49,6 +49,7 @@ class IsolatedSAM3DModel:
             image: Input PIL image
             mask: Input numpy mask
             seed: Random seed
+            with_mesh_postprocess: Whether to perform mesh postprocessing (requires CUDA toolkit for nvdiffrast compilation)
 
         Returns:
             Output dictionary with gaussian splats, mesh, and pose data
@@ -59,7 +60,8 @@ class IsolatedSAM3DModel:
             image=image,
             mask=mask,
             seed=seed,
-            compile=self.compile
+            compile=self.compile,
+            with_mesh_postprocess=with_mesh_postprocess
         )
 
     def __repr__(self) -> str:

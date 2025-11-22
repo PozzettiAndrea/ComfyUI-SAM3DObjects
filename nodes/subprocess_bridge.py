@@ -202,7 +202,8 @@ class InferenceWorkerBridge:
         image: Image.Image,
         mask: np.ndarray,
         seed: int = 42,
-        compile: bool = False
+        compile: bool = False,
+        with_mesh_postprocess: bool = True
     ) -> Dict[str, Any]:
         """
         Run inference on the isolated worker.
@@ -213,6 +214,7 @@ class InferenceWorkerBridge:
             mask: Input numpy mask
             seed: Random seed
             compile: Whether to compile model
+            with_mesh_postprocess: Whether to perform mesh postprocessing
 
         Returns:
             Inference output dict
@@ -229,6 +231,7 @@ class InferenceWorkerBridge:
             "image": self.serialize_image(image),
             "mask": self.serialize_mask(mask),
             "seed": seed,
+            "with_mesh_postprocess": with_mesh_postprocess,
         }
 
         # Send request

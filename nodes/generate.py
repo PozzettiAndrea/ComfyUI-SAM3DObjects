@@ -68,7 +68,9 @@ class SAM3DGenerate:
         # Run inference
         try:
             print("[SAM3DObjects] Running inference...")
-            output = model(image_pil, mask_np, seed=seed)
+            # Note: with_mesh_postprocess=False to avoid nvdiffrast CUDA compilation
+            # This skips hole filling and mesh simplification but still generates valid 3D models
+            output = model(image_pil, mask_np, seed=seed, with_mesh_postprocess=False)
 
         except Exception as e:
             raise RuntimeError(f"SAM3D inference failed: {e}") from e
@@ -181,7 +183,9 @@ class SAM3DGenerateRGBA:
         # Run inference
         try:
             print("[SAM3DObjects] Running inference...")
-            output = model(image_pil, mask_np, seed=seed)
+            # Note: with_mesh_postprocess=False to avoid nvdiffrast CUDA compilation
+            # This skips hole filling and mesh simplification but still generates valid 3D models
+            output = model(image_pil, mask_np, seed=seed, with_mesh_postprocess=False)
 
         except Exception as e:
             raise RuntimeError(f"SAM3D inference failed: {e}") from e

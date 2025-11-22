@@ -258,9 +258,19 @@ class SAM3DEnvironmentManager:
 
         self._install_pytorch3d_from_conda(python_exe)
 
-        # Note: We use pytorch3d as rendering_engine, so nvdiffrast is not needed
-        # and doesn't need to be pre-compiled. This also avoids the complexity of
-        # requiring a full CUDA toolkit installation (nvcc compiler, etc.)
+        # Step 7: Install CUDA toolkit (nvcc compiler + headers) for JIT compilation
+        # gsplat and other packages need nvcc for CUDA extension compilation
+        print("[SAM3DObjects] Installing CUDA toolkit for JIT compilation...")
+
+        # Try Tier 1 first (PyPI), fallback to Tier 2 (conda-forge extraction)
+        if not self._install_cuda_toolkit_pypi(python_exe):
+            print("[SAM3DObjects] PyPI cuda-toolkit incomplete, using conda-forge extraction...")
+            self._install_cuda_toolkit_from_conda(python_exe)
+
+        # Step 8: Install g++ compiler for CUDA JIT compilation
+        # nvcc needs g++ as the host compiler to compile C++ code
+        print("[SAM3DObjects] Installing g++ compiler for CUDA JIT compilation...")
+        self._install_gcc_from_conda(python_exe)
 
         print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
 
@@ -349,6 +359,295 @@ class SAM3DEnvironmentManager:
                 "Build and install pytorch3d from source",
                 check=True
             )
+
+    def _install_cuda_toolkit_pypi(self, python_exe: Path) -> bool:
+        """
+        Install CUDA toolkit from PyPI (Tier 1).
+
+        Returns:
+            True if successful and nvcc is available, False otherwise
+        """
+        print("[SAM3DObjects] Attempting to install CUDA toolkit from PyPI...")
+
+        try:
+            # Try installing cuda-toolkit package from PyPI
+            _run_subprocess_logged(
+                [str(python_exe), "-m", "pip", "install", "cuda-toolkit[nvcc,cudart,crt]"],
+                self.log_file,
+                "Install cuda-toolkit from PyPI",
+                check=True
+            )
+
+            # Verify nvcc exists in the venv
+            result = subprocess.run(
+                ["find", str(self.env_dir), "-name", "nvcc", "-type", "f"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.stdout.strip():
+                nvcc_path = result.stdout.strip().split('\n')[0]  # Take first match
+                print(f"[SAM3DObjects] nvcc found at: {nvcc_path}")
+
+                # Verify it's executable
+                test_result = subprocess.run(
+                    [nvcc_path, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if test_result.returncode == 0:
+                    print(f"[SAM3DObjects] CUDA toolkit from PyPI installed successfully!")
+                    print(f"[SAM3DObjects] nvcc version: {test_result.stdout.splitlines()[0]}")
+                    return True
+                else:
+                    print("[SAM3DObjects] nvcc found but not executable")
+                    return False
+            else:
+                print("[SAM3DObjects] PyPI cuda-toolkit package incomplete (no nvcc)")
+                return False
+
+        except Exception as e:
+            print(f"[SAM3DObjects] PyPI cuda-toolkit installation failed: {e}")
+            _log_subprocess_output(self.log_file, f"PyPI cuda-toolkit failed: {e}")
+            return False
+
+    def _install_cuda_toolkit_from_conda(self, python_exe: Path) -> None:
+        """
+        Download and extract CUDA toolkit from conda-forge (Tier 2).
+
+        This uses the same proven approach as pytorch3d installation.
+        """
+        import urllib.request
+        import tarfile
+        import tempfile
+        import shutil
+
+        # CUDA toolkit dev package from conda-forge for CUDA 12.1
+        # From: https://anaconda.org/conda-forge/cudatoolkit-dev
+        cuda_toolkit_url = "https://conda.anaconda.org/conda-forge/linux-64/cudatoolkit-dev-12.1.0-h4b99516_3.conda"
+
+        print("[SAM3DObjects] Downloading CUDA toolkit from conda-forge...")
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                archive_path = tmpdir_path / "cudatoolkit-dev.conda"
+
+                # Download conda package (.conda format is a zip file containing a tar.zst)
+                urllib.request.urlretrieve(cuda_toolkit_url, archive_path)
+
+                # Extract .conda file (it's a zip containing pkg-*.tar.zst)
+                print("[SAM3DObjects] Extracting conda package...")
+                extract_dir = tmpdir_path / "extracted"
+                extract_dir.mkdir()
+
+                # .conda files are zip archives
+                import zipfile
+                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_dir)
+
+                # Now extract the inner tar.zst file
+                tar_zst_file = None
+                for item in extract_dir.glob("*.tar.zst"):
+                    tar_zst_file = item
+                    break
+
+                if not tar_zst_file:
+                    # Try regular .tar.bz2 format
+                    for item in extract_dir.glob("*.tar.bz2"):
+                        tar_zst_file = item
+                        break
+
+                if not tar_zst_file:
+                    raise RuntimeError(f"Could not find tar archive in conda package")
+
+                print(f"[SAM3DObjects] Extracting {tar_zst_file.name}...")
+                inner_extract_dir = tmpdir_path / "inner"
+                inner_extract_dir.mkdir()
+
+                # Extract tar.zst or tar.bz2
+                if tar_zst_file.suffix == ".zst":
+                    # Need zstandard decompression
+                    try:
+                        import zstandard as zstd
+                    except ImportError:
+                        # Install zstandard if not available
+                        subprocess.run([str(python_exe), "-m", "pip", "install", "zstandard"],
+                                     check=True, capture_output=True, text=True)
+                        import zstandard as zstd
+
+                    with open(tar_zst_file, 'rb') as compressed:
+                        dctx = zstd.ZstdDecompressor()
+                        with dctx.stream_reader(compressed) as reader:
+                            with tarfile.open(fileobj=reader, mode='r|') as tar:
+                                tar.extractall(inner_extract_dir)
+                else:
+                    # Regular tar.bz2
+                    with tarfile.open(tar_zst_file, "r:bz2") as tar:
+                        tar.extractall(inner_extract_dir)
+
+                # Find CUDA installation directory
+                cuda_root = None
+                for candidate in [
+                    inner_extract_dir / "nvvm",  # Conda packages often have nvvm/ at root
+                    inner_extract_dir,
+                ]:
+                    if (candidate / "bin" / "nvcc").exists() or (candidate.parent / "bin" / "nvcc").exists():
+                        cuda_root = candidate.parent if (candidate.parent / "bin" / "nvcc").exists() else candidate
+                        break
+
+                if not cuda_root:
+                    # CUDA toolkit might be under a subdirectory
+                    bin_dirs = list(inner_extract_dir.glob("**/bin"))
+                    for bin_dir in bin_dirs:
+                        if (bin_dir / "nvcc").exists():
+                            cuda_root = bin_dir.parent
+                            break
+
+                if not cuda_root or not (cuda_root / "bin").exists():
+                    raise RuntimeError(f"Could not find CUDA toolkit structure in conda package")
+
+                # Copy CUDA toolkit to venv
+                cuda_install_dir = self.env_dir / "cuda"
+                if cuda_install_dir.exists():
+                    shutil.rmtree(cuda_install_dir)
+
+                print(f"[SAM3DObjects] Installing CUDA toolkit to {cuda_install_dir}...")
+                shutil.copytree(cuda_root, cuda_install_dir)
+
+                # Verify nvcc exists
+                nvcc_path = cuda_install_dir / "bin" / "nvcc"
+                if not nvcc_path.exists():
+                    raise RuntimeError(f"nvcc not found after installation at {nvcc_path}")
+
+                # Make nvcc executable
+                nvcc_path.chmod(0o755)
+
+                # Test nvcc
+                test_result = subprocess.run(
+                    [str(nvcc_path), "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if test_result.returncode != 0:
+                    raise RuntimeError(f"nvcc is not executable: {test_result.stderr}")
+
+                print(f"[SAM3DObjects] CUDA toolkit installed successfully!")
+                print(f"[SAM3DObjects] nvcc version: {test_result.stdout.splitlines()[0]}")
+                print(f"[SAM3DObjects] CUDA location: {cuda_install_dir}")
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to install CUDA toolkit from conda-forge: {e}") from e
+
+    def _install_gcc_from_conda(self, python_exe: Path) -> None:
+        """
+        Download and extract g++ compiler from conda-forge.
+
+        This provides the C++ host compiler that nvcc needs for CUDA JIT compilation.
+        """
+        import urllib.request
+        import tarfile
+        import tempfile
+        import shutil
+
+        # g++ compiler package from conda-forge for Linux x86_64
+        # From: https://anaconda.org/conda-forge/gxx_linux-64
+        gcc_url = "https://conda.anaconda.org/conda-forge/linux-64/gxx_linux-64-13.3.0-h6834431_5.conda"
+
+        print("[SAM3DObjects] Downloading g++ compiler from conda-forge...")
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                archive_path = tmpdir_path / "gxx.conda"
+
+                # Download conda package
+                urllib.request.urlretrieve(gcc_url, archive_path)
+
+                # Extract .conda file (zip containing tar.zst)
+                print("[SAM3DObjects] Extracting g++ package...")
+                extract_dir = tmpdir_path / "extracted"
+                extract_dir.mkdir()
+
+                import zipfile
+                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_dir)
+
+                # Extract inner tar.zst
+                tar_zst_file = None
+                for item in extract_dir.glob("*.tar.zst"):
+                    tar_zst_file = item
+                    break
+
+                if not tar_zst_file:
+                    # Try .tar.bz2
+                    for item in extract_dir.glob("*.tar.bz2"):
+                        tar_zst_file = item
+                        break
+
+                if not tar_zst_file:
+                    raise RuntimeError(f"Could not find tar archive in conda package")
+
+                print(f"[SAM3DObjects] Extracting {tar_zst_file.name}...")
+                inner_extract_dir = tmpdir_path / "inner"
+                inner_extract_dir.mkdir()
+
+                # Extract tar.zst or tar.bz2
+                if tar_zst_file.suffix == ".zst":
+                    try:
+                        import zstandard as zstd
+                    except ImportError:
+                        subprocess.run([str(python_exe), "-m", "pip", "install", "zstandard"],
+                                     check=True, capture_output=True, text=True)
+                        import zstandard as zstd
+
+                    with open(tar_zst_file, 'rb') as compressed:
+                        dctx = zstd.ZstdDecompressor()
+                        with dctx.stream_reader(compressed) as reader:
+                            with tarfile.open(fileobj=reader, mode='r|') as tar:
+                                tar.extractall(inner_extract_dir)
+                else:
+                    with tarfile.open(tar_zst_file, "r:bz2") as tar:
+                        tar.extractall(inner_extract_dir)
+
+                # Copy gcc to venv
+                gcc_install_dir = self.env_dir / "gcc"
+                if gcc_install_dir.exists():
+                    shutil.rmtree(gcc_install_dir)
+
+                print(f"[SAM3DObjects] Installing g++ to {gcc_install_dir}...")
+                shutil.copytree(inner_extract_dir, gcc_install_dir)
+
+                # Verify g++ exists
+                gxx_path = gcc_install_dir / "bin" / "x86_64-conda-linux-gnu-g++"
+                if not gxx_path.exists():
+                    raise RuntimeError(f"g++ not found after installation at {gxx_path}")
+
+                # Make executable
+                gxx_path.chmod(0o755)
+
+                # Test g++
+                test_result = subprocess.run(
+                    [str(gxx_path), "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if test_result.returncode != 0:
+                    raise RuntimeError(f"g++ is not executable: {test_result.stderr}")
+
+                print(f"[SAM3DObjects] g++ compiler installed successfully!")
+                print(f"[SAM3DObjects] g++ version: {test_result.stdout.splitlines()[0]}")
+                print(f"[SAM3DObjects] g++ location: {gcc_install_dir}")
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to install g++ from conda-forge: {e}") from e
 
     def setup_environment(self) -> None:
         """Complete environment setup process."""

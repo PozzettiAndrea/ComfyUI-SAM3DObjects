@@ -43,8 +43,70 @@ def load_model(config_path: str, compile: bool = False):
     import os
     os.environ['LIDRA_SKIP_INIT'] = '1'
 
-    # Note: CUDA build environment (PATH, CUDA_HOME, CPATH) is not needed
-    # because we use pytorch3d as rendering_engine, avoiding nvdiffrast and CUDA compilation
+    # Add venv's bin directory to PATH for ninja (required by nvdiffrast JIT compilation)
+    # Note: Even though we use pytorch3d as rendering_engine, postprocessing (_fill_holes)
+    # still uses nvdiffrast through utils3d.torch.RastContext
+    venv_bin = (Path(__file__).parent / "_env" / "bin").resolve()
+    if venv_bin.exists():
+        os.environ['PATH'] = f"{venv_bin}:{os.environ.get('PATH', '')}"
+        print(f"[Worker] Added {venv_bin} to PATH for ninja", file=sys.stderr)
+
+    # Add g++ compiler to PATH for CUDA JIT compilation
+    # nvcc needs g++ as the host compiler to compile C++ code
+    gcc_bin = (Path(__file__).parent / "_env" / "gcc" / "bin").resolve()
+    if gcc_bin.exists():
+        os.environ['PATH'] = f"{gcc_bin}:{os.environ['PATH']}"
+        # Set CXX and CC to point to the conda g++/gcc
+        gxx_path = gcc_bin / "x86_64-conda-linux-gnu-g++"
+        gcc_path = gcc_bin / "x86_64-conda-linux-gnu-gcc"
+        if gxx_path.exists():
+            os.environ['CXX'] = str(gxx_path)
+            print(f"[Worker] Set CXX={gxx_path}", file=sys.stderr)
+        if gcc_path.exists():
+            os.environ['CC'] = str(gcc_path)
+            print(f"[Worker] Set CC={gcc_path}", file=sys.stderr)
+        print(f"[Worker] Added {gcc_bin} to PATH for g++", file=sys.stderr)
+
+    # Setup CUDA_HOME for JIT compilation (gsplat, nvdiffrast, etc.)
+    # Try to find CUDA toolkit installed by env_manager.py
+    venv_root = (Path(__file__).parent / "_env").resolve()
+    cuda_home = None
+
+    # Option 1: CUDA toolkit from conda-forge (installed to _env/cuda/)
+    conda_cuda = venv_root / "cuda"
+    if (conda_cuda / "bin" / "nvcc").exists():
+        cuda_home = conda_cuda
+        print(f"[Worker] Found CUDA toolkit from conda-forge: {cuda_home}", file=sys.stderr)
+
+    # Option 2: CUDA toolkit from PyPI (scattered in site-packages)
+    if not cuda_home:
+        # Try to find nvcc in venv
+        import subprocess
+        try:
+            result = subprocess.run(
+                ["find", str(venv_root), "-name", "nvcc", "-type", "f"],
+                capture_output=True, text=True, timeout=10
+            )
+            if result.stdout.strip():
+                nvcc_path = Path(result.stdout.strip().split('\n')[0])
+                # CUDA_HOME should be parent of bin/
+                if nvcc_path.parent.name == "bin":
+                    cuda_home = nvcc_path.parent.parent
+                    print(f"[Worker] Found CUDA toolkit from PyPI: {cuda_home}", file=sys.stderr)
+        except Exception as e:
+            print(f"[Worker] Could not search for nvcc: {e}", file=sys.stderr)
+
+    # Set CUDA_HOME and update PATH
+    if cuda_home:
+        os.environ['CUDA_HOME'] = str(cuda_home)
+        cuda_bin = cuda_home / "bin"
+        if cuda_bin.exists():
+            os.environ['PATH'] = f"{cuda_bin}:{os.environ.get('PATH', '')}"
+            print(f"[Worker] Set CUDA_HOME={cuda_home}", file=sys.stderr)
+            print(f"[Worker] Added {cuda_bin} to PATH", file=sys.stderr)
+    else:
+        print("[Worker] Warning: CUDA toolkit not found in venv", file=sys.stderr)
+        print("[Worker] JIT compilation may fail for gsplat and other CUDA extensions", file=sys.stderr)
 
     # Redirect all model downloads to ComfyUI/models/sam3d/
     # This includes torch.hub (DINO), huggingface, transformers, etc.
@@ -136,6 +198,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         image_b64 = request["image"]
         mask_b64 = request["mask"]
         seed = request.get("seed", 42)
+        with_mesh_postprocess = request.get("with_mesh_postprocess", True)
 
         # Load model
         model = load_model(config_path, compile_model)
@@ -144,7 +207,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         image = deserialize_image(image_b64)
         mask = deserialize_mask(mask_b64)
 
-        print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
+        print(f"[Worker] Running inference (seed={seed}, with_mesh_postprocess={with_mesh_postprocess})", file=sys.stderr)
         print(f"[Worker] Image: mode={image.mode}, size={image.size}", file=sys.stderr)
         print(f"[Worker] Mask: shape={mask.shape}, dtype={mask.dtype}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
@@ -158,7 +221,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             print(f"[Worker] Converted mask to uint8: shape={mask.shape}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
         # Run inference using the run() method
-        output = model.run(image, mask, seed=seed)
+        output = model.run(image, mask, seed=seed, with_mesh_postprocess=with_mesh_postprocess)
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
