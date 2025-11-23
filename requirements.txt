@@ -1,81 +1,49 @@
 # ComfyUI-SAM3DObjects Requirements
-#
-# ⚠️  IMPORTANT: DO NOT use 'pip install -r requirements.txt' directly!
-# ⚠️  Use 'python install.py' instead for proper CUDA-enabled installation.
-#
-# The install.py script will:
-#   1. Check and install PyTorch with CUDA support (if needed)
-#   2. Install pytorch3d via conda/mamba (faster) or build from source
-#   3. Install all dependencies with proper CUDA support
-#
-# Note: sam3d_objects code is VENDORED (included in vendor/ directory) - no external install needed!
+# (pure Python only — GPU deps handled in install.py)
 
-# Core dependencies for SAM 3D Objects
 hydra-core>=1.3.2
 einops-exts>=0.0.4
 roma>=1.5.1
 easydict>=1.13
 loguru>=0.7.2
 
-# 3D processing
-# pytorch3d must be installed from source (no pre-built wheels for all platforms)
-pytorch3d @ git+https://github.com/facebookresearch/pytorch3d.git@75ebeeaea0908c5527e7b1e305fbc7681382db47
-open3d>=0.18.0
+# 3D utilities (pure Python)
 trimesh
+open3d>=0.18.0
 point-cloud-utils>=0.29.5
 xatlas>=0.0.9
+pyvista>=0.43.0
+pymeshfix>=0.16.0
 
-# Sparse convolutions (CUDA-specific)
-spconv-cu121>=2.3.8
-
-# Attention optimization
-xformers>=0.0.28
-
-# Image processing
+# Image / processing
 opencv-python>=4.9.0
 scikit-image>=0.23.1
+imageio>=2.36.0
 
 # Model dependencies
 timm>=0.9.16
 transformers
 diffusers
-
-# Depth model (MoGe)
-MoGe @ git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb2bd3e255b
+huggingface-hub
+gdown>=5.2.0
 
 # Utilities
-gdown>=5.2.0
-huggingface-hub
+addict
+omegaconf
 python-igraph>=1.0.0
-torchsde>=0.2.6
+tqdm>=4.67.0
 
-# Core Python dependencies
+# Core Python deps
 astor>=0.8.0
 optree>=0.11.0
 scipy>=1.11.0
 numpy>=1.24.0,<2.0
 
-# Pin torch and torchvision to prevent version conflicts
-# These versions match environment.yml and prevent pip packages from upgrading them
-torch==2.5.1
-torchvision==0.20.1
-
-# PyTorch Lightning for model management
+# Lightning (pip-safe)
 lightning>=2.0.0
 
-# Visualization dependencies
+# Visualization
 seaborn>=0.13.0
 matplotlib>=3.9.0
 plotly>=5.24.0
 gradio>=4.44.0
-imageio>=2.36.0
-tqdm>=4.67.0
-
-# 3D processing and rendering
-# kaolin>=0.17.0  # NOTE: kaolin must be installed via conda: conda install -c nvidia -c conda-forge kaolin
-#                 # Or it will be automatically installed by install.py
-# utils3d will be installed automatically via MoGe dependency
-gsplat>=1.4.0
-pyvista>=0.43.0
-pymeshfix>=0.16.0
-nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git
