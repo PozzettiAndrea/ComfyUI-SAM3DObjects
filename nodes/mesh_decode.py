@@ -24,7 +24,7 @@ class SAM3DMeshDecode:
         return {
             "required": {
                 "slat_decoder_mesh": ("SAM3D_MODEL", {"tooltip": "Mesh decoder from LoadSAM3DModel"}),
-                "slat": ("SAM3D_SLAT", {"tooltip": "SLAT from SAM3DSLATGen"}),
+                "slat": ("STRING", {"tooltip": "Path to SLAT from SAM3DSLATGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SLATGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SLATGen)"}),
                 "seed": ("INT", {
@@ -63,7 +63,7 @@ class SAM3DMeshDecode:
     def decode_mesh(
         self,
         slat_decoder_mesh: Any,
-        slat: dict,
+        slat: str,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
@@ -75,7 +75,7 @@ class SAM3DMeshDecode:
 
         Args:
             slat_decoder_mesh: SAM3D mesh decoder
-            slat: SLAT from SAM3DSLATGen
+            slat: Path to SLAT from SAM3DSLATGen
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
             seed: Random seed
@@ -98,7 +98,7 @@ class SAM3DMeshDecode:
             mesh_output = slat_decoder_mesh(
                 image_pil, mask_np,
                 seed=seed,
-                slat_output=slat,  # Resume from SLAT
+                slat_output=slat,  # Resume from SLAT path
                 mesh_only=True,  # CRITICAL: Only decode to Mesh
                 save_files=save_glb,  # Save GLB if requested
                 simplify=simplify,
@@ -112,6 +112,11 @@ class SAM3DMeshDecode:
 
         # Extract GLB path if saved
         glb_path = mesh_output.get("glb_path", None)
+        
+        # If not found directly, check files dict (bridge returns this structure)
+        if not glb_path and "files" in mesh_output and "glb" in mesh_output["files"]:
+             glb_path = mesh_output["files"]["glb"]
+        
         if save_glb and glb_path:
             print(f"[SAM3DObjects] - Vertex-colored GLB saved to: {glb_path}")
         elif save_glb:

@@ -24,7 +24,7 @@ class SAM3DSLATGen:
         return {
             "required": {
                 "slat_generator": ("SAM3D_MODEL", {"tooltip": "SLAT generator from LoadSAM3DModel"}),
-                "sparse_structure": ("SAM3D_SPARSE", {"tooltip": "Sparse structure from SAM3DSparseGen"}),
+                "sparse_structure": ("STRING", {"tooltip": "Path to sparse structure from SAM3DSparseGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SparseGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SparseGen)"}),
                 "seed": ("INT", {
@@ -52,9 +52,9 @@ class SAM3DSLATGen:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_SLAT",)
-    RETURN_NAMES = ("slat",)
-    OUTPUT_TOOLTIPS = ("SLAT latent - pass to SAM3DGaussianDecode or SAM3DMeshDecode",)
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("slat_path",)
+    OUTPUT_TOOLTIPS = ("Path to saved SLAT latent - pass to SAM3DGaussianDecode or SAM3DMeshDecode",)
     FUNCTION = "generate_slat"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate SLAT latents via diffusion (~60 seconds)."
@@ -62,7 +62,7 @@ class SAM3DSLATGen:
     def generate_slat(
         self,
         slat_generator: Any,
-        sparse_structure: dict,
+        sparse_structure: str,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
@@ -74,7 +74,7 @@ class SAM3DSLATGen:
 
         Args:
             slat_generator: SAM3D SLAT generator
-            sparse_structure: Sparse structure from SAM3DSparseGen
+            sparse_structure: Path to sparse structure from SAM3DSparseGen
             image: Input image tensor [B, H, W, C] (must match SparseGen)
             mask: Input mask tensor [N, H, W] (must match SparseGen)
             seed: Random seed (must match SparseGen)
@@ -82,7 +82,7 @@ class SAM3DSLATGen:
             stage2_cfg_strength: CFG strength for SLAT generation
 
         Returns:
-            Tuple of (slat,) - SLAT latent for decoder nodes
+            Tuple of (slat_path,) - path to SLAT latent for decoder nodes
         """
         print(f"[SAM3DObjects] SLATGen: Generating SLAT from sparse structure")
         print(f"[SAM3DObjects] SLAT parameters: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}")
@@ -97,7 +97,7 @@ class SAM3DSLATGen:
             slat_output = slat_generator(
                 image_pil, mask_np,
                 seed=seed,
-                stage1_output=sparse_structure,  # Resume from sparse generation
+                stage1_output=sparse_structure,  # Resume from sparse generation (now a path)
                 slat_only=True,  # CRITICAL: Only generate SLAT, skip decoding
                 stage2_inference_steps=stage2_inference_steps,
                 stage2_cfg_strength=stage2_cfg_strength,
@@ -107,8 +107,13 @@ class SAM3DSLATGen:
             raise RuntimeError(f"SAM3D SLAT generation failed: {e}") from e
 
         print("[SAM3DObjects] SLAT generation completed!")
-        print(f"[SAM3DObjects] - SLAT latent ready for decoding")
-
-        # Return the SLAT as an opaque object
-        # ComfyUI will pass this Python dict through to decoder nodes
-        return (slat_output,)
+        
+        # Extract file path from output
+        if isinstance(slat_output, dict) and "files" in slat_output and "slat" in slat_output["files"]:
+            slat_path = slat_output["files"]["slat"]
+            print(f"[SAM3DObjects] - Saved to: {slat_path}")
+            return (slat_path,)
+            
+        # Fallback/Error
+        print(f"[SAM3DObjects] Warning: Could not find file path in output: {slat_output.keys() if isinstance(slat_output, dict) else slat_output}")
+        raise RuntimeError("Failed to get SLAT file path from worker")

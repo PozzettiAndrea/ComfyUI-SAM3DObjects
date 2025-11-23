@@ -367,11 +367,13 @@ class InferenceWorkerBridge:
             "simplify": simplify,
             "output_dir": output_dir,  # Pass output directory to worker
             "stage1_only": stage1_only,
-            "stage1_output": self.serialize_stage1_output(stage1_output),
+            "stage1_output": self.serialize_stage1_output(stage1_output) if isinstance(stage1_output, dict) else None,
+            "stage1_output_path": stage1_output if isinstance(stage1_output, str) else None,
             "stage2_only": stage2_only,
             "stage2_output": self.serialize_stage2_output(stage2_output),
             "slat_only": slat_only,
-            "slat_output": self.serialize_stage2_output(slat_output),  # SLAT uses same serialization as stage2
+            "slat_output": self.serialize_stage2_output(slat_output) if isinstance(slat_output, dict) else None,
+            "slat_output_path": slat_output if isinstance(slat_output, str) else None,
             "gaussian_only": gaussian_only,
             "mesh_only": mesh_only,
             "save_files": save_files,
@@ -392,10 +394,15 @@ class InferenceWorkerBridge:
                 f"Traceback:\n{traceback_msg}"
             )
 
-        # Check if this is Stage 1 output (serialized intermediate data)
+        # Check if this is Stage 1 output (serialized intermediate data or file path)
         if response.get("stage1_mode", False):
+            output_data = response["output"]
+            if isinstance(output_data, dict) and "files" in output_data:
+                 print(f"[SAM3DObjects] Stage 1 output saved to disk")
+                 return output_data
+            
             print(f"[SAM3DObjects] Deserializing Stage 1 intermediate output")
-            output = pickle.loads(base64.b64decode(response["output"]))
+            output = pickle.loads(base64.b64decode(output_data))
             print(f"[SAM3DObjects] Stage 1 output keys: {list(output.keys())}")
             return output
 
@@ -404,10 +411,16 @@ class InferenceWorkerBridge:
         # Stage 2 objects require sam3d_objects module which only exists in isolated env.
         # We'll deserialize when sending back to worker for Stage 3.
         if response.get("stage2_mode", False):
+            output_data = response["output"]
+            # Check if it's a file-based output (slat_only)
+            if isinstance(output_data, dict) and "files" in output_data:
+                print(f"[SAM3DObjects] Stage 2/SLAT output saved to disk")
+                return output_data
+
             print(f"[SAM3DObjects] Received Stage 2 output (kept as serialized data)")
             # Return the base64 string wrapped in a dict so Stage 3 node can identify it
             result = {
-                "_serialized_stage2_output": response["output"],
+                "_serialized_stage2_output": output_data,
                 "_stage2_mode": True
             }
             # Include file paths if they were returned (for gaussian_only/mesh_only modes)
