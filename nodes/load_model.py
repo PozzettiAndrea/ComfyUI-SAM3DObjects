@@ -32,6 +32,10 @@ class LoadSAM3DModel:
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference (requires more VRAM)"
                 }),
+                "use_cache": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Offload models to CPU after use to reduce VRAM (slower but ~50% less VRAM)"
+                }),
                 "force_reload": ("BOOLEAN", {
                     "default": False,
                     "tooltip": "Force reload model even if already cached in memory"
@@ -54,29 +58,36 @@ class LoadSAM3DModel:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_MODEL",)
-    RETURN_NAMES = ("model",)
-    OUTPUT_TOOLTIPS = ("Loaded SAM3D model ready for 3D generation",)
+    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
+    RETURN_NAMES = ("ss_generator", "slat_generator", "slat_decoder_gs", "slat_decoder_mesh", "embedders")
+    OUTPUT_TOOLTIPS = (
+        "Sparse structure generator (Stage 1)",
+        "SLAT generator (Stage 2)",
+        "Gaussian decoder (Stage 3)",
+        "Mesh decoder (Stage 3)",
+        "Condition embedders (shared across stages)"
+    )
     FUNCTION = "load_model"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
 
-    def load_model(self, model_tag: str, compile: bool, force_reload: bool, hf_token: str = "", dtype: str = "bfloat16", keep_model_loaded: bool = True):
+    def load_model(self, model_tag: str, compile: bool, use_cache: bool, force_reload: bool, hf_token: str = "", dtype: str = "bfloat16", keep_model_loaded: bool = True):
         """
         Load the SAM3D model.
 
         Args:
             model_tag: Model variant to load
             compile: Whether to compile the model
+            use_cache: Offload models to CPU after use for VRAM savings
             force_reload: Force reload even if cached
             hf_token: HuggingFace token for private/gated repos (optional)
             dtype: Model precision (bfloat16/float16/float32/auto)
             keep_model_loaded: Keep model in GPU memory between inferences
 
         Returns:
-            Loaded inference pipeline
+            5 model outputs (all point to same model wrapper, selective loading handled by worker)
         """
-        print(f"[SAM3DObjects] Loading SAM3D model (tag: {model_tag}, compile: {compile})")
+        print(f"[SAM3DObjects] Loading SAM3D model (tag: {model_tag}, compile: {compile}, use_cache: {use_cache})")
 
         # Check CUDA availability
         device = get_device()
@@ -94,12 +105,14 @@ class LoadSAM3DModel:
                 )
 
         # Create cache key
-        cache_key = f"{model_tag}_{compile}"
+        cache_key = f"{model_tag}_{compile}_{use_cache}"
 
         # Return cached model if available and not forcing reload
         if not force_reload and cache_key in _MODEL_CACHE:
             print(f"[SAM3DObjects] Using cached model: {cache_key}")
-            return (_MODEL_CACHE[cache_key],)
+            model = _MODEL_CACHE[cache_key]
+            # Return same model 5 times (one for each output)
+            return (model, model, model, model, model)
 
         # Get checkpoint path
         checkpoint_path = self._get_or_download_checkpoint(model_tag, hf_token)
@@ -129,11 +142,14 @@ class LoadSAM3DModel:
         try:
             inference_pipeline = IsolatedSAM3DModel(
                 str(config_path),
-                compile=compile
+                compile=compile,
+                use_cache=use_cache
             )
             print("[SAM3DObjects] Isolated model wrapper created successfully!")
             print(f"[SAM3DObjects] Note: dtype={dtype}, keep_model_loaded={keep_model_loaded} parameters not yet implemented for isolated mode")
             print("[SAM3DObjects] Inference will run in isolated subprocess")
+            if use_cache:
+                print("[SAM3DObjects] use_cache=True: Models will be offloaded to CPU after each stage (~50% VRAM reduction)")
 
         except Exception as e:
             raise RuntimeError(f"Failed to create isolated model wrapper: {e}") from e
@@ -142,7 +158,8 @@ class LoadSAM3DModel:
         _MODEL_CACHE[cache_key] = inference_pipeline
         print(f"[SAM3DObjects] Model cached as: {cache_key}")
 
-        return (inference_pipeline,)
+        # Return same model 5 times (one for each output)
+        return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
 
     @classmethod
     def _get_or_download_checkpoint(cls, model_tag: str, hf_token: str = "") -> Path:

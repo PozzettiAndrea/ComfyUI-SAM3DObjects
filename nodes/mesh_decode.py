@@ -23,7 +23,7 @@ class SAM3DMeshDecode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("SAM3D_MODEL", {"tooltip": "SAM3D model loaded from checkpoint"}),
+                "slat_decoder_mesh": ("SAM3D_MODEL", {"tooltip": "Mesh decoder from LoadSAM3DModel"}),
                 "slat": ("SAM3D_SLAT", {"tooltip": "SLAT from SAM3DSLATGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SLATGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SLATGen)"}),
@@ -62,7 +62,7 @@ class SAM3DMeshDecode:
 
     def decode_mesh(
         self,
-        model: Any,
+        slat_decoder_mesh: Any,
         slat: dict,
         image: torch.Tensor,
         mask: torch.Tensor,
@@ -74,7 +74,7 @@ class SAM3DMeshDecode:
         Decode SLAT to mesh.
 
         Args:
-            model: SAM3D inference pipeline
+            slat_decoder_mesh: SAM3D mesh decoder
             slat: SLAT from SAM3DSLATGen
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
@@ -95,7 +95,7 @@ class SAM3DMeshDecode:
         # Run Mesh decoding only
         try:
             print("[SAM3DObjects] Running Mesh decode...")
-            mesh_output = model(
+            mesh_output = slat_decoder_mesh(
                 image_pil, mask_np,
                 seed=seed,
                 slat_output=slat,  # Resume from SLAT
