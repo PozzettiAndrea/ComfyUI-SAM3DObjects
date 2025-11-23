@@ -286,6 +286,18 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         texture_size = request.get("texture_size", 1024)
         simplify = request.get("simplify", 0.95)
         output_dir = request.get("output_dir", "/tmp/sam3d_output")  # Default fallback
+        stage1_only = request.get("stage1_only", False)
+        stage1_output_b64 = request.get("stage1_output", None)
+        stage2_only = request.get("stage2_only", False)
+        stage2_output_b64 = request.get("stage2_output", None)
+        slat_only = request.get("slat_only", False)
+        slat_output_b64 = request.get("slat_output", None)
+        gaussian_only = request.get("gaussian_only", False)
+        mesh_only = request.get("mesh_only", False)
+        save_files = request.get("save_files", False)
+        with_mesh_postprocess = request.get("with_mesh_postprocess", False)
+        with_texture_baking = request.get("with_texture_baking", True)
+        use_vertex_color = request.get("use_vertex_color", False)
 
         # Load model
         model = load_model(config_path, compile_model)
@@ -293,6 +305,21 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         # Deserialize inputs
         image = deserialize_image(image_b64)
         mask = deserialize_mask(mask_b64)
+
+        # Deserialize stage1_output if provided
+        stage1_output = None
+        if stage1_output_b64 is not None:
+            stage1_output = pickle.loads(base64.b64decode(stage1_output_b64))
+
+        # Deserialize stage2_output if provided
+        stage2_output = None
+        if stage2_output_b64 is not None:
+            stage2_output = pickle.loads(base64.b64decode(stage2_output_b64))
+
+        # Deserialize slat_output if provided (same format as stage2_output)
+        slat_output = None
+        if slat_output_b64 is not None:
+            slat_output = pickle.loads(base64.b64decode(slat_output_b64))
 
         print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
         print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}", file=sys.stderr)
@@ -321,13 +348,65 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             stage2_cfg_strength=stage2_cfg_strength,
             simplify=simplify,
             texture_size=texture_size,
-            with_mesh_postprocess=False,  # Keep disabled
-            with_texture_baking=True,  # Enabled - using compatible TRELLIS wheel
+            with_mesh_postprocess=with_mesh_postprocess,
+            with_texture_baking=with_texture_baking,
+            use_vertex_color=use_vertex_color,
+            stage1_only=stage1_only,
+            stage1_output=stage1_output,
+            stage2_only=stage2_only,
+            stage2_output=stage2_output,
+            slat_only=slat_only,
+            slat_output=slat_output,
+            gaussian_only=gaussian_only,
+            mesh_only=mesh_only,
+            save_files=save_files,
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
-        # Save output to disk and return file paths (industry standard approach)
+        # Special handling for stage1_only mode - return serialized intermediate data
+        if stage1_only:
+            print(f"[Worker] Stage 1 only - serializing intermediate output for caching", file=sys.stderr)
+            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
+
+            # Serialize the entire output dict (including all tensors)
+            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
+
+            return {
+                "status": "success",
+                "stage1_mode": True,
+                "output": serialized_output
+            }
+
+        # Special handling for stage2_only mode - return serialized Gaussian + Mesh data
+        if stage2_only:
+            print(f"[Worker] Stage 2 only - serializing Gaussian + Mesh output for caching", file=sys.stderr)
+            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
+
+            # Serialize the entire output dict (including Gaussian and Mesh objects)
+            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
+
+            return {
+                "status": "success",
+                "stage2_mode": True,
+                "output": serialized_output
+            }
+
+        # Special handling for slat_only mode - return serialized SLAT data
+        if slat_only:
+            print(f"[Worker] SLAT only - serializing SLAT output for caching", file=sys.stderr)
+            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
+
+            # Serialize the entire output dict (including SLAT tensor)
+            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
+
+            return {
+                "status": "success",
+                "stage2_mode": True,  # Use same mode as stage2 for compatibility
+                "output": serialized_output
+            }
+
+        # Normal mode: Save final output to disk and return file paths
         # This avoids complex pickle serialization and module dependency issues
         saved_output = save_output_to_disk(output, Path(output_dir))
 

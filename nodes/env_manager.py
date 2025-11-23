@@ -332,7 +332,52 @@ class SAM3DEnvironmentManager:
         else:
             raise RuntimeError(f"PyTorch/PyTorch3D verification failed: {verify_result.stderr}")
 
-        # Step 4: Install gsplat from prebuilt wheel to avoid JIT compilation
+        # Step 4: Install all dependencies via pip (BEFORE gsplat to ensure dependencies are available)
+        print("[SAM3DObjects] Installing dependencies via pip...")
+        print("[SAM3DObjects] (PyTorch is pinned, will not be upgraded)")
+
+        requirements_file = self.node_root / "local_env_settings" / "requirements_env.txt"
+        if not requirements_file.exists():
+            raise RuntimeError(f"requirements_env.txt not found: {requirements_file}")
+
+        # Install with --no-deps for packages that might upgrade PyTorch, then install their deps separately
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "uv", "pip", "install",
+                "--no-deps",  # Don't install dependencies to avoid PyTorch upgrade
+                "-r", str(requirements_file)
+            ],
+            self.log_file,
+            "Install packages (no deps to protect PyTorch)",
+            check=True
+        )
+
+        # Note: We skip `pip check` because some packages (like xformers) may complain
+        # about PyTorch version, but we intentionally pin it to 2.4.1 for PyTorch3D compatibility
+
+        # Install dependencies but with constraints to keep PyTorch at 2.4.1
+        constraints_file = self.node_root / "_pytorch_constraints.txt"
+        with open(constraints_file, 'w') as f:
+            f.write("torch==2.4.1\n")
+            f.write("torchvision==0.19.1\n")
+
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "pip", "install",
+                "-r", str(requirements_file),
+                "-c", str(constraints_file),  # Use constraints to pin PyTorch
+                "--upgrade",  # Upgrade other packages but respect constraints
+            ],
+            self.log_file,
+            "Install remaining dependencies with PyTorch constraints",
+            check=True
+        )
+
+        # Clean up constraints file
+        if constraints_file.exists():
+            constraints_file.unlink()
+
+        # Step 5: Install gsplat from prebuilt wheel to avoid JIT compilation
         print("[SAM3DObjects] Installing gsplat (prebuilt wheel for PyTorch 2.4.1 + CUDA 12.1)...")
         _run_subprocess_logged(
             [
@@ -391,51 +436,6 @@ class SAM3DEnvironmentManager:
                 print("[SAM3DObjects] Warning: No .so plugins found in wheel!")
 
             print(f"[SAM3DObjects] nvdiffrast installation complete ({so_count} plugin(s) installed)")
-
-        # Step 5: Install all other dependencies via pip
-        print("[SAM3DObjects] Installing remaining dependencies via pip...")
-        print("[SAM3DObjects] (PyTorch is pinned, will not be upgraded)")
-
-        requirements_file = self.node_root / "local_env_settings" / "requirements_env.txt"
-        if not requirements_file.exists():
-            raise RuntimeError(f"requirements_env.txt not found: {requirements_file}")
-
-        # Install with --no-deps for packages that might upgrade PyTorch, then install their deps separately
-        _run_subprocess_logged(
-            [
-                str(python_exe), "-m", "uv", "pip", "install",
-                "--no-deps",  # Don't install dependencies to avoid PyTorch upgrade
-                "-r", str(requirements_file)
-            ],
-            self.log_file,
-            "Install packages (no deps to protect PyTorch)",
-            check=True
-        )
-
-        # Note: We skip `pip check` because some packages (like xformers) may complain
-        # about PyTorch version, but we intentionally pin it to 2.5.1 for PyTorch3D compatibility
-
-        # Install dependencies but with constraints to keep PyTorch at 2.4.1
-        constraints_file = self.node_root / "_pytorch_constraints.txt"
-        with open(constraints_file, 'w') as f:
-            f.write("torch==2.4.1\n")
-            f.write("torchvision==0.19.1\n")
-
-        _run_subprocess_logged(
-            [
-                str(python_exe), "-m", "pip", "install",
-                "-r", str(requirements_file),
-                "-c", str(constraints_file),  # Use constraints to pin PyTorch
-                "--upgrade",  # Upgrade other packages but respect constraints
-            ],
-            self.log_file,
-            "Install remaining dependencies with PyTorch constraints",
-            check=True
-        )
-
-        # Clean up constraints file
-        if constraints_file.exists():
-            constraints_file.unlink()
 
         # Step 6: Install kaolin (NVIDIA library with special wheel location)
         print("[SAM3DObjects] Installing Kaolin...")

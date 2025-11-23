@@ -1,4 +1,4 @@
-"""SAM3DGenerateStage1 node for generating sparse 3D structure (Stage 1 only)."""
+"""SAM3DSparseGen node for generating sparse 3D structure."""
 
 import torch
 from typing import Any
@@ -9,14 +9,14 @@ from .utils import (
 )
 
 
-class SAM3DGenerateStage1:
+class SAM3DSparseGen:
     """
-    Generate Stage 1: Sparse 3D Structure.
+    Sparse Structure Generation.
 
-    This node runs only the first diffusion stage to generate the sparse voxel structure.
-    Output can be passed to SAM3DGenerateStage2 for completion.
+    Generates sparse voxel coordinates using the sparse structure diffusion model.
+    Fast stage (~3 seconds) that produces the structural skeleton for 3D generation.
 
-    Cache-efficient: Allows iterating on Stage 2 parameters without re-running Stage 1.
+    Output can be passed to SAM3DSLATGen to continue the pipeline.
     """
 
     @classmethod
@@ -30,6 +30,7 @@ class SAM3DGenerateStage1:
                     "default": 42,
                     "min": 0,
                     "max": 2**31 - 1,
+                    "control_after_generate": "fixed",
                     "tooltip": "Random seed for reproducible generation"
                 }),
             },
@@ -50,14 +51,14 @@ class SAM3DGenerateStage1:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_STAGE1_DATA",)
-    RETURN_NAMES = ("stage1_data",)
-    OUTPUT_TOOLTIPS = ("Stage 1 output (sparse structure) - pass to SAM3DGenerateStage2",)
-    FUNCTION = "generate_stage1"
+    RETURN_TYPES = ("SAM3D_SPARSE",)
+    RETURN_NAMES = ("sparse_structure",)
+    OUTPUT_TOOLTIPS = ("Sparse voxel structure - pass to SAM3DSLATGen",)
+    FUNCTION = "generate_sparse"
     CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Generate Stage 1: Sparse 3D structure from image and mask (fast, ~3 seconds)."
+    DESCRIPTION = "Generate sparse voxel structure from image and mask (~3 seconds)."
 
-    def generate_stage1(
+    def generate_sparse(
         self,
         model: Any,
         image: torch.Tensor,
@@ -67,7 +68,7 @@ class SAM3DGenerateStage1:
         stage1_cfg_strength: float = 7.0,
     ):
         """
-        Generate Stage 1 sparse structure.
+        Generate sparse voxel structure.
 
         Args:
             model: SAM3D inference pipeline
@@ -78,9 +79,9 @@ class SAM3DGenerateStage1:
             stage1_cfg_strength: CFG strength for Stage 1
 
         Returns:
-            Tuple of (stage1_data,) - intermediate data for Stage 2
+            Tuple of (sparse_structure,) - sparse voxel data for SAM3DSLATGen
         """
-        print(f"[SAM3DObjects] Stage 1: Generating sparse structure (seed: {seed})")
+        print(f"[SAM3DObjects] SparseGen: Generating sparse structure (seed: {seed})")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
@@ -88,25 +89,25 @@ class SAM3DGenerateStage1:
 
         print(f"[SAM3DObjects] Image size: {image_pil.size}")
         print(f"[SAM3DObjects] Mask shape: {mask_np.shape}")
-        print(f"[SAM3DObjects] Stage 1 parameters: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}")
+        print(f"[SAM3DObjects] Sparse parameters: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}")
 
-        # Run Stage 1 only
+        # Run sparse structure generation only
         try:
-            print("[SAM3DObjects] Running Stage 1 inference...")
-            stage1_output = model(
+            print("[SAM3DObjects] Running sparse structure generation...")
+            sparse_output = model(
                 image_pil, mask_np,
                 seed=seed,
-                stage1_only=True,  # CRITICAL: Only run Stage 1
+                stage1_only=True,  # CRITICAL: Only run sparse generation
                 stage1_inference_steps=stage1_inference_steps,
                 stage1_cfg_strength=stage1_cfg_strength,
             )
 
         except Exception as e:
-            raise RuntimeError(f"SAM3D Stage 1 inference failed: {e}") from e
+            raise RuntimeError(f"SAM3D sparse generation failed: {e}") from e
 
-        print("[SAM3DObjects] Stage 1 completed!")
-        print(f"[SAM3DObjects] - Sparse structure generated with {stage1_output.get('coords', torch.tensor([])).shape[0]} voxels")
+        print("[SAM3DObjects] Sparse structure generation completed!")
+        print(f"[SAM3DObjects] - Generated {sparse_output.get('coords', torch.tensor([])).shape[0]} voxels")
 
-        # Return the raw Stage 1 output as an opaque object
+        # Return the sparse structure as an opaque object
         # ComfyUI will pass this Python dict through to the next node
-        return (stage1_output,)
+        return (sparse_output,)

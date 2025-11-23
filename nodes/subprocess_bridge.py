@@ -202,6 +202,22 @@ class InferenceWorkerBridge:
         """Serialize numpy mask to base64."""
         return base64.b64encode(pickle.dumps(mask)).decode('utf-8')
 
+    def serialize_stage1_output(self, stage1_output: Optional[dict]) -> Optional[str]:
+        """Serialize stage1_output dict to base64."""
+        if stage1_output is None:
+            return None
+        return base64.b64encode(pickle.dumps(stage1_output)).decode('utf-8')
+
+    def serialize_stage2_output(self, stage2_output: Optional[dict]) -> Optional[str]:
+        """Serialize stage2_output dict to base64."""
+        if stage2_output is None:
+            return None
+        # Check if this is already serialized Stage 2 data from previous node
+        if isinstance(stage2_output, dict) and "_serialized_stage2_output" in stage2_output:
+            return stage2_output["_serialized_stage2_output"]
+        # Otherwise serialize it
+        return base64.b64encode(pickle.dumps(stage2_output)).decode('utf-8')
+
     def deserialize_output(self, serialized: Dict[str, Any]) -> Dict[str, Any]:
         """Deserialize output from worker."""
         deserialized = {}
@@ -277,7 +293,19 @@ class InferenceWorkerBridge:
         stage2_cfg_strength: float = 5.0,
         texture_size: int = 1024,
         simplify: float = 0.95,
-        output_dir: str = None
+        output_dir: str = None,
+        stage1_only: bool = False,
+        stage1_output: Optional[dict] = None,
+        stage2_only: bool = False,
+        stage2_output: Optional[dict] = None,
+        slat_only: bool = False,
+        slat_output: Optional[dict] = None,
+        gaussian_only: bool = False,
+        mesh_only: bool = False,
+        save_files: bool = False,
+        with_mesh_postprocess: bool = False,
+        with_texture_baking: bool = True,
+        use_vertex_color: bool = False,
     ) -> Dict[str, Any]:
         """
         Run inference on the isolated worker.
@@ -295,6 +323,8 @@ class InferenceWorkerBridge:
             texture_size: Texture resolution
             simplify: Mesh simplification ratio
             output_dir: Directory to save outputs (defaults to ComfyUI output directory)
+            stage1_only: If True, only run Stage 1 (sparse structure generation)
+            stage1_output: Stage 1 output to resume from (for Stage 2 only mode)
 
         Returns:
             Inference output dict with file paths
@@ -326,6 +356,18 @@ class InferenceWorkerBridge:
             "texture_size": texture_size,
             "simplify": simplify,
             "output_dir": output_dir,  # Pass output directory to worker
+            "stage1_only": stage1_only,
+            "stage1_output": self.serialize_stage1_output(stage1_output),
+            "stage2_only": stage2_only,
+            "stage2_output": self.serialize_stage2_output(stage2_output),
+            "slat_only": slat_only,
+            "slat_output": self.serialize_stage2_output(slat_output),  # SLAT uses same serialization as stage2
+            "gaussian_only": gaussian_only,
+            "mesh_only": mesh_only,
+            "save_files": save_files,
+            "with_mesh_postprocess": with_mesh_postprocess,
+            "with_texture_baking": with_texture_baking,
+            "use_vertex_color": use_vertex_color,
         }
 
         # Send request
@@ -340,7 +382,26 @@ class InferenceWorkerBridge:
                 f"Traceback:\n{traceback_msg}"
             )
 
-        # New simple deserialization - just load files from disk
+        # Check if this is Stage 1 output (serialized intermediate data)
+        if response.get("stage1_mode", False):
+            print(f"[SAM3DObjects] Deserializing Stage 1 intermediate output")
+            output = pickle.loads(base64.b64decode(response["output"]))
+            print(f"[SAM3DObjects] Stage 1 output keys: {list(output.keys())}")
+            return output
+
+        # Check if this is Stage 2 output (serialized Gaussian + Mesh data)
+        # IMPORTANT: Don't deserialize here! Keep as base64 string.
+        # Stage 2 objects require sam3d_objects module which only exists in isolated env.
+        # We'll deserialize when sending back to worker for Stage 3.
+        if response.get("stage2_mode", False):
+            print(f"[SAM3DObjects] Received Stage 2 output (kept as serialized data)")
+            # Return the base64 string wrapped in a dict so Stage 3 node can identify it
+            return {
+                "_serialized_stage2_output": response["output"],
+                "_stage2_mode": True
+            }
+
+        # Normal mode: Load files from disk
         output = self.load_output_from_disk(response["output"])
 
         print(f"[SAM3DObjects] Inference completed successfully")
