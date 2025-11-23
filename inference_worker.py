@@ -316,6 +316,27 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         if stage2_output_b64 is not None:
             stage2_output = pickle.loads(base64.b64decode(stage2_output_b64))
 
+            # Check if this needs combining separate Gaussian and Mesh data
+            if isinstance(stage2_output, dict) and stage2_output.get("_needs_combination"):
+                print(f"[Worker] Combining separate Gaussian and Mesh data", file=sys.stderr)
+                gaussian_b64 = stage2_output["_gaussian_serialized"]
+                mesh_b64 = stage2_output["_mesh_serialized"]
+
+                # Deserialize in worker context where sam3d_objects is available
+                gaussian_dict = pickle.loads(base64.b64decode(gaussian_b64))
+                mesh_dict = pickle.loads(base64.b64decode(mesh_b64))
+
+                print(f"[Worker] Gaussian dict keys: {list(gaussian_dict.keys())}", file=sys.stderr)
+                print(f"[Worker] Mesh dict keys: {list(mesh_dict.keys())}", file=sys.stderr)
+
+                # Combine into single dict for stage2_output
+                stage2_output = {
+                    "gaussian": gaussian_dict.get("gaussian"),
+                    "mesh": mesh_dict.get("mesh"),
+                    "stage1_data": mesh_dict.get("stage1_data", gaussian_dict.get("stage1_data", {}))
+                }
+                print(f"[Worker] Combined stage2_output keys: {list(stage2_output.keys())}", file=sys.stderr)
+
         # Deserialize slat_output if provided (same format as stage2_output)
         slat_output = None
         if slat_output_b64 is not None:
@@ -404,6 +425,26 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 "status": "success",
                 "stage2_mode": True,  # Use same mode as stage2 for compatibility
                 "output": serialized_output
+            }
+
+        # Special handling for gaussian_only and mesh_only modes - return both files and serialized data
+        # This allows the texture baking node to access raw data while still saving files
+        if gaussian_only or mesh_only:
+            mode_name = "Gaussian" if gaussian_only else "Mesh"
+            print(f"[Worker] {mode_name} only - saving files and serializing output for downstream use", file=sys.stderr)
+            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
+
+            # Save files to disk first
+            saved_output = save_output_to_disk(output, Path(output_dir))
+
+            # Also serialize the raw data for texture baking node
+            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
+
+            return {
+                "status": "success",
+                "stage2_mode": True,  # Use same mode as stage2 for serialized data
+                "output": serialized_output,
+                "file_output": saved_output  # Include file paths too
             }
 
         # Normal mode: Save final output to disk and return file paths
