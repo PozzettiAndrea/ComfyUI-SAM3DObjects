@@ -38,7 +38,7 @@ def main():
         print("[SAM3DObjects] Isolated environment already exists and is ready!")
         print(f"[SAM3DObjects] Location: {env_mgr.env_dir}")
         print()
-        print("[SAM3DObjects] If you want to reinstall, delete the following directory:")
+        print("[SAM3DObjects] If you want to reinstall the environment, delete:")
         print(f"[SAM3DObjects]   - {env_mgr.env_dir}")
         print()
         print("[SAM3DObjects] Installation complete!")

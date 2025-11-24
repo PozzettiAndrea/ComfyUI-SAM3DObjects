@@ -87,8 +87,14 @@ app.registerExtension({
 
                     if (!filePath) return;
 
-                    // Construct URL to view the file - simplified approach matching DepthAnythingV3
-                    const url = `/view?filename=${encodeURIComponent(filePath.split('/').pop())}&type=output&subfolder=`;
+                    // Parse file path to extract filename and subfolder
+                    // Handle paths like: "output/inference_9/gaussian.ply" or "/full/path/output/inference_9/gaussian.ply"
+                    const pathParts = filePath.replace(/^.*\/(output|input)\//, '').split('/');
+                    const filename = pathParts.pop(); // Last part is filename
+                    const subfolder = pathParts.join('/'); // Rest is subfolder (e.g., "inference_9")
+
+                    // Construct URL to view the file with proper subfolder
+                    const url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=${encodeURIComponent(subfolder)}`;
 
                     console.log('[SAM3DObjects] File path:', filePath);
                     console.log('[SAM3DObjects] Constructed URL:', url);

@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from plyfile import PlyData, PlyElement
 from .general_utils import inverse_sigmoid, strip_symmetric, build_scaling_rotation
+from ...renderers.sh_utils import SH2RGB
 
 
 class Gaussian:
@@ -136,25 +137,40 @@ class Gaussian:
     def save_ply(self, path):
         xyz = self.get_xyz.detach().cpu().numpy()
         normals = np.zeros_like(xyz)
-        f_dc = (
-            self._features_dc.detach()
-            .transpose(1, 2)
-            .flatten(start_dim=1)
-            .contiguous()
-            .cpu()
-            .numpy()
-        )
+
+        # Convert Spherical Harmonics to RGB colors
+        # _features_dc shape: [N, SH, C] - take the first SH coefficient (DC term) for all colors
+        f_dc = self._features_dc[:, 0, :].detach()  # Shape: [N, 3]
+        colors_rgb = SH2RGB(f_dc).cpu().numpy()  # Convert to RGB [0, 1]
+        colors_rgb = np.clip(colors_rgb * 255, 0, 255).astype(np.uint8)  # Scale to [0, 255]
+
+        # Debug: Print sample RGB values
+        print(f"[PLY Export] Sample RGB values (first 5 points):")
+        for i in range(min(5, colors_rgb.shape[0])):
+            print(f"  Point {i}: R={colors_rgb[i,0]} G={colors_rgb[i,1]} B={colors_rgb[i,2]}")
+
         opacities = inverse_sigmoid(self.get_opacity).detach().cpu().numpy()
+        # Ensure opacities is 2D [N, 1]
+        if opacities.ndim == 1:
+            opacities = opacities[:, np.newaxis]
+
         scale = torch.log(self.get_scaling).detach().cpu().numpy()
         rotation = (self._rotation + self.rots_bias[None, :]).detach().cpu().numpy()
 
-        dtype_full = [
-            (attribute, "f4") for attribute in self.construct_list_of_attributes()
-        ]
+        # Build dtype list with uint8 for RGB colors
+        # Use actual numpy array dimensions to ensure dtype matches data exactly
+        dtype_full = [("x", "f4"), ("y", "f4"), ("z", "f4"),
+                      ("nx", "f4"), ("ny", "f4"), ("nz", "f4"),
+                      ("red", "u1"), ("green", "u1"), ("blue", "u1"),
+                      ("opacity", "f4")]
+        for i in range(scale.shape[1]):
+            dtype_full.append(("scale_{}".format(i), "f4"))
+        for i in range(rotation.shape[1]):
+            dtype_full.append(("rot_{}".format(i), "f4"))
 
         elements = np.empty(xyz.shape[0], dtype=dtype_full)
         attributes = np.concatenate(
-            (xyz, normals, f_dc, opacities, scale, rotation), axis=1
+            (xyz, normals, colors_rgb, opacities, scale, rotation), axis=1
         )
         elements[:] = list(map(tuple, attributes))
         el = PlyElement.describe(elements, "vertex")

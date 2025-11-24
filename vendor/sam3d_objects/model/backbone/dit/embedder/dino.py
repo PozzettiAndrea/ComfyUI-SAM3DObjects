@@ -2,6 +2,7 @@
 import torch
 from typing import Optional, Dict, Any
 import warnings
+import time
 from torchvision.transforms import Normalize
 import torch.nn.functional as F
 from loguru import logger
@@ -27,19 +28,37 @@ class Dino(torch.nn.Module):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            
+
             logger.info(f"Loading DINO model: {dino_model} from {repo_or_dir} (source: {source})")
             if backbone_kwargs:
                 logger.info(f"DINO backbone kwargs: {backbone_kwargs}")
-            
-            self.backbone = torch.hub.load(
-                repo_or_dir=repo_or_dir,
-                model=dino_model,
-                source=source,
-                verbose=False,
-                **backbone_kwargs,
-            )
-            
+
+            # Retry logic for torch.hub.load() to handle transient network errors
+            max_retries = 3
+            retry_delay = 2  # seconds
+            last_error = None
+
+            for attempt in range(max_retries):
+                try:
+                    self.backbone = torch.hub.load(
+                        repo_or_dir=repo_or_dir,
+                        model=dino_model,
+                        source=source,
+                        verbose=False,
+                        **backbone_kwargs,
+                    )
+                    break  # Success, exit retry loop
+                except Exception as e:
+                    last_error = e
+                    if attempt < max_retries - 1:
+                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                        logger.warning(f"Failed to load DINO model (attempt {attempt + 1}/{max_retries}): {e}")
+                        logger.info(f"Retrying in {wait_time} seconds...")
+                        time.sleep(wait_time)
+                    else:
+                        logger.error(f"Failed to load DINO model after {max_retries} attempts")
+                        raise last_error
+
             # Log model properties after loading
             logger.info(f"Loaded DINO model - type: {type(self.backbone)}, "
                         f"embed_dim: {self.backbone.embed_dim}, "
