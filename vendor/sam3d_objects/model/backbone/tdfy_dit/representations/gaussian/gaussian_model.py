@@ -138,31 +138,63 @@ class Gaussian:
         xyz = self.get_xyz.detach().cpu().numpy()
         normals = np.zeros_like(xyz)
 
-        # Convert Spherical Harmonics to RGB colors
-        # _features_dc shape: [N, SH, C] - take the first SH coefficient (DC term) for all colors
-        f_dc = self._features_dc[:, 0, :].detach()  # Shape: [N, 3]
-        colors_rgb = SH2RGB(f_dc).cpu().numpy()  # Convert to RGB [0, 1]
-        colors_rgb = np.clip(colors_rgb * 255, 0, 255).astype(np.uint8)  # Scale to [0, 255]
+        # Prepare raw SH coefficients (for Gaussian Splatting viewers)
+        f_dc = (
+            self._features_dc.detach()
+            .transpose(1, 2)
+            .flatten(start_dim=1)
+            .contiguous()
+            .cpu()
+            .numpy()
+        )
 
-        # Debug: Print sample RGB values
-        print(f"[PLY Export] Sample RGB values (first 5 points):")
+        # Also convert SH to RGB colors (for standard PLY viewers)
+        f_dc_tensor = self._features_dc[:, 0, :].detach()  # Shape: [N, 3]
+
+        # Apply SH rendering formula: C0 * sh + 0.5
+        C0 = 0.28209479177387814
+        colors_linear = (f_dc_tensor * C0 + 0.5).cpu().numpy()
+
+        # Normalize per-channel to maximize color variation
+        # This normalizes R, G, B independently to use full [0, 255] range
+        colors_normalized = np.zeros_like(colors_linear)
+        for i in range(3):  # R, G, B channels
+            channel = colors_linear[:, i]
+            channel_min = channel.min()
+            channel_max = channel.max()
+            if channel_max > channel_min:
+                colors_normalized[:, i] = (channel - channel_min) / (channel_max - channel_min)
+            else:
+                colors_normalized[:, i] = 0.5
+        colors_rgb = np.clip(colors_normalized * 255, 0, 255).astype(np.uint8)
+
+        print(f"[PLY Export] Saving both SH coefficients and RGB colors (ASCII format)")
+        print(f"  SH range: [{f_dc_tensor.min():.3f}, {f_dc_tensor.max():.3f}]")
+        print(f"  RGB range: [0, 255] uint8 (per-channel normalized)")
+        print(f"  Sample RGB (first 5):")
         for i in range(min(5, colors_rgb.shape[0])):
-            print(f"  Point {i}: R={colors_rgb[i,0]} G={colors_rgb[i,1]} B={colors_rgb[i,2]}")
+            print(f"    Point {i}: R={colors_rgb[i,0]:3d} G={colors_rgb[i,1]:3d} B={colors_rgb[i,2]:3d}")
 
         opacities = inverse_sigmoid(self.get_opacity).detach().cpu().numpy()
-        # Ensure opacities is 2D [N, 1]
         if opacities.ndim == 1:
             opacities = opacities[:, np.newaxis]
 
         scale = torch.log(self.get_scaling).detach().cpu().numpy()
         rotation = (self._rotation + self.rots_bias[None, :]).detach().cpu().numpy()
 
-        # Build dtype list with uint8 for RGB colors
-        # Use actual numpy array dimensions to ensure dtype matches data exactly
+        # Build dtype with BOTH raw SH coefficients AND RGB colors
+        # RGB as uint8 [0, 255] for ASCII PLY (VTK.js compatibility)
+        # Gaussian Splatting viewers will use f_dc_0/1/2
         dtype_full = [("x", "f4"), ("y", "f4"), ("z", "f4"),
                       ("nx", "f4"), ("ny", "f4"), ("nz", "f4"),
-                      ("red", "u1"), ("green", "u1"), ("blue", "u1"),
-                      ("opacity", "f4")]
+                      ("red", "u1"), ("green", "u1"), ("blue", "u1")]
+
+        # Add raw SH coefficients (f_dc_0, f_dc_1, f_dc_2)
+        for i in range(f_dc.shape[1]):
+            dtype_full.append(("f_dc_{}".format(i), "f4"))
+
+        dtype_full.append(("opacity", "f4"))
+
         for i in range(scale.shape[1]):
             dtype_full.append(("scale_{}".format(i), "f4"))
         for i in range(rotation.shape[1]):
@@ -170,15 +202,23 @@ class Gaussian:
 
         elements = np.empty(xyz.shape[0], dtype=dtype_full)
         attributes = np.concatenate(
-            (xyz, normals, colors_rgb, opacities, scale, rotation), axis=1
+            (xyz, normals, colors_rgb, f_dc, opacities, scale, rotation), axis=1
         )
         elements[:] = list(map(tuple, attributes))
         el = PlyElement.describe(elements, "vertex")
-        PlyData([el]).write(path)
+
+        # Write as ASCII format for VTK.js compatibility
+        plydata = PlyData([el])
+        plydata.text = True
+        plydata.write(path)
 
     def load_ply(self, path):
+        print(f"[Gaussian] load_ply: Loading from {path}")
         plydata = PlyData.read(path)
+        print(f"[Gaussian] load_ply: PLY loaded, {len(plydata.elements[0])} vertices")
+        print(f"[Gaussian] load_ply: Properties: {[p.name for p in plydata.elements[0].properties]}")
 
+        print(f"[Gaussian] load_ply: Extracting xyz coordinates...")
         xyz = np.stack(
             (
                 np.asarray(plydata.elements[0]["x"]),
@@ -187,12 +227,18 @@ class Gaussian:
             ),
             axis=1,
         )
-        opacities = np.asarray(plydata.elements[0]["opacity"])[..., np.newaxis]
+        print(f"[Gaussian] load_ply: xyz shape={xyz.shape}, dtype={xyz.dtype}, strides={xyz.strides}")
 
+        print(f"[Gaussian] load_ply: Extracting opacities...")
+        opacities = np.asarray(plydata.elements[0]["opacity"])[..., np.newaxis].copy()
+        print(f"[Gaussian] load_ply: opacities shape={opacities.shape}, dtype={opacities.dtype}, strides={opacities.strides}")
+
+        print(f"[Gaussian] load_ply: Extracting features_dc...")
         features_dc = np.zeros((xyz.shape[0], 3, 1))
         features_dc[:, 0, 0] = np.asarray(plydata.elements[0]["f_dc_0"])
         features_dc[:, 1, 0] = np.asarray(plydata.elements[0]["f_dc_1"])
         features_dc[:, 2, 0] = np.asarray(plydata.elements[0]["f_dc_2"])
+        print(f"[Gaussian] load_ply: features_dc shape={features_dc.shape}, dtype={features_dc.dtype}")
 
         if self.sh_degree > 0:
             extra_f_names = [
@@ -210,6 +256,7 @@ class Gaussian:
                 (features_extra.shape[0], 3, (self.max_sh_degree + 1) ** 2 - 1)
             )
 
+        print(f"[Gaussian] load_ply: Extracting scales...")
         scale_names = [
             p.name
             for p in plydata.elements[0].properties
@@ -219,7 +266,9 @@ class Gaussian:
         scales = np.zeros((xyz.shape[0], len(scale_names)))
         for idx, attr_name in enumerate(scale_names):
             scales[:, idx] = np.asarray(plydata.elements[0][attr_name])
+        print(f"[Gaussian] load_ply: scales shape={scales.shape}, dtype={scales.dtype}")
 
+        print(f"[Gaussian] load_ply: Extracting rotations...")
         rot_names = [
             p.name for p in plydata.elements[0].properties if p.name.startswith("rot")
         ]
@@ -227,27 +276,36 @@ class Gaussian:
         rots = np.zeros((xyz.shape[0], len(rot_names)))
         for idx, attr_name in enumerate(rot_names):
             rots[:, idx] = np.asarray(plydata.elements[0][attr_name])
+        print(f"[Gaussian] load_ply: rots shape={rots.shape}, dtype={rots.dtype}")
 
         # convert to actual gaussian attributes
+        print(f"[Gaussian] load_ply: Converting to torch tensors on device={self.device}...")
+        print(f"[Gaussian] load_ply: Converting xyz...")
         xyz = torch.tensor(xyz, dtype=torch.float, device=self.device)
+        print(f"[Gaussian] load_ply: Converting features_dc...")
         features_dc = (
             torch.tensor(features_dc, dtype=torch.float, device=self.device)
             .transpose(1, 2)
             .contiguous()
         )
         if self.sh_degree > 0:
+            print(f"[Gaussian] load_ply: Converting features_extra...")
             features_extra = (
                 torch.tensor(features_extra, dtype=torch.float, device=self.device)
                 .transpose(1, 2)
                 .contiguous()
             )
+        print(f"[Gaussian] load_ply: Converting opacities...")
         opacities = torch.sigmoid(
             torch.tensor(opacities, dtype=torch.float, device=self.device)
         )
+        print(f"[Gaussian] load_ply: Converting scales...")
         scales = torch.exp(torch.tensor(scales, dtype=torch.float, device=self.device))
+        print(f"[Gaussian] load_ply: Converting rots...")
         rots = torch.tensor(rots, dtype=torch.float, device=self.device)
 
         # convert to _hidden attributes
+        print(f"[Gaussian] load_ply: Setting internal attributes...")
         self._xyz = (xyz - self.aabb[None, :3]) / self.aabb[None, 3:]
         self._features_dc = features_dc
         if self.sh_degree > 0:
@@ -262,6 +320,7 @@ class Gaussian:
             - self.scale_bias
         )
         self._rotation = rots - self.rots_bias[None, :]
+        print(f"[Gaussian] load_ply: Complete! Loaded {self._xyz.shape[0]} gaussians")
 
 def softplus_inverse_scaling_activation(x):
     return x + torch.log(-torch.expm1(-x))

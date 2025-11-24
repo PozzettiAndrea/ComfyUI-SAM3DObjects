@@ -10,6 +10,8 @@ import json
 import pickle
 import base64
 import traceback
+import platform
+import shutil
 from pathlib import Path
 from typing import Any, Dict
 import numpy as np
@@ -56,44 +58,106 @@ def load_model(config_path: str, compile: bool = False):
     # still uses nvdiffrast through utils3d.torch.RastContext
     venv_bin = (Path(__file__).parent / "_env" / "bin").resolve()
     if venv_bin.exists():
-        os.environ['PATH'] = f"{venv_bin}:{os.environ.get('PATH', '')}"
+        os.environ['PATH'] = f"{venv_bin}{os.pathsep}{os.environ.get('PATH', '')}"
         print(f"[Worker] Added {venv_bin} to PATH for ninja", file=sys.stderr)
 
-    # Add g++ compiler to PATH for CUDA JIT compilation
-    # nvcc needs g++ as the host compiler to compile C++ code
+    # Add compiler to PATH for CUDA JIT compilation
+    # nvcc needs a host compiler (g++/gcc on Linux/Windows, clang on macOS)
     # The compilers are installed by micromamba in _env/bin/
-    gcc_bin = (Path(__file__).parent / "_env" / "bin").resolve()
-    if gcc_bin.exists():
-        os.environ['PATH'] = f"{gcc_bin}:{os.environ['PATH']}"
+    compiler_bin = (Path(__file__).parent / "_env" / "bin").resolve()
+    if compiler_bin.exists():
+        os.environ['PATH'] = f"{compiler_bin}{os.pathsep}{os.environ['PATH']}"
 
-        # Fix for gsplat JIT: nvcc needs standard g++/gcc names, not conda wrappers
+        # Fix for gsplat JIT: nvcc needs standard compiler names, not conda wrappers
         # The conda compilers use cross-compilation wrapper names that nvcc doesn't understand
-        # We create symlinks so nvcc can find them by standard names
-        wrapper_gxx = gcc_bin / "x86_64-conda-linux-gnu-g++"
-        wrapper_gcc = gcc_bin / "x86_64-conda-linux-gnu-gcc"
-        symlink_gxx = gcc_bin / "g++"
-        symlink_gcc = gcc_bin / "gcc"
+        # We create symlinks (Unix) or copies (Windows) so nvcc can find them by standard names
 
-        # Create g++ symlink if it doesn't exist
-        if wrapper_gxx.exists() and not symlink_gxx.exists():
-            try:
-                symlink_gxx.symlink_to(wrapper_gxx.name)  # Relative symlink
-                print(f"[Worker] Created g++ symlink for nvcc", file=sys.stderr)
-            except (FileExistsError, OSError) as e:
-                print(f"[Worker] Could not create g++ symlink: {e}", file=sys.stderr)
+        system = platform.system()
 
-        # Create gcc symlink if it doesn't exist
-        if wrapper_gcc.exists() and not symlink_gcc.exists():
-            try:
-                symlink_gcc.symlink_to(wrapper_gcc.name)  # Relative symlink
-                print(f"[Worker] Created gcc symlink for nvcc", file=sys.stderr)
-            except (FileExistsError, OSError) as e:
-                print(f"[Worker] Could not create gcc symlink: {e}", file=sys.stderr)
+        if system == "Linux":
+            # Linux: x86_64-conda-linux-gnu-g++ -> g++
+            wrapper_gxx = compiler_bin / "x86_64-conda-linux-gnu-g++"
+            wrapper_gcc = compiler_bin / "x86_64-conda-linux-gnu-gcc"
+            target_gxx = compiler_bin / "g++"
+            target_gcc = compiler_bin / "gcc"
+            cxx_name = "g++"
+            cc_name = "gcc"
+            use_symlink = True
 
-        # Set environment to use standard names (nvcc will find them in PATH)
-        os.environ['CXX'] = 'g++'
-        os.environ['CC'] = 'gcc'
-        print(f"[Worker] Set CXX=g++, CC=gcc (via symlinks in {gcc_bin})", file=sys.stderr)
+        elif system == "Windows":
+            # Windows: x86_64-w64-mingw32-g++.exe -> g++.exe (or use MSVC cl.exe)
+            # First check for MSVC
+            cl_exe = compiler_bin / "cl.exe"
+            if cl_exe.exists():
+                # MSVC is available, use it directly
+                os.environ['CXX'] = str(cl_exe)
+                os.environ['CC'] = str(cl_exe)
+                print(f"[Worker] Using MSVC compiler: {cl_exe}", file=sys.stderr)
+                wrapper_gxx = None
+                wrapper_gcc = None
+            else:
+                # Use m2w64 MinGW compiler
+                wrapper_gxx = compiler_bin / "x86_64-w64-mingw32-g++.exe"
+                wrapper_gcc = compiler_bin / "x86_64-w64-mingw32-gcc.exe"
+                target_gxx = compiler_bin / "g++.exe"
+                target_gcc = compiler_bin / "gcc.exe"
+                cxx_name = "g++.exe"
+                cc_name = "gcc.exe"
+                use_symlink = False  # Windows: use copies instead of symlinks
+
+        elif system == "Darwin":
+            # macOS: x86_64-apple-darwin*-clang++ -> clang++
+            # Find the darwin wrapper (version number varies)
+            darwin_wrappers_gxx = list(compiler_bin.glob("*-apple-darwin*-clang++"))
+            darwin_wrappers_gcc = list(compiler_bin.glob("*-apple-darwin*-clang"))
+
+            if darwin_wrappers_gxx and darwin_wrappers_gcc:
+                wrapper_gxx = darwin_wrappers_gxx[0]
+                # Filter out clang++ to get just clang
+                wrapper_gcc = [w for w in darwin_wrappers_gcc if not w.name.endswith("++")][0]
+                target_gxx = compiler_bin / "clang++"
+                target_gcc = compiler_bin / "clang"
+                cxx_name = "clang++"
+                cc_name = "clang"
+                use_symlink = True
+            else:
+                wrapper_gxx = None
+                wrapper_gcc = None
+        else:
+            print(f"[Worker] Warning: Unsupported platform {system}, skipping compiler wrapper setup", file=sys.stderr)
+            wrapper_gxx = None
+            wrapper_gcc = None
+
+        # Create symlinks or copies if wrappers were found
+        if wrapper_gxx is not None and wrapper_gcc is not None:
+            # Create CXX (g++ or clang++) link/copy
+            if wrapper_gxx.exists() and not target_gxx.exists():
+                try:
+                    if use_symlink:
+                        target_gxx.symlink_to(wrapper_gxx.name)  # Relative symlink
+                        print(f"[Worker] Created {cxx_name} symlink for nvcc", file=sys.stderr)
+                    else:
+                        shutil.copy2(wrapper_gxx, target_gxx)  # Copy for Windows
+                        print(f"[Worker] Created {cxx_name} copy for nvcc", file=sys.stderr)
+                except (FileExistsError, OSError) as e:
+                    print(f"[Worker] Could not create {cxx_name}: {e}", file=sys.stderr)
+
+            # Create CC (gcc or clang) link/copy
+            if wrapper_gcc.exists() and not target_gcc.exists():
+                try:
+                    if use_symlink:
+                        target_gcc.symlink_to(wrapper_gcc.name)  # Relative symlink
+                        print(f"[Worker] Created {cc_name} symlink for nvcc", file=sys.stderr)
+                    else:
+                        shutil.copy2(wrapper_gcc, target_gcc)  # Copy for Windows
+                        print(f"[Worker] Created {cc_name} copy for nvcc", file=sys.stderr)
+                except (FileExistsError, OSError) as e:
+                    print(f"[Worker] Could not create {cc_name}: {e}", file=sys.stderr)
+
+            # Set environment to use standard names (nvcc will find them in PATH)
+            os.environ['CXX'] = cxx_name
+            os.environ['CC'] = cc_name
+            print(f"[Worker] Set CXX={cxx_name}, CC={cc_name} in {compiler_bin}", file=sys.stderr)
 
     # Setup CUDA_HOME for JIT compilation (gsplat, nvdiffrast, etc.)
     # Try to find CUDA toolkit installed by env_manager.py
@@ -108,15 +172,13 @@ def load_model(config_path: str, compile: bool = False):
 
     # Option 2: CUDA toolkit from PyPI (scattered in site-packages)
     if not cuda_home:
-        # Try to find nvcc in venv
-        import subprocess
+        # Try to find nvcc in venv (cross-platform using Path.glob)
         try:
-            result = subprocess.run(
-                ["find", str(venv_root), "-name", "nvcc", "-type", "f"],
-                capture_output=True, text=True, timeout=10
-            )
-            if result.stdout.strip():
-                nvcc_path = Path(result.stdout.strip().split('\n')[0])
+            # Search for nvcc executable (nvcc on Unix, nvcc.exe on Windows)
+            nvcc_pattern = "nvcc.exe" if os.name == "nt" else "nvcc"
+            nvcc_paths = list(venv_root.glob(f"**/{nvcc_pattern}"))
+            if nvcc_paths:
+                nvcc_path = nvcc_paths[0]  # Take first match
                 # CUDA_HOME should be parent of bin/
                 if nvcc_path.parent.name == "bin":
                     cuda_home = nvcc_path.parent.parent
@@ -129,7 +191,7 @@ def load_model(config_path: str, compile: bool = False):
         os.environ['CUDA_HOME'] = str(cuda_home)
         cuda_bin = cuda_home / "bin"
         if cuda_bin.exists():
-            os.environ['PATH'] = f"{cuda_bin}:{os.environ.get('PATH', '')}"
+            os.environ['PATH'] = f"{cuda_bin}{os.pathsep}{os.environ.get('PATH', '')}"
             print(f"[Worker] Set CUDA_HOME={cuda_home}", file=sys.stderr)
             print(f"[Worker] Added {cuda_bin} to PATH", file=sys.stderr)
     else:
@@ -356,6 +418,102 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                     "stage1_data": mesh_dict.get("stage1_data", gaussian_dict.get("stage1_data", {}))
                 }
                 print(f"[Worker] Combined stage2_output keys: {list(stage2_output.keys())}", file=sys.stderr)
+
+            # Check if this needs loading files from paths
+            elif isinstance(stage2_output, dict) and stage2_output.get("_needs_file_loading"):
+                print(f"[Worker] Loading Gaussian and Mesh from file paths", file=sys.stderr)
+                glb_path = stage2_output["_glb_path"]
+                ply_path = stage2_output["_ply_path"]
+
+                print(f"[Worker] GLB path: {glb_path}", file=sys.stderr)
+                print(f"[Worker] PLY path: {ply_path}", file=sys.stderr)
+
+                # Check file sizes
+                import os as os_module
+                glb_size = os_module.path.getsize(glb_path) if os_module.path.exists(glb_path) else -1
+                ply_size = os_module.path.getsize(ply_path) if os_module.path.exists(ply_path) else -1
+                print(f"[Worker] GLB file size: {glb_size:,} bytes", file=sys.stderr)
+                print(f"[Worker] PLY file size: {ply_size:,} bytes", file=sys.stderr)
+
+                # Import required modules for loading
+                print(f"[Worker] Importing Gaussian and trimesh modules...", file=sys.stderr)
+                from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
+                import trimesh
+                print(f"[Worker] Imports successful", file=sys.stderr)
+
+                # Load PLY as Gaussian
+                print(f"[Worker] Creating Gaussian object...", file=sys.stderr)
+                device = 'cuda' if torch.cuda.is_available() else 'cpu'
+                print(f"[Worker] Using device: {device}", file=sys.stderr)
+                # TODO: Need to determine AABB for Gaussian initialization
+                # For now, use a default AABB - this may need adjustment
+                gaussian = Gaussian(
+                    aabb=[-1, -1, -1, 2, 2, 2],  # Default AABB
+                    sh_degree=0,
+                    device=device
+                )
+                print(f"[Worker] Gaussian object created, loading PLY: {ply_path}", file=sys.stderr)
+                gaussian.load_ply(ply_path)
+                print(f"[Worker] Loaded Gaussian with {gaussian._xyz.shape[0]} points", file=sys.stderr)
+                print(f"[Worker] Gaussian xyz shape: {gaussian._xyz.shape}, dtype: {gaussian._xyz.dtype}", file=sys.stderr)
+
+                # Load GLB as Mesh
+                print(f"[Worker] Loading Mesh from GLB: {glb_path}", file=sys.stderr)
+                loaded = trimesh.load(glb_path)
+                print(f"[Worker] Loaded object type: {type(loaded)}", file=sys.stderr)
+
+                # Handle Scene vs Mesh - GLB files often load as Scene
+                if isinstance(loaded, trimesh.Scene):
+                    print(f"[Worker] GLB loaded as Scene with {len(loaded.geometry)} geometries", file=sys.stderr)
+                    # Combine all geometries into a single mesh
+                    meshes = [g for g in loaded.geometry.values() if isinstance(g, trimesh.Trimesh)]
+                    print(f"[Worker] Found {len(meshes)} Trimesh objects in scene", file=sys.stderr)
+                    if len(meshes) == 0:
+                        raise RuntimeError("No mesh geometries found in GLB scene")
+                    elif len(meshes) == 1:
+                        trimesh_mesh = meshes[0]
+                    else:
+                        # Concatenate all meshes
+                        trimesh_mesh = trimesh.util.concatenate(meshes)
+                    print(f"[Worker] Extracted mesh from scene", file=sys.stderr)
+                else:
+                    trimesh_mesh = loaded
+
+                print(f"[Worker] Loaded trimesh with {len(trimesh_mesh.vertices)} vertices, {len(trimesh_mesh.faces)} faces", file=sys.stderr)
+
+                # Convert trimesh to MeshExtractResult (expected by postprocessing_utils.to_glb)
+                from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
+
+                vertices_tensor = torch.tensor(np.array(trimesh_mesh.vertices), dtype=torch.float32, device=device)
+                faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
+
+                # Get vertex colors if available, otherwise use white
+                if trimesh_mesh.visual is not None and hasattr(trimesh_mesh.visual, 'vertex_colors') and trimesh_mesh.visual.vertex_colors is not None:
+                    vertex_colors = np.array(trimesh_mesh.visual.vertex_colors)[:, :3] / 255.0  # RGB, normalized
+                    print(f"[Worker] Got vertex colors from mesh: shape={vertex_colors.shape}", file=sys.stderr)
+                else:
+                    vertex_colors = np.ones((len(trimesh_mesh.vertices), 3), dtype=np.float32)
+                    print(f"[Worker] No vertex colors, using white: shape={vertex_colors.shape}", file=sys.stderr)
+
+                vertex_attrs_tensor = torch.tensor(vertex_colors, dtype=torch.float32, device=device)
+
+                mesh = MeshExtractResult(
+                    vertices=vertices_tensor,
+                    faces=faces_tensor,
+                    vertex_attrs=vertex_attrs_tensor,
+                    res=64
+                )
+                print(f"[Worker] Converted to MeshExtractResult: vertices={mesh.vertices.shape}, faces={mesh.faces.shape}", file=sys.stderr)
+
+                # Combine into single dict for stage2_output
+                # Note: gaussian and mesh must be in lists to match expected format from pipeline
+                stage2_output = {
+                    "gaussian": [gaussian],
+                    "mesh": [mesh],
+                    "stage1_data": {}  # No stage1 data when loading from files
+                }
+                print(f"[Worker] Assembled stage2_output dict with keys: {list(stage2_output.keys())}", file=sys.stderr)
+                print(f"[Worker] gaussian list length: {len(stage2_output['gaussian'])}, mesh list length: {len(stage2_output['mesh'])}", file=sys.stderr)
 
         # Load slat_output if provided (from path or base64)
         slat_output = None
