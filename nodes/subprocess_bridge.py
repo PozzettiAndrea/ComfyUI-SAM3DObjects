@@ -294,7 +294,7 @@ class InferenceWorkerBridge:
         mask: np.ndarray,
         seed: int = 42,
         compile: bool = False,
-        use_cache: bool = False,
+        use_gpu_cache: bool = True,
         stage1_inference_steps: int = 25,
         stage2_inference_steps: int = 25,
         stage1_cfg_strength: float = 7.0,
@@ -324,7 +324,7 @@ class InferenceWorkerBridge:
             mask: Input numpy mask
             seed: Random seed
             compile: Whether to compile model
-            use_cache: Offload models to CPU after use for VRAM savings
+            use_gpu_cache: Keep models on GPU between stages (higher VRAM, faster)
             stage1_inference_steps: Denoising steps for Stage 1
             stage2_inference_steps: Denoising steps for Stage 2
             stage1_cfg_strength: CFG strength for Stage 1
@@ -355,7 +355,7 @@ class InferenceWorkerBridge:
         request = {
             "config_path": config_path,
             "compile": compile,
-            "use_cache": use_cache,
+            "use_cache": not use_gpu_cache,  # Invert: gpu_cache=True means internal use_cache=False
             "image": self.serialize_image(image),
             "mask": self.serialize_mask(mask),
             "seed": seed,

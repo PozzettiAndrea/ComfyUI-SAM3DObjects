@@ -376,6 +376,12 @@ class InferencePipelinePointMap(InferencePipeline):
                     inference_steps=stage2_inference_steps or self.slat_inference_steps,
                 )
 
+            # If slat_output is provided, extract stage1_data to skip Stage 1
+            # This must happen before the stage1_output check to prevent Stage 1 from running
+            if slat_output is not None and stage1_output is None:
+                logger.info("Extracting Stage 1 data from SLAT output to skip Stage 1 computation")
+                stage1_output = slat_output.get("stage1_data", {})
+
             # If stage1_output is provided, skip Stage 1 and use pre-computed result
             if stage1_output is not None:
                 logger.info("Using provided Stage 1 output, skipping Stage 1 computation")
