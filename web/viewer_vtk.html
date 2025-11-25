@@ -220,8 +220,8 @@
             errorDiv.style.display = 'none';
         }
 
-        // Load point cloud function
-        async function loadPointCloud(filepath) {
+        // Load point cloud function - exposed globally for testing
+        window.loadPointCloud = async function loadPointCloud(filepath) {
             console.log('[SAM3D VTK Viewer] Loading:', filepath);
             loading.textContent = 'Loading point cloud...';
             loading.style.display = 'block';
@@ -332,10 +332,17 @@
                         }
                     }
 
-                    // Match DepthAnythingV3: ONLY enable scalar visibility, nothing else
+                    // Enable RGB color rendering
                     mapper.setScalarVisibility(true);
+                    mapper.setColorModeToDirectScalars();  // Use RGB values directly as colors
 
-                    console.log('[SAM3D VTK Viewer] RGB colors enabled (simple mode)');
+                    // Disable lighting so colors render as-is (critical for point clouds!)
+                    property.setLighting(false);
+                    // Also set ambient to 1.0 to ensure full brightness
+                    property.setAmbient(1.0);
+                    property.setDiffuse(0.0);
+
+                    console.log('[SAM3D VTK Viewer] RGB colors enabled (direct scalars, no lighting)');
                 } else {
                     console.log('[SAM3D VTK Viewer] No point colors, using white');
                     mapper.setScalarVisibility(false);
