@@ -260,12 +260,17 @@ class InferencePipelinePointMap(InferencePipeline):
         else:
             output = {}
             points_tensor = pointmap.to(self.device)
-            if loaded_image.shape != points_tensor.shape:
+            # External pointmap should be in HWC format (H, W, 3)
+            # loaded_image is in CHW format (3, H, W)
+            # Compare spatial dimensions: pointmap (H, W) vs loaded_image (H, W)
+            pointmap_spatial = points_tensor.shape[:2]  # (H, W) from HWC
+            image_spatial = loaded_image.shape[1:]  # (H, W) from CHW
+            if pointmap_spatial != image_spatial:
                 # Interpolate points_tensor to match loaded_image size
-                # loaded_image has shape [3, H, W], we need H and W
+                # Convert HWC->CHW for interpolate, then back to HWC
                 points_tensor = torch.nn.functional.interpolate(
                     points_tensor.permute(2, 0, 1).unsqueeze(0),
-                    size=(loaded_image.shape[1], loaded_image.shape[2]),
+                    size=(image_spatial[0], image_spatial[1]),
                     mode="nearest",
                 ).squeeze(0).permute(1, 2, 0)
             intrinsics = None
@@ -285,6 +290,9 @@ class InferencePipelinePointMap(InferencePipeline):
                 points_tensor.permute(1, 2, 0), device=self.device
             )
             point_map_tensor["intrinsics"] = intrinsics_result["intrinsics"]
+        else:
+            # Depth model provided intrinsics - add them to the result
+            point_map_tensor["intrinsics"] = intrinsics
 
         return point_map_tensor
 

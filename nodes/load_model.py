@@ -50,9 +50,10 @@ class LoadSAM3DModel:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
-    RETURN_NAMES = ("ss_generator", "slat_generator", "slat_decoder_gs", "slat_decoder_mesh", "embedders")
+    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
+    RETURN_NAMES = ("depth_model", "ss_generator", "slat_generator", "slat_decoder_gs", "slat_decoder_mesh", "embedders")
     OUTPUT_TOOLTIPS = (
+        "Depth estimation model (MoGe) - use with SAM3D_DepthEstimate",
         "Sparse structure generator (Stage 1)",
         "SLAT generator (Stage 2)",
         "Gaussian decoder (Stage 3)",
@@ -101,8 +102,8 @@ class LoadSAM3DModel:
         if cache_key in _MODEL_CACHE:
             print(f"[SAM3DObjects] Using cached model: {cache_key}")
             model = _MODEL_CACHE[cache_key]
-            # Return same model 5 times (one for each output)
-            return (model, model, model, model, model)
+            # Return same model 6 times (one for each output)
+            return (model, model, model, model, model, model)
 
         # Get checkpoint path
         checkpoint_path = self._get_or_download_checkpoint(model_tag, hf_token)
@@ -148,8 +149,8 @@ class LoadSAM3DModel:
         _MODEL_CACHE[cache_key] = inference_pipeline
         print(f"[SAM3DObjects] Model cached as: {cache_key}")
 
-        # Return same model 5 times (one for each output)
-        return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
+        # Return same model 6 times (one for each output)
+        return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
 
     @classmethod
     def _get_or_download_checkpoint(cls, model_tag: str, hf_token: str = "") -> Path:

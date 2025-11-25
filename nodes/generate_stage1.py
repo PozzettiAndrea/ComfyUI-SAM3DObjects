@@ -35,6 +35,12 @@ class SAM3DSparseGen:
                 }),
             },
             "optional": {
+                "pointmap_path": ("STRING", {
+                    "tooltip": "Path to pointmap tensor file (.pt) from SAM3D_DepthEstimate. If provided, skips internal depth estimation."
+                }),
+                "intrinsics": ("SAM3D_INTRINSICS", {
+                    "tooltip": "Pre-computed camera intrinsics from SAM3D_DepthEstimate"
+                }),
                 "stage1_inference_steps": ("INT", {
                     "default": 25,
                     "min": 1,
@@ -51,9 +57,12 @@ class SAM3DSparseGen:
             }
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("sparse_structure_path",)
-    OUTPUT_TOOLTIPS = ("Path to saved sparse voxel structure - pass to SAM3DSLATGen",)
+    RETURN_TYPES = ("STRING", "SAM3D_POSE")
+    RETURN_NAMES = ("sparse_structure_path", "pose")
+    OUTPUT_TOOLTIPS = (
+        "Path to saved sparse voxel structure - pass to SAM3DSLATGen",
+        "Object pose (rotation, translation, scale)"
+    )
     FUNCTION = "generate_sparse"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate sparse voxel structure from image and mask (~3 seconds)."
@@ -64,6 +73,8 @@ class SAM3DSparseGen:
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
+        pointmap_path: str = None,
+        intrinsics: Any = None,
         stage1_inference_steps: int = 25,
         stage1_cfg_strength: float = 7.0,
     ):
@@ -75,13 +86,17 @@ class SAM3DSparseGen:
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
             seed: Random seed
+            pointmap_path: Path to pointmap tensor file (.pt) (optional - skips depth estimation if provided)
+            intrinsics: Pre-computed camera intrinsics (optional)
             stage1_inference_steps: Denoising steps for Stage 1
             stage1_cfg_strength: CFG strength for Stage 1
 
         Returns:
-            Tuple of (sparse_structure_path,) - path to sparse voxel data for SAM3DSLATGen
+            Tuple of (sparse_structure_path, pose)
         """
         print(f"[SAM3DObjects] SparseGen: Generating sparse structure (seed: {seed})")
+        if pointmap_path is not None:
+            print(f"[SAM3DObjects] Using pre-computed pointmap from: {pointmap_path}")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
@@ -100,19 +115,30 @@ class SAM3DSparseGen:
                 stage1_only=True,  # CRITICAL: Only run sparse generation
                 stage1_inference_steps=stage1_inference_steps,
                 stage1_cfg_strength=stage1_cfg_strength,
+                pointmap_path=pointmap_path,  # Pass pointmap tensor path if available
+                intrinsics=intrinsics,  # Pass pre-computed intrinsics if available
             )
 
         except Exception as e:
             raise RuntimeError(f"SAM3D sparse generation failed: {e}") from e
 
         print("[SAM3DObjects] Sparse structure generation completed!")
-        
+
         # Extract file path from output
         if isinstance(sparse_output, dict) and "files" in sparse_output and "sparse_structure" in sparse_output["files"]:
             sparse_path = sparse_output["files"]["sparse_structure"]
             print(f"[SAM3DObjects] - Saved to: {sparse_path}")
-            return (sparse_path,)
-            
+
+            # Extract pose information
+            pose = {
+                "rotation": sparse_output.get("rotation"),
+                "translation": sparse_output.get("translation"),
+                "scale": sparse_output.get("scale"),
+            }
+            print(f"[SAM3DObjects] - Pose extracted: rotation={pose['rotation'] is not None}, translation={pose['translation'] is not None}, scale={pose['scale'] is not None}")
+
+            return (sparse_path, pose)
+
         # Fallback/Error
         print(f"[SAM3DObjects] Warning: Could not find file path in output: {sparse_output.keys() if isinstance(sparse_output, dict) else sparse_output}")
         raise RuntimeError("Failed to get sparse structure file path from worker")

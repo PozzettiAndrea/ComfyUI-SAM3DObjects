@@ -7,7 +7,9 @@ Nodes:
 - LoadSAM3DModel: Load SAM3D inference pipeline
 - SAM3DGenerate: Generate 3D object from image + mask (all-in-one)
 - SAM3DGenerateRGBA: Generate 3D object from RGBA image
-- SAM3DSparseGen: Generate sparse structure (cache-efficient)
+- SAM3D_DepthEstimate: Run MoGe depth estimation (outputs pointmap + intrinsics)
+- SAM3DSparseGen: Generate sparse structure (outputs sparse coords + pose)
+- SAM3D_UnloadModel: Unload models to free VRAM
 - SAM3DSLATGen: Generate SLAT latents (cache-efficient)
 - SAM3DGaussianDecode: Decode SLAT to Gaussian (cache-efficient)
 - SAM3DMeshDecode: Decode SLAT to Mesh (cache-efficient)
@@ -28,7 +30,9 @@ WEB_DIRECTORY = os.path.join(os.path.dirname(__file__), "web")
 # Import all node classes
 from .nodes.load_model import LoadSAM3DModel
 from .nodes.generate import SAM3DGenerate, SAM3DGenerateRGBA
+from .nodes.depth_estimate import SAM3D_DepthEstimate
 from .nodes.generate_stage1 import SAM3DSparseGen
+from .nodes.unload_model import SAM3D_UnloadModel
 from .nodes.generate_stage2 import SAM3DSLATGen
 from .nodes.gaussian_decode import SAM3DGaussianDecode
 from .nodes.mesh_decode import SAM3DMeshDecode
@@ -48,7 +52,9 @@ NODE_CLASS_MAPPINGS = {
     "LoadSAM3DModel": LoadSAM3DModel,
     "SAM3DGenerate": SAM3DGenerate,
     "SAM3DGenerateRGBA": SAM3DGenerateRGBA,
+    "SAM3D_DepthEstimate": SAM3D_DepthEstimate,
     "SAM3DSparseGen": SAM3DSparseGen,
+    "SAM3D_UnloadModel": SAM3D_UnloadModel,
     "SAM3DSLATGen": SAM3DSLATGen,
     "SAM3DGaussianDecode": SAM3DGaussianDecode,
     "SAM3DMeshDecode": SAM3DMeshDecode,
@@ -67,7 +73,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadSAM3DModel": "Load SAM3D Model",
     "SAM3DGenerate": "SAM3D Generate",
     "SAM3DGenerateRGBA": "SAM3D Generate (RGBA)",
+    "SAM3D_DepthEstimate": "SAM3D Depth Estimate",
     "SAM3DSparseGen": "SAM3D Sparse Gen",
+    "SAM3D_UnloadModel": "SAM3D Unload Model",
     "SAM3DSLATGen": "SAM3D SLAT Gen",
     "SAM3DGaussianDecode": "SAM3D Gaussian Decode",
     "SAM3DMeshDecode": "SAM3D Mesh Decode",
@@ -89,7 +97,9 @@ print("[SAM3DObjects] Nodes loaded:")
 print("[SAM3DObjects]   - LoadSAM3DModel")
 print("[SAM3DObjects]   - SAM3DGenerate (all-in-one)")
 print("[SAM3DObjects]   - SAM3DGenerateRGBA")
-print("[SAM3DObjects]   - SAM3DSparseGen (cache-efficient)")
+print("[SAM3DObjects]   - SAM3D_DepthEstimate (MoGe depth → pointmap + intrinsics)")
+print("[SAM3DObjects]   - SAM3DSparseGen (sparse structure → pose)")
+print("[SAM3DObjects]   - SAM3D_UnloadModel (VRAM management)")
 print("[SAM3DObjects]   - SAM3DSLATGen (cache-efficient)")
 print("[SAM3DObjects]   - SAM3DGaussianDecode (cache-efficient)")
 print("[SAM3DObjects]   - SAM3DMeshDecode (cache-efficient)")
@@ -102,17 +112,13 @@ print("[SAM3DObjects]   - SAM3DVisualizer")
 print("[SAM3DObjects]   - SAM3DRenderSingle")
 print("[SAM3DObjects]   - SAM3D Preview Point Cloud")
 print("[SAM3DObjects] ")
-print("[SAM3DObjects] Cache-efficient workflow (5 stages):")
-print("[SAM3DObjects]   1. SparseGen: Sparse structure (~3s)")
-print("[SAM3DObjects]   2. SLATGen: SLAT latent generation via diffusion (~60s)")
-print("[SAM3DObjects]   3. GaussianDecode: SLAT → Gaussian (~15s)")
-print("[SAM3DObjects]   4. MeshDecode: SLAT → Mesh (~15s)")
-print("[SAM3DObjects]   5. TextureBake: Bake Gaussian into mesh texture (~30-60s)")
-print("[SAM3DObjects] ")
-print("[SAM3DObjects] Fast workflows:")
-print("[SAM3DObjects]   • Gaussian-only: SparseGen → SLATGen → GaussianDecode (~78s)")
-print("[SAM3DObjects]   • Mesh-only: SparseGen → SLATGen → MeshDecode (~78s)")
-print("[SAM3DObjects]   • High-quality: SparseGen → SLATGen → GaussianDecode → MeshDecode → TextureBake (~123s)")
+print("[SAM3DObjects] Memory-efficient workflow (6 stages):")
+print("[SAM3DObjects]   1. DepthEstimate: MoGe depth → pointmap + intrinsics")
+print("[SAM3DObjects]   2. UnloadModel(depth) → free VRAM")
+print("[SAM3DObjects]   3. SparseGen: Sparse structure + pose (~3s)")
+print("[SAM3DObjects]   4. SLATGen: SLAT latent generation via diffusion (~60s)")
+print("[SAM3DObjects]   5. GaussianDecode/MeshDecode: Decode SLAT (~15s each)")
+print("[SAM3DObjects]   6. TextureBake: Bake Gaussian into mesh texture (~30-60s)")
 print("[SAM3DObjects] ")
 print("[SAM3DObjects] Requirements:")
 print("[SAM3DObjects]   - NVIDIA GPU with 32GB+ VRAM recommended")

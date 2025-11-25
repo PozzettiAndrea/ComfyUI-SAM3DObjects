@@ -66,6 +66,11 @@ class IsolatedSAM3DModel:
         with_mesh_postprocess: bool = False,
         with_texture_baking: bool = True,
         use_vertex_color: bool = False,
+        # NEW: Depth estimation and memory management
+        depth_only: bool = False,
+        unload_model: str = None,
+        pointmap_path: str = None,
+        intrinsics: Any = None,
     ) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
@@ -112,6 +117,11 @@ class IsolatedSAM3DModel:
             with_mesh_postprocess=with_mesh_postprocess,
             with_texture_baking=with_texture_baking,
             use_vertex_color=use_vertex_color,
+            # NEW: Depth estimation and memory management
+            depth_only=depth_only,
+            unload_model=unload_model,
+            pointmap_path=pointmap_path,
+            intrinsics=intrinsics,
         )
 
     def __repr__(self) -> str:

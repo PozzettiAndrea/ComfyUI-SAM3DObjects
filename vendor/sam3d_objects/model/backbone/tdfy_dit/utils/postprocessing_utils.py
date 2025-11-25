@@ -650,7 +650,7 @@ def to_glb(
             extrinsics,
             intrinsics,
             texture_size=texture_size,
-            mode="opt",
+            mode="fast",
             lambda_tv=0.01,
             verbose=verbose,
             rendering_engine=rendering_engine
