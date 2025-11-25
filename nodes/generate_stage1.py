@@ -1,5 +1,6 @@
 """SAM3DSparseGen node for generating sparse 3D structure."""
 
+import os
 import torch
 from typing import Any
 
@@ -54,6 +55,10 @@ class SAM3DSparseGen:
                     "step": 0.1,
                     "tooltip": "Classifier-free guidance strength for Stage 1. Higher = stronger adherence to input image"
                 }),
+                "use_stage1_distillation": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Enable distillation mode for faster inference. Disables CFG guidance but uses learned shortcuts."
+                }),
             }
         }
 
@@ -77,6 +82,7 @@ class SAM3DSparseGen:
         intrinsics: Any = None,
         stage1_inference_steps: int = 25,
         stage1_cfg_strength: float = 7.0,
+        use_stage1_distillation: bool = False,
     ):
         """
         Generate sparse voxel structure.
@@ -90,6 +96,7 @@ class SAM3DSparseGen:
             intrinsics: Pre-computed camera intrinsics (optional)
             stage1_inference_steps: Denoising steps for Stage 1
             stage1_cfg_strength: CFG strength for Stage 1
+            use_stage1_distillation: Enable distillation mode for faster inference
 
         Returns:
             Tuple of (sparse_structure_path, pose)
@@ -104,7 +111,10 @@ class SAM3DSparseGen:
 
         print(f"[SAM3DObjects] Image size: {image_pil.size}")
         print(f"[SAM3DObjects] Mask shape: {mask_np.shape}")
-        print(f"[SAM3DObjects] Sparse parameters: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}")
+        print(f"[SAM3DObjects] Sparse parameters: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}, distillation={use_stage1_distillation}")
+
+        # Derive output_dir from pointmap_path (same directory)
+        output_dir = os.path.dirname(pointmap_path) if pointmap_path else None
 
         # Run sparse structure generation only
         try:
@@ -115,8 +125,10 @@ class SAM3DSparseGen:
                 stage1_only=True,  # CRITICAL: Only run sparse generation
                 stage1_inference_steps=stage1_inference_steps,
                 stage1_cfg_strength=stage1_cfg_strength,
+                use_stage1_distillation=use_stage1_distillation,
                 pointmap_path=pointmap_path,  # Pass pointmap tensor path if available
                 intrinsics=intrinsics,  # Pass pre-computed intrinsics if available
+                output_dir=output_dir,  # Derived from pointmap_path directory
             )
 
         except Exception as e:

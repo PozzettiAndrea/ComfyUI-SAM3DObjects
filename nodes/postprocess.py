@@ -146,8 +146,6 @@ class SAM3DTextureBake:
         print(f"[SAM3DObjects] Converted image: mode={image_pil.mode}, size={image_pil.size}")
         print(f"[SAM3DObjects] Converted mask: shape={mask_np.shape}, dtype={mask_np.dtype}, range=[{mask_np.min()}, {mask_np.max()}]")
 
-        # TODO: Implement handling of texture_mode and rendering_engine
-        # These require modifications to the underlying pipeline
         use_vertex_color = not with_texture_baking
 
         # Validate file paths
@@ -170,6 +168,9 @@ class SAM3DTextureBake:
         print(f"[SAM3DObjects]   - GLB: {glb_path} ({glb_size:,} bytes)")
         print(f"[SAM3DObjects]   - PLY: {ply_path} ({ply_size:,} bytes)")
 
+        # Derive output_dir from glb_path (same directory)
+        output_dir = os.path.dirname(glb_path)
+
         # Create a marker dict with file paths
         stage2_output = {
             "_glb_path": glb_path,
@@ -187,6 +188,9 @@ class SAM3DTextureBake:
             print(f"[SAM3DObjects]   - use_vertex_color: {use_vertex_color}")
             print(f"[SAM3DObjects]   - texture_size: {texture_size}")
             print(f"[SAM3DObjects]   - simplify: {simplify}")
+            print(f"[SAM3DObjects]   - texture_mode: {texture_mode}")
+            print(f"[SAM3DObjects]   - rendering_engine: {rendering_engine}")
+            print(f"[SAM3DObjects]   - output_dir: {output_dir}")
             output = embedders(
                 image_pil, mask_np,
                 seed=seed,
@@ -196,6 +200,9 @@ class SAM3DTextureBake:
                 use_vertex_color=use_vertex_color,
                 texture_size=texture_size,
                 simplify=simplify,
+                texture_mode=texture_mode,
+                rendering_engine=rendering_engine,
+                output_dir=output_dir,  # Use same directory as input files
             )
             print(f"[SAM3DObjects] Embedders returned output with keys: {list(output.keys()) if isinstance(output, dict) else type(output)}")
 

@@ -553,13 +553,15 @@ class InferencePipeline:
 
     def postprocess_slat_output(
         self, outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
-        texture_size=1024, simplify=0.95
+        texture_size=1024, simplify=0.95, texture_mode="opt", rendering_engine=None
     ):
         # GLB files can be extracted from the outputs
         logger.info(
             f"Postprocessing mesh with option with_mesh_postprocess {with_mesh_postprocess}, with_texture_baking {with_texture_baking}..."
         )
         if "mesh" in outputs and outputs["mesh"] is not None:
+            # Use provided rendering_engine if available, otherwise fall back to self.rendering_engine
+            engine = rendering_engine if rendering_engine is not None else self.rendering_engine
             glb = postprocessing_utils.to_glb(
                 (outputs.get("gaussian") or [None])[0],
                 (outputs.get("mesh") or [None])[0],
@@ -570,7 +572,8 @@ class InferencePipeline:
                 with_mesh_postprocess=with_mesh_postprocess,
                 with_texture_baking=with_texture_baking,
                 use_vertex_color=use_vertex_color,
-                rendering_engine=self.rendering_engine,
+                rendering_engine=engine,
+                texture_mode=texture_mode,
             )
 
         # glb.export("sample.glb")

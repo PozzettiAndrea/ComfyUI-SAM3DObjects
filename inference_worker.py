@@ -239,31 +239,149 @@ def deserialize_mask(mask_b64: str) -> np.ndarray:
     return pickle.loads(mask_bytes)
 
 
+def transform_to_global_coordinates(output: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Transform Gaussian splat and mesh to global (scene) coordinates using pose data.
+
+    This applies rotation, translation, and scale from depth estimation so that
+    multiple objects from the same image can be correctly positioned when combined.
+    """
+    rotation = output.get("rotation")
+    translation = output.get("translation")
+    scale = output.get("scale")
+
+    # If no pose data, nothing to transform
+    if rotation is None or translation is None or scale is None:
+        print("[Worker] No pose data available, skipping global coordinate transform", file=sys.stderr)
+        return output
+
+    print(f"[Worker] Transforming to global coordinates", file=sys.stderr)
+    print(f"[Worker] Pose: rotation shape={rotation.shape if hasattr(rotation, 'shape') else 'N/A'}, translation shape={translation.shape if hasattr(translation, 'shape') else 'N/A'}, scale={scale}", file=sys.stderr)
+
+    # Transform Gaussian if present
+    if "gs" in output and output["gs"] is not None:
+        try:
+            gs = output["gs"]
+
+            # Import required utilities
+            from sam3d_objects.utils.visualization.scene_visualizer import SceneVisualizer
+            from pytorch3d.transforms import quaternion_multiply, quaternion_invert
+
+            # Get Gaussian positions in local coordinates
+            xyz_local = gs.get_xyz  # (N, 3)
+
+            # Transform to global coordinates using pose
+            # SceneVisualizer.object_pointcloud expects batched input
+            PC = SceneVisualizer.object_pointcloud(
+                points_local=xyz_local.unsqueeze(0),  # (1, N, 3)
+                quat_l2c=rotation,
+                trans_l2c=translation,
+                scale_l2c=scale,
+            )
+            # Set transformed positions
+            gs.from_xyz(PC.points_list()[0])
+
+            # Rotate the Gaussian rotation parameters
+            gs.from_rotation(
+                quaternion_multiply(
+                    quaternion_invert(rotation),
+                    gs.get_rotation,
+                )
+            )
+
+            # Scale the Gaussian scaling parameters
+            adjusted_scale = gs.get_scaling * scale
+            # Ensure minimum kernel size is maintained
+            if hasattr(gs, 'mininum_kernel_size'):
+                gs.mininum_kernel_size *= scale[0, 0].item()
+                adjusted_scale = torch.maximum(
+                    adjusted_scale,
+                    torch.tensor(
+                        gs.mininum_kernel_size * 1.1,
+                        device=adjusted_scale.device,
+                    ),
+                )
+            gs.from_scaling(adjusted_scale)
+
+            print(f"[Worker] Transformed Gaussian to global coordinates", file=sys.stderr)
+
+        except Exception as e:
+            print(f"[Worker] Warning: Failed to transform Gaussian: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+
+    # Transform mesh vertices if present
+    if "mesh" in output and output["mesh"] is not None:
+        try:
+            mesh_list = output["mesh"]
+            if isinstance(mesh_list, list) and len(mesh_list) > 0:
+                mesh = mesh_list[0]
+
+                # Import required utilities
+                from sam3d_objects.utils.visualization.scene_visualizer import SceneVisualizer
+
+                # Get mesh vertices
+                if hasattr(mesh, 'vertices'):
+                    vertices = mesh.vertices  # (N, 3)
+                    if hasattr(vertices, 'unsqueeze'):
+                        # Transform using pose
+                        PC = SceneVisualizer.object_pointcloud(
+                            points_local=vertices.unsqueeze(0),
+                            quat_l2c=rotation,
+                            trans_l2c=translation,
+                            scale_l2c=scale,
+                        )
+                        mesh.vertices = PC.points_list()[0]
+                        print(f"[Worker] Transformed mesh vertices to global coordinates", file=sys.stderr)
+
+        except Exception as e:
+            print(f"[Worker] Warning: Failed to transform mesh: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+
+    # Transform trimesh GLB if it's already been converted
+    if "glb" in output and output["glb"] is not None:
+        try:
+            import trimesh
+            if isinstance(output["glb"], trimesh.Trimesh):
+                glb_mesh = output["glb"]
+
+                # Import required utilities
+                from sam3d_objects.utils.visualization.scene_visualizer import SceneVisualizer
+
+                # Transform vertices
+                vertices = torch.from_numpy(glb_mesh.vertices).float()
+                if torch.cuda.is_available():
+                    vertices = vertices.cuda()
+
+                PC = SceneVisualizer.object_pointcloud(
+                    points_local=vertices.unsqueeze(0),
+                    quat_l2c=rotation,
+                    trans_l2c=translation,
+                    scale_l2c=scale,
+                )
+                glb_mesh.vertices = PC.points_list()[0].cpu().numpy()
+                print(f"[Worker] Transformed GLB mesh to global coordinates", file=sys.stderr)
+
+        except Exception as e:
+            print(f"[Worker] Warning: Failed to transform GLB mesh: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+
+    return output
+
+
 def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     """
     Save output to disk and return file paths.
 
     This is much more robust than trying to serialize complex objects through IPC.
     Following ComfyUI's standard pattern of saving outputs to disk.
+
+    The output_dir should be a sam3d_inference_N directory created by depth_estimate.
+    Files are saved directly to this directory (no subdirectory creation).
     """
     import json
 
-    # Create sequentially numbered output directory (inference_1, inference_2, etc.)
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Find next available number
-    existing = [d.name for d in output_dir.iterdir() if d.is_dir() and d.name.startswith("inference_")]
-    numbers = []
-    for dirname in existing:
-        try:
-            num = int(dirname.split("_")[1])
-            numbers.append(num)
-        except (IndexError, ValueError):
-            pass
-
-    next_num = max(numbers) + 1 if numbers else 1
-    save_dir = output_dir / f"inference_{next_num}"
+    # Use provided directory directly (created by depth_estimate node)
+    save_dir = Path(output_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[Worker] Saving outputs to: {save_dir}", file=sys.stderr)
@@ -534,6 +652,10 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         with_mesh_postprocess = request.get("with_mesh_postprocess", False)
         with_texture_baking = request.get("with_texture_baking", True)
         use_vertex_color = request.get("use_vertex_color", False)
+        use_stage1_distillation = request.get("use_stage1_distillation", False)
+        use_stage2_distillation = request.get("use_stage2_distillation", False)
+        texture_mode = request.get("texture_mode", "opt")
+        rendering_engine = request.get("rendering_engine", "pytorch3d")
 
         # Load pointmap from .pt file if provided
         pointmap = None
@@ -706,9 +828,9 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             slat_output = pickle.loads(base64.b64decode(request.get("slat_output")))
 
         print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
-        print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}", file=sys.stderr)
-        print(f"[Worker] Stage 2: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}", file=sys.stderr)
-        print(f"[Worker] Postprocess: texture_size={texture_size}, simplify={simplify}", file=sys.stderr)
+        print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}, distillation={use_stage1_distillation}", file=sys.stderr)
+        print(f"[Worker] Stage 2: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}, distillation={use_stage2_distillation}", file=sys.stderr)
+        print(f"[Worker] Postprocess: texture_size={texture_size}, simplify={simplify}, texture_mode={texture_mode}, rendering_engine={rendering_engine}", file=sys.stderr)
         if use_cache:
             print(f"[Worker] use_cache=True: Models will be offloaded to CPU after each stage (~50% VRAM reduction)", file=sys.stderr)
         print(f"[Worker] Image: mode={image.mode}, size={image.size}", file=sys.stderr)
@@ -748,9 +870,18 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             save_files=save_files,
             use_cache=use_cache,
             pointmap=pointmap,  # Pass pre-computed pointmap if available
+            use_stage1_distillation=use_stage1_distillation,
+            use_stage2_distillation=use_stage2_distillation,
+            texture_mode=texture_mode,
+            rendering_engine=rendering_engine,
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)
+
+        # Transform to global coordinates for final outputs (not intermediate stages)
+        # This ensures multiple objects from the same image can be correctly combined
+        if not stage1_only and not stage2_only and not slat_only:
+            output = transform_to_global_coordinates(output)
 
         # Special handling for stage1_only mode - save to disk and return path + pose
         if stage1_only:

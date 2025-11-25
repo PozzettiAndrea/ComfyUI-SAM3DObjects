@@ -1,5 +1,6 @@
 """SAM3DMeshDecode node for decoding SLAT to mesh."""
 
+import os
 import torch
 from typing import Any
 
@@ -92,6 +93,9 @@ class SAM3DMeshDecode:
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
 
+        # Derive output_dir from slat path (same directory)
+        output_dir = os.path.dirname(slat)
+
         # Run Mesh decoding only
         try:
             print("[SAM3DObjects] Running Mesh decode...")
@@ -103,6 +107,7 @@ class SAM3DMeshDecode:
                 save_files=save_glb,  # Save GLB if requested
                 simplify=simplify,
                 use_vertex_color=True,  # Use vertex colors (no texture baking)
+                output_dir=output_dir,  # Use same directory as SLAT
             )
 
         except Exception as e:
