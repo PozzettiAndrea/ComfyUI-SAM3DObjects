@@ -86,8 +86,7 @@ class SAM3DMeshDecode:
         Returns:
             Tuple of (glb_filepath, mesh_data)
         """
-        print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh")
-        print(f"[SAM3DObjects] Save GLB: {save_glb}, Simplify: {simplify}")
+        print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
@@ -98,7 +97,6 @@ class SAM3DMeshDecode:
 
         # Run Mesh decoding only
         try:
-            print("[SAM3DObjects] Running Mesh decode...")
             mesh_output = slat_decoder_mesh(
                 image_pil, mask_np,
                 seed=seed,
@@ -113,19 +111,19 @@ class SAM3DMeshDecode:
         except Exception as e:
             raise RuntimeError(f"SAM3D Mesh decode failed: {e}") from e
 
-        print("[SAM3DObjects] Mesh decoding completed!")
-
         # Extract GLB path if saved
         glb_path = mesh_output.get("glb_path", None)
-        
+
         # If not found directly, check files dict (bridge returns this structure)
         if not glb_path and "files" in mesh_output and "glb" in mesh_output["files"]:
              glb_path = mesh_output["files"]["glb"]
-        
+
         if save_glb and glb_path:
-            print(f"[SAM3DObjects] - Vertex-colored GLB saved to: {glb_path}")
+            print(f"[SAM3DObjects] MeshDecode completed: {glb_path}")
         elif save_glb:
-            print(f"[SAM3DObjects] - Warning: GLB file not saved")
+            print(f"[SAM3DObjects] Warning: GLB file not saved")
+        else:
+            print(f"[SAM3DObjects] MeshDecode completed")
 
         # Return GLB path and Mesh data
         return (glb_path, mesh_output)

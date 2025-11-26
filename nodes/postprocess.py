@@ -125,34 +125,16 @@ class SAM3DTextureBake:
         Returns:
             Tuple of (glb_filepath, ply_filepath, pose_data)
         """
-        print(f"[SAM3DObjects] TextureBake: Baking Gaussian into mesh texture")
-        print(f"[SAM3DObjects] Baking parameters:")
-        print(f"[SAM3DObjects]   - with_mesh_postprocess: {with_mesh_postprocess}")
-        print(f"[SAM3DObjects]   - with_texture_baking: {with_texture_baking}")
-        print(f"[SAM3DObjects]   - texture_mode: {texture_mode}")
-        print(f"[SAM3DObjects]   - texture_size: {texture_size}")
-        print(f"[SAM3DObjects]   - simplify: {simplify}")
-        print(f"[SAM3DObjects]   - rendering_engine: {rendering_engine}")
-        print(f"[SAM3DObjects]   - seed: {seed}")
-
-        print(f"[SAM3DObjects] Input tensors:")
-        print(f"[SAM3DObjects]   - image shape: {image.shape}, dtype: {image.dtype}")
-        print(f"[SAM3DObjects]   - mask shape: {mask.shape}, dtype: {mask.dtype}")
+        print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
-        print(f"[SAM3DObjects] Converting ComfyUI tensors...")
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
-        print(f"[SAM3DObjects] Converted image: mode={image_pil.mode}, size={image_pil.size}")
-        print(f"[SAM3DObjects] Converted mask: shape={mask_np.shape}, dtype={mask_np.dtype}, range=[{mask_np.min()}, {mask_np.max()}]")
 
         use_vertex_color = not with_texture_baking
 
         # Validate file paths
         import os
-        print(f"[SAM3DObjects] Validating file paths...")
-        print(f"[SAM3DObjects]   - glb_path: '{glb_path}'")
-        print(f"[SAM3DObjects]   - ply_path: '{ply_path}'")
 
         if not glb_path or not ply_path:
             raise RuntimeError("Both glb_path and ply_path are required")
@@ -161,12 +143,6 @@ class SAM3DTextureBake:
             raise RuntimeError(f"GLB file not found: {glb_path}")
         if not os.path.exists(ply_path):
             raise RuntimeError(f"PLY file not found: {ply_path}")
-
-        glb_size = os.path.getsize(glb_path)
-        ply_size = os.path.getsize(ply_path)
-        print(f"[SAM3DObjects] File validation passed:")
-        print(f"[SAM3DObjects]   - GLB: {glb_path} ({glb_size:,} bytes)")
-        print(f"[SAM3DObjects]   - PLY: {ply_path} ({ply_size:,} bytes)")
 
         # Derive output_dir from glb_path (same directory)
         output_dir = os.path.dirname(glb_path)
@@ -180,17 +156,6 @@ class SAM3DTextureBake:
 
         # Run texture baking using combined output
         try:
-            print("[SAM3DObjects] Running texture baking via embedders...")
-            print(f"[SAM3DObjects] Embedders call parameters:")
-            print(f"[SAM3DObjects]   - stage2_output keys: {list(stage2_output.keys())}")
-            print(f"[SAM3DObjects]   - with_mesh_postprocess: {with_mesh_postprocess}")
-            print(f"[SAM3DObjects]   - with_texture_baking: {with_texture_baking}")
-            print(f"[SAM3DObjects]   - use_vertex_color: {use_vertex_color}")
-            print(f"[SAM3DObjects]   - texture_size: {texture_size}")
-            print(f"[SAM3DObjects]   - simplify: {simplify}")
-            print(f"[SAM3DObjects]   - texture_mode: {texture_mode}")
-            print(f"[SAM3DObjects]   - rendering_engine: {rendering_engine}")
-            print(f"[SAM3DObjects]   - output_dir: {output_dir}")
             output = embedders(
                 image_pil, mask_np,
                 seed=seed,
@@ -204,31 +169,19 @@ class SAM3DTextureBake:
                 rendering_engine=rendering_engine,
                 output_dir=output_dir,  # Use same directory as input files
             )
-            print(f"[SAM3DObjects] Embedders returned output with keys: {list(output.keys()) if isinstance(output, dict) else type(output)}")
 
         except Exception as e:
-            print(f"[SAM3DObjects] ERROR during texture baking: {type(e).__name__}: {e}")
             raise RuntimeError(f"SAM3D texture baking failed: {e}") from e
 
-        print("[SAM3DObjects] Texture baking completed successfully!")
-
         # Extract outputs
-        print(f"[SAM3DObjects] Extracting outputs from result...")
         output_glb_path = output.get("glb_path")
         output_ply_path = output.get("ply_path")
         pose_data = output.get("metadata", {})
 
-        print(f"[SAM3DObjects] Output paths:")
-        print(f"[SAM3DObjects]   - output_glb_path: {output_glb_path}")
-        print(f"[SAM3DObjects]   - output_ply_path: {output_ply_path}")
-        print(f"[SAM3DObjects]   - pose_data keys: {list(pose_data.keys()) if pose_data else 'None'}")
-
         if output_glb_path is None:
-            print(f"[SAM3DObjects] ERROR: GLB file was not generated")
             raise RuntimeError("GLB file was not generated")
         if output_ply_path is None:
-            print(f"[SAM3DObjects] ERROR: PLY file was not generated")
             raise RuntimeError("PLY file was not generated")
 
-        print(f"[SAM3DObjects] TextureBake node completed successfully!")
+        print(f"[SAM3DObjects] TextureBake completed: {output_glb_path}")
         return (output_glb_path, output_ply_path, pose_data)

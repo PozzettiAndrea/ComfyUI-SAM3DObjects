@@ -1,5 +1,5 @@
 """
-Specialized package installers: gsplat, nvdiffrast, kaolin.
+Specialized package installers: gsplat, nvdiffrast.
 
 These packages require special handling due to:
 - Custom wheel indices
@@ -15,7 +15,7 @@ import zipfile
 from pathlib import Path
 
 from .base import Installer
-from ..config import NVDIFFRAST_WHEEL_URLS, get_gsplat_index_url, get_kaolin_find_links
+from ..config import NVDIFFRAST_WHEEL_URLS, get_gsplat_index_url
 from ..utils import validate_url
 
 
@@ -183,46 +183,4 @@ class NvdiffrastInstaller(Installer):
 
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Source installation failed: {e}")
-            return False
-
-
-class KaolinInstaller(Installer):
-    """Install kaolin from NVIDIA S3."""
-
-    @property
-    def name(self) -> str:
-        return "kaolin"
-
-    def is_installed(self) -> bool:
-        return self.verify_import("kaolin")
-
-    def install(self) -> bool:
-        """Install kaolin from NVIDIA S3."""
-        self.logger.info(f"Installing kaolin {self.config.kaolin_version}...")
-
-        find_links = get_kaolin_find_links(
-            self.config.pytorch_version,
-            self.config.cuda_version
-        )
-
-        try:
-            self.run_pip(
-                [
-                    "install",
-                    f"kaolin=={self.config.kaolin_version}",
-                    "-f", find_links,
-                ],
-                step_name="Install kaolin from NVIDIA S3",
-                check=True
-            )
-
-            if self.verify_import("kaolin"):
-                self.logger.success("kaolin installed")
-                return True
-            else:
-                self.logger.error("kaolin import failed after installation")
-                return False
-
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"kaolin installation failed: {e}")
             return False

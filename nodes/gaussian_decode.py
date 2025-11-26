@@ -77,8 +77,7 @@ class SAM3DGaussianDecode:
         Returns:
             Tuple of (ply_filepath, gaussian_data)
         """
-        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian")
-        print(f"[SAM3DObjects] Save PLY: {save_ply}")
+        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
@@ -89,7 +88,6 @@ class SAM3DGaussianDecode:
 
         # Run Gaussian decoding only
         try:
-            print("[SAM3DObjects] Running Gaussian decode...")
             gaussian_output = slat_decoder_gs(
                 image_pil, mask_np,
                 seed=seed,
@@ -102,19 +100,19 @@ class SAM3DGaussianDecode:
         except Exception as e:
             raise RuntimeError(f"SAM3D Gaussian decode failed: {e}") from e
 
-        print("[SAM3DObjects] Gaussian decoding completed!")
-
         # Extract PLY path if saved
         ply_path = gaussian_output.get("ply_path", None)
-        
+
         # If not found directly, check files dict (bridge returns this structure)
         if not ply_path and "files" in gaussian_output and "ply" in gaussian_output["files"]:
              ply_path = gaussian_output["files"]["ply"]
 
         if save_ply and ply_path:
-            print(f"[SAM3DObjects] - Gaussian PLY saved to: {ply_path}")
+            print(f"[SAM3DObjects] GaussianDecode completed: {ply_path}")
         elif save_ply:
-            print(f"[SAM3DObjects] - Warning: PLY file not saved")
+            print(f"[SAM3DObjects] Warning: PLY file not saved")
+        else:
+            print(f"[SAM3DObjects] GaussianDecode completed")
 
         # Return PLY path and Gaussian data
         return (ply_path, gaussian_output)

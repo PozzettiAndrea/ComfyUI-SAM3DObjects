@@ -101,24 +101,17 @@ class SAM3DSparseGen:
         Returns:
             Tuple of (sparse_structure_path, pose)
         """
-        print(f"[SAM3DObjects] SparseGen: Generating sparse structure (seed: {seed})")
-        if pointmap_path is not None:
-            print(f"[SAM3DObjects] Using pre-computed pointmap from: {pointmap_path}")
+        print(f"[SAM3DObjects] SparseGen: Generating sparse structure...")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
-
-        print(f"[SAM3DObjects] Image size: {image_pil.size}")
-        print(f"[SAM3DObjects] Mask shape: {mask_np.shape}")
-        print(f"[SAM3DObjects] Sparse parameters: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}, distillation={use_stage1_distillation}")
 
         # Derive output_dir from pointmap_path (same directory)
         output_dir = os.path.dirname(pointmap_path) if pointmap_path else None
 
         # Run sparse structure generation only
         try:
-            print("[SAM3DObjects] Running sparse structure generation...")
             sparse_output = ss_generator(
                 image_pil, mask_np,
                 seed=seed,
@@ -134,12 +127,9 @@ class SAM3DSparseGen:
         except Exception as e:
             raise RuntimeError(f"SAM3D sparse generation failed: {e}") from e
 
-        print("[SAM3DObjects] Sparse structure generation completed!")
-
         # Extract file path from output
         if isinstance(sparse_output, dict) and "files" in sparse_output and "sparse_structure" in sparse_output["files"]:
             sparse_path = sparse_output["files"]["sparse_structure"]
-            print(f"[SAM3DObjects] - Saved to: {sparse_path}")
 
             # Extract pose information
             pose = {
@@ -147,8 +137,8 @@ class SAM3DSparseGen:
                 "translation": sparse_output.get("translation"),
                 "scale": sparse_output.get("scale"),
             }
-            print(f"[SAM3DObjects] - Pose extracted: rotation={pose['rotation'] is not None}, translation={pose['translation'] is not None}, scale={pose['scale'] is not None}")
 
+            print(f"[SAM3DObjects] SparseGen completed: {sparse_path}")
             return (sparse_path, pose)
 
         # Fallback/Error

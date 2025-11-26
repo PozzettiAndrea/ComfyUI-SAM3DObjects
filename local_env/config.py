@@ -34,7 +34,6 @@ class InstallConfig:
 
     # Package versions
     gsplat_version: str = "1.4.0"
-    kaolin_version: str = "0.17.0"
     nvdiffrast_version: str = "0.3.3"
 
 
@@ -74,9 +73,3 @@ def get_gsplat_index_url(pytorch_version: str, cuda_version: str) -> str:
     pt = pytorch_version.replace(".", "")[:2]  # "2.4.1" -> "24"
     cu = cuda_version.replace(".", "")  # "12.1" -> "121"
     return f"https://docs.gsplat.studio/whl/pt{pt}cu{cu}"
-
-# Kaolin wheel location template
-def get_kaolin_find_links(pytorch_version: str, cuda_version: str) -> str:
-    """Get kaolin find-links URL for specific PyTorch/CUDA versions."""
-    cu = cuda_version.replace(".", "")  # "12.1" -> "121"
-    return f"https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-{pytorch_version}_cu{cu}.html"
