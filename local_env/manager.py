@@ -149,6 +149,15 @@ class SAM3DEnvironmentManager:
                 self.logger.error(f"Error installing {installer.name}: {e}")
                 raise RuntimeError(f"Installation failed at {installer.name}: {e}") from e
 
+        # Windows: Bundle VC++ DLLs into the environment
+        if self.platform.name == 'windows':
+            self.logger.info("")
+            self.logger.info("--- Bundling VC++ Runtime DLLs ---")
+            success, error = self.platform.bundle_vc_dlls_to_env(self.env_dir)
+            if not success:
+                self.logger.warning(f"Could not bundle VC++ DLLs: {error}")
+                self.logger.warning("Open3D may fail to load. See error message above for fix.")
+
         # Final verification
         self.logger.info("")
         self.logger.info("=" * 40)
