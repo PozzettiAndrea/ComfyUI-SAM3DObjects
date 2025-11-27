@@ -113,7 +113,7 @@ class Installer(ABC):
         cmd = [str(self._paths.python), "-c", code]
         kwargs.setdefault('capture_output', True)
         kwargs.setdefault('text', True)
-        kwargs.setdefault('timeout', 10)
+        kwargs.setdefault('timeout', 30)
         return subprocess.run(cmd, **kwargs)
 
     def verify_import(self, module: str) -> bool:

@@ -180,12 +180,12 @@ class PipDependenciesInstaller(Installer):
                 with open(exclude_file, 'w') as f:
                     # These packages cause Windows Long Path issues via jupyterlab
                     f.write("# Blocked packages - cause Windows Long Path issues\n")
-                    f.write("ipywidgets<0.0.1\n")  # Block by requiring impossible version
+                    # Note: ipywidgets allowed because open3d requires it
                     f.write("jupyterlab<0.0.1\n")
                     f.write("jupyterlab-widgets<0.0.1\n")
                     f.write("widgetsnbextension<0.0.1\n")
                     # Also block packages that pull these in transitively
-                    f.write("pyvista<0.0.1\n")  # Pulls in ipywidgets
+                    f.write("pyvista<0.0.1\n")  # Pulls in jupyterlab
                     f.write("vtk<0.0.1\n")  # Large package, pyvista dep
 
                 # Try to install with exclusions. If packages conflict, that's OK - we'll handle manually
@@ -259,9 +259,9 @@ class PipDependenciesInstaller(Installer):
 
                     for git_req in git_reqs:
                         self.logger.info(f"Installing {git_req.split('/')[-1].split('@')[0]}...")
-                        # Run pip with git in PATH
-                        result = self.logger.run_logged(
-                            [str(self.python_exe), "-m", "pip", "install", git_req, "--no-cache-dir"],
+                        # Run uv pip with git in PATH (faster than pip)
+                        result = self.run_uv_pip(
+                            ["install", git_req, "--no-cache-dir"],
                             step_name=f"Install git dep: {git_req[:50]}",
                             check=False,
                             env=env
