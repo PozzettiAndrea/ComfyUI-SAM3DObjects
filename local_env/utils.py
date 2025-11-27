@@ -39,7 +39,8 @@ class Logger:
 
     def success(self, message: str):
         """Log success message with checkmark."""
-        print(f"{self.PREFIX} ✓ {message}")
+        # Use ASCII-safe checkmark for Windows compatibility
+        print(f"{self.PREFIX} [OK] {message}")
         self._write_to_file("OK", message)
 
     def _write_to_file(self, level: str, message: str):

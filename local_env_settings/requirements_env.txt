@@ -24,7 +24,7 @@ scipy>=1.11.0
 timm>=0.9.16
 transformers
 diffusers
-lightning>=2.0.0
+pytorch-lightning>=2.0.0  # Use pytorch-lightning instead of lightning to avoid ipywidgets dependency
 
 # Image processing
 opencv-python>=4.9.0
@@ -35,7 +35,7 @@ imageio>=2.36.0
 open3d>=0.18.0
 trimesh
 point-cloud-utils>=0.29.5
-pyvista>=0.43.0
+# pyvista>=0.43.0  # DISABLED: Pulls in ipywidgets -> jupyterlab which has long path issues on Windows
 
 # Visualization
 matplotlib>=3.9.0
@@ -69,7 +69,7 @@ spconv-cu121>=2.3.8
 
 # Additional utilities
 gdown>=5.2.0
-gradio>=4.44.0
+# gradio>=4.44.0  # DISABLED: Pulls in jupyterlab which has long paths that fail on Windows without LongPathsEnabled
 zstandard>=0.22.0  # For decompressing conda packages (.tar.zst)
 ninja>=1.10.0  # Required by gsplat wheels and for CUDA JIT compilation
 jaxtyping  # Required by gsplat

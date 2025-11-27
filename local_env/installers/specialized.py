@@ -33,6 +33,17 @@ class GsplatInstaller(Installer):
         """Install gsplat from prebuilt wheel index."""
         self.logger.info(f"Installing gsplat >= {self.config.gsplat_version}...")
 
+        # Install gsplat dependencies first (rich is required but not auto-installed from prebuilt wheel)
+        self.logger.info("Installing gsplat dependencies...")
+        try:
+            self.run_pip(
+                ["install", "rich>=12", "jaxtyping"],
+                step_name="Install gsplat dependencies",
+                check=True
+            )
+        except subprocess.CalledProcessError:
+            self.logger.warning("Failed to install some gsplat dependencies")
+
         index_url = get_gsplat_index_url(
             self.config.pytorch_version,
             self.config.cuda_version
