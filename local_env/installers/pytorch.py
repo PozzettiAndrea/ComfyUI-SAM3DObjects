@@ -180,13 +180,14 @@ class PipDependenciesInstaller(Installer):
                 with open(exclude_file, 'w') as f:
                     # These packages cause Windows Long Path issues via jupyterlab
                     f.write("# Blocked packages - cause Windows Long Path issues\n")
-                    # Note: ipywidgets allowed because open3d requires it
                     f.write("jupyterlab<0.0.1\n")
                     f.write("jupyterlab-widgets<0.0.1\n")
                     f.write("widgetsnbextension<0.0.1\n")
-                    # Also block packages that pull these in transitively
-                    f.write("pyvista<0.0.1\n")  # Pulls in jupyterlab
-                    f.write("vtk<0.0.1\n")  # Large package, pyvista dep
+                    f.write("jupyter-server<0.0.1\n")
+                    f.write("notebook<0.0.1\n")
+                    f.write("ipywidgets<0.0.1\n")  # Optional pyvista dep for Jupyter
+                    f.write("trame<0.0.1\n")  # Optional pyvista dep for Jupyter
+                    # NOTE: pyvista and vtk are now ALLOWED (needed by pymeshfix)
 
                 # Try to install with exclusions. If packages conflict, that's OK - we'll handle manually
                 try:
