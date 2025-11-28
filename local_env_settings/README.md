@@ -37,7 +37,7 @@ All other packages installed via UV (10-100x faster than conda):
 - ML: transformers, diffusers, timm
 - 3D: open3d, trimesh, pyvista
 - CUDA: xformers, gsplat, spconv-cu121
-- Git repos: MoGe, nvdiffrast
+- Vendored: MoGe (in vendor/moge/), nvdiffrast (prebuilt wheel)
 
 Install time: ~2-3 minutes
 
