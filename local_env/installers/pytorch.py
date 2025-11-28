@@ -146,7 +146,7 @@ class PipDependenciesInstaller(Installer):
                     f.write("notebook<0.0.1\n")  # Also has long paths
                     f.write("trame<0.0.1\n")  # Optional pyvista dep, pulls in large deps
                     # NOTE: ipywidgets, jupyterlab-widgets, widgetsnbextension are ALLOWED
-                    # (needed by open3d, and they don't cause long path issues themselves)
+                    # (needed by some visualization tools, they don't cause long path issues)
                     # NOTE: pyvista and vtk are ALLOWED (needed by pymeshfix)
 
                 # Install with uv (much faster than pip)

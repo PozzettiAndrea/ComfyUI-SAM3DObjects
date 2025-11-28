@@ -129,25 +129,14 @@ class WindowsPlatformProvider(PlatformProvider):
                 f"  Download: https://aka.ms/vs/17/release/vc_redist.x64.exe\n"
                 f"\nAfter installation, delete _env and try again.")
 
-        # Copy DLLs to the environment's site-packages/open3d/ directory
-        # This is where Open3D adds its DLL search path
-        target_dir = env_dir / 'Lib' / 'site-packages' / 'open3d'
-
-        # Also copy to Scripts as a fallback
+        # Copy DLLs to the environment's Scripts directory
+        # This makes them available to native extensions like PyTorch CUDA
         scripts_dir = env_dir / 'Scripts'
 
         copied = []
         for dll_name, source_path in found_dlls.items():
             if source_path:
                 try:
-                    # Copy to open3d directory (primary)
-                    if target_dir.exists():
-                        target_path = target_dir / dll_name
-                        if not target_path.exists():
-                            shutil.copy2(source_path, target_path)
-                            copied.append(f"{dll_name} -> open3d/")
-
-                    # Copy to Scripts directory (fallback)
                     if scripts_dir.exists():
                         scripts_target = scripts_dir / dll_name
                         if not scripts_target.exists():

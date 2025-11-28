@@ -854,9 +854,9 @@ def perturb_mask_boundary(
         kernel_range: Range of kernel sizes to sample from.
         p_erode: Probability of erosion.
         p_dilate: Probability of dilation.
-        kwargs: Kwargs for the cv2 erode/dilate function.
+        kwargs: Kwargs for the erode/dilate function.
     """
-    import cv2
+    from sam3d_objects.pipeline.image_operations import erode, dilate
 
     C, H, W = image.shape
     assert mask.shape == (1, H, W)
@@ -879,9 +879,9 @@ def perturb_mask_boundary(
         mask = mask.squeeze().cpu().numpy().astype(np.uint8)  # (H, W)
 
         if op == "erode":
-            mask = cv2.erode(mask, kernel, **kwargs)
+            mask = erode(mask, kernel, **kwargs)
         elif op == "dilate":
-            mask = cv2.dilate(mask, kernel, **kwargs)
+            mask = dilate(mask, kernel, **kwargs)
         else:
             raise NotImplementedError
 

@@ -1,13 +1,18 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
 import numpy as np
-import open3d as o3d
 import trimesh
 from pytorch3d.structures import Meshes
 from pytorch3d.transforms import quaternion_to_matrix, Transform3d, matrix_to_quaternion
 from sam3d_objects.data.dataset.tdfy.transforms_3d import compose_transform, decompose_transform
 from sam3d_objects.data.dataset.tdfy.pose_target import PoseTargetConverter
 from loguru import logger
+from sam3d_objects.pipeline.geometry_operations import (
+    HAS_OPEN3D,
+    voxelize_mesh,
+    trimesh_to_o3d_mesh,
+    segment_plane,
+)
 from sam3d_objects.pipeline.layout_post_optimization_utils import (
     run_ICP,
     compute_iou,
@@ -492,31 +497,7 @@ def normalize_mesh_verts(verts):
     return vertices, scale, center
 
 
-def voxelize_mesh(mesh, resolution=64):
-    verts = np.asarray(mesh.vertices)
-    # rotate mesh (from z-up to y-up)
-    verts = verts @ np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
-    # normalize vertices
-    # skip vertices to avoid losing points, likely already normalized
-    if np.abs(verts.min() + 0.5) < 1e-3 and np.abs(verts.max() - 0.5) < 1e-3:
-        vertices, scale, center = verts, None, None
-    else:
-        vertices, scale, center = normalize_mesh_verts(verts)
-
-    vertices = np.clip(vertices, -0.5 + 1e-6, 0.5 - 1e-6)
-    mesh.vertices = o3d.utility.Vector3dVector(vertices)
-    voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh_within_bounds(
-        mesh,
-        voxel_size=1 / 64,
-        min_bound=(-0.5, -0.5, -0.5),
-        max_bound=(0.5, 0.5, 0.5),
-    )
-    vertices = np.array([voxel.grid_index for voxel in voxel_grid.get_voxels()])
-    vertices = (vertices + 0.5) / 64 - 0.5
-    coords = ((torch.tensor(vertices) + 0.5) * resolution).int().contiguous()
-    ss = torch.zeros(1, resolution, resolution, resolution, dtype=torch.long)
-    ss[:, coords[:, 0], coords[:, 1], coords[:, 2]] = 1
-    return ss, scale, center
+# voxelize_mesh is now imported from geometry_operations
 
 
 def preprocess_mesh(mesh: trimesh.Trimesh):
@@ -528,12 +509,7 @@ def preprocess_mesh(mesh: trimesh.Trimesh):
     return mesh
 
 
-def trimesh2o3d_mesh(trimesh_mesh):
-    verts = np.asarray(trimesh_mesh.vertices)
-    faces = np.asarray(trimesh_mesh.faces)
-    return o3d.geometry.TriangleMesh(
-        o3d.utility.Vector3dVector(verts), o3d.utility.Vector3iVector(faces)
-    )
+# trimesh2o3d_mesh is now imported as trimesh_to_o3d_mesh from geometry_operations
 
 
 def update_layout(pred_t, pred_s, pred_quat, center, scale, to_halo=True):
@@ -658,15 +634,14 @@ def json_to_halo_payloads(target_data):
 
 
 def o3d_plane_estimation(points):
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points)
-    plane_model, inliers = pcd.segment_plane(0.02, 3, 1000)
+    # Use geometry_operations for plane fitting (handles Open3D/fallback)
+    plane_model, inliers = segment_plane(points, 0.02, 3, 1000)
 
     [a, b, c, d] = plane_model
     logger.info(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
 
     # Get the inlier points from RANSAC
-    inlier_points = np.asarray(pcd.points)[inliers]
+    inlier_points = points[inliers]
 
     # Adaptive flying point removal based on Z-range
     z_range = np.max(inlier_points[:, 2]) - np.min(inlier_points[:, 2])
