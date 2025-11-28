@@ -83,18 +83,30 @@ app.registerExtension({
                     console.log('[SAM3DObjects] Loading point cloud in VTK viewer from:', message.file_path);
 
                     // Handle file_path as array
-                    const filePath = Array.isArray(message.file_path) ? message.file_path[0] : message.file_path;
+                    let filePath = Array.isArray(message.file_path) ? message.file_path[0] : message.file_path;
 
                     if (!filePath) return;
 
-                    // Parse file path to extract filename and subfolder
-                    // Handle paths like: "output/inference_9/gaussian.ply" or "/full/path/output/inference_9/gaussian.ply"
-                    const pathParts = filePath.replace(/^.*\/(output|input)\//, '').split('/');
-                    const filename = pathParts.pop(); // Last part is filename
-                    const subfolder = pathParts.join('/'); // Rest is subfolder (e.g., "inference_9")
+                    // Normalize path separators (Windows backslash to forward slash)
+                    filePath = filePath.replace(/\\/g, '/');
 
-                    // Construct URL to view the file with proper subfolder
-                    const url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=${encodeURIComponent(subfolder)}`;
+                    // Extract relative path from output/input folder
+                    // Handle both: "output/inference_9/file.ply" and "C:/full/path/output/inference_9/file.ply"
+                    const outputMatch = filePath.match(/(?:^|\/)(output|input)\/(.+)$/);
+
+                    let url;
+                    if (outputMatch) {
+                        const [, type, relativePath] = outputMatch;
+                        const pathParts = relativePath.split('/');
+                        const filename = pathParts.pop(); // Last part is filename
+                        const subfolder = pathParts.join('/'); // Rest is subfolder (e.g., "inference_9")
+                        url = `/view?filename=${encodeURIComponent(filename)}&type=${type}&subfolder=${encodeURIComponent(subfolder)}`;
+                    } else {
+                        // Fallback: try to use filename directly
+                        const filename = filePath.split('/').pop();
+                        url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=`;
+                        console.warn('[SAM3DObjects] Could not parse output/input path, using filename only:', filename);
+                    }
 
                     console.log('[SAM3DObjects] File path:', filePath);
                     console.log('[SAM3DObjects] Constructed URL:', url);
