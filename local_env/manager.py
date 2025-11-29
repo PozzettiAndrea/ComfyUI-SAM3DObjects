@@ -11,11 +11,9 @@ from .platform import get_platform
 from .platform.base import PlatformProvider
 from .utils import Logger
 from .installers.base import Installer
-from .installers.micromamba import MicromambaInstaller
 from .installers.venv import VenvInstaller
-from .installers.pytorch import PyTorchInstaller, PipDependenciesInstaller
+from .installers.pytorch import PipDependenciesInstaller
 from .installers.pytorch_pip import PyTorchPipInstaller
-from .installers.cuda import CudaToolkitInstaller, CompilerInstaller
 from .installers.specialized import GsplatInstaller, NvdiffrastInstaller
 
 
@@ -52,8 +50,7 @@ class SAM3DEnvironmentManager:
         # Initialize logger
         self.logger = Logger(self.log_file)
 
-        # Environment installer (micromamba for Linux/macOS, venv for Windows)
-        self._micromamba_installer = None
+        # Environment installer (UV-based venv for all platforms)
         self._venv_installer = None
 
     def _print_error_banner(self, title: str, message: str):
@@ -107,29 +104,14 @@ class SAM3DEnvironmentManager:
         self.logger.info("Starting installation...")
         self.logger.info(f"Full logs will be saved to: {self.log_file}")
 
-        # Step 1 & 2: Setup environment (platform-specific)
-        if self.platform.name == 'windows':
-            # Windows: Use venv + pip wheels (no micromamba)
-            self.logger.info("Using pip/venv installation method (Windows)")
-            self._venv_installer = VenvInstaller(
-                self.env_dir, self.platform, self.config, self.logger
-            )
+        # Step 1 & 2: Setup environment using UV-based venv (all platforms)
+        self.logger.info("Using UV/pip installation method")
+        self._venv_installer = VenvInstaller(
+            self.env_dir, self.platform, self.config, self.logger
+        )
 
-            if not self._venv_installer.create_environment():
-                raise RuntimeError("Failed to create Python virtual environment")
-        else:
-            # Linux/macOS: Use micromamba
-            self.logger.info("Using micromamba installation method (Linux/macOS)")
-            self._micromamba_installer = MicromambaInstaller(
-                self.tools_dir, self.env_dir, self.platform, self.config, self.logger
-            )
-
-            if not self._micromamba_installer.is_installed():
-                if not self._micromamba_installer.install():
-                    raise RuntimeError("Failed to download micromamba")
-
-            if not self._micromamba_installer.create_environment():
-                raise RuntimeError("Failed to create Python environment")
+        if not self._venv_installer.create_environment():
+            raise RuntimeError("Failed to create Python virtual environment")
 
         # Step 3: Run installers in order
         installers = self._get_installers()
@@ -173,9 +155,7 @@ class SAM3DEnvironmentManager:
         """
         Get ordered list of installers.
 
-        Returns platform-specific installer list:
-        - Windows: Uses pip wheels (no micromamba)
-        - Linux/macOS: Uses micromamba for PyTorch/PyTorch3D
+        Uses pip/uv with prebuilt wheels for all platforms.
 
         Returns:
             List of Installer instances in execution order
@@ -183,66 +163,26 @@ class SAM3DEnvironmentManager:
         # Requirements file path
         requirements_file = self.node_root / "local_env_settings" / "requirements_env.txt"
 
-        if self.platform.name == 'windows':
-            # Windows: Use pip-based installers (no micromamba)
-            common_kwargs = {
-                'env_dir': self.env_dir,
-                'platform': self.platform,
-                'config': self.config,
-                'logger': self.logger,
-                'micromamba_exe': None,  # Not used on Windows
-            }
+        common_kwargs = {
+            'env_dir': self.env_dir,
+            'platform': self.platform,
+            'config': self.config,
+            'logger': self.logger,
+        }
 
-            return [
-                # PyTorch + PyTorch3D (via pip wheels)
-                PyTorchPipInstaller(**common_kwargs),
+        return [
+            # PyTorch + PyTorch3D (via pip wheels from official + MiroPsota repos)
+            PyTorchPipInstaller(**common_kwargs),
 
-                # Pip dependencies (with PyTorch constraints)
-                PipDependenciesInstaller(
-                    requirements_file=requirements_file,
-                    **common_kwargs
-                ),
+            # Pip dependencies (with PyTorch constraints)
+            PipDependenciesInstaller(
+                requirements_file=requirements_file,
+                **common_kwargs
+            ),
 
-                # gsplat (prebuilt wheel)
-                GsplatInstaller(**common_kwargs),
+            # gsplat (prebuilt wheel)
+            GsplatInstaller(**common_kwargs),
 
-                # nvdiffrast (prebuilt wheel with compiled extensions)
-                NvdiffrastInstaller(**common_kwargs),
-
-                # NOTE: CUDA toolkit and C++ compiler are NOT needed on Windows
-                # because we use prebuilt wheels with pre-compiled extensions
-            ]
-        else:
-            # Linux/macOS: Use micromamba-based installers
-            micromamba_path = self._micromamba_installer.micromamba_path
-
-            common_kwargs = {
-                'env_dir': self.env_dir,
-                'platform': self.platform,
-                'config': self.config,
-                'logger': self.logger,
-                'micromamba_exe': micromamba_path,
-            }
-
-            return [
-                # PyTorch + PyTorch3D (via micromamba for CUDA compatibility)
-                PyTorchInstaller(**common_kwargs),
-
-                # Pip dependencies (with PyTorch constraints)
-                PipDependenciesInstaller(
-                    requirements_file=requirements_file,
-                    **common_kwargs
-                ),
-
-                # gsplat (prebuilt wheel)
-                GsplatInstaller(**common_kwargs),
-
-                # nvdiffrast (prebuilt wheel or source)
-                NvdiffrastInstaller(**common_kwargs),
-
-                # CUDA toolkit (for JIT compilation)
-                CudaToolkitInstaller(**common_kwargs),
-
-                # C++ compiler (for CUDA JIT)
-                CompilerInstaller(**common_kwargs),
-            ]
+            # nvdiffrast (prebuilt wheel with compiled extensions)
+            NvdiffrastInstaller(**common_kwargs),
+        ]

@@ -1,78 +1,11 @@
 """
-PyTorch, torchvision, and PyTorch3D installers.
+Pip dependencies installer.
 """
 
 import subprocess
 from pathlib import Path
 
 from .base import Installer
-
-
-class PyTorchInstaller(Installer):
-    """
-    Install PyTorch, torchvision, and PyTorch3D via micromamba.
-
-    Uses micromamba to install from conda channels, ensuring
-    CUDA compatibility between torch, torchvision, and pytorch3d.
-    """
-
-    @property
-    def name(self) -> str:
-        return "PyTorch + PyTorch3D"
-
-    def is_installed(self) -> bool:
-        """Check if PyTorch and PyTorch3D are installed with CUDA."""
-        result = self.run_python(
-            "import torch, pytorch3d; "
-            "print(f'PyTorch {torch.__version__}, PyTorch3D {pytorch3d.__version__}, CUDA {torch.cuda.is_available()}')"
-        )
-        if result.returncode != 0:
-            return False
-        # Verify CUDA is available
-        return 'True' in result.stdout
-
-    def install(self) -> bool:
-        """Install PyTorch + PyTorch3D via micromamba."""
-        self.logger.info(f"Installing PyTorch {self.config.pytorch_version} + PyTorch3D {self.config.pytorch3d_version}...")
-        self.logger.info(f"(Using PyTorch {self.config.pytorch_version} - latest with PyTorch3D prebuilt support)")
-
-        try:
-            # Install PyTorch + PyTorch3D together via micromamba
-            # This ensures CUDA version compatibility
-            self.run_micromamba(
-                [
-                    "install",
-                    "-p", str(self.env_dir),
-                    "-c", "pytorch",       # PRIMARY: PyTorch official channel
-                    "-c", "pytorch3d",     # PyTorch3D channel
-                    "-c", "nvidia",        # NVIDIA CUDA packages
-                    "-c", "fvcore",        # PyTorch3D dependency
-                    "-c", "conda-forge",   # Fallback
-                    f"pytorch=={self.config.pytorch_version}",
-                    f"pytorch-cuda={self.config.cuda_version}",
-                    f"torchvision=={self.config.torchvision_version}",
-                    f"pytorch3d=={self.config.pytorch3d_version}",
-                    "-y"
-                ],
-                step_name=f"Install PyTorch {self.config.pytorch_version} + PyTorch3D via micromamba",
-                check=True
-            )
-
-            # Verify installation
-            result = self.run_python(
-                "import torch, pytorch3d; "
-                f"print(f'PyTorch {{torch.__version__}}, PyTorch3D {{pytorch3d.__version__}}')"
-            )
-
-            if result.returncode == 0:
-                self.logger.success(f"Verified: {result.stdout.strip()}")
-                return True
-            else:
-                raise RuntimeError(f"Verification failed: {result.stderr}")
-
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"PyTorch installation failed: {e}")
-            return False
 
 
 class PipDependenciesInstaller(Installer):

@@ -36,6 +36,8 @@ Pillow>=10.0.0  # Required for image_operations.py text rendering
 # open3d>=0.18.0  # OPTIONAL: Has DLL issues on Windows, falls back to trimesh
 trimesh
 point-cloud-utils>=0.29.5
+git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8  # Required by vendored sam3d_objects (TRELLIS version)
+plyfile  # Required for PLY file handling (gaussian_model.py)
 # pyvista>=0.43.0  # DISABLED: Pulls in ipywidgets -> jupyterlab which has long path issues on Windows
 
 # Visualization

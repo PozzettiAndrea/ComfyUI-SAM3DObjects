@@ -26,7 +26,6 @@ class Installer(ABC):
         platform: PlatformProvider,
         config: InstallConfig,
         logger: Logger,
-        micromamba_exe: Path = None,
     ):
         """
         Initialize installer.
@@ -36,13 +35,11 @@ class Installer(ABC):
             platform: Platform provider for OS-specific operations
             config: Installation configuration
             logger: Logger for output
-            micromamba_exe: Path to micromamba executable (optional)
         """
         self.env_dir = env_dir
         self.platform = platform
         self.config = config
         self.logger = logger
-        self.micromamba_exe = micromamba_exe
         self._paths = platform.get_env_paths(env_dir)
 
     @property
@@ -128,20 +125,3 @@ class Installer(ABC):
         """
         result = self.run_python(f"import {module}")
         return result.returncode == 0
-
-    def run_micromamba(self, args: list, **kwargs) -> subprocess.CompletedProcess:
-        """
-        Run micromamba command.
-
-        Args:
-            args: Arguments to pass to micromamba
-            **kwargs: Additional subprocess arguments
-
-        Returns:
-            CompletedProcess result
-        """
-        if self.micromamba_exe is None:
-            raise RuntimeError("Micromamba not available")
-
-        cmd = [str(self.micromamba_exe)] + args
-        return self.logger.run_logged(cmd, **kwargs)

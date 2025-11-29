@@ -37,34 +37,11 @@ class InstallConfig:
     nvdiffrast_version: str = "0.3.5"
 
 
-# Micromamba download URLs by platform
-MICROMAMBA_URLS: Dict[str, Dict[str, str]] = {
-    "Linux": {
-        "x86_64": "https://micro.mamba.pm/api/micromamba/linux-64/latest",
-        "aarch64": "https://micro.mamba.pm/api/micromamba/linux-aarch64/latest",
-    },
-    "Darwin": {
-        "arm64": "https://micro.mamba.pm/api/micromamba/osx-arm64/latest",
-        "x86_64": "https://micro.mamba.pm/api/micromamba/osx-64/latest",
-    },
-    "Windows": {
-        "x86_64": "https://micro.mamba.pm/api/micromamba/win-64/latest",
-        "AMD64": "https://micro.mamba.pm/api/micromamba/win-64/latest",
-    },
-}
-
 # nvdiffrast prebuilt wheel URLs by platform
 NVDIFFRAST_WHEEL_URLS: Dict[str, str] = {
     "Linux": "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl",
     "Windows": "https://pozzettiandrea.github.io/nvdiffrast-wheels/cu124/nvdiffrast-0.3.5%2Bpt2.4.1cu124-py3-none-any.whl",
     # Darwin: No prebuilt wheel, falls back to source compilation
-}
-
-# CUDA toolkit conda packages by platform
-CUDA_TOOLKIT_URLS: Dict[str, str] = {
-    "Linux": "https://conda.anaconda.org/conda-forge/linux-64/cudatoolkit-dev-12.1.0-h4b99516_3.conda",
-    "Windows": "https://conda.anaconda.org/conda-forge/win-64/cudatoolkit-dev-12.1.0-hd020da6_3.conda",
-    "Darwin": "https://conda.anaconda.org/conda-forge/osx-64/cudatoolkit-dev-12.1.0-h2e7b6a8_3.conda",
 }
 
 # gsplat wheel index URL template
