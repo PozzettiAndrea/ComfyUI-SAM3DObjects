@@ -262,11 +262,80 @@
                 mapper.setInputConnection(currentReader.getOutputPort());
                 mapper.update();
 
+                // Debug: Check all point data arrays
+                const pointData = polydata.getPointData();
+                console.log('[SAM3D VTK Viewer] Point data arrays:', pointData.getNumberOfArrays());
+                for (let i = 0; i < pointData.getNumberOfArrays(); i++) {
+                    const array = pointData.getArrayByIndex(i);
+                    console.log(`  Array ${i}: "${array.getName()}" (${array.getNumberOfComponents()} components, ${array.getNumberOfTuples()} tuples)`);
+                }
+
+                // Check what VTK set as active scalars
+                const activeScalars = pointData.getScalars();
+                if (activeScalars) {
+                    console.log('[SAM3D VTK Viewer] Active scalars:', activeScalars.getName(),
+                                '(', activeScalars.getNumberOfComponents(), 'components)');
+                }
+
+                // Try to explicitly set RGB as the active scalars
+                const redArray = pointData.getArrayByName('red');
+                const greenArray = pointData.getArrayByName('green');
+                const blueArray = pointData.getArrayByName('blue');
+
+                console.log('[SAM3D VTK Viewer] Color arrays:');
+                console.log('  red:', redArray ? `${redArray.getNumberOfComponents()} comp` : 'null');
+                console.log('  green:', greenArray ? `${greenArray.getNumberOfComponents()} comp` : 'null');
+                console.log('  blue:', blueArray ? `${blueArray.getNumberOfComponents()} comp` : 'null');
+
                 // Check if we have vertex colors
                 const scalars = polydata.getPointData().getScalars();
                 if (scalars) {
                     console.log('[SAM3D VTK Viewer] Point colors found:', scalars.getName());
+
+                    // Print RGB statistics
+                    const colorData = scalars.getData();
+                    const numComponents = scalars.getNumberOfComponents();
+                    const numTuples = scalars.getNumberOfTuples();
+
+                    console.log('[SAM3D VTK Viewer] Color data info:');
+                    console.log('  Components per point:', numComponents);
+                    console.log('  Number of points:', numTuples);
+
+                    if (numComponents === 3) {
+                        // RGB data - compute min/max for each channel
+                        let minR = Infinity, maxR = -Infinity;
+                        let minG = Infinity, maxG = -Infinity;
+                        let minB = Infinity, maxB = -Infinity;
+
+                        for (let i = 0; i < numTuples; i++) {
+                            const r = colorData[i * 3 + 0];
+                            const g = colorData[i * 3 + 1];
+                            const b = colorData[i * 3 + 2];
+
+                            minR = Math.min(minR, r); maxR = Math.max(maxR, r);
+                            minG = Math.min(minG, g); maxG = Math.max(maxG, g);
+                            minB = Math.min(minB, b); maxB = Math.max(maxB, b);
+                        }
+
+                        console.log('[SAM3D VTK Viewer] RGB Statistics:');
+                        console.log('  R: min=' + minR + ', max=' + maxR);
+                        console.log('  G: min=' + minG + ', max=' + maxG);
+                        console.log('  B: min=' + minB + ', max=' + maxB);
+
+                        // Print sample RGB values
+                        console.log('[SAM3D VTK Viewer] Sample RGB values (first 10):');
+                        for (let i = 0; i < Math.min(10, numTuples); i++) {
+                            const r = colorData[i * 3 + 0];
+                            const g = colorData[i * 3 + 1];
+                            const b = colorData[i * 3 + 2];
+                            console.log('  Point ' + i + ': R=' + r + ' G=' + g + ' B=' + b);
+                        }
+                    }
+
+                    // Match DepthAnythingV3: ONLY enable scalar visibility, nothing else
                     mapper.setScalarVisibility(true);
+
+                    console.log('[SAM3D VTK Viewer] RGB colors enabled (simple mode)');
                 } else {
                     console.log('[SAM3D VTK Viewer] No point colors, using white');
                     mapper.setScalarVisibility(false);

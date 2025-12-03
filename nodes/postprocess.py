@@ -16,7 +16,7 @@ class SAM3DTextureBake:
     Bakes Gaussian appearance into mesh UV textures using gradient descent optimization.
     Also performs mesh simplification and optional hole filling.
 
-    Requires BOTH Gaussian and Mesh inputs from decoder nodes.
+    Requires GLB and PLY file paths as inputs.
     Final stage that produces textured GLB output (~30-60 seconds).
     """
 
@@ -25,8 +25,16 @@ class SAM3DTextureBake:
         return {
             "required": {
                 "embedders": ("SAM3D_MODEL", {"tooltip": "Embedders from LoadSAM3DModel (for preprocessing)"}),
-                "gaussian_data": ("SAM3D_GAUSSIAN", {"tooltip": "Gaussian from SAM3DGaussianDecode"}),
-                "mesh_data": ("SAM3D_MESH", {"tooltip": "Mesh from SAM3DMeshDecode"}),
+                "glb_path": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "Path to GLB mesh file"
+                }),
+                "ply_path": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "Path to PLY Gaussian file"
+                }),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match previous stages)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match previous stages)"}),
                 "seed": ("INT", {
@@ -40,7 +48,7 @@ class SAM3DTextureBake:
             "optional": {
                 "with_mesh_postprocess": ("BOOLEAN", {
                     "default": False,
-                    "tooltip": "Enable expensive mesh hole filling + cleanup (~30s extra)"
+                    "tooltip": "Simplify mesh + fill holes. Enable for faster texture baking; disable to preserve full mesh detail."
                 }),
                 "with_texture_baking": ("BOOLEAN", {
                     "default": True,
@@ -85,8 +93,8 @@ class SAM3DTextureBake:
     def bake_texture(
         self,
         embedders: Any,
-        gaussian_data: dict,
-        mesh_data: dict,
+        glb_path: str,
+        ply_path: str,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
@@ -102,8 +110,8 @@ class SAM3DTextureBake:
 
         Args:
             embedders: SAM3D model with embedders (for preprocessing)
-            gaussian_data: Gaussian from SAM3DGaussianDecode
-            mesh_data: Mesh from SAM3DMeshDecode
+            glb_path: Path to input GLB mesh file
+            ply_path: Path to input PLY Gaussian file
             image: Input image tensor [B, H, W, C] (must match previous stages)
             mask: Input mask tensor [N, H, W] (must match previous stages)
             seed: Random seed (must match previous stages)
@@ -125,38 +133,60 @@ class SAM3DTextureBake:
         print(f"[SAM3DObjects]   - texture_size: {texture_size}")
         print(f"[SAM3DObjects]   - simplify: {simplify}")
         print(f"[SAM3DObjects]   - rendering_engine: {rendering_engine}")
+        print(f"[SAM3DObjects]   - seed: {seed}")
+
+        print(f"[SAM3DObjects] Input tensors:")
+        print(f"[SAM3DObjects]   - image shape: {image.shape}, dtype: {image.dtype}")
+        print(f"[SAM3DObjects]   - mask shape: {mask.shape}, dtype: {mask.dtype}")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
+        print(f"[SAM3DObjects] Converting ComfyUI tensors...")
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
+        print(f"[SAM3DObjects] Converted image: mode={image_pil.mode}, size={image_pil.size}")
+        print(f"[SAM3DObjects] Converted mask: shape={mask_np.shape}, dtype={mask_np.dtype}, range=[{mask_np.min()}, {mask_np.max()}]")
 
         # TODO: Implement handling of texture_mode and rendering_engine
         # These require modifications to the underlying pipeline
         use_vertex_color = not with_texture_baking
 
-        # Extract serialized data from Gaussian and Mesh decode outputs
-        # These outputs contain "_serialized_stage2_output" with base64-encoded pickle data
-        # We can't deserialize here because it requires sam3d_objects module (worker-only)
-        # Instead, pass the serialized data to the model wrapper which will send to worker
-        gaussian_serialized = gaussian_data.get("_serialized_stage2_output")
-        mesh_serialized = mesh_data.get("_serialized_stage2_output")
+        # Validate file paths
+        import os
+        print(f"[SAM3DObjects] Validating file paths...")
+        print(f"[SAM3DObjects]   - glb_path: '{glb_path}'")
+        print(f"[SAM3DObjects]   - ply_path: '{ply_path}'")
 
-        if not gaussian_serialized or not mesh_serialized:
-            raise RuntimeError(
-                "Texture baking requires both Gaussian and Mesh data in serialized format. "
-                "Ensure SAM3DGaussianDecode and SAM3DMeshDecode outputs are connected."
-            )
+        if not glb_path or not ply_path:
+            raise RuntimeError("Both glb_path and ply_path are required")
 
-        # Create a special marker dict that tells the model wrapper to combine these
+        if not os.path.exists(glb_path):
+            raise RuntimeError(f"GLB file not found: {glb_path}")
+        if not os.path.exists(ply_path):
+            raise RuntimeError(f"PLY file not found: {ply_path}")
+
+        glb_size = os.path.getsize(glb_path)
+        ply_size = os.path.getsize(ply_path)
+        print(f"[SAM3DObjects] File validation passed:")
+        print(f"[SAM3DObjects]   - GLB: {glb_path} ({glb_size:,} bytes)")
+        print(f"[SAM3DObjects]   - PLY: {ply_path} ({ply_size:,} bytes)")
+
+        # Create a marker dict with file paths
         stage2_output = {
-            "_gaussian_serialized": gaussian_serialized,
-            "_mesh_serialized": mesh_serialized,
-            "_needs_combination": True
+            "_glb_path": glb_path,
+            "_ply_path": ply_path,
+            "_needs_file_loading": True
         }
 
         # Run texture baking using combined output
         try:
-            print("[SAM3DObjects] Running texture baking...")
+            print("[SAM3DObjects] Running texture baking via embedders...")
+            print(f"[SAM3DObjects] Embedders call parameters:")
+            print(f"[SAM3DObjects]   - stage2_output keys: {list(stage2_output.keys())}")
+            print(f"[SAM3DObjects]   - with_mesh_postprocess: {with_mesh_postprocess}")
+            print(f"[SAM3DObjects]   - with_texture_baking: {with_texture_baking}")
+            print(f"[SAM3DObjects]   - use_vertex_color: {use_vertex_color}")
+            print(f"[SAM3DObjects]   - texture_size: {texture_size}")
+            print(f"[SAM3DObjects]   - simplify: {simplify}")
             output = embedders(
                 image_pil, mask_np,
                 seed=seed,
@@ -167,20 +197,31 @@ class SAM3DTextureBake:
                 texture_size=texture_size,
                 simplify=simplify,
             )
+            print(f"[SAM3DObjects] Embedders returned output with keys: {list(output.keys()) if isinstance(output, dict) else type(output)}")
 
         except Exception as e:
+            print(f"[SAM3DObjects] ERROR during texture baking: {type(e).__name__}: {e}")
             raise RuntimeError(f"SAM3D texture baking failed: {e}") from e
 
-        print("[SAM3DObjects] Texture baking completed!")
+        print("[SAM3DObjects] Texture baking completed successfully!")
 
         # Extract outputs
-        glb_path = output.get("glb_path")
-        ply_path = output.get("ply_path")
+        print(f"[SAM3DObjects] Extracting outputs from result...")
+        output_glb_path = output.get("glb_path")
+        output_ply_path = output.get("ply_path")
         pose_data = output.get("metadata", {})
 
-        if glb_path is None:
+        print(f"[SAM3DObjects] Output paths:")
+        print(f"[SAM3DObjects]   - output_glb_path: {output_glb_path}")
+        print(f"[SAM3DObjects]   - output_ply_path: {output_ply_path}")
+        print(f"[SAM3DObjects]   - pose_data keys: {list(pose_data.keys()) if pose_data else 'None'}")
+
+        if output_glb_path is None:
+            print(f"[SAM3DObjects] ERROR: GLB file was not generated")
             raise RuntimeError("GLB file was not generated")
-        if ply_path is None:
+        if output_ply_path is None:
+            print(f"[SAM3DObjects] ERROR: PLY file was not generated")
             raise RuntimeError("PLY file was not generated")
 
-        return (glb_path, ply_path, pose_data)
+        print(f"[SAM3DObjects] TextureBake node completed successfully!")
+        return (output_glb_path, output_ply_path, pose_data)

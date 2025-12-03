@@ -50,6 +50,401 @@ def _run_subprocess_logged(cmd: list, log_file: Path, step_name: str, **kwargs):
         raise
 
 
+def detect_wsl():
+    """
+    Detect if running under Windows Subsystem for Linux.
+
+    Returns:
+        bool: True if running under WSL
+    """
+    # Method 1: Check /proc/sys/kernel/osrelease (most reliable)
+    try:
+        with open('/proc/sys/kernel/osrelease', 'r') as f:
+            kernel_release = f.read().lower()
+            if 'microsoft' in kernel_release or 'wsl' in kernel_release:
+                return True
+    except (FileNotFoundError, PermissionError):
+        pass
+
+    # Method 2: Check for WSLInterop
+    if os.path.exists('/proc/sys/fs/binfmt_misc/WSLInterop'):
+        return True
+
+    # Method 3: Check environment variable
+    if 'WSL_DISTRO_NAME' in os.environ:
+        return True
+
+    return False
+
+
+def detect_windows_shell_environment():
+    """
+    Detect if running in MSYS2, Cygwin, Git Bash, or native Windows.
+
+    Returns:
+        str: 'msys2', 'cygwin', 'git-bash', 'native-windows', or 'other'
+    """
+    system = platform.system()
+
+    # Check if running on actual Windows
+    if system == 'Windows':
+        # Check environment variables
+        msystem = os.environ.get('MSYSTEM', '')
+        if msystem:
+            # MSYS2 sets MSYSTEM to MINGW64, MINGW32, etc.
+            if 'MINGW' in msystem:
+                return 'git-bash'  # Git Bash also uses MINGW
+            return 'msys2'
+
+        # Check TERM variable
+        term = os.environ.get('TERM', '')
+        if term and 'cygwin' in term:
+            return 'cygwin'
+
+        return 'native-windows'
+
+    # Check OSTYPE shell variable
+    ostype = os.environ.get('OSTYPE', '')
+    if ostype:
+        if ostype.startswith('msys'):
+            return 'msys2'
+        elif ostype.startswith('cygwin'):
+            return 'cygwin'
+
+    # Check if platform.system() reports Cygwin/MSYS variants
+    if 'CYGWIN' in system:
+        return 'cygwin'
+    elif 'MSYS' in system or 'MINGW' in system:
+        return 'msys2'
+
+    return 'other'
+
+
+def check_platform_compatibility():
+    """
+    Check if the platform is compatible with the installation.
+    Warns about WSL, MSYS2, Cygwin which may have compatibility issues.
+
+    Returns:
+        tuple: (is_compatible, warning_message)
+    """
+    # Check for WSL
+    if detect_wsl():
+        return (False,
+                "Running in Windows Subsystem for Linux (WSL).\n"
+                "This package requires native Windows Python, not WSL.\n"
+                "Please install and run from Windows PowerShell or Command Prompt.")
+
+    # Check for MSYS2/Cygwin
+    shell_env = detect_windows_shell_environment()
+    if shell_env in ('msys2', 'cygwin', 'git-bash'):
+        return (False,
+                f"Running in {shell_env.upper()} environment.\n"
+                f"This package requires native Windows Python.\n"
+                f"Please use PowerShell, Command Prompt, or native Windows terminal.")
+
+    return (True, None)
+
+
+def validate_wheel_url(url, timeout=10):
+    """
+    Validate that a wheel URL exists and is accessible.
+
+    Args:
+        url: URL to validate
+        timeout: Request timeout in seconds
+
+    Returns:
+        dict: Validation result with status, size, etc.
+    """
+    import urllib.request
+    import urllib.error
+
+    result = {
+        'valid': False,
+        'url': url,
+        'status_code': None,
+        'content_length': None,
+        'error': None
+    }
+
+    # Create HEAD request
+    request = urllib.request.Request(url, method='HEAD')
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            result['status_code'] = response.status
+            result['valid'] = 200 <= response.status < 300
+            result['content_length'] = response.headers.get('Content-Length')
+
+        return result
+
+    except urllib.error.HTTPError as e:
+        result['status_code'] = e.code
+        result['error'] = f'HTTP {e.code}: {e.reason}'
+
+        # Try GET if HEAD failed with 405
+        if e.code == 405:
+            try:
+                request = urllib.request.Request(url)
+                request.add_header('Range', 'bytes=0-0')
+
+                with urllib.request.urlopen(request, timeout=timeout) as response:
+                    result['status_code'] = response.status
+                    result['valid'] = 200 <= response.status < 300
+                    result['error'] = None
+
+            except Exception:
+                pass  # Keep original error
+
+        return result
+
+    except urllib.error.URLError as e:
+        result['error'] = f'URL error: {e.reason}'
+        return result
+
+    except Exception as e:
+        result['error'] = f'Unexpected error: {e}'
+        return result
+
+
+def check_vcruntime_dlls():
+    """
+    Check if required Visual C++ runtime DLLs are available.
+
+    Returns:
+        dict: Status of each required DLL
+    """
+    import ctypes.util
+
+    required_dlls = [
+        'VCRUNTIME140.dll',
+        'MSVCP140.dll',
+    ]
+
+    dll_status = {}
+    for dll_name in required_dlls:
+        # Try to find DLL in system path
+        dll_path = ctypes.util.find_library(dll_name.replace('.dll', ''))
+        dll_status[dll_name] = dll_path is not None
+
+    return dll_status
+
+
+def check_vc_redistributable():
+    """
+    Check if Visual C++ Redistributable is installed.
+
+    Returns:
+        tuple: (is_installed, error_message)
+    """
+    if platform.system() != 'Windows':
+        return (True, None)  # Not needed on non-Windows
+
+    print("[SAM3DObjects] Checking Visual C++ Redistributable...")
+
+    dll_status = check_vcruntime_dlls()
+    missing_dlls = [dll for dll, found in dll_status.items() if not found]
+
+    if missing_dlls:
+        error_msg = (
+            f"Visual C++ Redistributable is not installed or incomplete!\n"
+            f"\nMissing DLLs: {', '.join(missing_dlls)}\n"
+            f"\nThe prebuilt Python wheels require Visual C++ runtime libraries.\n"
+            f"Please install Visual C++ Redistributable for Visual Studio 2015-2022:\n"
+            f"\n  Download (64-bit): https://aka.ms/vs/17/release/vc_redist.x64.exe\n"
+            f"\nAfter installation, restart your terminal and try again."
+        )
+        return (False, error_msg)
+
+    print("[SAM3DObjects] ✓ Visual C++ Redistributable found")
+    return (True, None)
+
+
+def find_msvc_compiler():
+    """
+    Find MSVC compiler (cl.exe) on the system.
+
+    Returns:
+        Path or None: Path to cl.exe if found
+    """
+    import shutil
+
+    # Method 1: Check if already in PATH
+    cl_path = shutil.which('cl.exe')
+    if cl_path:
+        return Path(cl_path)
+
+    # Method 2: Search common MSVC installation paths
+    program_files = [
+        os.environ.get('ProgramFiles(x86)', 'C:\\Program Files (x86)'),
+        os.environ.get('ProgramFiles', 'C:\\Program Files'),
+    ]
+
+    for pf in program_files:
+        vs_base = Path(pf) / 'Microsoft Visual Studio'
+        if not vs_base.exists():
+            continue
+
+        # Search for cl.exe in VS installations
+        # Pattern: VS/{year}/{edition}/VC/Tools/MSVC/{version}/bin/Host{arch}/{target}/cl.exe
+        try:
+            for year_dir in vs_base.iterdir():
+                if not year_dir.is_dir():
+                    continue
+
+                for edition_dir in year_dir.iterdir():
+                    if not edition_dir.is_dir():
+                        continue
+
+                    vc_tools = edition_dir / 'VC' / 'Tools' / 'MSVC'
+                    if not vc_tools.exists():
+                        continue
+
+                    for version_dir in vc_tools.iterdir():
+                        # Check for 64-bit compiler
+                        cl_exe = version_dir / 'bin' / 'Hostx64' / 'x64' / 'cl.exe'
+                        if cl_exe.exists():
+                            return cl_exe
+
+                        # Check for 32-bit compiler
+                        cl_exe = version_dir / 'bin' / 'Hostx86' / 'x86' / 'cl.exe'
+                        if cl_exe.exists():
+                            return cl_exe
+        except (PermissionError, OSError):
+            continue
+
+    return None
+
+
+def test_compile_cpp(cl_path=None):
+    """
+    Test compile a simple C++ program to verify MSVC works.
+
+    Args:
+        cl_path: Path to cl.exe (optional, will search if not provided)
+
+    Returns:
+        bool: True if compilation succeeded
+    """
+    import tempfile
+
+    if cl_path is None:
+        cl_path = find_msvc_compiler()
+
+    if cl_path is None:
+        return False
+
+    # Simple test program
+    test_code = """
+#include <iostream>
+int main() {
+    std::cout << "Hello from MSVC!" << std::endl;
+    return 0;
+}
+"""
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        source_file = tmpdir / 'test.cpp'
+        exe_file = tmpdir / 'test.exe'
+
+        # Write test source
+        source_file.write_text(test_code)
+
+        try:
+            # Compile
+            result = subprocess.run(
+                [str(cl_path), '/EHsc', '/nologo', str(source_file), f'/Fe{exe_file}'],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                cwd=tmpdir
+            )
+
+            if result.returncode != 0:
+                print(f"[SAM3DObjects] MSVC test compilation failed: {result.stderr}")
+                return False
+
+            # Run the compiled program
+            result = subprocess.run(
+                [str(exe_file)],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            return result.returncode == 0 and 'Hello from MSVC!' in result.stdout
+
+        except (subprocess.SubprocessError, OSError) as e:
+            print(f"[SAM3DObjects] MSVC test compilation error: {e}")
+            return False
+
+
+def rmtree_windows_robust(path, max_retries=5, delay=0.5):
+    """
+    Robust directory removal for Windows with error handling.
+
+    Handles Windows file locking, read-only files, and antivirus interference.
+
+    Args:
+        path: Path to directory
+        max_retries: Maximum number of retry attempts
+        delay: Initial delay between retries (seconds)
+
+    Returns:
+        bool: True if successful
+    """
+    import time
+    import stat
+    import shutil
+
+    path = Path(path)
+
+    def handle_remove_readonly(func, path, exc):
+        """Error handler for removing read-only files."""
+        if isinstance(exc[1], PermissionError):
+            # Try to change permissions and retry
+            try:
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+            except Exception:
+                raise exc[1]
+        else:
+            raise exc[1]
+
+    for attempt in range(max_retries):
+        try:
+            shutil.rmtree(path, onerror=handle_remove_readonly)
+            return True
+
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                # Wait with exponential backoff
+                wait_time = delay * (2 ** attempt)
+                print(f"[SAM3DObjects] Retrying file operation ({attempt + 1}/{max_retries}) after {wait_time:.1f}s...")
+                time.sleep(wait_time)
+            else:
+                # Last attempt failed
+                print(f"[SAM3DObjects] Failed to remove {path} after {max_retries} attempts")
+                print(f"[SAM3DObjects] This may be caused by:")
+                print(f"[SAM3DObjects]   - Antivirus software scanning files")
+                print(f"[SAM3DObjects]   - Windows Search indexer")
+                print(f"[SAM3DObjects]   - File Explorer having the directory open")
+                print(f"[SAM3DObjects]   - Another process using the files")
+                raise
+
+        except OSError as e:
+            if attempt < max_retries - 1:
+                wait_time = delay * (2 ** attempt)
+                print(f"[SAM3DObjects] OS error, retrying ({attempt + 1}/{max_retries}) after {wait_time:.1f}s: {e}")
+                time.sleep(wait_time)
+            else:
+                raise
+
+    return False
+
+
 class SAM3DEnvironmentManager:
     """Manages the isolated venv environment for SAM3D."""
 
@@ -60,6 +455,16 @@ class SAM3DEnvironmentManager:
         Args:
             node_root: Root directory of the ComfyUI-SAM3DObjects node
         """
+        # Check platform compatibility first
+        is_compatible, warning_msg = check_platform_compatibility()
+        if not is_compatible:
+            print(f"\n{'='*60}")
+            print("[SAM3DObjects] PLATFORM COMPATIBILITY ERROR")
+            print('='*60)
+            print(warning_msg)
+            print('='*60)
+            raise RuntimeError(f"Incompatible platform detected:\n{warning_msg}")
+
         self.node_root = Path(node_root)
         self.env_dir = self.node_root / "_env"
         self.log_file = self.node_root / "install.log"
@@ -390,22 +795,74 @@ class SAM3DEnvironmentManager:
             check=True
         )
 
-        # Step 4.5: Install nvdiffrast from prebuilt wheel to avoid JIT compilation
-        # Using prebuilt wheel from Unique3D HuggingFace for Python 3.10 + Linux x86_64
+        # Step 4.5: Install nvdiffrast from prebuilt wheel (platform-specific)
+        # Using prebuilt wheel from Unique3D HuggingFace for Python 3.10
         # Note: The wheel has invalid version format, so we extract and install directly
+
+        # Check Visual C++ Redistributable on Windows before installing wheels
+        vc_installed, vc_error = check_vc_redistributable()
+        if not vc_installed:
+            print(f"\n{'='*60}")
+            print("[SAM3DObjects] DEPENDENCY ERROR")
+            print('='*60)
+            print(vc_error)
+            print('='*60)
+            raise RuntimeError(f"Missing Visual C++ Redistributable:\n{vc_error}")
+
         print("[SAM3DObjects] Installing nvdiffrast (prebuilt wheel for Python 3.10)...")
         import urllib.request
         import tempfile
         import zipfile
         import shutil
+        import platform
 
-        # Using TRELLIS wheel built for PyTorch 2.4.0 (compatible with our 2.4.1)
-        nvdiffrast_wheel_url = "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl"
+        system = platform.system()
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir_path = Path(tmpdir)
-            wheel_path = tmpdir_path / "nvdiffrast.whl"
-            urllib.request.urlretrieve(nvdiffrast_wheel_url, wheel_path)
+        # Platform-specific wheel URLs
+        nvdiffrast_wheel_urls = {
+            "Linux": "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl",
+            "Windows": "https://huggingface.co/MonsterMMORPG/SECourses_Premium_Flash_Attention/resolve/main/nvdiffrast-0.3.3-cp310-cp310-win_amd64.whl",
+            # Darwin: No prebuilt wheel available, will fall back to pip install from source
+        }
+
+        nvdiffrast_wheel_url = nvdiffrast_wheel_urls.get(system)
+
+        if nvdiffrast_wheel_url:
+            # Validate wheel URL before downloading
+            print(f"[SAM3DObjects] Validating nvdiffrast wheel URL...")
+            validation = validate_wheel_url(nvdiffrast_wheel_url, timeout=10)
+
+            if not validation['valid']:
+                error_msg = (
+                    f"nvdiffrast wheel URL validation failed!\n"
+                    f"  URL: {nvdiffrast_wheel_url}\n"
+                    f"  Error: {validation['error']}\n"
+                )
+                if validation['status_code']:
+                    error_msg += f"  HTTP Status: {validation['status_code']}\n"
+                error_msg += (
+                    f"\nThe prebuilt wheel for {system} is not available.\n"
+                    f"This may be because:\n"
+                    f"  - The URL has changed or the file was removed\n"
+                    f"  - Network connectivity issues\n"
+                    f"  - The hosting service is temporarily unavailable\n"
+                    f"\nPlease report this issue at:\n"
+                    f"  https://github.com/anthropics/claude-code/issues"
+                )
+                raise RuntimeError(error_msg)
+
+            # Log file size if available
+            if validation['content_length']:
+                size_mb = int(validation['content_length']) / (1024 * 1024)
+                print(f"[SAM3DObjects] Downloading nvdiffrast wheel ({size_mb:.1f} MB)...")
+            else:
+                print(f"[SAM3DObjects] Downloading nvdiffrast wheel...")
+
+            # Install from prebuilt wheel
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                wheel_path = tmpdir_path / "nvdiffrast.whl"
+                urllib.request.urlretrieve(nvdiffrast_wheel_url, wheel_path)
 
             # Extract wheel completely (it's a zip file)
             extract_dir = tmpdir_path / "extracted"
@@ -414,28 +871,52 @@ class SAM3DEnvironmentManager:
                 zip_ref.extractall(extract_dir)
 
             # Copy ALL package files to site-packages
-            site_packages = self.env_dir / "lib" / "python3.10" / "site-packages"
+            # Windows: Lib/site-packages, Unix: lib/python3.10/site-packages
+            if platform.system() == "Windows":
+                site_packages = self.env_dir / "Lib" / "site-packages"
+            else:
+                site_packages = self.env_dir / "lib" / "python3.10" / "site-packages"
 
             # Copy the nvdiffrast package directory
             nvdiffrast_src = extract_dir / "nvdiffrast"
             if nvdiffrast_src.exists():
                 nvdiffrast_dest = site_packages / "nvdiffrast"
                 if nvdiffrast_dest.exists():
-                    shutil.rmtree(nvdiffrast_dest)
+                    rmtree_windows_robust(nvdiffrast_dest)
                 shutil.copytree(nvdiffrast_src, nvdiffrast_dest)
                 print(f"[SAM3DObjects] Installed nvdiffrast package to {nvdiffrast_dest}")
 
-            # Copy ALL .so files (the compiled CUDA plugins - this is critical!)
-            so_count = 0
-            for so_file in extract_dir.glob("*.so"):
-                shutil.copy2(so_file, site_packages / so_file.name)
-                print(f"[SAM3DObjects] Installed compiled plugin: {so_file.name}")
-                so_count += 1
+            # Copy ALL compiled plugin files (platform-specific extensions)
+            # Linux/macOS: .so files, Windows: .dll/.pyd files
+            lib_ext = "*.dll" if system == "Windows" else "*.so"
+            plugin_count = 0
+            for plugin_file in extract_dir.glob(lib_ext):
+                shutil.copy2(plugin_file, site_packages / plugin_file.name)
+                print(f"[SAM3DObjects] Installed compiled plugin: {plugin_file.name}")
+                plugin_count += 1
 
-            if so_count == 0:
-                print("[SAM3DObjects] Warning: No .so plugins found in wheel!")
+            # Also check for .pyd files on Windows (Python extension modules)
+            if system == "Windows":
+                for pyd_file in extract_dir.glob("*.pyd"):
+                    shutil.copy2(pyd_file, site_packages / pyd_file.name)
+                    print(f"[SAM3DObjects] Installed compiled plugin: {pyd_file.name}")
+                    plugin_count += 1
 
-            print(f"[SAM3DObjects] nvdiffrast installation complete ({so_count} plugin(s) installed)")
+            if plugin_count == 0:
+                print(f"[SAM3DObjects] Warning: No compiled plugins ({lib_ext}) found in wheel!")
+
+            print(f"[SAM3DObjects] nvdiffrast installation complete ({plugin_count} plugin(s) installed)")
+        else:
+            # Fallback: Install from source (for Windows/macOS where no prebuilt wheel available)
+            print(f"[SAM3DObjects] No prebuilt wheel for {system}, installing nvdiffrast from source...")
+            print("[SAM3DObjects] Warning: This requires a working C++ compiler and may take several minutes")
+            _run_subprocess_logged(
+                [str(python_exe), "-m", "pip", "install", "nvdiffrast"],
+                self.log_file,
+                "Install nvdiffrast from source",
+                check=True
+            )
+            print("[SAM3DObjects] nvdiffrast installed from source")
 
         # Step 6: Install kaolin (NVIDIA library with special wheel location)
         print("[SAM3DObjects] Installing Kaolin...")
@@ -512,28 +993,23 @@ class SAM3DEnvironmentManager:
 
         except Exception as e:
             print(f"[SAM3DObjects] Failed to install PyTorch3D via micromamba: {e}")
-            print("[SAM3DObjects] Falling back to building from source...")
 
-            # Fallback: build from source
+            # Fallback: Use third-party prebuilt wheels (NO source building!)
+            # MiroPsota's repository provides Windows/Linux wheels for PyTorch 2.4.1 + CUDA 12.1
+            print("[SAM3DObjects] Using prebuilt PyTorch3D wheels from third-party repository...")
+            print("[SAM3DObjects] Repository: https://github.com/MiroPsota/torch_packages_builder")
+
             _run_subprocess_logged(
                 [
                     str(python_exe), "-m", "pip", "install",
-                    "wheel", "setuptools", "ninja"
+                    "--extra-index-url", "https://miropsota.github.io/torch_packages_builder",
+                    "pytorch3d==0.7.7+pt2.4.1cu121"
                 ],
                 self.log_file,
-                "Install build tools for pytorch3d",
+                "Install PyTorch3D from prebuilt wheel",
                 check=True
             )
-            _run_subprocess_logged(
-                [
-                    str(python_exe), "-m", "pip", "install",
-                    "--no-build-isolation",
-                    "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.7"
-                ],
-                self.log_file,
-                "Build and install pytorch3d from source",
-                check=True
-            )
+            print("[SAM3DObjects] PyTorch3D installed from prebuilt wheel!")
 
     def _install_cuda_toolkit_pypi(self, python_exe: Path) -> bool:
         """
@@ -553,16 +1029,13 @@ class SAM3DEnvironmentManager:
                 check=True
             )
 
-            # Verify nvcc exists in the venv
-            result = subprocess.run(
-                ["find", str(self.env_dir), "-name", "nvcc", "-type", "f"],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
+            # Verify nvcc exists in the venv (cross-platform using Path.glob)
+            import platform
+            nvcc_pattern = "nvcc.exe" if platform.system() == "Windows" else "nvcc"
+            nvcc_paths = list(self.env_dir.glob(f"**/{nvcc_pattern}"))
 
-            if result.stdout.strip():
-                nvcc_path = result.stdout.strip().split('\n')[0]  # Take first match
+            if nvcc_paths:
+                nvcc_path = str(nvcc_paths[0])  # Take first match
                 print(f"[SAM3DObjects] nvcc found at: {nvcc_path}")
 
                 # Verify it's executable
@@ -600,9 +1073,23 @@ class SAM3DEnvironmentManager:
         import tempfile
         import shutil
 
-        # CUDA toolkit dev package from conda-forge for CUDA 12.1
+        # CUDA toolkit dev package from conda-forge for CUDA 12.1 (platform-specific)
         # From: https://anaconda.org/conda-forge/cudatoolkit-dev
-        cuda_toolkit_url = "https://conda.anaconda.org/conda-forge/linux-64/cudatoolkit-dev-12.1.0-h4b99516_3.conda"
+        import platform
+        system = platform.system()
+
+        cuda_toolkit_urls = {
+            "Linux": "https://conda.anaconda.org/conda-forge/linux-64/cudatoolkit-dev-12.1.0-h4b99516_3.conda",
+            "Windows": "https://conda.anaconda.org/conda-forge/win-64/cudatoolkit-dev-12.1.0-hd020da6_3.conda",
+            "Darwin": "https://conda.anaconda.org/conda-forge/osx-64/cudatoolkit-dev-12.1.0-h2e7b6a8_3.conda",
+        }
+
+        cuda_toolkit_url = cuda_toolkit_urls.get(system)
+        if not cuda_toolkit_url:
+            raise RuntimeError(f"Unsupported platform for CUDA toolkit: {system}")
+
+        # Platform-specific nvcc executable name
+        nvcc_exe = "nvcc.exe" if system == "Windows" else "nvcc"
 
         print("[SAM3DObjects] Downloading CUDA toolkit from conda-forge...")
 
@@ -672,15 +1159,15 @@ class SAM3DEnvironmentManager:
                     inner_extract_dir / "nvvm",  # Conda packages often have nvvm/ at root
                     inner_extract_dir,
                 ]:
-                    if (candidate / "bin" / "nvcc").exists() or (candidate.parent / "bin" / "nvcc").exists():
-                        cuda_root = candidate.parent if (candidate.parent / "bin" / "nvcc").exists() else candidate
+                    if (candidate / "bin" / nvcc_exe).exists() or (candidate.parent / "bin" / nvcc_exe).exists():
+                        cuda_root = candidate.parent if (candidate.parent / "bin" / nvcc_exe).exists() else candidate
                         break
 
                 if not cuda_root:
                     # CUDA toolkit might be under a subdirectory
                     bin_dirs = list(inner_extract_dir.glob("**/bin"))
                     for bin_dir in bin_dirs:
-                        if (bin_dir / "nvcc").exists():
+                        if (bin_dir / nvcc_exe).exists():
                             cuda_root = bin_dir.parent
                             break
 
@@ -690,18 +1177,19 @@ class SAM3DEnvironmentManager:
                 # Copy CUDA toolkit to venv
                 cuda_install_dir = self.env_dir / "cuda"
                 if cuda_install_dir.exists():
-                    shutil.rmtree(cuda_install_dir)
+                    rmtree_windows_robust(cuda_install_dir)
 
                 print(f"[SAM3DObjects] Installing CUDA toolkit to {cuda_install_dir}...")
                 shutil.copytree(cuda_root, cuda_install_dir)
 
                 # Verify nvcc exists
-                nvcc_path = cuda_install_dir / "bin" / "nvcc"
+                nvcc_path = cuda_install_dir / "bin" / nvcc_exe
                 if not nvcc_path.exists():
                     raise RuntimeError(f"nvcc not found after installation at {nvcc_path}")
 
-                # Make nvcc executable
-                nvcc_path.chmod(0o755)
+                # Make nvcc executable (Unix only - Windows doesn't need chmod)
+                if system in ["Linux", "Darwin"]:
+                    nvcc_path.chmod(0o755)
 
                 # Test nvcc
                 test_result = subprocess.run(
@@ -723,66 +1211,141 @@ class SAM3DEnvironmentManager:
 
     def _install_gcc_from_conda(self, python_exe: Path) -> None:
         """
-        Install g++ compiler using micromamba.
+        Install C++ compiler using micromamba (cross-platform).
 
         This provides the C++ host compiler that nvcc needs for CUDA JIT compilation.
-        Uses micromamba to properly install the compiler toolchain.
+        - Linux: Installs gxx_linux-64 and sysroot_linux-64
+        - Windows: Installs m2w64-toolchain or detects system MSVC
+        - macOS: Installs clang_osx-64
         """
-        print("[SAM3DObjects] Installing g++ compiler using micromamba...")
+        import platform
+        system = platform.system()
+
+        print(f"[SAM3DObjects] Installing C++ compiler for {system}...")
 
         try:
-            # Use micromamba to install g++ and dependencies directly into the environment
-            # This is much cleaner than manual conda package extraction!
-            _run_subprocess_logged(
-                [
-                    str(self.micromamba_exe), "install",
-                    "-p", str(self.env_dir),
-                    "-c", "conda-forge",
-                    "gxx_linux-64",  # Compiler package
-                    "sysroot_linux-64",  # System libraries needed by compiler
-                    "-y"
-                ],
-                self.log_file,
-                "Install g++ compiler via micromamba",
-                check=True
-            )
+            # Platform-specific compiler packages
+            if system == "Windows":
+                # On Windows, try to detect and validate system MSVC first
+                print("[SAM3DObjects] Checking for system MSVC compiler...")
+                cl_path = find_msvc_compiler()
 
-            # Verify g++ was installed
-            # Micromamba installs to standard bin/ location
-            gxx_candidates = [
-                self.env_dir / "bin" / "x86_64-conda-linux-gnu-g++",
-                self.env_dir / "bin" / "g++",
-            ]
+                msvc_works = False
+                if cl_path:
+                    print(f"[SAM3DObjects] Found MSVC at: {cl_path}")
+                    print("[SAM3DObjects] Testing MSVC compilation...")
 
-            gxx_path = None
-            for candidate in gxx_candidates:
-                if candidate.exists():
-                    gxx_path = candidate
-                    break
+                    if test_compile_cpp(cl_path):
+                        print("[SAM3DObjects] ✓ MSVC compiler works correctly")
+                        msvc_works = True
+                    else:
+                        print("[SAM3DObjects] ✗ MSVC found but test compilation failed")
+                        print("[SAM3DObjects] Will install m2w64-toolchain as fallback...")
 
-            if not gxx_path:
-                raise RuntimeError(
-                    f"g++ not found after micromamba installation. "
-                    f"Checked: {[str(c) for c in gxx_candidates]}"
+                if not msvc_works:
+                    # Install m2w64 toolchain if no system MSVC
+                    print("[SAM3DObjects] No system MSVC found, installing m2w64-toolchain...")
+                    _run_subprocess_logged(
+                        [
+                            str(self.micromamba_exe), "install",
+                            "-p", str(self.env_dir),
+                            "-c", "conda-forge",
+                            "m2w64-gcc",
+                            "m2w64-gcc-fortran",
+                            "-y"
+                        ],
+                        self.log_file,
+                        "Install m2w64 compiler via micromamba",
+                        check=True
+                    )
+
+                    # Verify compiler installation
+                    gcc_candidates = [
+                        self.env_dir / "Library" / "mingw-w64" / "bin" / "gcc.exe",
+                        self.env_dir / "Library" / "bin" / "gcc.exe",
+                    ]
+
+                    gcc_path = None
+                    for candidate in gcc_candidates:
+                        if candidate.exists():
+                            gcc_path = candidate
+                            break
+
+                    if not gcc_path:
+                        print("[SAM3DObjects] Warning: m2w64 gcc not found, relying on system compiler")
+                    else:
+                        print(f"[SAM3DObjects] m2w64 gcc installed: {gcc_path}")
+                else:
+                    print("[SAM3DObjects] Using system MSVC compiler")
+
+            elif system == "Linux":
+                # Linux: Use existing GCC installation logic
+                _run_subprocess_logged(
+                    [
+                        str(self.micromamba_exe), "install",
+                        "-p", str(self.env_dir),
+                        "-c", "conda-forge",
+                        "gxx_linux-64",  # Compiler package
+                        "sysroot_linux-64",  # System libraries needed by compiler
+                        "-y"
+                    ],
+                    self.log_file,
+                    "Install g++ compiler via micromamba",
+                    check=True
                 )
 
-            # Test g++
-            test_result = subprocess.run(
-                [str(gxx_path), "--version"],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
+                # Verify g++ was installed
+                gxx_candidates = [
+                    self.env_dir / "bin" / "x86_64-conda-linux-gnu-g++",
+                    self.env_dir / "bin" / "g++",
+                ]
 
-            if test_result.returncode != 0:
-                raise RuntimeError(f"g++ is not executable: {test_result.stderr}")
+                gxx_path = None
+                for candidate in gxx_candidates:
+                    if candidate.exists():
+                        gxx_path = candidate
+                        break
 
-            print(f"[SAM3DObjects] g++ compiler installed successfully via micromamba!")
-            print(f"[SAM3DObjects] g++ version: {test_result.stdout.splitlines()[0]}")
-            print(f"[SAM3DObjects] g++ location: {gxx_path}")
+                if not gxx_path:
+                    raise RuntimeError(
+                        f"g++ not found after micromamba installation. "
+                        f"Checked: {[str(c) for c in gxx_candidates]}"
+                    )
+
+                # Test g++
+                test_result = subprocess.run(
+                    [str(gxx_path), "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if test_result.returncode != 0:
+                    raise RuntimeError(f"g++ is not executable: {test_result.stderr}")
+
+                print(f"[SAM3DObjects] g++ compiler installed successfully!")
+                print(f"[SAM3DObjects] g++ version: {test_result.stdout.splitlines()[0]}")
+                print(f"[SAM3DObjects] g++ location: {gxx_path}")
+
+            elif system == "Darwin":
+                # macOS: Install clang
+                _run_subprocess_logged(
+                    [
+                        str(self.micromamba_exe), "install",
+                        "-p", str(self.env_dir),
+                        "-c", "conda-forge",
+                        "clang_osx-64",
+                        "clangxx_osx-64",
+                        "-y"
+                    ],
+                    self.log_file,
+                    "Install clang compiler via micromamba",
+                    check=True
+                )
+                print("[SAM3DObjects] clang compiler installed successfully!")
 
         except Exception as e:
-            raise RuntimeError(f"Failed to install g++ via micromamba: {e}") from e
+            raise RuntimeError(f"Failed to install C++ compiler: {e}") from e
 
     def setup_environment(self) -> None:
         """Complete environment setup process."""
