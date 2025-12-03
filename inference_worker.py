@@ -276,6 +276,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         # Extract request parameters
         config_path = request["config_path"]
         compile_model = request.get("compile", False)
+        use_cache = request.get("use_cache", False)
         image_b64 = request["image"]
         mask_b64 = request["mask"]
         seed = request.get("seed", 42)
@@ -346,6 +347,8 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}", file=sys.stderr)
         print(f"[Worker] Stage 2: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}", file=sys.stderr)
         print(f"[Worker] Postprocess: texture_size={texture_size}, simplify={simplify}", file=sys.stderr)
+        if use_cache:
+            print(f"[Worker] use_cache=True: Models will be offloaded to CPU after each stage (~50% VRAM reduction)", file=sys.stderr)
         print(f"[Worker] Image: mode={image.mode}, size={image.size}", file=sys.stderr)
         print(f"[Worker] Mask: shape={mask.shape}, dtype={mask.dtype}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
@@ -381,6 +384,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             gaussian_only=gaussian_only,
             mesh_only=mesh_only,
             save_files=save_files,
+            use_cache=use_cache,
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)

@@ -23,7 +23,7 @@ class SAM3DSLATGen:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("SAM3D_MODEL", {"tooltip": "SAM3D model loaded from checkpoint"}),
+                "slat_generator": ("SAM3D_MODEL", {"tooltip": "SLAT generator from LoadSAM3DModel"}),
                 "sparse_structure": ("SAM3D_SPARSE", {"tooltip": "Sparse structure from SAM3DSparseGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SparseGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SparseGen)"}),
@@ -61,7 +61,7 @@ class SAM3DSLATGen:
 
     def generate_slat(
         self,
-        model: Any,
+        slat_generator: Any,
         sparse_structure: dict,
         image: torch.Tensor,
         mask: torch.Tensor,
@@ -73,7 +73,7 @@ class SAM3DSLATGen:
         Generate SLAT latents via diffusion.
 
         Args:
-            model: SAM3D inference pipeline
+            slat_generator: SAM3D SLAT generator
             sparse_structure: Sparse structure from SAM3DSparseGen
             image: Input image tensor [B, H, W, C] (must match SparseGen)
             mask: Input mask tensor [N, H, W] (must match SparseGen)
@@ -94,7 +94,7 @@ class SAM3DSLATGen:
         # Run SLAT generation only (no decoding)
         try:
             print("[SAM3DObjects] Running SLAT generation...")
-            slat_output = model(
+            slat_output = slat_generator(
                 image_pil, mask_np,
                 seed=seed,
                 stage1_output=sparse_structure,  # Resume from sparse generation

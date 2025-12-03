@@ -23,7 +23,7 @@ class SAM3DGaussianDecode:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("SAM3D_MODEL", {"tooltip": "SAM3D model loaded from checkpoint"}),
+                "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel"}),
                 "slat": ("SAM3D_SLAT", {"tooltip": "SLAT from SAM3DSLATGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SLATGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SLATGen)"}),
@@ -55,7 +55,7 @@ class SAM3DGaussianDecode:
 
     def decode_gaussian(
         self,
-        model: Any,
+        slat_decoder_gs: Any,
         slat: dict,
         image: torch.Tensor,
         mask: torch.Tensor,
@@ -66,7 +66,7 @@ class SAM3DGaussianDecode:
         Decode SLAT to Gaussian splats.
 
         Args:
-            model: SAM3D inference pipeline
+            slat_decoder_gs: SAM3D Gaussian decoder
             slat: SLAT from SAM3DSLATGen
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
@@ -86,7 +86,7 @@ class SAM3DGaussianDecode:
         # Run Gaussian decoding only
         try:
             print("[SAM3DObjects] Running Gaussian decode...")
-            gaussian_output = model(
+            gaussian_output = slat_decoder_gs(
                 image_pil, mask_np,
                 seed=seed,
                 slat_output=slat,  # Resume from SLAT

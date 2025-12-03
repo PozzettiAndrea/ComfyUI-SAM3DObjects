@@ -342,6 +342,7 @@ class InferencePipelinePointMap(InferencePipeline):
         pointmap=None,
         decode_formats=None,
         estimate_plane=False,
+        use_cache=False,
     ) -> dict:
         image = self.merge_image_and_mask(image, mask)
         with self.device: 
@@ -389,6 +390,13 @@ class InferencePipelinePointMap(InferencePipeline):
                     use_distillation=use_stage1_distillation,
                 )
 
+                # Offload Stage 1 model to CPU if use_cache is enabled
+                if use_cache and "ss_generator" in self.models:
+                    logger.info("[use_cache] Offloading ss_generator to CPU...")
+                    self.models["ss_generator"].cpu()
+                    torch.cuda.empty_cache()
+                    logger.info("[use_cache] ss_generator offloaded, VRAM freed")
+
             # Apply pose decoding if not already present (needed for both fresh computation and stage1_output)
             if "translation" not in ss_return_dict or "rotation" not in ss_return_dict:
                 # We could probably use the decoder from the models themselves
@@ -435,6 +443,30 @@ class InferencePipelinePointMap(InferencePipeline):
                     formats = self.decode_formats if decode_formats is None else decode_formats
 
                 outputs = self.decode_slat(slat, formats)
+
+                # Offload decoders to CPU if use_cache is enabled
+                if use_cache:
+                    if gaussian_only and "slat_decoder_gs" in self.models:
+                        logger.info("[use_cache] Offloading slat_decoder_gs to CPU...")
+                        self.models["slat_decoder_gs"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] slat_decoder_gs offloaded, VRAM freed")
+                    if mesh_only and "slat_decoder_mesh" in self.models:
+                        logger.info("[use_cache] Offloading slat_decoder_mesh to CPU...")
+                        self.models["slat_decoder_mesh"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] slat_decoder_mesh offloaded, VRAM freed")
+                    if not gaussian_only and not mesh_only:
+                        # Both decoders were used
+                        if "slat_decoder_gs" in self.models:
+                            logger.info("[use_cache] Offloading slat_decoder_gs to CPU...")
+                            self.models["slat_decoder_gs"].cpu()
+                        if "slat_decoder_mesh" in self.models:
+                            logger.info("[use_cache] Offloading slat_decoder_mesh to CPU...")
+                            self.models["slat_decoder_mesh"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] Decoders offloaded, VRAM freed")
+
                 # Include stage1 data for potential downstream use
                 outputs["stage1_data"] = ss_return_dict
 
@@ -476,6 +508,13 @@ class InferencePipelinePointMap(InferencePipeline):
                     use_distillation=use_stage2_distillation,
                 )
 
+                # Offload Stage 2 model to CPU if use_cache is enabled
+                if use_cache and "slat_generator" in self.models:
+                    logger.info("[use_cache] Offloading slat_generator to CPU...")
+                    self.models["slat_generator"].cpu()
+                    torch.cuda.empty_cache()
+                    logger.info("[use_cache] slat_generator offloaded, VRAM freed")
+
                 # If slat_only is True, return SLAT without decoding
                 if slat_only:
                     logger.info("Finished SLAT generation! Returning SLAT for decoding")
@@ -493,6 +532,29 @@ class InferencePipelinePointMap(InferencePipeline):
                     formats = self.decode_formats if decode_formats is None else decode_formats
 
                 outputs = self.decode_slat(slat, formats)
+
+                # Offload decoders to CPU if use_cache is enabled
+                if use_cache:
+                    if gaussian_only and "slat_decoder_gs" in self.models:
+                        logger.info("[use_cache] Offloading slat_decoder_gs to CPU...")
+                        self.models["slat_decoder_gs"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] slat_decoder_gs offloaded, VRAM freed")
+                    elif mesh_only and "slat_decoder_mesh" in self.models:
+                        logger.info("[use_cache] Offloading slat_decoder_mesh to CPU...")
+                        self.models["slat_decoder_mesh"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] slat_decoder_mesh offloaded, VRAM freed")
+                    elif not gaussian_only and not mesh_only:
+                        # Both decoders were used
+                        if "slat_decoder_gs" in self.models:
+                            logger.info("[use_cache] Offloading slat_decoder_gs to CPU...")
+                            self.models["slat_decoder_gs"].cpu()
+                        if "slat_decoder_mesh" in self.models:
+                            logger.info("[use_cache] Offloading slat_decoder_mesh to CPU...")
+                            self.models["slat_decoder_mesh"].cpu()
+                        torch.cuda.empty_cache()
+                        logger.info("[use_cache] Decoders offloaded, VRAM freed")
 
                 # If stage2_only is True, return raw outputs without postprocessing
                 if stage2_only:

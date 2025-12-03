@@ -24,7 +24,7 @@ class SAM3DTextureBake:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("SAM3D_MODEL", {"tooltip": "SAM3D model loaded from checkpoint"}),
+                "embedders": ("SAM3D_MODEL", {"tooltip": "Embedders from LoadSAM3DModel (for preprocessing)"}),
                 "gaussian_data": ("SAM3D_GAUSSIAN", {"tooltip": "Gaussian from SAM3DGaussianDecode"}),
                 "mesh_data": ("SAM3D_MESH", {"tooltip": "Mesh from SAM3DMeshDecode"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match previous stages)"}),
@@ -84,7 +84,7 @@ class SAM3DTextureBake:
 
     def bake_texture(
         self,
-        model: Any,
+        embedders: Any,
         gaussian_data: dict,
         mesh_data: dict,
         image: torch.Tensor,
@@ -101,7 +101,7 @@ class SAM3DTextureBake:
         Bake Gaussian appearance into mesh UV textures.
 
         Args:
-            model: SAM3D inference pipeline
+            embedders: SAM3D model with embedders (for preprocessing)
             gaussian_data: Gaussian from SAM3DGaussianDecode
             mesh_data: Mesh from SAM3DMeshDecode
             image: Input image tensor [B, H, W, C] (must match previous stages)
@@ -157,7 +157,7 @@ class SAM3DTextureBake:
         # Run texture baking using combined output
         try:
             print("[SAM3DObjects] Running texture baking...")
-            output = model(
+            output = embedders(
                 image_pil, mask_np,
                 seed=seed,
                 stage2_output=stage2_output,  # Combined Gaussian + Mesh

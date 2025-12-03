@@ -23,7 +23,7 @@ class SAM3DSparseGen:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": ("SAM3D_MODEL", {"tooltip": "SAM3D model loaded from checkpoint"}),
+                "ss_generator": ("SAM3D_MODEL", {"tooltip": "Sparse structure generator from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "mask": ("MASK", {"tooltip": "Binary mask indicating the object region"}),
                 "seed": ("INT", {
@@ -60,7 +60,7 @@ class SAM3DSparseGen:
 
     def generate_sparse(
         self,
-        model: Any,
+        ss_generator: Any,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
@@ -71,7 +71,7 @@ class SAM3DSparseGen:
         Generate sparse voxel structure.
 
         Args:
-            model: SAM3D inference pipeline
+            ss_generator: SAM3D sparse structure generator
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
             seed: Random seed
@@ -94,7 +94,7 @@ class SAM3DSparseGen:
         # Run sparse structure generation only
         try:
             print("[SAM3DObjects] Running sparse structure generation...")
-            sparse_output = model(
+            sparse_output = ss_generator(
                 image_pil, mask_np,
                 seed=seed,
                 stage1_only=True,  # CRITICAL: Only run sparse generation

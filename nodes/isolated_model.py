@@ -16,16 +16,18 @@ class IsolatedSAM3DModel:
     conflicting with ComfyUI or other custom nodes.
     """
 
-    def __init__(self, config_path: str, compile: bool = False):
+    def __init__(self, config_path: str, compile: bool = False, use_cache: bool = False):
         """
         Initialize the isolated model.
 
         Args:
             config_path: Path to pipeline config
             compile: Whether to compile the model
+            use_cache: Offload models to CPU after use for VRAM savings
         """
         self.config_path = str(config_path)
         self.compile = compile
+        self.use_cache = use_cache
         self._bridge = None
 
     def get_bridge(self):
@@ -91,6 +93,7 @@ class IsolatedSAM3DModel:
             mask=mask,
             seed=seed,
             compile=self.compile,
+            use_cache=self.use_cache,
             stage1_inference_steps=stage1_inference_steps,
             stage2_inference_steps=stage2_inference_steps,
             stage1_cfg_strength=stage1_cfg_strength,
@@ -112,4 +115,4 @@ class IsolatedSAM3DModel:
         )
 
     def __repr__(self) -> str:
-        return f"IsolatedSAM3DModel(config={self.config_path}, compile={self.compile})"
+        return f"IsolatedSAM3DModel(config={self.config_path}, compile={self.compile}, use_cache={self.use_cache})"
