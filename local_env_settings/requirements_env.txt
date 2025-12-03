@@ -24,7 +24,7 @@ scipy>=1.11.0
 timm>=0.9.16
 transformers
 diffusers
-pytorch-lightning>=2.0.0  # Use pytorch-lightning instead of lightning to avoid ipywidgets dependency
+lightning>=2.0.0  # Code uses 'import lightning.pytorch' which requires the 'lightning' package
 
 # Image processing
 opencv-python>=4.9.0
@@ -32,7 +32,7 @@ scikit-image>=0.23.1
 imageio>=2.36.0
 
 # 3D processing libraries
-open3d>=0.18.0
+# open3d>=0.18.0  # OPTIONAL: Has DLL issues on Windows, falls back to trimesh
 trimesh
 point-cloud-utils>=0.29.5
 # pyvista>=0.43.0  # DISABLED: Pulls in ipywidgets -> jupyterlab which has long path issues on Windows
