@@ -6,10 +6,7 @@ Automatically copies example assets and workflows to ComfyUI directories on star
 Runs before ComfyUI's main initialization.
 """
 
-import os
 import shutil
-import signal
-import subprocess
 from pathlib import Path
 
 
@@ -18,55 +15,26 @@ def cleanup_orphaned_workers():
     print("[SAM3DObjects] Checking for orphaned inference workers...")
 
     try:
-        # Find inference_worker.py processes
-        result = subprocess.run(
-            ["pgrep", "-f", "inference_worker.py"],
-            capture_output=True,
-            text=True
-        )
+        import psutil
+    except ImportError:
+        print("[SAM3DObjects] psutil not available, skipping worker cleanup")
+        return
 
-        if result.returncode == 0 and result.stdout.strip():
-            pids = result.stdout.strip().split('\n')
-            print(f"[SAM3DObjects] Found {len(pids)} orphaned worker(s), terminating...")
-
-            for pid in pids:
-                try:
-                    os.kill(int(pid), signal.SIGTERM)
-                    print(f"[SAM3DObjects]   Killed worker PID {pid}")
-                except ProcessLookupError:
-                    pass  # Already dead
-                except PermissionError:
-                    print(f"[SAM3DObjects]   Warning: No permission to kill PID {pid}")
-                except Exception as e:
-                    print(f"[SAM3DObjects]   Warning: Failed to kill PID {pid}: {e}")
-        else:
-            print("[SAM3DObjects] No orphaned workers found")
-
-    except FileNotFoundError:
-        # pgrep not available, try alternative method
-        print("[SAM3DObjects] pgrep not found, using ps fallback...")
+    killed_count = 0
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
-            result = subprocess.run(
-                ["ps", "aux"],
-                capture_output=True,
-                text=True
-            )
+            cmdline = proc.info.get('cmdline') or []
+            if any('inference_worker.py' in arg for arg in cmdline):
+                proc.terminate()
+                print(f"[SAM3DObjects]   Killed worker PID {proc.pid}")
+                killed_count += 1
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
 
-            for line in result.stdout.split('\n'):
-                if 'inference_worker.py' in line and 'grep' not in line:
-                    # Extract PID (second column)
-                    parts = line.split()
-                    if len(parts) > 1:
-                        try:
-                            pid = int(parts[1])
-                            os.kill(pid, signal.SIGTERM)
-                            print(f"[SAM3DObjects]   Killed worker PID {pid}")
-                        except Exception as e:
-                            print(f"[SAM3DObjects]   Warning: Failed to kill worker: {e}")
-        except Exception as e:
-            print(f"[SAM3DObjects] Warning: Worker cleanup failed: {e}")
-    except Exception as e:
-        print(f"[SAM3DObjects] Warning: Worker cleanup failed: {e}")
+    if killed_count > 0:
+        print(f"[SAM3DObjects] Terminated {killed_count} orphaned worker(s)")
+    else:
+        print("[SAM3DObjects] No orphaned workers found")
 
 
 def copy_assets():
