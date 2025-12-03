@@ -559,10 +559,10 @@ class InferencePipeline:
         logger.info(
             f"Postprocessing mesh with option with_mesh_postprocess {with_mesh_postprocess}, with_texture_baking {with_texture_baking}..."
         )
-        if "mesh" in outputs:
+        if "mesh" in outputs and outputs["mesh"] is not None:
             glb = postprocessing_utils.to_glb(
-                outputs["gaussian"][0],
-                outputs["mesh"][0],
+                (outputs.get("gaussian") or [None])[0],
+                (outputs.get("mesh") or [None])[0],
                 # Optional parameters
                 simplify=simplify,  # Ratio of triangles to remove in the simplification process
                 texture_size=texture_size,  # Size of the texture used for the GLB

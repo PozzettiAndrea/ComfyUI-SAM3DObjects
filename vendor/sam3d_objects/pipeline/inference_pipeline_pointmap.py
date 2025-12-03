@@ -437,6 +437,36 @@ class InferencePipelinePointMap(InferencePipeline):
                 outputs = self.decode_slat(slat, formats)
                 # Include stage1 data for potential downstream use
                 outputs["stage1_data"] = ss_return_dict
+
+                # Handle gaussian_only and mesh_only modes (when slat_output provided)
+                if gaussian_only or mesh_only:
+                    logger.info(f"Finished decoding ({'Gaussian' if gaussian_only else 'Mesh'})!")
+
+                    # Convert to file-saveable format
+                    if gaussian_only and "gaussian" in outputs:
+                        # Convert gaussian output to gs format for file saving
+                        outputs["gs"] = outputs["gaussian"][0]
+                        logger.info("Prepared Gaussian for PLY export")
+
+                    if mesh_only and "mesh" in outputs:
+                        # Convert mesh to simple GLB using vertex colors (no texture baking)
+                        from sam3d_objects.model.backbone.tdfy_dit.utils import postprocessing_utils
+                        simple_glb = postprocessing_utils.to_glb(
+                            None,  # No Gaussian needed for vertex-colored mesh
+                            outputs["mesh"][0],
+                            simplify=simplify,
+                            texture_size=1024,
+                            verbose=False,
+                            with_mesh_postprocess=False,  # No expensive hole filling
+                            with_texture_baking=False,    # No texture baking
+                            use_vertex_color=True,        # Use vertex colors
+                            rendering_engine=self.rendering_engine,
+                        )
+                        outputs["glb"] = simple_glb
+                        logger.info("Prepared Mesh for GLB export (vertex colors)")
+
+                    # Return outputs for serialization
+                    return outputs
             else:
                 coords = ss_return_dict["coords"]
                 slat = self.sample_slat(
@@ -483,7 +513,7 @@ class InferencePipelinePointMap(InferencePipeline):
 
                     if mesh_only and "mesh" in outputs:
                         # Convert mesh to simple GLB using vertex colors (no texture baking)
-                        import vendor.sam3d_objects.pipeline.postprocessing_utils as postprocessing_utils
+                        from sam3d_objects.model.backbone.tdfy_dit.utils import postprocessing_utils
                         simple_glb = postprocessing_utils.to_glb(
                             None,  # No Gaussian needed for vertex-colored mesh
                             outputs["mesh"][0],

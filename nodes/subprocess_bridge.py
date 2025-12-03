@@ -212,6 +212,13 @@ class InferenceWorkerBridge:
         """Serialize stage2_output dict to base64."""
         if stage2_output is None:
             return None
+        # Check if this needs to combine separate Gaussian and Mesh serialized data
+        # DON'T deserialize here! Just mark it for worker to handle
+        if isinstance(stage2_output, dict) and stage2_output.get("_needs_combination"):
+            print(f"[SAM3DObjects] Passing separate Gaussian and Mesh data to worker for combination")
+            # Return a special marker that tells worker to combine them
+            # The worker will receive this via the stage2_output_b64 parameter
+            return base64.b64encode(pickle.dumps(stage2_output)).decode('utf-8')
         # Check if this is already serialized Stage 2 data from previous node
         if isinstance(stage2_output, dict) and "_serialized_stage2_output" in stage2_output:
             return stage2_output["_serialized_stage2_output"]
@@ -396,10 +403,14 @@ class InferenceWorkerBridge:
         if response.get("stage2_mode", False):
             print(f"[SAM3DObjects] Received Stage 2 output (kept as serialized data)")
             # Return the base64 string wrapped in a dict so Stage 3 node can identify it
-            return {
+            result = {
                 "_serialized_stage2_output": response["output"],
                 "_stage2_mode": True
             }
+            # Include file paths if they were returned (for gaussian_only/mesh_only modes)
+            if "file_output" in response:
+                result.update(response["file_output"])
+            return result
 
         # Normal mode: Load files from disk
         output = self.load_output_from_disk(response["output"])

@@ -134,11 +134,24 @@ class SAM3DTextureBake:
         # These require modifications to the underlying pipeline
         use_vertex_color = not with_texture_baking
 
-        # Combine Gaussian and Mesh into stage2_output format
+        # Extract serialized data from Gaussian and Mesh decode outputs
+        # These outputs contain "_serialized_stage2_output" with base64-encoded pickle data
+        # We can't deserialize here because it requires sam3d_objects module (worker-only)
+        # Instead, pass the serialized data to the model wrapper which will send to worker
+        gaussian_serialized = gaussian_data.get("_serialized_stage2_output")
+        mesh_serialized = mesh_data.get("_serialized_stage2_output")
+
+        if not gaussian_serialized or not mesh_serialized:
+            raise RuntimeError(
+                "Texture baking requires both Gaussian and Mesh data in serialized format. "
+                "Ensure SAM3DGaussianDecode and SAM3DMeshDecode outputs are connected."
+            )
+
+        # Create a special marker dict that tells the model wrapper to combine these
         stage2_output = {
-            "gaussian": gaussian_data.get("gaussian"),
-            "mesh": mesh_data.get("mesh"),
-            "stage1_data": mesh_data.get("stage1_data", {}),  # From either decoder
+            "_gaussian_serialized": gaussian_serialized,
+            "_mesh_serialized": mesh_serialized,
+            "_needs_combination": True
         }
 
         # Run texture baking using combined output
