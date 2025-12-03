@@ -52,6 +52,18 @@ class IsolatedSAM3DModel:
         stage2_cfg_strength: float = 5.0,
         texture_size: int = 1024,
         simplify: float = 0.95,
+        stage1_only: bool = False,
+        stage1_output: dict = None,
+        stage2_only: bool = False,
+        stage2_output: dict = None,
+        slat_only: bool = False,
+        slat_output: dict = None,
+        gaussian_only: bool = False,
+        mesh_only: bool = False,
+        save_files: bool = False,
+        with_mesh_postprocess: bool = False,
+        with_texture_baking: bool = True,
+        use_vertex_color: bool = False,
     ) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
@@ -66,6 +78,8 @@ class IsolatedSAM3DModel:
             stage2_cfg_strength: CFG strength for Stage 2
             texture_size: Texture resolution
             simplify: Mesh simplification ratio
+            stage1_only: If True, only run Stage 1 (sparse structure generation)
+            stage1_output: Stage 1 output to resume from (for Stage 2 only mode)
 
         Returns:
             Output dictionary with gaussian splats, mesh, and pose data
@@ -83,6 +97,18 @@ class IsolatedSAM3DModel:
             stage2_cfg_strength=stage2_cfg_strength,
             texture_size=texture_size,
             simplify=simplify,
+            stage1_only=stage1_only,
+            stage1_output=stage1_output,
+            stage2_only=stage2_only,
+            stage2_output=stage2_output,
+            slat_only=slat_only,
+            slat_output=slat_output,
+            gaussian_only=gaussian_only,
+            mesh_only=mesh_only,
+            save_files=save_files,
+            with_mesh_postprocess=with_mesh_postprocess,
+            with_texture_baking=with_texture_baking,
+            use_vertex_color=use_vertex_color,
         )
 
     def __repr__(self) -> str:

@@ -320,6 +320,13 @@ class InferencePipelinePointMap(InferencePipeline):
         seed: Optional[int] = None,
         stage1_only=False,
         stage1_output=None,
+        stage2_only=False,
+        stage2_output=None,
+        slat_only=False,
+        slat_output=None,
+        gaussian_only=False,
+        mesh_only=False,
+        save_files=False,
         with_mesh_postprocess=True,
         with_texture_baking=True,
         with_layout_postprocess=True,
@@ -382,6 +389,8 @@ class InferencePipelinePointMap(InferencePipeline):
                     use_distillation=use_stage1_distillation,
                 )
 
+            # Apply pose decoding if not already present (needed for both fresh computation and stage1_output)
+            if "translation" not in ss_return_dict or "rotation" not in ss_return_dict:
                 # We could probably use the decoder from the models themselves
                 pointmap_scale = ss_input_dict.get("pointmap_scale", None)
                 pointmap_shift = ss_input_dict.get("pointmap_shift", None)
@@ -406,16 +415,97 @@ class InferencePipelinePointMap(InferencePipeline):
                 }
                 # return ss_return_dict
 
-            coords = ss_return_dict["coords"]
-            slat = self.sample_slat(
-                slat_input_dict,
-                coords,
-                inference_steps=stage2_inference_steps,
-                use_distillation=use_stage2_distillation,
-            )
-            outputs = self.decode_slat(
-                slat, self.decode_formats if decode_formats is None else decode_formats
-            )
+            # If stage2_output is provided, skip Stage 1 and Stage 2 (for Stage 3 only mode)
+            if stage2_output is not None:
+                logger.info("Using provided Stage 2 output, skipping Stage 1 and Stage 2 computation")
+                outputs = stage2_output
+                ss_return_dict = stage2_output.get("stage1_data", {})
+            # If slat_output is provided, skip to decoding (for Gaussian/Mesh decode modes)
+            elif slat_output is not None:
+                logger.info("Using provided SLAT output, skipping SLAT generation")
+                slat = slat_output.get("slat")
+                ss_return_dict = slat_output.get("stage1_data", {})
+
+                # Determine decode formats based on mode
+                if gaussian_only:
+                    formats = ["gaussian"]
+                elif mesh_only:
+                    formats = ["mesh"]
+                else:
+                    formats = self.decode_formats if decode_formats is None else decode_formats
+
+                outputs = self.decode_slat(slat, formats)
+                # Include stage1 data for potential downstream use
+                outputs["stage1_data"] = ss_return_dict
+            else:
+                coords = ss_return_dict["coords"]
+                slat = self.sample_slat(
+                    slat_input_dict,
+                    coords,
+                    inference_steps=stage2_inference_steps,
+                    use_distillation=use_stage2_distillation,
+                )
+
+                # If slat_only is True, return SLAT without decoding
+                if slat_only:
+                    logger.info("Finished SLAT generation! Returning SLAT for decoding")
+                    return {
+                        "slat": slat,
+                        "stage1_data": ss_return_dict,
+                    }
+
+                # Determine decode formats based on mode
+                if gaussian_only:
+                    formats = ["gaussian"]
+                elif mesh_only:
+                    formats = ["mesh"]
+                else:
+                    formats = self.decode_formats if decode_formats is None else decode_formats
+
+                outputs = self.decode_slat(slat, formats)
+
+                # If stage2_only is True, return raw outputs without postprocessing
+                if stage2_only:
+                    logger.info("Finished Stage 2! Returning raw Gaussian + Mesh output for caching")
+                    # Include stage1 data for potential Stage 3 use
+                    outputs["stage1_data"] = ss_return_dict
+                    return outputs
+
+                # Handle gaussian_only and mesh_only modes
+                if gaussian_only or mesh_only:
+                    logger.info(f"Finished decoding ({'Gaussian' if gaussian_only else 'Mesh'})!")
+
+                    # Convert to file-saveable format
+                    if gaussian_only and "gaussian" in outputs:
+                        # Convert gaussian output to gs format for file saving
+                        outputs["gs"] = outputs["gaussian"][0]
+                        logger.info("Prepared Gaussian for PLY export")
+
+                    if mesh_only and "mesh" in outputs:
+                        # Convert mesh to simple GLB using vertex colors (no texture baking)
+                        import vendor.sam3d_objects.pipeline.postprocessing_utils as postprocessing_utils
+                        simple_glb = postprocessing_utils.to_glb(
+                            None,  # No Gaussian needed for vertex-colored mesh
+                            outputs["mesh"][0],
+                            simplify=simplify,
+                            texture_size=1024,
+                            verbose=False,
+                            with_mesh_postprocess=False,  # No expensive hole filling
+                            with_texture_baking=False,    # No texture baking
+                            use_vertex_color=True,        # Use vertex colors
+                            rendering_engine=self.rendering_engine,
+                        )
+                        outputs["glb"] = simple_glb
+                        logger.info("Prepared Mesh for GLB export (vertex colors)")
+
+                    # Include stage1_data for potential later use
+                    outputs["stage1_data"] = ss_return_dict
+
+                    # If save_files is True, the worker will save the files
+                    # Return outputs for serialization
+                    return outputs
+
+            # Run postprocessing (Stage 3)
             outputs = self.postprocess_slat_output(
                 outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
                 texture_size=texture_size, simplify=simplify

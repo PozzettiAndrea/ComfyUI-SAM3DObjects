@@ -30,6 +30,7 @@ class SAM3DGenerate:
                     "default": 42,
                     "min": 0,
                     "max": 2**31 - 1,
+                    "control_after_generate": "fixed",
                     "tooltip": "Random seed for reproducible generation"
                 }),
             },
@@ -189,6 +190,7 @@ class SAM3DGenerateRGBA:
                     "default": 42,
                     "min": 0,
                     "max": 2**31 - 1,
+                    "control_after_generate": "fixed",
                     "tooltip": "Random seed for reproducible generation"
                 }),
                 "alpha_threshold": ("FLOAT", {
