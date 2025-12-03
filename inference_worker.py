@@ -43,10 +43,32 @@ def load_model(config_path: str, compile: bool = False):
     import os
     os.environ['LIDRA_SKIP_INIT'] = '1'
 
+    # Note: CUDA build environment (PATH, CUDA_HOME, CPATH) is not needed
+    # because we use pytorch3d as rendering_engine, avoiding nvdiffrast and CUDA compilation
+
+    # Redirect all model downloads to ComfyUI/models/sam3d/
+    # This includes torch.hub (DINO), huggingface, transformers, etc.
+    config_dir = Path(config_path).parent.parent  # Go up from checkpoints/ to model tag dir
+    models_cache_dir = config_dir / "_models_cache"
+    models_cache_dir.mkdir(exist_ok=True)
+
+    os.environ['TORCH_HOME'] = str(models_cache_dir / "torch")
+    os.environ['HF_HOME'] = str(models_cache_dir / "huggingface")
+    os.environ['TRANSFORMERS_CACHE'] = str(models_cache_dir / "transformers")
+    print(f"[Worker] Model cache directory: {models_cache_dir}", file=sys.stderr)
+
+    from omegaconf import OmegaConf
+    from hydra.utils import instantiate
     from sam3d_objects.pipeline.inference_pipeline_pointmap import InferencePipelinePointMap
 
-    # Load the model
-    _MODEL = InferencePipelinePointMap(config_path, compile=compile)
+    # Load config and instantiate model using Hydra (like original SAM3D does)
+    config = OmegaConf.load(config_path)
+    config.rendering_engine = "pytorch3d"  # overwrite to disable nvdiffrast
+    config.compile_model = compile
+    config.workspace_dir = os.path.dirname(config_path)
+
+    # Instantiate the pipeline with all config parameters (including depth_model)
+    _MODEL = instantiate(config)
     _CURRENT_CONFIG = config_key
 
     print(f"[Worker] Model loaded successfully", file=sys.stderr)
@@ -123,11 +145,20 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         mask = deserialize_mask(mask_b64)
 
         print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
-        print(f"[Worker] Image size: {image.size}", file=sys.stderr)
-        print(f"[Worker] Mask shape: {mask.shape}", file=sys.stderr)
+        print(f"[Worker] Image: mode={image.mode}, size={image.size}", file=sys.stderr)
+        print(f"[Worker] Mask: shape={mask.shape}, dtype={mask.dtype}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
-        # Run inference
-        output = model(image, mask, seed=seed)
+        # Ensure mask is uint8 in [0, 255] range to match image
+        if mask.dtype != np.uint8:
+            # Convert from float [0, 1] to uint8 [0, 255]
+            if mask.max() <= 1.0:
+                mask = (mask * 255).astype(np.uint8)
+            else:
+                mask = mask.astype(np.uint8)
+            print(f"[Worker] Converted mask to uint8: shape={mask.shape}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
+
+        # Run inference using the run() method
+        output = model.run(image, mask, seed=seed)
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
