@@ -10,6 +10,7 @@ import sys
 import subprocess
 import platform
 import venv
+import importlib
 from pathlib import Path
 from typing import Optional
 
@@ -474,10 +475,12 @@ class SAM3DEnvironmentManager:
                     try:
                         import zstandard as zstd
                     except ImportError:
-                        # Install zstandard if not available
+                        # Install zstandard if not available (should already be in requirements_env.txt)
+                        print("[SAM3DObjects] zstandard not found, installing...")
                         subprocess.run([str(python_exe), "-m", "pip", "install", "zstandard"],
                                      check=True, capture_output=True, text=True)
-                        import zstandard as zstd
+                        # Use importlib to force fresh import after installation
+                        zstd = importlib.import_module("zstandard")
 
                     with open(tar_zst_file, 'rb') as compressed:
                         dctx = zstd.ZstdDecompressor()
@@ -602,9 +605,12 @@ class SAM3DEnvironmentManager:
                     try:
                         import zstandard as zstd
                     except ImportError:
+                        # Install zstandard if not available (should already be in requirements_env.txt)
+                        print("[SAM3DObjects] zstandard not found, installing...")
                         subprocess.run([str(python_exe), "-m", "pip", "install", "zstandard"],
                                      check=True, capture_output=True, text=True)
-                        import zstandard as zstd
+                        # Use importlib to force fresh import after installation
+                        zstd = importlib.import_module("zstandard")
 
                     with open(tar_zst_file, 'rb') as compressed:
                         dctx = zstd.ZstdDecompressor()
@@ -666,3 +672,209 @@ class SAM3DEnvironmentManager:
             print(f"[SAM3DObjects] Full logs: {self.log_file}")
         else:
             raise RuntimeError("Environment setup completed but verification failed")
+
+    # ========================================================================
+    # COMPILER DETECTION FUNCTIONS (COMMENTED OUT FOR NOW)
+    # ========================================================================
+    # These functions detect system compilers to avoid downloading them.
+    # They are currently disabled to ensure the fallback download path works.
+    # Uncomment and integrate these once the download path is verified.
+    # ========================================================================
+
+    # def detect_cxx_compiler(self) -> Optional[Path]:
+    #     """
+    #     Detect C++ compiler on the system (cross-platform).
+    #
+    #     Returns:
+    #         Path to g++/clang++/cl.exe if found and compatible, None otherwise
+    #     """
+    #     import shutil
+    #
+    #     system = platform.system()
+    #     compiler_candidates = []
+    #
+    #     if system == "Linux":
+    #         compiler_candidates = ["g++", "clang++"]
+    #     elif system == "Darwin":  # macOS
+    #         compiler_candidates = ["clang++", "g++"]
+    #     elif system == "Windows":
+    #         compiler_candidates = ["cl.exe", "g++.exe", "clang++.exe"]
+    #
+    #     for compiler in compiler_candidates:
+    #         compiler_path = shutil.which(compiler)
+    #         if compiler_path:
+    #             # Verify it works
+    #             try:
+    #                 result = subprocess.run(
+    #                     [compiler_path, "--version"],
+    #                     capture_output=True,
+    #                     text=True,
+    #                     timeout=5
+    #                 )
+    #                 if result.returncode == 0:
+    #                     # Check if version is compatible with CUDA 12.1
+    #                     # CUDA 12.1 supports g++ 7.x-12.x, clang 11-15
+    #                     if self._verify_cxx_cuda_compatibility(compiler_path, result.stdout):
+    #                         print(f"[SAM3DObjects] Found compatible C++ compiler: {compiler_path}")
+    #                         print(f"[SAM3DObjects] Version: {result.stdout.splitlines()[0]}")
+    #                         return Path(compiler_path)
+    #             except Exception as e:
+    #                 print(f"[SAM3DObjects] Compiler {compiler_path} not usable: {e}")
+    #                 continue
+    #
+    #     return None
+    #
+    # def detect_nvcc(self) -> Optional[Path]:
+    #     """
+    #     Detect CUDA nvcc compiler on the system (cross-platform).
+    #
+    #     Returns:
+    #         Path to nvcc if found and compatible with CUDA 12.x, None otherwise
+    #     """
+    #     import shutil
+    #
+    #     # Check PATH first
+    #     nvcc_path = shutil.which("nvcc")
+    #     if nvcc_path:
+    #         if self._verify_nvcc_version(Path(nvcc_path)):
+    #             return Path(nvcc_path)
+    #
+    #     # Check common CUDA installation directories
+    #     system = platform.system()
+    #     cuda_paths = []
+    #
+    #     if system == "Linux":
+    #         cuda_paths = [
+    #             "/usr/local/cuda/bin/nvcc",
+    #             "/usr/local/cuda-12.1/bin/nvcc",
+    #             "/usr/local/cuda-12/bin/nvcc",
+    #         ]
+    #     elif system == "Windows":
+    #         cuda_paths = [
+    #             r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\bin\nvcc.exe",
+    #             r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.0\bin\nvcc.exe",
+    #         ]
+    #     elif system == "Darwin":  # macOS
+    #         cuda_paths = [
+    #             "/Developer/NVIDIA/CUDA-12.1/bin/nvcc",
+    #         ]
+    #
+    #     for cuda_path in cuda_paths:
+    #         cuda_path_obj = Path(cuda_path)
+    #         if cuda_path_obj.exists():
+    #             if self._verify_nvcc_version(cuda_path_obj):
+    #                 return cuda_path_obj
+    #
+    #     return None
+    #
+    # def _verify_cxx_cuda_compatibility(self, compiler_path: Path, version_output: str) -> bool:
+    #     """
+    #     Verify C++ compiler is compatible with CUDA 12.1.
+    #
+    #     CUDA 12.1 compatibility:
+    #     - g++: 7.x through 12.x
+    #     - clang: 11.x through 15.x
+    #     - MSVC: 2019 or 2022
+    #     """
+    #     version_lower = version_output.lower()
+    #
+    #     # Extract version number
+    #     import re
+    #     version_match = re.search(r'(\d+)\.(\d+)\.(\d+)', version_output)
+    #     if not version_match:
+    #         return False
+    #
+    #     major = int(version_match.group(1))
+    #     minor = int(version_match.group(2))
+    #
+    #     # Check g++
+    #     if "g++" in compiler_path.name.lower():
+    #         # g++ 7.x - 12.x supported
+    #         if 7 <= major <= 12:
+    #             return True
+    #         print(f"[SAM3DObjects] g++ version {major}.{minor} not supported by CUDA 12.1 (need 7-12)")
+    #         return False
+    #
+    #     # Check clang
+    #     if "clang" in compiler_path.name.lower():
+    #         # clang 11.x - 15.x supported
+    #         if 11 <= major <= 15:
+    #             return True
+    #         print(f"[SAM3DObjects] clang version {major}.{minor} not supported by CUDA 12.1 (need 11-15)")
+    #         return False
+    #
+    #     # Check MSVC (cl.exe)
+    #     if "cl.exe" in compiler_path.name.lower():
+    #         # MSVC 2019 (19.2x) or 2022 (19.3x+) supported
+    #         if major == 19 and minor >= 20:
+    #             return True
+    #         print(f"[SAM3DObjects] MSVC version {major}.{minor} not supported by CUDA 12.1 (need 2019+)")
+    #         return False
+    #
+    #     return False
+    #
+    # def _verify_nvcc_version(self, nvcc_path: Path) -> bool:
+    #     """
+    #     Verify nvcc is compatible (CUDA 12.x).
+    #
+    #     Returns:
+    #         True if nvcc is CUDA 12.x, False otherwise
+    #     """
+    #     try:
+    #         result = subprocess.run(
+    #             [str(nvcc_path), "--version"],
+    #             capture_output=True,
+    #             text=True,
+    #             timeout=5
+    #         )
+    #
+    #         if result.returncode == 0:
+    #             # Parse CUDA version from nvcc output
+    #             import re
+    #             version_match = re.search(r'release (\d+)\.(\d+)', result.stdout)
+    #             if version_match:
+    #                 major = int(version_match.group(1))
+    #                 minor = int(version_match.group(2))
+    #
+    #                 # Accept CUDA 12.x
+    #                 if major == 12:
+    #                     print(f"[SAM3DObjects] Found compatible nvcc: {nvcc_path}")
+    #                     print(f"[SAM3DObjects] CUDA version: {major}.{minor}")
+    #                     return True
+    #                 else:
+    #                     print(f"[SAM3DObjects] nvcc CUDA version {major}.{minor} not compatible (need 12.x)")
+    #                     return False
+    #
+    #     except Exception as e:
+    #         print(f"[SAM3DObjects] Could not verify nvcc at {nvcc_path}: {e}")
+    #
+    #     return False
+    #
+    # def _setup_compiler_environment(self, cxx_compiler: Optional[Path], nvcc: Optional[Path]) -> dict:
+    #     """
+    #     Setup environment variables for detected compilers.
+    #
+    #     Args:
+    #         cxx_compiler: Path to C++ compiler (g++/clang++/cl.exe)
+    #         nvcc: Path to nvcc compiler
+    #
+    #     Returns:
+    #         Dictionary of environment variables to set
+    #     """
+    #     env = {}
+    #
+    #     if cxx_compiler:
+    #         env["CUDAHOSTCXX"] = str(cxx_compiler)
+    #         # Add compiler directory to PATH
+    #         compiler_dir = cxx_compiler.parent
+    #         current_path = os.environ.get("PATH", "")
+    #         env["PATH"] = f"{compiler_dir}{os.pathsep}{current_path}"
+    #
+    #     if nvcc:
+    #         cuda_home = nvcc.parent.parent  # nvcc is in bin/, CUDA_HOME is parent
+    #         env["CUDA_HOME"] = str(cuda_home)
+    #         env["CUDA_PATH"] = str(cuda_home)
+    #
+    #     return env
+    #
+    # # END OF COMMENTED COMPILER DETECTION FUNCTIONS
