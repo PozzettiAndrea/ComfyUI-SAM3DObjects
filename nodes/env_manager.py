@@ -63,6 +63,8 @@ class SAM3DEnvironmentManager:
         self.node_root = Path(node_root)
         self.env_dir = self.node_root / "_env"
         self.log_file = self.node_root / "install.log"
+        self.tools_dir = self.node_root / "_tools"
+        self.micromamba_exe = None  # Will be set by _download_micromamba()
 
     def get_python_executable(self) -> Path:
         """Get path to Python executable in isolated environment."""
@@ -97,58 +99,173 @@ class SAM3DEnvironmentManager:
         except Exception:
             return False
 
+    def _download_micromamba(self) -> Path:
+        """
+        Download micromamba binary for the current platform.
+
+        Micromamba is a tiny standalone executable that can create conda environments
+        without requiring conda/mamba to be installed. This allows us to:
+        - Install Python 3.11 consistently across all platforms
+        - Use conda packages (compilers, etc.) without user having conda
+
+        Returns:
+            Path to micromamba executable
+        """
+        import urllib.request
+        import stat
+
+        # Create tools directory if it doesn't exist
+        self.tools_dir.mkdir(exist_ok=True)
+
+        # Determine platform and micromamba URL
+        system = platform.system()
+        machine = platform.machine().lower()
+
+        if system == "Linux":
+            if "x86_64" in machine or "amd64" in machine:
+                url = "https://micro.mamba.pm/api/micromamba/linux-64/latest"
+                exe_name = "micromamba"
+            elif "aarch64" in machine or "arm64" in machine:
+                url = "https://micro.mamba.pm/api/micromamba/linux-aarch64/latest"
+                exe_name = "micromamba"
+            else:
+                raise RuntimeError(f"Unsupported Linux architecture: {machine}")
+        elif system == "Darwin":  # macOS
+            if "arm64" in machine or "aarch64" in machine:
+                url = "https://micro.mamba.pm/api/micromamba/osx-arm64/latest"
+            else:
+                url = "https://micro.mamba.pm/api/micromamba/osx-64/latest"
+            exe_name = "micromamba"
+        elif system == "Windows":
+            url = "https://micro.mamba.pm/api/micromamba/win-64/latest"
+            exe_name = "micromamba.exe"
+        else:
+            raise RuntimeError(f"Unsupported operating system: {system}")
+
+        micromamba_path = self.tools_dir / exe_name
+
+        # Check if already downloaded
+        if micromamba_path.exists():
+            print(f"[SAM3DObjects] Micromamba already downloaded")
+            self.micromamba_exe = micromamba_path
+            return micromamba_path
+
+        print(f"[SAM3DObjects] Downloading micromamba for {system} {machine}...")
+        print(f"[SAM3DObjects] This is a one-time download (~70MB)")
+
+        try:
+            # Download with progress
+            import tempfile
+            import tarfile
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                archive_path = tmpdir_path / "micromamba.tar.bz2"
+
+                # Download
+                urllib.request.urlretrieve(url, archive_path)
+
+                # Extract (micromamba is distributed as tar.bz2 with binary inside)
+                with tarfile.open(archive_path, "r:bz2") as tar:
+                    # Extract all to tmpdir
+                    tar.extractall(tmpdir_path)
+
+                    # Find the micromamba binary
+                    extracted_binary = tmpdir_path / "bin" / exe_name
+                    if not extracted_binary.exists():
+                        # Sometimes it's at root
+                        extracted_binary = tmpdir_path / exe_name
+
+                    if not extracted_binary.exists():
+                        raise RuntimeError(f"Could not find micromamba binary in archive")
+
+                    # Copy to tools directory
+                    import shutil
+                    shutil.copy2(extracted_binary, micromamba_path)
+
+            # Make executable (Unix/Mac)
+            if system in ["Linux", "Darwin"]:
+                micromamba_path.chmod(micromamba_path.stat().st_mode | stat.S_IEXEC)
+
+            # Verify it works
+            result = subprocess.run(
+                [str(micromamba_path), "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.returncode != 0:
+                raise RuntimeError(f"Micromamba binary is not executable: {result.stderr}")
+
+            print(f"[SAM3DObjects] Micromamba downloaded successfully!")
+            print(f"[SAM3DObjects] Version: {result.stdout.strip()}")
+
+            self.micromamba_exe = micromamba_path
+            return micromamba_path
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to download micromamba: {e}") from e
+
     def create_environment(self) -> None:
-        """Create the isolated Python virtual environment."""
+        """
+        Create the isolated Python environment using micromamba.
+
+        This uses micromamba to create a conda environment with Python 3.11,
+        ensuring consistent Python version across all platforms.
+        """
         if self.env_dir.exists():
             if self.is_environment_ready():
                 print("[SAM3DObjects] Environment already exists, skipping creation")
+                # Still need to download micromamba for later use
+                self._download_micromamba()
                 return
             else:
                 print("[SAM3DObjects] Recreating incomplete environment")
 
-        print("[SAM3DObjects] Creating Python virtual environment...")
+        print("[SAM3DObjects] Creating Python 3.11 environment using micromamba...")
 
-        # Find a compatible Python version (3.10-3.12)
-        # PyTorch 2.5.1 doesn't support Python 3.13 yet
-        python_candidates = ["python3.10", "python3.11", "python3.12"]
-        python_exe = None
-
-        for candidate in python_candidates:
-            try:
-                result = subprocess.run(
-                    [candidate, "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
-                if result.returncode == 0:
-                    python_exe = candidate
-                    print(f"[SAM3DObjects] Using {candidate} for venv")
-                    break
-            except (FileNotFoundError, subprocess.TimeoutExpired):
-                continue
-
-        if not python_exe:
-            raise RuntimeError(
-                "Could not find compatible Python version (3.10-3.12). "
-                "PyTorch 2.5.1 requires Python 3.10, 3.11, or 3.12."
-            )
+        # Download micromamba first
+        micromamba_exe = self._download_micromamba()
 
         try:
-            # Create venv using compatible Python version
-            subprocess.run(
-                [python_exe, "-m", "venv", str(self.env_dir)],
-                check=True,
-                capture_output=True,
-                text=True
+            # Create conda environment with Python 3.11
+            # Using -p (prefix) instead of -n (name) to create in specific directory
+            # -y = yes to all prompts
+            # -c conda-forge = use conda-forge channel
+            _run_subprocess_logged(
+                [
+                    str(micromamba_exe), "create",
+                    "-p", str(self.env_dir),
+                    "python=3.11",
+                    "-c", "conda-forge",
+                    "-y"
+                ],
+                self.log_file,
+                "Create Python 3.11 environment with micromamba",
+                check=True
             )
-            print("[SAM3DObjects] Virtual environment created")
+
+            print("[SAM3DObjects] Python 3.11 environment created successfully!")
+
+            # Verify Python version
+            python_exe = self.get_python_executable()
+            result = subprocess.run(
+                [str(python_exe), "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode == 0:
+                print(f"[SAM3DObjects] Python version: {result.stdout.strip()}")
+            else:
+                raise RuntimeError("Python executable not working in new environment")
 
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"Failed to create virtual environment: {e}\n"
-                f"stdout: {e.stdout}\n"
-                f"stderr: {e.stderr}"
+                f"Failed to create conda environment with micromamba: {e}\n"
+                f"Check logs at: {self.log_file}"
             ) from e
 
     def install_dependencies(self) -> None:
@@ -177,27 +294,44 @@ class SAM3DEnvironmentManager:
             check=True
         )
 
-        # Step 3: Install PyTorch with specific CUDA version FIRST
-        print("[SAM3DObjects] Installing PyTorch 2.5.1 with CUDA 12.1...")
-        print("[SAM3DObjects] This ensures binary compatibility...")
-
-        uv_exe = self.env_dir / "bin" / "uv" if platform.system() != "Windows" else self.env_dir / "Scripts" / "uv.exe"
+        # Step 3: Install PyTorch + PyTorch3D together via micromamba
+        # This ensures CUDA version compatibility!
+        print("[SAM3DObjects] Installing PyTorch 2.5.1 + PyTorch3D via micromamba...")
+        print("[SAM3DObjects] (Installing together ensures CUDA compatibility)")
 
         _run_subprocess_logged(
             [
-                str(python_exe), "-m", "uv", "pip", "install",
-                "torch==2.5.1",
-                "torchvision==0.20.1",
-                "--index-url", "https://download.pytorch.org/whl/cu121"
+                str(self.micromamba_exe), "install",
+                "-p", str(self.env_dir),
+                "-c", "pytorch",       # PyTorch official channel
+                "-c", "pytorch3d",     # PyTorch3D channel
+                "-c", "fvcore",        # PyTorch3D dependency
+                "-c", "conda-forge",   # Fallback
+                "pytorch=2.5.1",
+                "torchvision",
+                "pytorch3d",
+                "-y"
             ],
             self.log_file,
-            "Install PyTorch with CUDA 12.1",
+            "Install PyTorch 2.5.1 + PyTorch3D via micromamba",
             check=True
         )
 
-        # Step 4: Install all other dependencies
-        print("[SAM3DObjects] Installing remaining dependencies...")
-        print("[SAM3DObjects] (PyTorch version will be locked to 2.5.1)")
+        # Verify installations
+        verify_result = subprocess.run(
+            [str(python_exe), "-c", "import torch, pytorch3d; print(f'PyTorch {torch.__version__}, PyTorch3D {pytorch3d.__version__}')"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if verify_result.returncode == 0:
+            print(f"[SAM3DObjects] Verified: {verify_result.stdout.strip()}")
+        else:
+            raise RuntimeError(f"PyTorch/PyTorch3D verification failed: {verify_result.stderr}")
+
+        # Step 4: Install all other dependencies via pip
+        print("[SAM3DObjects] Installing remaining dependencies via pip...")
+        print("[SAM3DObjects] (PyTorch is pinned, will not be upgraded)")
 
         requirements_file = self.node_root / "local_env_settings" / "requirements_env.txt"
         if not requirements_file.exists():
@@ -253,91 +387,68 @@ class SAM3DEnvironmentManager:
             check=True
         )
 
-        # Step 6: Install pytorch3d (download prebuilt from conda-forge)
-        print("[SAM3DObjects] Installing PyTorch3D...")
-        print("[SAM3DObjects] Downloading prebuilt binary from conda-forge...")
-
-        self._install_pytorch3d_from_conda(python_exe)
-
-        # Step 7: Install CUDA toolkit (nvcc compiler + headers) for JIT compilation
-        # gsplat and other packages need nvcc for CUDA extension compilation
+        # Step 6: Install CUDA toolkit (nvcc compiler + headers) for JIT compilation
+        # MUST be before PyTorch3D in case it needs to build from source!
+        # gsplat and other packages also need nvcc for CUDA extension compilation
         print("[SAM3DObjects] Installing CUDA toolkit for JIT compilation...")
+        print("[SAM3DObjects] (Installing compilers BEFORE PyTorch3D in case build needed)")
 
         # Try Tier 1 first (PyPI), fallback to Tier 2 (conda-forge extraction)
         if not self._install_cuda_toolkit_pypi(python_exe):
             print("[SAM3DObjects] PyPI cuda-toolkit incomplete, using conda-forge extraction...")
             self._install_cuda_toolkit_from_conda(python_exe)
 
-        # Step 8: Install g++ compiler for CUDA JIT compilation
+        # Step 7: Install g++ compiler for CUDA JIT compilation
         # nvcc needs g++ as the host compiler to compile C++ code
+        # NOTE: PyTorch3D is already installed (step 3 with PyTorch)
         print("[SAM3DObjects] Installing g++ compiler for CUDA JIT compilation...")
         self._install_gcc_from_conda(python_exe)
 
         print(f"[SAM3DObjects] All dependencies installed! (Full logs: {self.log_file})")
 
     def _install_pytorch3d_from_conda(self, python_exe: Path) -> None:
-        """Download and install prebuilt PyTorch3D from conda-forge."""
-        import urllib.request
-        import tarfile
-        import tempfile
-        import shutil
+        """
+        Install PyTorch3D using micromamba.
 
-        # PyTorch3D conda package URL for Python 3.10, PyTorch 2.5.1, CUDA 12.1
-        # From: https://anaconda.org/pytorch3d/pytorch3d
-        pytorch3d_url = "https://conda.anaconda.org/pytorch3d/linux-64/pytorch3d-0.7.7-py310_cu121_pyt251.tar.bz2"
+        This uses micromamba to find and install the correct prebuilt PyTorch3D
+        package from conda channels, avoiding manual URL management and extraction.
+        """
+        print("[SAM3DObjects] Installing PyTorch3D via micromamba from conda channels...")
 
         try:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tmpdir_path = Path(tmpdir)
-                archive_path = tmpdir_path / "pytorch3d.tar.bz2"
+            # Use micromamba to install PyTorch3D from pytorch3d channel
+            # Micromamba will automatically find the right build for Python 3.11 + CUDA 12.1
+            _run_subprocess_logged(
+                [
+                    str(self.micromamba_exe), "install",
+                    "-p", str(self.env_dir),
+                    "-c", "pytorch3d",     # Official pytorch3d channel
+                    "-c", "fvcore",        # Required dependency channel
+                    "-c", "conda-forge",   # Fallback channel
+                    "pytorch3d",
+                    "-y"
+                ],
+                self.log_file,
+                "Install PyTorch3D via micromamba",
+                check=True
+            )
 
-                # Download conda package
-                print("[SAM3DObjects] Downloading pytorch3d conda package...")
-                urllib.request.urlretrieve(pytorch3d_url, archive_path)
+            # Verify PyTorch3D was installed
+            verify_result = subprocess.run(
+                [str(python_exe), "-c", "import pytorch3d; print(pytorch3d.__version__)"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
 
-                # Extract tar.bz2
-                print("[SAM3DObjects] Extracting conda package...")
-                extract_dir = tmpdir_path / "extracted"
-                extract_dir.mkdir()
-
-                with tarfile.open(archive_path, "r:bz2") as tar:
-                    tar.extractall(extract_dir)
-
-                # Find the pytorch3d directory in site-packages
-                conda_site_packages = extract_dir / "lib" / "python3.10" / "site-packages"
-
-                if not conda_site_packages.exists():
-                    raise RuntimeError(f"Could not find site-packages in conda package at {conda_site_packages}")
-
-                # Get our venv's site-packages directory
-                if platform.system() == "Windows":
-                    venv_site_packages = self.env_dir / "Lib" / "site-packages"
-                else:
-                    venv_site_packages = self.env_dir / "lib" / "python3.10" / "site-packages"
-
-                # Copy pytorch3d directory
-                pytorch3d_src = conda_site_packages / "pytorch3d"
-                pytorch3d_dst = venv_site_packages / "pytorch3d"
-
-                if not pytorch3d_src.exists():
-                    raise RuntimeError(f"pytorch3d not found in conda package at {pytorch3d_src}")
-
-                print(f"[SAM3DObjects] Copying prebuilt binaries to {venv_site_packages}...")
-                if pytorch3d_dst.exists():
-                    shutil.rmtree(pytorch3d_dst)
-                shutil.copytree(pytorch3d_src, pytorch3d_dst)
-
-                # Also copy any .dist-info directories
-                for item in conda_site_packages.glob("pytorch3d*.dist-info"):
-                    dst_item = venv_site_packages / item.name
-                    if dst_item.exists():
-                        shutil.rmtree(dst_item)
-                    shutil.copytree(item, dst_item)
-
-                print("[SAM3DObjects] PyTorch3D installed successfully from prebuilt binaries!")
+            if verify_result.returncode == 0:
+                print(f"[SAM3DObjects] PyTorch3D installed successfully via micromamba!")
+                print(f"[SAM3DObjects] PyTorch3D version: {verify_result.stdout.strip()}")
+            else:
+                raise RuntimeError(f"PyTorch3D import failed: {verify_result.stderr}")
 
         except Exception as e:
-            print(f"[SAM3DObjects] Failed to install prebuilt pytorch3d: {e}")
+            print(f"[SAM3DObjects] Failed to install PyTorch3D via micromamba: {e}")
             print("[SAM3DObjects] Falling back to building from source...")
 
             # Fallback: build from source
@@ -549,111 +660,66 @@ class SAM3DEnvironmentManager:
 
     def _install_gcc_from_conda(self, python_exe: Path) -> None:
         """
-        Download and extract g++ compiler from conda-forge.
+        Install g++ compiler using micromamba.
 
         This provides the C++ host compiler that nvcc needs for CUDA JIT compilation.
+        Uses micromamba to properly install the compiler toolchain.
         """
-        import urllib.request
-        import tarfile
-        import tempfile
-        import shutil
-
-        # g++ compiler package from conda-forge for Linux x86_64
-        # From: https://anaconda.org/conda-forge/gxx_linux-64
-        gcc_url = "https://conda.anaconda.org/conda-forge/linux-64/gxx_linux-64-13.3.0-h6834431_5.conda"
-
-        print("[SAM3DObjects] Downloading g++ compiler from conda-forge...")
+        print("[SAM3DObjects] Installing g++ compiler using micromamba...")
 
         try:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tmpdir_path = Path(tmpdir)
-                archive_path = tmpdir_path / "gxx.conda"
+            # Use micromamba to install g++ and dependencies directly into the environment
+            # This is much cleaner than manual conda package extraction!
+            _run_subprocess_logged(
+                [
+                    str(self.micromamba_exe), "install",
+                    "-p", str(self.env_dir),
+                    "-c", "conda-forge",
+                    "gxx_linux-64",  # Compiler package
+                    "sysroot_linux-64",  # System libraries needed by compiler
+                    "-y"
+                ],
+                self.log_file,
+                "Install g++ compiler via micromamba",
+                check=True
+            )
 
-                # Download conda package
-                urllib.request.urlretrieve(gcc_url, archive_path)
+            # Verify g++ was installed
+            # Micromamba installs to standard bin/ location
+            gxx_candidates = [
+                self.env_dir / "bin" / "x86_64-conda-linux-gnu-g++",
+                self.env_dir / "bin" / "g++",
+            ]
 
-                # Extract .conda file (zip containing tar.zst)
-                print("[SAM3DObjects] Extracting g++ package...")
-                extract_dir = tmpdir_path / "extracted"
-                extract_dir.mkdir()
-
-                import zipfile
-                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_dir)
-
-                # Extract inner tar.zst (pkg-*.tar.zst contains actual files, info-*.tar.zst is metadata)
-                tar_zst_file = None
-                for item in extract_dir.glob("pkg-*.tar.zst"):
-                    tar_zst_file = item
+            gxx_path = None
+            for candidate in gxx_candidates:
+                if candidate.exists():
+                    gxx_path = candidate
                     break
 
-                if not tar_zst_file:
-                    # Try .tar.bz2
-                    for item in extract_dir.glob("*.tar.bz2"):
-                        tar_zst_file = item
-                        break
-
-                if not tar_zst_file:
-                    raise RuntimeError(f"Could not find tar archive in conda package")
-
-                print(f"[SAM3DObjects] Extracting {tar_zst_file.name}...")
-                inner_extract_dir = tmpdir_path / "inner"
-                inner_extract_dir.mkdir()
-
-                # Extract tar.zst or tar.bz2
-                if tar_zst_file.suffix == ".zst":
-                    try:
-                        import zstandard as zstd
-                    except ImportError:
-                        # Install zstandard if not available (should already be in requirements_env.txt)
-                        print("[SAM3DObjects] zstandard not found, installing...")
-                        subprocess.run([str(python_exe), "-m", "pip", "install", "zstandard"],
-                                     check=True, capture_output=True, text=True)
-                        # Use importlib to force fresh import after installation
-                        zstd = importlib.import_module("zstandard")
-
-                    with open(tar_zst_file, 'rb') as compressed:
-                        dctx = zstd.ZstdDecompressor()
-                        with dctx.stream_reader(compressed) as reader:
-                            with tarfile.open(fileobj=reader, mode='r|') as tar:
-                                tar.extractall(inner_extract_dir)
-                else:
-                    with tarfile.open(tar_zst_file, "r:bz2") as tar:
-                        tar.extractall(inner_extract_dir)
-
-                # Copy gcc to venv
-                gcc_install_dir = self.env_dir / "gcc"
-                if gcc_install_dir.exists():
-                    shutil.rmtree(gcc_install_dir)
-
-                print(f"[SAM3DObjects] Installing g++ to {gcc_install_dir}...")
-                shutil.copytree(inner_extract_dir, gcc_install_dir)
-
-                # Verify g++ exists
-                gxx_path = gcc_install_dir / "bin" / "x86_64-conda-linux-gnu-g++"
-                if not gxx_path.exists():
-                    raise RuntimeError(f"g++ not found after installation at {gxx_path}")
-
-                # Make executable
-                gxx_path.chmod(0o755)
-
-                # Test g++
-                test_result = subprocess.run(
-                    [str(gxx_path), "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10
+            if not gxx_path:
+                raise RuntimeError(
+                    f"g++ not found after micromamba installation. "
+                    f"Checked: {[str(c) for c in gxx_candidates]}"
                 )
 
-                if test_result.returncode != 0:
-                    raise RuntimeError(f"g++ is not executable: {test_result.stderr}")
+            # Test g++
+            test_result = subprocess.run(
+                [str(gxx_path), "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
 
-                print(f"[SAM3DObjects] g++ compiler installed successfully!")
-                print(f"[SAM3DObjects] g++ version: {test_result.stdout.splitlines()[0]}")
-                print(f"[SAM3DObjects] g++ location: {gcc_install_dir}")
+            if test_result.returncode != 0:
+                raise RuntimeError(f"g++ is not executable: {test_result.stderr}")
+
+            print(f"[SAM3DObjects] g++ compiler installed successfully via micromamba!")
+            print(f"[SAM3DObjects] g++ version: {test_result.stdout.splitlines()[0]}")
+            print(f"[SAM3DObjects] g++ location: {gxx_path}")
 
         except Exception as e:
-            raise RuntimeError(f"Failed to install g++ from conda-forge: {e}") from e
+            raise RuntimeError(f"Failed to install g++ via micromamba: {e}") from e
 
     def setup_environment(self) -> None:
         """Complete environment setup process."""
