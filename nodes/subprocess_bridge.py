@@ -101,10 +101,80 @@ class InferenceWorkerBridge:
             print("[SAM3DObjects] Inference worker started successfully")
 
     def _read_stderr(self) -> None:
-        """Read stderr from worker process and print to console."""
-        if self.process and self.process.stderr:
-            for line in self.process.stderr:
-                print(line.rstrip())
+        """Read stderr from worker process and print filtered output to console."""
+        if not self.process or not self.process.stderr:
+            return
+
+        # Patterns to show (important events)
+        SHOW_PATTERNS = [
+            "[Worker] SAM3D inference worker started",
+            "[Worker] Ready for requests",
+            "[Worker] Inference completed",
+            "[Worker] Optimization complete",
+            "[Worker] Saved ",
+            "[Worker] Error",
+            "[Worker] Warning",
+            "[Worker] Shutdown",
+            "[Worker] Worker shutting down",
+            "[Worker] Running ",
+            "Traceback",
+            "Error:",
+        ]
+
+        # Patterns to hide (verbose details)
+        HIDE_PATTERNS = [
+            "[Worker] Python:",
+            "[Worker] Working directory:",
+            "[Worker] PyTorch version:",
+            "[Worker] PyTorch3D version:",
+            "[Worker] CUDA available:",
+            "[Worker] Loading model",
+            "[Worker] Added ",
+            "[Worker] Set ",
+            "[Worker] Found ",
+            "[Worker] Model cache",
+            "[Worker] Loaded ",
+            "[Worker] Image ",
+            "[Worker] Mask ",
+            "[Worker] Pointmap ",
+            "[Worker] Intrinsics ",
+            "[Worker] Stage ",
+            "[Worker] Output ",
+            "[Worker] Converting ",
+            "[Worker] Assembled ",
+            "[Worker] Transformed ",
+            "[Worker] GLB ",
+            "[Worker] PLY ",
+            "[Worker] No pose data",
+            "| INFO",
+            "| DEBUG",
+            "Warp ",
+            "CUDA Toolkit",
+            "Devices:",
+            '"cpu"',
+            '"cuda:0"',
+            "Kernel cache:",
+            "Rendering:",
+            "it/s]",
+            "% done",
+        ]
+
+        for line in self.process.stderr:
+            line = line.rstrip()
+            if not line:
+                continue
+
+            # Always show if matches important patterns
+            if any(p in line for p in SHOW_PATTERNS):
+                print(line)
+                continue
+
+            # Hide if matches verbose patterns
+            if any(p in line for p in HIDE_PATTERNS):
+                continue
+
+            # Show anything else (unknown messages, errors, etc.)
+            print(line)
 
     def stop_worker(self) -> None:
         """Stop the worker process gracefully."""
@@ -175,18 +245,23 @@ class InferenceWorkerBridge:
                 continue
 
             # Try to parse as JSON
+            # Filter out obvious log messages that start with [ but aren't JSON arrays
+            # Log messages look like: [Gaussian], [SPARSE], [Worker], [PLY Export], etc.
+            if response_line.startswith('[') and not response_line.startswith('[{') and not response_line.startswith('["'):
+                # This is a log message like "[Gaussian] ...", not a JSON array
+                # Skip silently - these are worker debug messages
+                attempts += 1
+                continue
+
             if response_line.startswith('{') or response_line.startswith('['):
                 try:
                     return json.loads(response_line)
-                except json.JSONDecodeError as e:
-                    # Log the malformed JSON for debugging
-                    print(f"[SAM3DObjects] Warning: Failed to parse JSON response (attempt {attempts + 1}): {response_line[:100]}")
-                    print(f"[SAM3DObjects] JSON error: {e}")
+                except json.JSONDecodeError:
+                    # Malformed JSON - skip silently (likely partial output)
                     attempts += 1
                     continue
             else:
-                # Not JSON - likely a log message that slipped through
-                print(f"[SAM3DObjects] Skipping non-JSON line from worker: {response_line[:100]}")
+                # Not JSON - likely a log message that slipped through (skip silently)
                 attempts += 1
                 continue
 

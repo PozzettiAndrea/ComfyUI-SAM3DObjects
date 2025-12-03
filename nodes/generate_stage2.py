@@ -91,8 +91,7 @@ class SAM3DSLATGen:
         Returns:
             Tuple of (slat_path,) - path to SLAT latent for decoder nodes
         """
-        print(f"[SAM3DObjects] SLATGen: Generating SLAT from sparse structure")
-        print(f"[SAM3DObjects] SLAT parameters: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}, distillation={use_stage2_distillation}")
+        print(f"[SAM3DObjects] SLATGen: Generating SLAT...")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
@@ -103,7 +102,6 @@ class SAM3DSLATGen:
 
         # Run SLAT generation only (no decoding)
         try:
-            print("[SAM3DObjects] Running SLAT generation...")
             slat_output = slat_generator(
                 image_pil, mask_np,
                 seed=seed,
@@ -118,12 +116,10 @@ class SAM3DSLATGen:
         except Exception as e:
             raise RuntimeError(f"SAM3D SLAT generation failed: {e}") from e
 
-        print("[SAM3DObjects] SLAT generation completed!")
-        
         # Extract file path from output
         if isinstance(slat_output, dict) and "files" in slat_output and "slat" in slat_output["files"]:
             slat_path = slat_output["files"]["slat"]
-            print(f"[SAM3DObjects] - Saved to: {slat_path}")
+            print(f"[SAM3DObjects] SLATGen completed: {slat_path}")
             return (slat_path,)
             
         # Fallback/Error

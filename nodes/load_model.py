@@ -78,7 +78,7 @@ class LoadSAM3DModel:
         Returns:
             5 model outputs (all point to same model wrapper, selective loading handled by worker)
         """
-        print(f"[SAM3DObjects] Loading SAM3D model (tag: {model_tag}, compile: {compile}, use_gpu_cache: {use_gpu_cache})")
+        print(f"[SAM3DObjects] Loading SAM3D model...")
 
         # Check CUDA availability
         device = get_device()
@@ -87,7 +87,6 @@ class LoadSAM3DModel:
         else:
             gpu_props = torch.cuda.get_device_properties(0)
             vram_gb = gpu_props.total_memory / (1024**3)
-            print(f"[SAM3DObjects] Using GPU: {gpu_props.name} ({vram_gb:.1f} GB VRAM)")
 
             if vram_gb < 32:
                 print(
@@ -100,7 +99,7 @@ class LoadSAM3DModel:
 
         # Return cached model if available
         if cache_key in _MODEL_CACHE:
-            print(f"[SAM3DObjects] Using cached model: {cache_key}")
+            print(f"[SAM3DObjects] Using cached model")
             model = _MODEL_CACHE[cache_key]
             # Return same model 6 times (one for each output)
             return (model, model, model, model, model, model)
@@ -116,7 +115,6 @@ class LoadSAM3DModel:
                 "Please ensure the checkpoint contains checkpoints/pipeline.yaml"
             )
 
-        print(f"[SAM3DObjects] Creating isolated model wrapper for config: {config_path}")
 
         # Import isolated model wrapper
         try:
@@ -136,18 +134,13 @@ class LoadSAM3DModel:
                 compile=compile,
                 use_gpu_cache=use_gpu_cache
             )
-            print("[SAM3DObjects] Isolated model wrapper created successfully!")
-            print(f"[SAM3DObjects] Note: dtype={dtype} parameter not yet implemented for isolated mode")
-            print("[SAM3DObjects] Inference will run in isolated subprocess")
-            if not use_gpu_cache:
-                print("[SAM3DObjects] use_gpu_cache=False: Models will be offloaded to CPU after each stage (~50% VRAM reduction)")
 
         except Exception as e:
             raise RuntimeError(f"Failed to create isolated model wrapper: {e}") from e
 
         # Cache the model wrapper
         _MODEL_CACHE[cache_key] = inference_pipeline
-        print(f"[SAM3DObjects] Model cached as: {cache_key}")
+        print(f"[SAM3DObjects] Model loaded successfully")
 
         # Return same model 6 times (one for each output)
         return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
@@ -169,12 +162,10 @@ class LoadSAM3DModel:
 
         # Check if checkpoint already exists
         if checkpoint_dir.exists() and (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
-            print(f"[SAM3DObjects] Found existing checkpoint at: {checkpoint_dir}")
             return checkpoint_dir
 
         # Download checkpoint
-        print(f"[SAM3DObjects] Checkpoint not found. Downloading model '{model_tag}'...")
-        print(f"[SAM3DObjects] Download location: {checkpoint_dir}")
+        print(f"[SAM3DObjects] Downloading model '{model_tag}'...")
 
         try:
             cls._download_checkpoint(model_tag, checkpoint_dir, hf_token)
@@ -190,7 +181,6 @@ class LoadSAM3DModel:
                 f"Download completed but checkpoints/pipeline.yaml not found in {checkpoint_dir}"
             )
 
-        print("[SAM3DObjects] Checkpoint downloaded successfully!")
         return checkpoint_dir
 
     @classmethod
@@ -218,8 +208,7 @@ class LoadSAM3DModel:
         try:
             from huggingface_hub import snapshot_download
 
-            print(f"[SAM3DObjects] Downloading from HuggingFace: {repo_id}")
-            print("[SAM3DObjects] This may take a while (several GB)...")
+            print(f"[SAM3DObjects] Downloading from HuggingFace: {repo_id} (this may take a while)")
 
             # Download all files from the repo
             snapshot_download(

@@ -8,7 +8,7 @@ from .base import Installer
 from .micromamba import MicromambaInstaller
 from .pytorch import PyTorchInstaller
 from .cuda import CudaToolkitInstaller, CompilerInstaller
-from .specialized import GsplatInstaller, NvdiffrastInstaller, KaolinInstaller
+from .specialized import GsplatInstaller, NvdiffrastInstaller
 
 __all__ = [
     'Installer',
@@ -18,5 +18,4 @@ __all__ = [
     'CompilerInstaller',
     'GsplatInstaller',
     'NvdiffrastInstaller',
-    'KaolinInstaller',
 ]

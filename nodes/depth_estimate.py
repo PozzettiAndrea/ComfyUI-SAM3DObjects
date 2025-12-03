@@ -72,7 +72,6 @@ class SAM3D_DepthEstimate:
         inference_dir = os.path.join(base_output_dir, f"sam3d_inference_{next_num}")
         os.makedirs(inference_dir, exist_ok=True)
 
-        print(f"[SAM3DObjects] Created inference directory: {inference_dir}")
         return inference_dir
 
     def _save_pointcloud_ply(self, pointmap: np.ndarray, image_pil, output_dir: str) -> str:
@@ -114,7 +113,6 @@ class SAM3D_DepthEstimate:
         valid_points = points[valid_mask]
         valid_colors = colors[valid_mask]
 
-        print(f"[SAM3DObjects] Point cloud: {len(valid_points)} valid points out of {len(points)}")
 
         if len(valid_points) == 0:
             raise RuntimeError("No valid points in pointmap")
@@ -140,7 +138,6 @@ class SAM3D_DepthEstimate:
                 r, g, b = valid_colors[i]
                 f.write(f"{x} {y} {z} {r} {g} {b}\n")
 
-        print(f"[SAM3DObjects] Saved point cloud PLY: {filepath}")
 
         return filepath
 
@@ -163,7 +160,6 @@ class SAM3D_DepthEstimate:
 
         # Convert ComfyUI tensor to PIL
         image_pil = comfy_image_to_pil(image)
-        print(f"[SAM3DObjects] Image size: {image_pil.size}")
 
         # Run depth-only inference
         try:
@@ -182,8 +178,6 @@ class SAM3D_DepthEstimate:
         if pointmap is None:
             raise RuntimeError("Depth estimation did not return pointmap")
 
-        print(f"[SAM3DObjects] Pointmap shape: {pointmap.shape if hasattr(pointmap, 'shape') else 'unknown'}")
-
         # Convert pointmap to numpy for PLY export
         if isinstance(pointmap, torch.Tensor):
             pointmap_np = pointmap.cpu().numpy() if pointmap.is_cuda else pointmap.numpy()
@@ -197,7 +191,6 @@ class SAM3D_DepthEstimate:
         # Save pointmap tensor for SparseGen (preserves H×W structure)
         pointmap_path = os.path.join(inference_dir, "pointmap.pt")
         torch.save(torch.from_numpy(pointmap_np), pointmap_path)
-        print(f"[SAM3DObjects] Saved pointmap tensor: {pointmap_path}")
 
         # Save PLY file for visualization
         pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
@@ -221,6 +214,5 @@ class SAM3D_DepthEstimate:
         # Convert to ComfyUI MASK format [B, H, W]
         depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
 
-        print("[SAM3DObjects] Depth estimation completed!")
-
+        print(f"[SAM3DObjects] Depth estimation completed: {pointcloud_ply}")
         return (intrinsics, pointmap_path, pointcloud_ply, depth_mask)

@@ -14,7 +14,7 @@ from .installers.base import Installer
 from .installers.micromamba import MicromambaInstaller
 from .installers.pytorch import PyTorchInstaller, PipDependenciesInstaller
 from .installers.cuda import CudaToolkitInstaller, CompilerInstaller
-from .installers.specialized import GsplatInstaller, NvdiffrastInstaller, KaolinInstaller
+from .installers.specialized import GsplatInstaller, NvdiffrastInstaller
 
 
 class SAM3DEnvironmentManager:
@@ -182,9 +182,6 @@ class SAM3DEnvironmentManager:
 
             # nvdiffrast (prebuilt wheel or source)
             NvdiffrastInstaller(**common_kwargs),
-
-            # kaolin (from NVIDIA S3)
-            KaolinInstaller(**common_kwargs),
 
             # CUDA toolkit (for JIT compilation)
             CudaToolkitInstaller(**common_kwargs),
