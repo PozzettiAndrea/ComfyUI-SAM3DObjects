@@ -105,7 +105,7 @@ class SAM3DEnvironmentManager:
 
         Micromamba is a tiny standalone executable that can create conda environments
         without requiring conda/mamba to be installed. This allows us to:
-        - Install Python 3.11 consistently across all platforms
+        - Install Python 3.10 consistently across all platforms
         - Use conda packages (compilers, etc.) without user having conda
 
         Returns:
@@ -211,7 +211,7 @@ class SAM3DEnvironmentManager:
         """
         Create the isolated Python environment using micromamba.
 
-        This uses micromamba to create a conda environment with Python 3.11,
+        This uses micromamba to create a conda environment with Python 3.10,
         ensuring consistent Python version across all platforms.
         """
         if self.env_dir.exists():
@@ -223,13 +223,13 @@ class SAM3DEnvironmentManager:
             else:
                 print("[SAM3DObjects] Recreating incomplete environment")
 
-        print("[SAM3DObjects] Creating Python 3.11 environment using micromamba...")
+        print("[SAM3DObjects] Creating Python 3.10 environment using micromamba...")
 
         # Download micromamba first
         micromamba_exe = self._download_micromamba()
 
         try:
-            # Create conda environment with Python 3.11
+            # Create conda environment with Python 3.10
             # Using -p (prefix) instead of -n (name) to create in specific directory
             # -y = yes to all prompts
             # -c conda-forge = use conda-forge channel
@@ -237,16 +237,16 @@ class SAM3DEnvironmentManager:
                 [
                     str(micromamba_exe), "create",
                     "-p", str(self.env_dir),
-                    "python=3.11",
+                    "python=3.10",
                     "-c", "conda-forge",
                     "-y"
                 ],
                 self.log_file,
-                "Create Python 3.11 environment with micromamba",
+                "Create Python 3.10 environment with micromamba",
                 check=True
             )
 
-            print("[SAM3DObjects] Python 3.11 environment created successfully!")
+            print("[SAM3DObjects] Python 3.10 environment created successfully!")
 
             # Verify Python version
             python_exe = self.get_python_executable()
@@ -332,7 +332,20 @@ class SAM3DEnvironmentManager:
         else:
             raise RuntimeError(f"PyTorch/PyTorch3D verification failed: {verify_result.stderr}")
 
-        # Step 4: Install all other dependencies via pip
+        # Step 4: Install gsplat from prebuilt wheel to avoid JIT compilation
+        print("[SAM3DObjects] Installing gsplat (prebuilt wheel for PyTorch 2.4.1 + CUDA 12.1)...")
+        _run_subprocess_logged(
+            [
+                str(python_exe), "-m", "pip", "install",
+                "gsplat>=1.4.0",
+                "--index-url", "https://docs.gsplat.studio/whl/pt24cu121",
+            ],
+            self.log_file,
+            "Install gsplat prebuilt wheel",
+            check=True
+        )
+
+        # Step 5: Install all other dependencies via pip
         print("[SAM3DObjects] Installing remaining dependencies via pip...")
         print("[SAM3DObjects] (PyTorch is pinned, will not be upgraded)")
 
@@ -377,7 +390,7 @@ class SAM3DEnvironmentManager:
         if constraints_file.exists():
             constraints_file.unlink()
 
-        # Step 5: Install kaolin (NVIDIA library with special wheel location)
+        # Step 6: Install kaolin (NVIDIA library with special wheel location)
         print("[SAM3DObjects] Installing Kaolin...")
         _run_subprocess_logged(
             [
@@ -420,7 +433,7 @@ class SAM3DEnvironmentManager:
 
         try:
             # Use micromamba to install PyTorch3D from pytorch3d channel
-            # Micromamba will automatically find the right build for Python 3.11 + CUDA 12.1
+            # Micromamba will automatically find the right build for Python 3.10 + CUDA 12.1
             _run_subprocess_logged(
                 [
                     str(self.micromamba_exe), "install",
