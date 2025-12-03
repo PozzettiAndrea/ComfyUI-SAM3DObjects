@@ -188,9 +188,6 @@ class NvdiffrastInstaller(Installer):
                         self.logger.info(f"Installed plugin: {pyd_file.name}")
                         plugin_count += 1
 
-                if plugin_count == 0:
-                    self.logger.warning(f"No compiled plugins (*{lib_ext}) found in wheel!")
-
             if self.verify_import("nvdiffrast"):
                 self.logger.success(f"nvdiffrast installed ({plugin_count} plugin(s))")
                 return True

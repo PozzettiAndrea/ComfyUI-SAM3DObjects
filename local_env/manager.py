@@ -206,14 +206,11 @@ class SAM3DEnvironmentManager:
                 # gsplat (prebuilt wheel)
                 GsplatInstaller(**common_kwargs),
 
-                # nvdiffrast (prebuilt wheel)
+                # nvdiffrast (prebuilt wheel with compiled extensions)
                 NvdiffrastInstaller(**common_kwargs),
 
-                # CUDA toolkit (for JIT compilation)
-                CudaToolkitInstaller(**common_kwargs),
-
-                # C++ compiler - Windows uses system MSVC, skip micromamba install
-                CompilerInstaller(**common_kwargs),
+                # NOTE: CUDA toolkit and C++ compiler are NOT needed on Windows
+                # because we use prebuilt wheels with pre-compiled extensions
             ]
         else:
             # Linux/macOS: Use micromamba-based installers
