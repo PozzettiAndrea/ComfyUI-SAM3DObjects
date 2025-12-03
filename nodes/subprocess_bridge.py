@@ -10,7 +10,7 @@ import base64
 import subprocess
 import io
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 import threading
 import queue
 from PIL import Image
@@ -208,6 +208,17 @@ class InferenceWorkerBridge:
             return None
         return base64.b64encode(pickle.dumps(stage1_output)).decode('utf-8')
 
+    def _serialize_tensor(self, tensor) -> Optional[str]:
+        """Serialize tensor/numpy array to base64."""
+        if tensor is None:
+            return None
+        # Convert to numpy if it's a tensor
+        if hasattr(tensor, 'cpu'):
+            tensor = tensor.cpu().numpy()
+        elif hasattr(tensor, 'numpy'):
+            tensor = tensor.numpy()
+        return base64.b64encode(pickle.dumps(tensor)).decode('utf-8')
+
     def serialize_stage2_output(self, stage2_output: Optional[dict]) -> Optional[str]:
         """Serialize stage2_output dict to base64."""
         if stage2_output is None:
@@ -314,6 +325,11 @@ class InferenceWorkerBridge:
         with_mesh_postprocess: bool = False,
         with_texture_baking: bool = True,
         use_vertex_color: bool = False,
+        # NEW: Depth estimation and memory management
+        depth_only: bool = False,
+        unload_model: str = None,
+        pointmap_path: str = None,
+        intrinsics: Any = None,
     ) -> Dict[str, Any]:
         """
         Run inference on the isolated worker.
@@ -356,8 +372,8 @@ class InferenceWorkerBridge:
             "config_path": config_path,
             "compile": compile,
             "use_cache": not use_gpu_cache,  # Invert: gpu_cache=True means internal use_cache=False
-            "image": self.serialize_image(image),
-            "mask": self.serialize_mask(mask),
+            "image": self.serialize_image(image) if image is not None else None,
+            "mask": self.serialize_mask(mask) if mask is not None else None,
             "seed": seed,
             "stage1_inference_steps": stage1_inference_steps,
             "stage2_inference_steps": stage2_inference_steps,
@@ -380,6 +396,11 @@ class InferenceWorkerBridge:
             "with_mesh_postprocess": with_mesh_postprocess,
             "with_texture_baking": with_texture_baking,
             "use_vertex_color": use_vertex_color,
+            # NEW: Depth estimation and memory management
+            "depth_only": depth_only,
+            "unload_model": unload_model,
+            "pointmap_path": pointmap_path,  # Pass pointmap tensor path directly (no serialization needed)
+            "intrinsics": self._serialize_tensor(intrinsics) if intrinsics is not None else None,
         }
 
         # Send request
@@ -394,13 +415,37 @@ class InferenceWorkerBridge:
                 f"Traceback:\n{traceback_msg}"
             )
 
+        # Handle depth_only response
+        if response.get("depth_only", False):
+            print(f"[SAM3DObjects] Depth estimation completed")
+            result = {"status": "success", "depth_only": True}
+            # Deserialize pointmap and intrinsics
+            if response.get("pointmap"):
+                result["pointmap"] = pickle.loads(base64.b64decode(response["pointmap"]))
+            if response.get("intrinsics"):
+                result["intrinsics"] = pickle.loads(base64.b64decode(response["intrinsics"]))
+            return result
+
+        # Handle unload_model response
+        if unload_model is not None:
+            print(f"[SAM3DObjects] Model unload completed: {response.get('unloaded', unload_model)}")
+            return response
+
         # Check if this is Stage 1 output (serialized intermediate data or file path)
         if response.get("stage1_mode", False):
             output_data = response["output"]
             if isinstance(output_data, dict) and "files" in output_data:
-                 print(f"[SAM3DObjects] Stage 1 output saved to disk")
-                 return output_data
-            
+                print(f"[SAM3DObjects] Stage 1 output saved to disk")
+                # Include pose data directly in the response
+                result = output_data.copy()
+                if response.get("rotation") is not None:
+                    result["rotation"] = response["rotation"]
+                if response.get("translation") is not None:
+                    result["translation"] = response["translation"]
+                if response.get("scale") is not None:
+                    result["scale"] = response["scale"]
+                return result
+
             print(f"[SAM3DObjects] Deserializing Stage 1 intermediate output")
             output = pickle.loads(base64.b64decode(output_data))
             print(f"[SAM3DObjects] Stage 1 output keys: {list(output.keys())}")

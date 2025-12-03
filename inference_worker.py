@@ -348,12 +348,169 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
     return result
 
 
+def _unload_model(model, model_type: str) -> Dict[str, Any]:
+    """
+    Unload specific model component to free VRAM.
+
+    Args:
+        model: InferencePipelinePointMap instance
+        model_type: One of 'depth', 'sparse', 'slat', 'decoders', 'all'
+
+    Returns:
+        Status dict
+    """
+    import gc
+
+    try:
+        if model_type == "depth" or model_type == "all":
+            if hasattr(model, 'depth_model') and model.depth_model is not None:
+                model.depth_model.cpu()
+                print("[Worker] Moved depth_model to CPU", file=sys.stderr)
+
+        if model_type == "sparse" or model_type == "all":
+            if hasattr(model, 'models') and 'ss_generator' in model.models:
+                model.models['ss_generator'].cpu()
+                print("[Worker] Moved ss_generator to CPU", file=sys.stderr)
+
+        if model_type == "slat" or model_type == "all":
+            if hasattr(model, 'models') and 'slat_generator' in model.models:
+                model.models['slat_generator'].cpu()
+                print("[Worker] Moved slat_generator to CPU", file=sys.stderr)
+
+        if model_type == "decoders" or model_type == "all":
+            if hasattr(model, 'models'):
+                if 'slat_decoder_gs' in model.models:
+                    model.models['slat_decoder_gs'].cpu()
+                    print("[Worker] Moved slat_decoder_gs to CPU", file=sys.stderr)
+                if 'slat_decoder_mesh' in model.models:
+                    model.models['slat_decoder_mesh'].cpu()
+                    print("[Worker] Moved slat_decoder_mesh to CPU", file=sys.stderr)
+
+        # Force garbage collection and clear CUDA cache
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            print("[Worker] Cleared CUDA cache", file=sys.stderr)
+
+        return {
+            "status": "success",
+            "unloaded": model_type
+        }
+
+    except Exception as e:
+        print(f"[Worker] Warning during unload: {e}", file=sys.stderr)
+        return {
+            "status": "partial",
+            "unloaded": model_type,
+            "warning": str(e)
+        }
+
+
+def _load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
+    """
+    Load pointmap from a .pt tensor file.
+
+    Args:
+        pointmap_path: Path to .pt file
+
+    Returns:
+        Pointmap tensor in HWC format (H, W, 3)
+    """
+    pointmap = torch.load(pointmap_path)
+    print(f"[Worker] Loaded pointmap tensor: shape={pointmap.shape}", file=sys.stderr)
+
+    if torch.cuda.is_available():
+        pointmap = pointmap.cuda()
+
+    return pointmap
+
+
+def _run_depth_only(model, image) -> Dict[str, Any]:
+    """
+    Run only depth estimation (MoGe) and return pointmap + intrinsics.
+
+    Args:
+        model: InferencePipelinePointMap instance
+        image: PIL Image
+
+    Returns:
+        Dict with pointmap, intrinsics, depth
+    """
+    import numpy as np
+
+    # Convert image to numpy array with alpha channel (as expected by compute_pointmap)
+    image_np = np.array(image)
+    if image_np.ndim == 2:
+        # Grayscale - convert to RGBA
+        image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
+    elif image_np.shape[-1] == 3:
+        # RGB - add alpha channel
+        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        image_np = np.concatenate([image_np, alpha], axis=-1)
+
+    print(f"[Worker] Image shape for depth estimation: {image_np.shape}", file=sys.stderr)
+
+    # Run compute_pointmap from the model
+    pointmap_dict = model.compute_pointmap(image_np)
+
+    pointmap = pointmap_dict["pointmap"]
+    intrinsics = pointmap_dict.get("intrinsics")
+
+    print(f"[Worker] Pointmap computed: shape={pointmap.shape if hasattr(pointmap, 'shape') else 'unknown'}", file=sys.stderr)
+    print(f"[Worker] Intrinsics: {intrinsics is not None}", file=sys.stderr)
+
+    # Serialize pointmap and intrinsics for transfer
+    # Convert tensors to CPU numpy for pickle serialization
+    # IMPORTANT: compute_pointmap returns CHW format (3, H, W), but model.run() expects HWC (H, W, 3)
+    # So we transpose here for downstream compatibility
+    if hasattr(pointmap, 'cpu'):
+        # Transpose from CHW (3, H, W) to HWC (H, W, 3)
+        pointmap_hwc = pointmap.permute(1, 2, 0).contiguous()
+        pointmap_np = pointmap_hwc.cpu().numpy()
+        print(f"[Worker] Pointmap transposed to HWC: {pointmap_np.shape}", file=sys.stderr)
+    else:
+        pointmap_np = pointmap
+
+    if intrinsics is not None and hasattr(intrinsics, 'cpu'):
+        intrinsics_np = intrinsics.cpu().numpy()
+    else:
+        intrinsics_np = intrinsics
+
+    # Serialize for transfer back to main process
+    pointmap_b64 = base64.b64encode(pickle.dumps(pointmap_np)).decode('utf-8')
+    intrinsics_b64 = base64.b64encode(pickle.dumps(intrinsics_np)).decode('utf-8') if intrinsics_np is not None else None
+
+    return {
+        "status": "success",
+        "depth_only": True,
+        "pointmap": pointmap_b64,
+        "intrinsics": intrinsics_b64,
+    }
+
+
 def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
     """Run inference on the given request."""
     try:
-        # Extract request parameters
-        config_path = request["config_path"]
+        # Check for special modes that don't need full inference setup
+        config_path = request.get("config_path")
         compile_model = request.get("compile", False)
+
+        # Handle unload_model command
+        if request.get("unload_model"):
+            model_type = request.get("unload_model")
+            print(f"[Worker] Unloading model: {model_type}", file=sys.stderr)
+            model = load_model(config_path, compile_model)
+            return _unload_model(model, model_type)
+
+        # Handle depth_only mode (MoGe depth estimation only)
+        if request.get("depth_only", False):
+            print("[Worker] Running depth-only mode (MoGe)", file=sys.stderr)
+            model = load_model(config_path, compile_model)
+            image_b64 = request["image"]
+            image = deserialize_image(image_b64)
+            return _run_depth_only(model, image)
+
+        # Extract request parameters
         use_cache = request.get("use_cache", False)
         image_b64 = request["image"]
         mask_b64 = request["mask"]
@@ -377,6 +534,19 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         with_mesh_postprocess = request.get("with_mesh_postprocess", False)
         with_texture_baking = request.get("with_texture_baking", True)
         use_vertex_color = request.get("use_vertex_color", False)
+
+        # Load pointmap from .pt file if provided
+        pointmap = None
+        intrinsics = None
+        if request.get("pointmap_path") is not None:
+            pointmap_path = request.get("pointmap_path")
+            print(f"[Worker] Loading pointmap from: {pointmap_path}", file=sys.stderr)
+            pointmap = _load_pointmap_from_file(pointmap_path)
+            print(f"[Worker] Pointmap shape: {pointmap.shape}", file=sys.stderr)
+        if request.get("intrinsics") is not None:
+            intrinsics_np = pickle.loads(base64.b64decode(request.get("intrinsics")))
+            intrinsics = torch.from_numpy(intrinsics_np).cuda() if torch.cuda.is_available() else torch.from_numpy(intrinsics_np)
+            print(f"[Worker] Intrinsics shape: {intrinsics.shape}", file=sys.stderr)
 
         # Load model
         model = load_model(config_path, compile_model)
@@ -577,18 +747,38 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             mesh_only=mesh_only,
             save_files=save_files,
             use_cache=use_cache,
+            pointmap=pointmap,  # Pass pre-computed pointmap if available
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
-        # Special handling for stage1_only mode - save to disk and return path
+        # Special handling for stage1_only mode - save to disk and return path + pose
         if stage1_only:
             print(f"[Worker] Stage 1 only - saving to disk", file=sys.stderr)
             saved_output = save_output_to_disk(output, Path(output_dir))
+
+            # Extract pose data for direct access (not just in saved file)
+            rotation = output.get("rotation")
+            translation = output.get("translation")
+            scale = output.get("scale")
+
+            # Convert tensors to lists for JSON serialization
+            if rotation is not None and hasattr(rotation, 'tolist'):
+                rotation = rotation.cpu().tolist() if hasattr(rotation, 'cpu') else rotation.tolist()
+            if translation is not None and hasattr(translation, 'tolist'):
+                translation = translation.cpu().tolist() if hasattr(translation, 'cpu') else translation.tolist()
+            if scale is not None and hasattr(scale, 'tolist'):
+                scale = scale.cpu().tolist() if hasattr(scale, 'cpu') else scale.tolist()
+
+            print(f"[Worker] Pose data: rotation={rotation is not None}, translation={translation is not None}, scale={scale is not None}", file=sys.stderr)
+
             return {
                 "status": "success",
                 "stage1_mode": True,
-                "output": saved_output  # Contains file paths
+                "output": saved_output,  # Contains file paths
+                "rotation": rotation,
+                "translation": translation,
+                "scale": scale,
             }
 
         # Special handling for stage2_only mode - return serialized Gaussian + Mesh data
