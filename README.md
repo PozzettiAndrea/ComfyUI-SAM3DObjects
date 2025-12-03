@@ -37,7 +37,7 @@ ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D 
 
 ```bash
 cd /path/to/ComfyUI/custom_nodes
-git clone https://github.com/yourusername/ComfyUI-SAM3DObjects.git
+git clone https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects.git
 cd ComfyUI-SAM3DObjects
 python install.py
 ```
