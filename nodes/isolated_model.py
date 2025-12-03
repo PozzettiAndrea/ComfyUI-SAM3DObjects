@@ -79,6 +79,9 @@ class IsolatedSAM3DModel:
         rendering_engine: str = "pytorch3d",
         # Output directory (from depth_estimate)
         output_dir: str = None,
+        # Mask merge controls
+        merge_mask: bool = True,
+        auto_resize_mask: bool = True,
     ) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
@@ -138,6 +141,9 @@ class IsolatedSAM3DModel:
             rendering_engine=rendering_engine,
             # Output directory (from depth_estimate)
             output_dir=output_dir,
+            # Mask merge controls
+            merge_mask=merge_mask,
+            auto_resize_mask=auto_resize_mask,
         )
 
     def __repr__(self) -> str:
