@@ -41,7 +41,7 @@ def get_platform() -> PlatformProvider:
 
         # Dynamic import to avoid loading unused platform modules
         import importlib
-        module = importlib.import_module(f'.{module_name}', package='local_env.platform')
+        module = importlib.import_module(f'.{module_name}', package=__package__)
         provider_class = getattr(module, class_name)
 
         _cached_provider = provider_class()

@@ -1,13 +1,12 @@
 """
 Environment manager for SAM3D isolated venv environment.
 
-This module re-exports from local_env for backwards compatibility.
-All implementation is now in the local_env package.
+This module re-exports from local_env package.
 """
 
-from local_env import SAM3DEnvironmentManager, InstallConfig
-from local_env.platform import get_platform
-from local_env.utils import Logger, validate_url
+from ..local_env import SAM3DEnvironmentManager, InstallConfig
+from ..local_env.platform import get_platform
+from ..local_env.utils import Logger, validate_url
 
 __all__ = [
     'SAM3DEnvironmentManager',
