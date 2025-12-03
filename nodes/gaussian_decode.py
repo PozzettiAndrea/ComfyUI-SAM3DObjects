@@ -24,7 +24,7 @@ class SAM3DGaussianDecode:
         return {
             "required": {
                 "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel"}),
-                "slat": ("SAM3D_SLAT", {"tooltip": "SLAT from SAM3DSLATGen"}),
+                "slat": ("STRING", {"tooltip": "Path to SLAT from SAM3DSLATGen"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image (must match SLATGen)"}),
                 "mask": ("MASK", {"tooltip": "Binary mask (must match SLATGen)"}),
                 "seed": ("INT", {
@@ -56,7 +56,7 @@ class SAM3DGaussianDecode:
     def decode_gaussian(
         self,
         slat_decoder_gs: Any,
-        slat: dict,
+        slat: str,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
@@ -67,7 +67,7 @@ class SAM3DGaussianDecode:
 
         Args:
             slat_decoder_gs: SAM3D Gaussian decoder
-            slat: SLAT from SAM3DSLATGen
+            slat: Path to SLAT from SAM3DSLATGen
             image: Input image tensor [B, H, W, C]
             mask: Input mask tensor [N, H, W]
             seed: Random seed
@@ -89,7 +89,7 @@ class SAM3DGaussianDecode:
             gaussian_output = slat_decoder_gs(
                 image_pil, mask_np,
                 seed=seed,
-                slat_output=slat,  # Resume from SLAT
+                slat_output=slat,  # Resume from SLAT path
                 gaussian_only=True,  # CRITICAL: Only decode to Gaussian
                 save_files=save_ply,  # Save PLY if requested
             )
@@ -101,6 +101,11 @@ class SAM3DGaussianDecode:
 
         # Extract PLY path if saved
         ply_path = gaussian_output.get("ply_path", None)
+        
+        # If not found directly, check files dict (bridge returns this structure)
+        if not ply_path and "files" in gaussian_output and "ply" in gaussian_output["files"]:
+             ply_path = gaussian_output["files"]["ply"]
+
         if save_ply and ply_path:
             print(f"[SAM3DObjects] - Gaussian PLY saved to: {ply_path}")
         elif save_ply:

@@ -31,6 +31,7 @@ from .nodes.postprocess import SAM3DTextureBake
 from .nodes.export_ply import SAM3DExportPLY, SAM3DExportPLYBatch
 from .nodes.export_mesh import SAM3DExportMesh, SAM3DExtractMesh
 from .nodes.visualizer import SAM3DVisualizer, SAM3DRenderSingle
+from .nodes.preview_nodes import SAM3D_PreviewPointCloud
 
 
 __version__ = "1.0.0"
@@ -53,6 +54,7 @@ NODE_CLASS_MAPPINGS = {
     "SAM3DExtractMesh": SAM3DExtractMesh,
     "SAM3DVisualizer": SAM3DVisualizer,
     "SAM3DRenderSingle": SAM3DRenderSingle,
+    "SAM3D_PreviewPointCloud": SAM3D_PreviewPointCloud,
 }
 
 # Optional: Human-readable names for nodes
@@ -71,6 +73,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3DExtractMesh": "SAM3D Extract Mesh",
     "SAM3DVisualizer": "SAM3D Visualizer",
     "SAM3DRenderSingle": "SAM3D Render Single",
+    "SAM3D_PreviewPointCloud": "SAM3D Preview Point Cloud",
 }
 
 # Print info when loaded
@@ -92,6 +95,7 @@ print("[SAM3DObjects]   - SAM3DExportMesh")
 print("[SAM3DObjects]   - SAM3DExtractMesh")
 print("[SAM3DObjects]   - SAM3DVisualizer")
 print("[SAM3DObjects]   - SAM3DRenderSingle")
+print("[SAM3DObjects]   - SAM3D Preview Point Cloud")
 print("[SAM3DObjects] ")
 print("[SAM3DObjects] Cache-efficient workflow (5 stages):")
 print("[SAM3DObjects]   1. SparseGen: Sparse structure (~3s)")
