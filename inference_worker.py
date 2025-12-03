@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image
 import io
 import torch
+import os
 
 
 # Global model cache
@@ -211,6 +212,21 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
         "metadata": {}
     }
 
+    # Save sparse structure (Stage 1 output)
+    # Identify sparse structure by keys present in stage 1 but not others
+    if "coords" in output and "pointmap" in output and "slat" not in output:
+        sparse_path = save_dir / "sparse_structure.pt"
+        torch.save(output, sparse_path)
+        result["files"]["sparse_structure"] = str(sparse_path)
+        print(f"[Worker] Saved sparse structure: {sparse_path}", file=sys.stderr)
+
+    # Save SLAT (Stage 2 intermediate output)
+    if "slat" in output:
+        slat_path = save_dir / "slat.pt"
+        torch.save(output, slat_path)
+        result["files"]["slat"] = str(slat_path)
+        print(f"[Worker] Saved SLAT: {slat_path}", file=sys.stderr)
+
     # Save GLB file (textured mesh)
     if "glb" in output and output["glb"] is not None:
         glb_path = save_dir / "mesh.glb"
@@ -307,10 +323,13 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         image = deserialize_image(image_b64)
         mask = deserialize_mask(mask_b64)
 
-        # Deserialize stage1_output if provided
+        # Load stage1_output if provided (from path or base64 for backward compat)
         stage1_output = None
-        if stage1_output_b64 is not None:
-            stage1_output = pickle.loads(base64.b64decode(stage1_output_b64))
+        if request.get("stage1_output_path") is not None and os.path.exists(request.get("stage1_output_path")):
+            print(f"[Worker] Loading Stage 1 output from: {request.get('stage1_output_path')}", file=sys.stderr)
+            stage1_output = torch.load(request.get("stage1_output_path"))
+        elif request.get("stage1_output") is not None:
+            stage1_output = pickle.loads(base64.b64decode(request.get("stage1_output")))
 
         # Deserialize stage2_output if provided
         stage2_output = None
@@ -338,10 +357,13 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 }
                 print(f"[Worker] Combined stage2_output keys: {list(stage2_output.keys())}", file=sys.stderr)
 
-        # Deserialize slat_output if provided (same format as stage2_output)
+        # Load slat_output if provided (from path or base64)
         slat_output = None
-        if slat_output_b64 is not None:
-            slat_output = pickle.loads(base64.b64decode(slat_output_b64))
+        if request.get("slat_output_path") is not None and os.path.exists(request.get("slat_output_path")):
+            print(f"[Worker] Loading SLAT output from: {request.get('slat_output_path')}", file=sys.stderr)
+            slat_output = torch.load(request.get("slat_output_path"))
+        elif request.get("slat_output") is not None:
+            slat_output = pickle.loads(base64.b64decode(request.get("slat_output")))
 
         print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
         print(f"[Worker] Stage 1: steps={stage1_inference_steps}, cfg={stage1_cfg_strength}", file=sys.stderr)
@@ -389,18 +411,14 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
-        # Special handling for stage1_only mode - return serialized intermediate data
+        # Special handling for stage1_only mode - save to disk and return path
         if stage1_only:
-            print(f"[Worker] Stage 1 only - serializing intermediate output for caching", file=sys.stderr)
-            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
-
-            # Serialize the entire output dict (including all tensors)
-            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
-
+            print(f"[Worker] Stage 1 only - saving to disk", file=sys.stderr)
+            saved_output = save_output_to_disk(output, Path(output_dir))
             return {
                 "status": "success",
                 "stage1_mode": True,
-                "output": serialized_output
+                "output": saved_output  # Contains file paths
             }
 
         # Special handling for stage2_only mode - return serialized Gaussian + Mesh data
@@ -417,18 +435,14 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 "output": serialized_output
             }
 
-        # Special handling for slat_only mode - return serialized SLAT data
+        # Special handling for slat_only mode - save to disk and return path
         if slat_only:
-            print(f"[Worker] SLAT only - serializing SLAT output for caching", file=sys.stderr)
-            print(f"[Worker] Output keys: {list(output.keys())}", file=sys.stderr)
-
-            # Serialize the entire output dict (including SLAT tensor)
-            serialized_output = base64.b64encode(pickle.dumps(output)).decode('utf-8')
-
+            print(f"[Worker] SLAT only - saving to disk", file=sys.stderr)
+            saved_output = save_output_to_disk(output, Path(output_dir))
             return {
                 "status": "success",
                 "stage2_mode": True,  # Use same mode as stage2 for compatibility
-                "output": serialized_output
+                "output": saved_output
             }
 
         # Special handling for gaussian_only and mesh_only modes - return both files and serialized data

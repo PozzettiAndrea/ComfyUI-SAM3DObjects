@@ -51,9 +51,9 @@ class SAM3DSparseGen:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_SPARSE",)
-    RETURN_NAMES = ("sparse_structure",)
-    OUTPUT_TOOLTIPS = ("Sparse voxel structure - pass to SAM3DSLATGen",)
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("sparse_structure_path",)
+    OUTPUT_TOOLTIPS = ("Path to saved sparse voxel structure - pass to SAM3DSLATGen",)
     FUNCTION = "generate_sparse"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate sparse voxel structure from image and mask (~3 seconds)."
@@ -79,7 +79,7 @@ class SAM3DSparseGen:
             stage1_cfg_strength: CFG strength for Stage 1
 
         Returns:
-            Tuple of (sparse_structure,) - sparse voxel data for SAM3DSLATGen
+            Tuple of (sparse_structure_path,) - path to sparse voxel data for SAM3DSLATGen
         """
         print(f"[SAM3DObjects] SparseGen: Generating sparse structure (seed: {seed})")
 
@@ -106,8 +106,13 @@ class SAM3DSparseGen:
             raise RuntimeError(f"SAM3D sparse generation failed: {e}") from e
 
         print("[SAM3DObjects] Sparse structure generation completed!")
-        print(f"[SAM3DObjects] - Generated {sparse_output.get('coords', torch.tensor([])).shape[0]} voxels")
-
-        # Return the sparse structure as an opaque object
-        # ComfyUI will pass this Python dict through to the next node
-        return (sparse_output,)
+        
+        # Extract file path from output
+        if isinstance(sparse_output, dict) and "files" in sparse_output and "sparse_structure" in sparse_output["files"]:
+            sparse_path = sparse_output["files"]["sparse_structure"]
+            print(f"[SAM3DObjects] - Saved to: {sparse_path}")
+            return (sparse_path,)
+            
+        # Fallback/Error
+        print(f"[SAM3DObjects] Warning: Could not find file path in output: {sparse_output.keys() if isinstance(sparse_output, dict) else sparse_output}")
+        raise RuntimeError("Failed to get sparse structure file path from worker")
