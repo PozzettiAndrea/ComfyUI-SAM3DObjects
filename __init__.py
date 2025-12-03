@@ -20,6 +20,11 @@ Nodes:
 - SAM3DRenderSingle: Render single view with camera control
 """
 
+import os
+
+# Define web directory for ComfyUI extension loading
+WEB_DIRECTORY = os.path.join(os.path.dirname(__file__), "web")
+
 # Import all node classes
 from .nodes.load_model import LoadSAM3DModel
 from .nodes.generate import SAM3DGenerate, SAM3DGenerateRGBA
@@ -113,3 +118,6 @@ print("[SAM3DObjects] Requirements:")
 print("[SAM3DObjects]   - NVIDIA GPU with 32GB+ VRAM recommended")
 print("[SAM3DObjects]   - Model checkpoints will auto-download on first use")
 print("[SAM3DObjects] ")
+
+# Export required attributes for ComfyUI
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']

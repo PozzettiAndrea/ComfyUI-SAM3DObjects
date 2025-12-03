@@ -38,10 +38,17 @@ app.registerExtension({
                 iframe.style.height = "100%";
                 iframe.style.border = "none";
                 iframe.style.display = "block";
+
+                // Add load event listener for debugging
+                iframe.addEventListener('load', () => {
+                    console.log('[SAM3DObjects] iframe loaded successfully');
+                });
+
                 container.appendChild(iframe);
 
                 // Store iframe reference
                 this._vtkIframe = iframe;
+                console.log('[SAM3DObjects] iframe created with src:', iframe.src);
 
                 // Add widget using ComfyUI's addDOMWidget API
                 const widget = this.addDOMWidget("preview", "POINTCLOUD_PREVIEW_VTK", container, {
@@ -80,61 +87,39 @@ app.registerExtension({
 
                     if (!filePath) return;
 
-                    // Construct URL to view the file
-                    // Use output type to access files in output directory
-                    // If absolute path is provided, we might need a different approach or ensure it's in output/temp
-                    const filename = filePath.split(/[/\]/).pop();
-                    const url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=${encodeURIComponent(filename.split('_')[1]?.split('/')[0] || '')}`;
-                    
-                    // Actually, the previous logic was:
-                    // `/view?filename=${encodeURIComponent(filePath.split('/').pop())}&type=output&subfolder=`
-                    // This assumes the file is in the root output directory or handled by ComfyUI's file serving.
-                    // Given our SAM3D nodes output to subfolders like 'inference_1', we might need to handle subfolders.
-                    // However, `view` endpoint usually requires explicit subfolder param if it's in a subfolder.
-                    
-                    // Let's try to parse the subfolder from the path if possible, or just pass the filename if it's in root.
-                    // But since we are passing an absolute path from the python node, ComfyUI's /view endpoint might not work 
-                    // if it's not strictly inside the output directory structure it expects.
-                    
-                    // Better approach: usage of /view requires filename, type, subfolder.
-                    // If our python node returns the absolute path, we should try to serve it.
-                    // But the iframe needs a URL. 
-                    
-                    // Let's assume the standard ComfyUI /view endpoint works for files in output folder.
-                    // Our worker saves to `ComfyUI/output/inference_X/mesh.glb` etc.
-                    // So subfolder is `inference_X`.
-                    
-                    // We need to parse subfolder from the absolute path.
-                    let subfolder = "";
-                    const parts = filePath.split(/[/\]/);
-                    const filenameOnly = parts.pop();
-                    const parentDir = parts.pop();
-                    
-                    if (parentDir && parentDir.startsWith("inference_")) {
-                        subfolder = parentDir;
-                    }
-                    
-                    const finalUrl = `/view?filename=${encodeURIComponent(filenameOnly)}&type=output&subfolder=${encodeURIComponent(subfolder)}`;
+                    // Construct URL to view the file - simplified approach matching DepthAnythingV3
+                    const url = `/view?filename=${encodeURIComponent(filePath.split('/').pop())}&type=output&subfolder=`;
 
-                    console.log('[SAM3DObjects] Constructed URL:', finalUrl);
+                    console.log('[SAM3DObjects] File path:', filePath);
+                    console.log('[SAM3DObjects] Constructed URL:', url);
                     
                     // Send message to iframe once it's loaded
                     const sendMessage = () => {
+                        console.log('[SAM3DObjects] Sending postMessage to iframe with URL:', url);
                         if (this._vtkIframe && this._vtkIframe.contentWindow) {
                             this._vtkIframe.contentWindow.postMessage({
                                 type: 'loadPointCloud',
-                                url: finalUrl
+                                url: url
                             }, '*');
+                            console.log('[SAM3DObjects] postMessage sent successfully');
+                        } else {
+                            console.warn('[SAM3DObjects] iframe or contentWindow not available');
                         }
                     };
 
                     // If iframe is already loaded, send immediately
                     if (this._vtkIframe.contentWindow) {
+                        console.log('[SAM3DObjects] iframe contentWindow available, sending immediately');
                         sendMessage();
+                    } else {
+                        console.log('[SAM3DObjects] iframe contentWindow not available yet, waiting for load event');
                     }
 
                     // Also send on load in case it wasn't ready
-                    this._vtkIframe.addEventListener('load', sendMessage, { once: true });
+                    this._vtkIframe.addEventListener('load', () => {
+                        console.log('[SAM3DObjects] iframe load event fired, sending message');
+                        sendMessage();
+                    }, { once: true });
                 }
             };
         }

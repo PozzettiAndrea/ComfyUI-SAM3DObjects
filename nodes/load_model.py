@@ -32,9 +32,9 @@ class LoadSAM3DModel:
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference (requires more VRAM)"
                 }),
-                "use_cache": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Offload models to CPU after use to reduce VRAM (slower but ~50% less VRAM)"
+                "use_gpu_cache": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Keep models on GPU between stages for faster inference (uses more VRAM)"
                 }),
                 "force_reload": ("BOOLEAN", {
                     "default": False,
@@ -71,14 +71,14 @@ class LoadSAM3DModel:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
 
-    def load_model(self, model_tag: str, compile: bool, use_cache: bool, force_reload: bool, hf_token: str = "", dtype: str = "bfloat16", keep_model_loaded: bool = True):
+    def load_model(self, model_tag: str, compile: bool, use_gpu_cache: bool, force_reload: bool, hf_token: str = "", dtype: str = "bfloat16", keep_model_loaded: bool = True):
         """
         Load the SAM3D model.
 
         Args:
             model_tag: Model variant to load
             compile: Whether to compile the model
-            use_cache: Offload models to CPU after use for VRAM savings
+            use_gpu_cache: Keep models on GPU between stages (higher VRAM, faster)
             force_reload: Force reload even if cached
             hf_token: HuggingFace token for private/gated repos (optional)
             dtype: Model precision (bfloat16/float16/float32/auto)
@@ -87,7 +87,7 @@ class LoadSAM3DModel:
         Returns:
             5 model outputs (all point to same model wrapper, selective loading handled by worker)
         """
-        print(f"[SAM3DObjects] Loading SAM3D model (tag: {model_tag}, compile: {compile}, use_cache: {use_cache})")
+        print(f"[SAM3DObjects] Loading SAM3D model (tag: {model_tag}, compile: {compile}, use_gpu_cache: {use_gpu_cache})")
 
         # Check CUDA availability
         device = get_device()
@@ -105,7 +105,7 @@ class LoadSAM3DModel:
                 )
 
         # Create cache key
-        cache_key = f"{model_tag}_{compile}_{use_cache}"
+        cache_key = f"{model_tag}_{compile}_{use_gpu_cache}"
 
         # Return cached model if available and not forcing reload
         if not force_reload and cache_key in _MODEL_CACHE:
@@ -143,13 +143,13 @@ class LoadSAM3DModel:
             inference_pipeline = IsolatedSAM3DModel(
                 str(config_path),
                 compile=compile,
-                use_cache=use_cache
+                use_gpu_cache=use_gpu_cache
             )
             print("[SAM3DObjects] Isolated model wrapper created successfully!")
             print(f"[SAM3DObjects] Note: dtype={dtype}, keep_model_loaded={keep_model_loaded} parameters not yet implemented for isolated mode")
             print("[SAM3DObjects] Inference will run in isolated subprocess")
-            if use_cache:
-                print("[SAM3DObjects] use_cache=True: Models will be offloaded to CPU after each stage (~50% VRAM reduction)")
+            if not use_gpu_cache:
+                print("[SAM3DObjects] use_gpu_cache=False: Models will be offloaded to CPU after each stage (~50% VRAM reduction)")
 
         except Exception as e:
             raise RuntimeError(f"Failed to create isolated model wrapper: {e}") from e
