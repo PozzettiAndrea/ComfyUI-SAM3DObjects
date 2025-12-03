@@ -578,9 +578,9 @@ class SAM3DEnvironmentManager:
                 with zipfile.ZipFile(archive_path, 'r') as zip_ref:
                     zip_ref.extractall(extract_dir)
 
-                # Extract inner tar.zst
+                # Extract inner tar.zst (pkg-*.tar.zst contains actual files, info-*.tar.zst is metadata)
                 tar_zst_file = None
-                for item in extract_dir.glob("*.tar.zst"):
+                for item in extract_dir.glob("pkg-*.tar.zst"):
                     tar_zst_file = item
                     break
 

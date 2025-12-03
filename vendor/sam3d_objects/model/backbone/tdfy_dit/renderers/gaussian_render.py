@@ -69,7 +69,7 @@ def render(
     bg_color: torch.Tensor,
     scaling_modifier=1.0,
     override_color=None,
-    backend="inria",
+    backend="gsplat",  # Changed from "inria" (not installed) to "gsplat"
 ):
     """
     Render the scene.

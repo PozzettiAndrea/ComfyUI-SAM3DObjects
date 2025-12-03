@@ -74,7 +74,7 @@ def render_frames(
         renderer.rendering_options.far = options.get("far", 1.6)
         renderer.rendering_options.bg_color = options.get("bg_color", (0, 0, 0))
         renderer.rendering_options.ssaa = options.get("ssaa", 1)
-        renderer.rendering_options.backend = options.get("backend", "inria")
+        renderer.rendering_options.backend = options.get("backend", "gsplat")  # Changed from "inria"
         renderer.pipe.kernel_size = kwargs.get("kernel_size", 0.1)
         renderer.pipe.use_mip_gaussian = True
     elif isinstance(sample, MeshExtractResult):
@@ -137,7 +137,7 @@ def render_gaussian_color_stay_in_device(
     renderer.rendering_options.far = options.get("far", 1.6)
     renderer.rendering_options.bg_color = options.get("bg_color", (0, 0, 0))
     renderer.rendering_options.ssaa = options.get("ssaa", 1)
-    renderer.rendering_options.backend = options.get("backend", "inria")
+    renderer.rendering_options.backend = options.get("backend", "gsplat")  # Changed from "inria"
     renderer.pipe.kernel_size = kwargs.get("kernel_size", 0.1)
     renderer.pipe.use_mip_gaussian = True
 
@@ -159,7 +159,7 @@ def render_video(
     num_frames=300,
     r=2,
     fov=40,
-    backend="inria",
+    backend="gsplat",  # Changed from "inria"
     **kwargs,
 ):
     yaws = torch.linspace(0, 2 * 3.1415, num_frames)
