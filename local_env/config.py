@@ -73,3 +73,29 @@ def get_gsplat_index_url(pytorch_version: str, cuda_version: str) -> str:
     pt = pytorch_version.replace(".", "")[:2]  # "2.4.1" -> "24"
     cu = cuda_version.replace(".", "")  # "12.1" -> "121"
     return f"https://docs.gsplat.studio/whl/pt{pt}cu{cu}"
+
+
+# PyTorch pip wheel index URL (with CUDA support)
+PYTORCH_PIP_INDEX_URL = "https://download.pytorch.org/whl/cu121"
+
+# PyTorch3D third-party wheel index (MiroPsota's repository)
+# See: https://github.com/MiroPsota/torch_packages_builder
+PYTORCH3D_PIP_INDEX_URL = "https://miropsota.github.io/torch_packages_builder"
+
+
+def get_pytorch3d_pip_version(pytorch_version: str, cuda_version: str) -> str:
+    """
+    Get PyTorch3D version string for pip install.
+
+    The third-party wheels use a specific version format that includes
+    a commit hash and the PyTorch version.
+
+    Args:
+        pytorch_version: PyTorch version (e.g., "2.4.1")
+        cuda_version: CUDA version (e.g., "12.1")
+
+    Returns:
+        Version string like "0.7.8+5043d15pt2.4.1cu121"
+    """
+    cu = cuda_version.replace(".", "")  # "12.1" -> "121"
+    return f"0.7.8+5043d15pt{pytorch_version}cu{cu}"

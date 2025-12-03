@@ -28,7 +28,7 @@ def convert_file(filepath):
     # This is tricky, so we'll skip it for now and do manually if needed
 
     filepath.write_text(content)
-    print(f"  ✓ {filepath.name} converted")
+    print(f"  [OK] {filepath.name} converted")
 
 # Convert remaining files
 nodes_dir = Path(__file__).parent / "nodes"

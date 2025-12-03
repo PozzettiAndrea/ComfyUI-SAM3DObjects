@@ -267,39 +267,26 @@ class CompilerInstaller(Installer):
             return False
 
     def _install_windows_compiler(self) -> bool:
-        """Install compiler on Windows."""
-        # Check for system MSVC first
+        """Install compiler on Windows.
+
+        On Windows, we rely on system MSVC only. We don't use micromamba
+        to install m2w64 toolchain since Windows uses pip/venv installation.
+        """
+        # Check for system MSVC
         compiler_info = self.platform.detect_cxx_compiler()
         if compiler_info and compiler_info.is_compatible:
             self.logger.success(f"Using system {compiler_info.name}: {compiler_info.version}")
             return True
 
-        # Install m2w64 toolchain
-        self.logger.info("No system MSVC found, installing m2w64-toolchain...")
-        self.run_micromamba(
-            [
-                "install",
-                "-p", str(self.env_dir),
-                "-c", "conda-forge",
-                *self.platform.get_conda_compiler_packages(),
-                "-y"
-            ],
-            step_name="Install m2w64 compiler",
-            check=True
-        )
+        # No MSVC found - warn but don't fail
+        # Some features that require JIT compilation may not work
+        self.logger.warning("No MSVC compiler found!")
+        self.logger.warning("Some features requiring JIT compilation may not work.")
+        self.logger.warning("To enable all features, install Visual Studio Build Tools:")
+        self.logger.warning("  https://visualstudio.microsoft.com/visual-cpp-build-tools/")
+        self.logger.warning("Select 'Desktop development with C++' workload.")
 
-        # Verify
-        gcc_candidates = [
-            self.env_dir / "Library" / "mingw-w64" / "bin" / "gcc.exe",
-            self.env_dir / "Library" / "bin" / "gcc.exe",
-        ]
-
-        for candidate in gcc_candidates:
-            if candidate.exists():
-                self.logger.success(f"m2w64 gcc installed: {candidate}")
-                return True
-
-        self.logger.warning("m2w64 gcc not found, relying on system compiler")
+        # Return True - compiler is optional for basic functionality
         return True
 
     def _install_linux_compiler(self) -> bool:

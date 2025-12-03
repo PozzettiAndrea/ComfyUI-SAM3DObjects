@@ -63,8 +63,8 @@ def test_worker():
 
         if response.get("status") == "pong":
             print()
-            print("✓ Worker started successfully!")
-            print("✓ Environment is functional!")
+            print("[OK] Worker started successfully!")
+            print("[OK] Environment is functional!")
 
             # Read stderr to see initialization messages
             import time

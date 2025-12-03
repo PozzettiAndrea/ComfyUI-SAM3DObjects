@@ -30,7 +30,7 @@ def test_vendor_import():
         [
             str(python_exe),
             "-c",
-            "import os; os.environ['LIDRA_SKIP_INIT'] = '1'; import sys; sys.path.insert(0, 'vendor'); import sam3d_objects; print('✓ sam3d_objects imported successfully')"
+            "import os; os.environ['LIDRA_SKIP_INIT'] = '1'; import sys; sys.path.insert(0, 'vendor'); import sam3d_objects; print('[OK] sam3d_objects imported successfully')"
         ],
         capture_output=True,
         text=True,
@@ -49,7 +49,7 @@ def test_vendor_import():
         [
             str(python_exe),
             "-c",
-            "import os; os.environ['LIDRA_SKIP_INIT'] = '1'; import sys; sys.path.insert(0, 'vendor'); from sam3d_objects.pipeline.inference_pipeline_pointmap import InferencePipelinePointMap; print('✓ InferencePipelinePointMap imported successfully')"
+            "import os; os.environ['LIDRA_SKIP_INIT'] = '1'; import sys; sys.path.insert(0, 'vendor'); from sam3d_objects.pipeline.inference_pipeline_pointmap import InferencePipelinePointMap; print('[OK] InferencePipelinePointMap imported successfully')"
         ],
         capture_output=True,
         text=True,
@@ -64,8 +64,8 @@ def test_vendor_import():
 
     print()
     print("=" * 60)
-    print("✓ All vendor imports working correctly!")
-    print("✓ Worker can access sam3d_objects module!")
+    print("[OK] All vendor imports working correctly!")
+    print("[OK] Worker can access sam3d_objects module!")
     print("=" * 60)
 
     return 0

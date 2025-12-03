@@ -99,9 +99,9 @@ def test_model_loading():
 
         if response.get("status") == "success":
             print()
-            print("✓ Model loaded successfully!")
-            print("✓ sam3d_objects imports working!")
-            print("✓ Inference completed!")
+            print("[OK] Model loaded successfully!")
+            print("[OK] sam3d_objects imports working!")
+            print("[OK] Inference completed!")
             return 0
         elif response.get("status") == "error":
             print()
