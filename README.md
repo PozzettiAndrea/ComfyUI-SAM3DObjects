@@ -1,3 +1,5 @@
+Warning: this is a super early version. Installation will only work for linux users. Installation from comfyui manager will error out, please run install.py yourselves.
+
 # ComfyUI-SAM3DObjects
 
 ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D Objects](https://github.com/bennyguo/sam-3d-objects).
