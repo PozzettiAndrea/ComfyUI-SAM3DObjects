@@ -41,7 +41,18 @@ class IsolatedSAM3DModel:
 
         return self._bridge
 
-    def __call__(self, image: Image.Image, mask: np.ndarray, seed: int = 42, with_mesh_postprocess: bool = True) -> dict[str, Any]:
+    def __call__(
+        self,
+        image: Image.Image,
+        mask: np.ndarray,
+        seed: int = 42,
+        stage1_inference_steps: int = 25,
+        stage2_inference_steps: int = 25,
+        stage1_cfg_strength: float = 7.0,
+        stage2_cfg_strength: float = 5.0,
+        texture_size: int = 1024,
+        simplify: float = 0.95,
+    ) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
 
@@ -49,7 +60,12 @@ class IsolatedSAM3DModel:
             image: Input PIL image
             mask: Input numpy mask
             seed: Random seed
-            with_mesh_postprocess: Whether to perform mesh postprocessing (requires CUDA toolkit for nvdiffrast compilation)
+            stage1_inference_steps: Denoising steps for Stage 1
+            stage2_inference_steps: Denoising steps for Stage 2
+            stage1_cfg_strength: CFG strength for Stage 1
+            stage2_cfg_strength: CFG strength for Stage 2
+            texture_size: Texture resolution
+            simplify: Mesh simplification ratio
 
         Returns:
             Output dictionary with gaussian splats, mesh, and pose data
@@ -61,7 +77,12 @@ class IsolatedSAM3DModel:
             mask=mask,
             seed=seed,
             compile=self.compile,
-            with_mesh_postprocess=with_mesh_postprocess
+            stage1_inference_steps=stage1_inference_steps,
+            stage2_inference_steps=stage2_inference_steps,
+            stage1_cfg_strength=stage1_cfg_strength,
+            stage2_cfg_strength=stage2_cfg_strength,
+            texture_size=texture_size,
+            simplify=simplify,
         )
 
     def __repr__(self) -> str:
