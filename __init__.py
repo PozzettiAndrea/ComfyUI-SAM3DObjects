@@ -21,6 +21,13 @@ Nodes:
 """
 
 import os
+import sys
+
+# Add vendor directory to path FIRST, before any other imports
+# This ensures our cv2 shim is found before the pip cv2 (which may have DLL issues on Windows)
+_VENDOR_PATH = os.path.join(os.path.dirname(__file__), "vendor")
+if _VENDOR_PATH not in sys.path:
+    sys.path.insert(0, _VENDOR_PATH)
 
 # Define web directory for ComfyUI extension loading
 WEB_DIRECTORY = os.path.join(os.path.dirname(__file__), "web")

@@ -22,7 +22,7 @@ class InstallConfig:
     torchvision_version: str = "0.19.1"
 
     # CUDA version for GPU support
-    cuda_version: str = "12.1"
+    cuda_version: str = "12.4"
 
     # PyTorch3D version
     pytorch3d_version: str = "0.7.8"
@@ -34,7 +34,7 @@ class InstallConfig:
 
     # Package versions
     gsplat_version: str = "1.4.0"
-    nvdiffrast_version: str = "0.3.3"
+    nvdiffrast_version: str = "0.3.5"
 
 
 # Micromamba download URLs by platform
@@ -56,7 +56,7 @@ MICROMAMBA_URLS: Dict[str, Dict[str, str]] = {
 # nvdiffrast prebuilt wheel URLs by platform
 NVDIFFRAST_WHEEL_URLS: Dict[str, str] = {
     "Linux": "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl",
-    "Windows": "https://huggingface.co/MonsterMMORPG/SECourses_Premium_Flash_Attention/resolve/main/nvdiffrast-0.3.3-cp310-cp310-win_amd64.whl",
+    "Windows": "https://pozzettiandrea.github.io/nvdiffrast-wheels/cu124/nvdiffrast-0.3.5%2Bpt2.4.1cu124-py3-none-any.whl",
     # Darwin: No prebuilt wheel, falls back to source compilation
 }
 
@@ -76,7 +76,7 @@ def get_gsplat_index_url(pytorch_version: str, cuda_version: str) -> str:
 
 
 # PyTorch pip wheel index URL (with CUDA support)
-PYTORCH_PIP_INDEX_URL = "https://download.pytorch.org/whl/cu121"
+PYTORCH_PIP_INDEX_URL = "https://download.pytorch.org/whl/cu124"
 
 # PyTorch3D third-party wheel index (MiroPsota's repository)
 # See: https://github.com/MiroPsota/torch_packages_builder

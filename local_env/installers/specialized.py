@@ -89,12 +89,42 @@ class NvdiffrastInstaller(Installer):
 
     def install(self) -> bool:
         """Install nvdiffrast."""
+        # Try local wheel first (bundled with the custom node)
+        # env_dir is _env, so parent is the node root
+        node_root = self.env_dir.parent
+        local_wheel = node_root / "local_env_settings" / "nvdiffrast-0.3.5-py3-none-any.whl"
+        if local_wheel.exists():
+            return self._install_from_local_wheel(local_wheel)
+
+        # Fall back to remote wheel
         wheel_url = NVDIFFRAST_WHEEL_URLS.get(self.platform.name.capitalize())
 
         if wheel_url:
             return self._install_from_wheel(wheel_url)
         else:
             return self._install_from_source()
+
+    def _install_from_local_wheel(self, wheel_path: Path) -> bool:
+        """Install nvdiffrast from local wheel."""
+        self.logger.info(f"Installing nvdiffrast from local wheel: {wheel_path.name}...")
+
+        try:
+            self.run_pip(
+                ["install", str(wheel_path), "--force-reinstall"],
+                step_name="Install nvdiffrast from local wheel",
+                check=True
+            )
+
+            if self.verify_import("nvdiffrast"):
+                self.logger.success("nvdiffrast installed from local wheel")
+                return True
+            else:
+                self.logger.error("nvdiffrast import failed after installation")
+                return False
+
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Local wheel installation failed: {e}")
+            return False
 
     def _install_from_wheel(self, url: str) -> bool:
         """Install nvdiffrast from prebuilt wheel."""
