@@ -80,17 +80,7 @@ class LoadSAM3DModel:
         # Get checkpoint path
         checkpoint_path = self._get_or_download_checkpoint(model_tag, hf_token)
 
-        # Import Inference class from our vendored copy
-        try:
-            from .sam3d_inference import Inference
-        except ImportError as e:
-            raise ImportError(
-                f"Failed to import Inference class: {e}\n"
-                "Please ensure sam3d_objects package is properly installed:\n"
-                "  pip install git+https://github.com/facebookresearch/sam-3d-objects.git"
-            ) from e
-
-        # Load model
+        # Get config path
         config_path = checkpoint_path / "checkpoints" / "pipeline.yaml"
         if not config_path.exists():
             raise FileNotFoundError(
@@ -98,19 +88,32 @@ class LoadSAM3DModel:
                 "Please ensure the checkpoint contains checkpoints/pipeline.yaml"
             )
 
-        print(f"[SAM3DObjects] Loading model from config: {config_path}")
+        print(f"[SAM3DObjects] Creating isolated model wrapper for config: {config_path}")
 
+        # Import isolated model wrapper
         try:
-            inference_pipeline = Inference(
+            from .isolated_model import IsolatedSAM3DModel
+        except ImportError as e:
+            raise ImportError(
+                f"Failed to import IsolatedSAM3DModel: {e}\n"
+                "Please ensure the isolated environment is set up:\n"
+                "  python install.py"
+            ) from e
+
+        # Create isolated model wrapper
+        # This doesn't actually load the model yet - that happens in the subprocess
+        try:
+            inference_pipeline = IsolatedSAM3DModel(
                 str(config_path),
                 compile=compile
             )
-            print("[SAM3DObjects] Model loaded successfully!")
+            print("[SAM3DObjects] Isolated model wrapper created successfully!")
+            print("[SAM3DObjects] Inference will run in isolated subprocess")
 
         except Exception as e:
-            raise RuntimeError(f"Failed to load SAM3D model: {e}") from e
+            raise RuntimeError(f"Failed to create isolated model wrapper: {e}") from e
 
-        # Cache the model
+        # Cache the model wrapper
         _MODEL_CACHE[cache_key] = inference_pipeline
         print(f"[SAM3DObjects] Model cached as: {cache_key}")
 

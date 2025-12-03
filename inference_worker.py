@@ -1,0 +1,208 @@
+"""
+Inference worker for SAM3D that runs in the isolated environment.
+
+This worker loads the SAM3D model and handles inference requests
+via IPC (stdin/stdout communication).
+"""
+
+import sys
+import json
+import pickle
+import base64
+import traceback
+from pathlib import Path
+from typing import Any, Dict
+import numpy as np
+from PIL import Image
+import io
+
+
+# Global model cache
+_MODEL = None
+_CURRENT_CONFIG = None
+
+
+def load_model(config_path: str, compile: bool = False):
+    """Load the SAM3D model."""
+    global _MODEL, _CURRENT_CONFIG
+
+    config_key = f"{config_path}_{compile}"
+
+    if _MODEL is not None and _CURRENT_CONFIG == config_key:
+        return _MODEL
+
+    print(f"[Worker] Loading model from {config_path}", file=sys.stderr)
+
+    # Add vendor directory to path for sam3d_objects
+    vendor_path = Path(__file__).parent / "vendor"
+    if str(vendor_path) not in sys.path:
+        sys.path.insert(0, str(vendor_path))
+        print(f"[Worker] Added vendor path: {vendor_path}", file=sys.stderr)
+
+    # Skip sam3d_objects initialization (LIDRA_SKIP_INIT)
+    import os
+    os.environ['LIDRA_SKIP_INIT'] = '1'
+
+    from sam3d_objects.pipeline.inference_pipeline_pointmap import InferencePipelinePointMap
+
+    # Load the model
+    _MODEL = InferencePipelinePointMap(config_path, compile=compile)
+    _CURRENT_CONFIG = config_key
+
+    print(f"[Worker] Model loaded successfully", file=sys.stderr)
+    return _MODEL
+
+
+def deserialize_image(image_b64: str) -> Image.Image:
+    """Deserialize base64-encoded image."""
+    image_bytes = base64.b64decode(image_b64)
+    return Image.open(io.BytesIO(image_bytes))
+
+
+def deserialize_mask(mask_b64: str) -> np.ndarray:
+    """Deserialize base64-encoded mask."""
+    mask_bytes = base64.b64decode(mask_b64)
+    return pickle.loads(mask_bytes)
+
+
+def serialize_output(output: Dict[str, Any]) -> Dict[str, Any]:
+    """Serialize output for IPC transfer."""
+    # We need to serialize complex objects
+    serialized = {}
+
+    for key, value in output.items():
+        if value is None:
+            serialized[key] = None
+        elif isinstance(value, (int, float, str, bool)):
+            serialized[key] = value
+        elif isinstance(value, np.ndarray):
+            # Serialize numpy arrays as base64 pickles
+            serialized[key] = {
+                "_type": "numpy",
+                "_data": base64.b64encode(pickle.dumps(value)).decode('utf-8')
+            }
+        elif isinstance(value, dict):
+            # Recursively serialize dicts
+            serialized[key] = serialize_output(value)
+        elif isinstance(value, (list, tuple)):
+            # Serialize lists/tuples
+            serialized[key] = {
+                "_type": "list" if isinstance(value, list) else "tuple",
+                "_data": [serialize_output({"v": v})["v"] for v in value]
+            }
+        else:
+            # For complex objects (gaussian splats, etc), pickle them
+            try:
+                serialized[key] = {
+                    "_type": "pickle",
+                    "_data": base64.b64encode(pickle.dumps(value)).decode('utf-8'),
+                    "_class": type(value).__name__
+                }
+            except Exception as e:
+                print(f"[Worker] Warning: Could not serialize {key}: {e}", file=sys.stderr)
+                serialized[key] = None
+
+    return serialized
+
+
+def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
+    """Run inference on the given request."""
+    try:
+        # Extract request parameters
+        config_path = request["config_path"]
+        compile_model = request.get("compile", False)
+        image_b64 = request["image"]
+        mask_b64 = request["mask"]
+        seed = request.get("seed", 42)
+
+        # Load model
+        model = load_model(config_path, compile_model)
+
+        # Deserialize inputs
+        image = deserialize_image(image_b64)
+        mask = deserialize_mask(mask_b64)
+
+        print(f"[Worker] Running inference (seed={seed})", file=sys.stderr)
+        print(f"[Worker] Image size: {image.size}", file=sys.stderr)
+        print(f"[Worker] Mask shape: {mask.shape}", file=sys.stderr)
+
+        # Run inference
+        output = model(image, mask, seed=seed)
+
+        print(f"[Worker] Inference completed", file=sys.stderr)
+
+        # Serialize output
+        serialized_output = serialize_output(output)
+
+        return {
+            "status": "success",
+            "output": serialized_output
+        }
+
+    except Exception as e:
+        print(f"[Worker] Error during inference: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+def main():
+    """Main worker loop - reads requests from stdin, writes responses to stdout."""
+    print("[Worker] SAM3D inference worker started", file=sys.stderr)
+    print(f"[Worker] Python: {sys.executable}", file=sys.stderr)
+    print(f"[Worker] Working directory: {Path.cwd()}", file=sys.stderr)
+
+    # Verify critical imports
+    try:
+        import torch
+        import pytorch3d
+        print(f"[Worker] PyTorch version: {torch.__version__}", file=sys.stderr)
+        print(f"[Worker] PyTorch3D version: {pytorch3d.__version__}", file=sys.stderr)
+        print(f"[Worker] CUDA available: {torch.cuda.is_available()}", file=sys.stderr)
+    except Exception as e:
+        print(f"[Worker] Warning: Could not verify dependencies: {e}", file=sys.stderr)
+
+    print("[Worker] Ready for requests", file=sys.stderr)
+
+    # Read requests from stdin
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+
+        try:
+            request = json.loads(line)
+
+            # Handle special commands
+            if request.get("command") == "ping":
+                response = {"status": "pong"}
+            elif request.get("command") == "shutdown":
+                print("[Worker] Shutdown requested", file=sys.stderr)
+                response = {"status": "shutdown"}
+                print(json.dumps(response), flush=True)
+                break
+            else:
+                # Run inference
+                response = run_inference(request)
+
+            # Send response
+            print(json.dumps(response), flush=True)
+
+        except Exception as e:
+            print(f"[Worker] Error processing request: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+            error_response = {
+                "status": "error",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }
+            print(json.dumps(error_response), flush=True)
+
+    print("[Worker] Worker shutting down", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
