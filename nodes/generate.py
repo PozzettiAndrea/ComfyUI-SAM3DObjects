@@ -3,7 +3,6 @@
 import torch
 import numpy as np
 from typing import Any, Dict
-from comfy_api.latest import io
 
 from .utils import (
     comfy_image_to_pil,
@@ -12,7 +11,7 @@ from .utils import (
 )
 
 
-class SAM3DGenerate(io.ComfyNode):
+class SAM3DGenerate:
     """
     Generate 3D object from image and mask using SAM3D.
 
@@ -21,56 +20,29 @@ class SAM3DGenerate(io.ComfyNode):
     """
 
     @classmethod
-    def define_schema(cls) -> io.Schema:
-        return io.Schema(
-            node_id="SAM3DGenerate",
-            display_name="SAM3D Generate",
-            category="SAM3DObjects",
-            inputs=[
-                io.Any.Input(
-                    "model",
-                    tooltip="SAM3D inference pipeline from LoadSAM3DModel node."
-                ),
-                io.Image.Input(
-                    "image",
-                    tooltip="Input image containing the object to reconstruct."
-                ),
-                io.Mask.Input(
-                    "mask",
-                    tooltip="Binary mask indicating the object region in the image."
-                ),
-                io.Int.Input(
-                    "seed",
-                    default=42,
-                    min=0,
-                    max=2**31 - 1,
-                    tooltip="Random seed for reproducible generation."
-                ),
-            ],
-            outputs=[
-                io.Any.Output(
-                    "gaussian_splat",
-                    tooltip="3D Gaussian Splat representation. Use with SAM3DExportPLY or SAM3DVisualizer."
-                ),
-                io.Any.Output(
-                    "mesh",
-                    tooltip="3D mesh representation. Use with SAM3DExportMesh."
-                ),
-                io.Any.Output(
-                    "pose_data",
-                    tooltip="Pose data containing rotation, translation, and scale."
-                ),
-            ],
-        )
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("SAM3D_MODEL",),
+                "image": ("IMAGE",),
+                "mask": ("MASK",),
+                "seed": ("INT", {"default": 42, "min": 0, "max": 2**31 - 1}),
+            }
+        }
 
-    @classmethod
-    def execute(
-        cls,
+    RETURN_TYPES = ("SAM3D_GAUSSIAN", "SAM3D_MESH", "SAM3D_POSE")
+    RETURN_NAMES = ("gaussian_splat", "mesh", "pose_data")
+    FUNCTION = "generate"
+    CATEGORY = "SAM3DObjects"
+    DESCRIPTION = "Generate 3D object from image and mask using SAM3D."
+
+    def generate(
+        self,
         model: Any,
         image: torch.Tensor,
         mask: torch.Tensor,
         seed: int,
-    ) -> io.NodeOutput:
+    ):
         """
         Generate 3D object from image and mask.
 
@@ -128,14 +100,14 @@ class SAM3DGenerate(io.ComfyNode):
         # Return outputs
         # Note: We pass both gaussian_splat (gs) and the full output dict as "mesh"
         # since we'll need the full output for mesh export
-        return io.NodeOutput(
+        return (
             gaussian_splat,  # For PLY export and visualization
             output,          # Full output dict (contains mesh data)
             pose_data,       # Pose information
         )
 
 
-class SAM3DGenerateRGBA(io.ComfyNode):
+class SAM3DGenerateRGBA:
     """
     Generate 3D object from RGBA image (alpha channel as mask).
 
@@ -143,60 +115,29 @@ class SAM3DGenerateRGBA(io.ComfyNode):
     """
 
     @classmethod
-    def define_schema(cls) -> io.Schema:
-        return io.Schema(
-            node_id="SAM3DGenerateRGBA",
-            display_name="SAM3D Generate (RGBA)",
-            category="SAM3DObjects",
-            inputs=[
-                io.Any.Input(
-                    "model",
-                    tooltip="SAM3D inference pipeline from LoadSAM3DModel node."
-                ),
-                io.Image.Input(
-                    "rgba_image",
-                    tooltip="RGBA input image (alpha channel will be used as mask)."
-                ),
-                io.Int.Input(
-                    "seed",
-                    default=42,
-                    min=0,
-                    max=2**31 - 1,
-                    tooltip="Random seed for reproducible generation."
-                ),
-                io.Float.Input(
-                    "alpha_threshold",
-                    default=0.5,
-                    min=0.0,
-                    max=1.0,
-                    step=0.01,
-                    tooltip="Threshold for converting alpha channel to binary mask."
-                ),
-            ],
-            outputs=[
-                io.Any.Output(
-                    "gaussian_splat",
-                    tooltip="3D Gaussian Splat representation."
-                ),
-                io.Any.Output(
-                    "mesh",
-                    tooltip="3D mesh representation."
-                ),
-                io.Any.Output(
-                    "pose_data",
-                    tooltip="Pose data containing rotation, translation, and scale."
-                ),
-            ],
-        )
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("SAM3D_MODEL",),
+                "rgba_image": ("IMAGE",),
+                "seed": ("INT", {"default": 42, "min": 0, "max": 2**31 - 1}),
+                "alpha_threshold": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
+            }
+        }
 
-    @classmethod
-    def execute(
-        cls,
+    RETURN_TYPES = ("SAM3D_GAUSSIAN", "SAM3D_MESH", "SAM3D_POSE")
+    RETURN_NAMES = ("gaussian_splat", "mesh", "pose_data")
+    FUNCTION = "generate_rgba"
+    CATEGORY = "SAM3DObjects"
+    DESCRIPTION = "Generate 3D object from RGBA image (alpha channel as mask)."
+
+    def generate_rgba(
+        self,
         model: Any,
         rgba_image: torch.Tensor,
         seed: int,
         alpha_threshold: float,
-    ) -> io.NodeOutput:
+    ):
         """
         Generate 3D object from RGBA image.
 
@@ -256,7 +197,7 @@ class SAM3DGenerateRGBA(io.ComfyNode):
 
         print("[SAM3DObjects] 3D generation completed!")
 
-        return io.NodeOutput(
+        return (
             gaussian_splat,
             output,
             pose_data,

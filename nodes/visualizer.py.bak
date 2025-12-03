@@ -3,11 +3,12 @@
 import torch
 import numpy as np
 from typing import Any
+from comfy_api.latest import io
 
 from .utils import numpy_to_comfy_image
 
 
-class SAM3DVisualizer:
+class SAM3DVisualizer(io.ComfyNode):
     """
     Visualize 3D Gaussian Splat by rendering from different viewpoints.
 
@@ -16,30 +17,64 @@ class SAM3DVisualizer:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "gaussian_splat": ("SAM3D_GAUSSIAN",),
-                "num_views": ("INT", {"default": 4, "min": 1, "max": 16}),
-                "resolution": ("INT", {"default": 512, "min": 256, "max": 2048, "step": 64}),
-                "elevation": ("FLOAT", {"default": 20.0, "min": -90.0, "max": 90.0, "step": 5.0}),
-                "distance": ("FLOAT", {"default": 2.0, "min": 0.5, "max": 10.0, "step": 0.1}),
-            }
-        }
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="SAM3DVisualizer",
+            display_name="SAM3D Visualizer",
+            category="SAM3DObjects",
+            inputs=[
+                io.Any.Input(
+                    "gaussian_splat",
+                    tooltip="Gaussian Splat from SAM3DGenerate node."
+                ),
+                io.Int.Input(
+                    "num_views",
+                    default=4,
+                    min=1,
+                    max=16,
+                    tooltip="Number of views to render (evenly spaced around object)."
+                ),
+                io.Int.Input(
+                    "resolution",
+                    default=512,
+                    min=256,
+                    max=2048,
+                    step=64,
+                    tooltip="Output image resolution (width and height)."
+                ),
+                io.Float.Input(
+                    "elevation",
+                    default=20.0,
+                    min=-90.0,
+                    max=90.0,
+                    step=5.0,
+                    tooltip="Camera elevation angle in degrees (0 = horizontal, 90 = top view)."
+                ),
+                io.Float.Input(
+                    "distance",
+                    default=2.0,
+                    min=0.5,
+                    max=10.0,
+                    step=0.1,
+                    tooltip="Camera distance from object center."
+                ),
+            ],
+            outputs=[
+                io.Image.Output(
+                    tooltip="Rendered images from different viewpoints."
+                ),
+            ],
+        )
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("images",)
-    FUNCTION = "visualize"
-    CATEGORY = "SAM3DObjects"
-
-    def visualize(
-        self,
+    @classmethod
+    def execute(
+        cls,
         gaussian_splat: Any,
         num_views: int,
         resolution: int,
         elevation: float,
         distance: float,
-    ):
+    ) -> io.NodeOutput:
         """
         Render 3D object from multiple viewpoints.
 
@@ -57,7 +92,7 @@ class SAM3DVisualizer:
 
         try:
             # Render views
-            rendered_images = self._render_views(
+            rendered_images = cls._render_views(
                 gaussian_splat,
                 num_views,
                 resolution,
@@ -71,7 +106,7 @@ class SAM3DVisualizer:
 
             print(f"[SAM3DObjects] Rendering completed! Output shape: {image_batch.shape}")
 
-            return (image_batch,)
+            return io.NodeOutput(image_batch)
 
         except Exception as e:
             raise RuntimeError(f"Failed to render 3D object: {e}") from e
@@ -168,7 +203,7 @@ class SAM3DVisualizer:
         return numpy_to_comfy_image(img_np)
 
 
-class SAM3DRenderSingle:
+class SAM3DRenderSingle(io.ComfyNode):
     """
     Render a single view of a 3D Gaussian Splat with full camera control.
 
@@ -177,30 +212,65 @@ class SAM3DRenderSingle:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "gaussian_splat": ("SAM3D_GAUSSIAN",),
-                "resolution": ("INT", {"default": 512, "min": 256, "max": 2048, "step": 64}),
-                "azimuth": ("FLOAT", {"default": 0.0, "min": -180.0, "max": 180.0, "step": 1.0}),
-                "elevation": ("FLOAT", {"default": 20.0, "min": -90.0, "max": 90.0, "step": 1.0}),
-                "distance": ("FLOAT", {"default": 2.0, "min": 0.5, "max": 10.0, "step": 0.1}),
-            }
-        }
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="SAM3DRenderSingle",
+            display_name="SAM3D Render Single View",
+            category="SAM3DObjects",
+            inputs=[
+                io.Any.Input(
+                    "gaussian_splat",
+                    tooltip="Gaussian Splat from SAM3DGenerate node."
+                ),
+                io.Int.Input(
+                    "resolution",
+                    default=512,
+                    min=256,
+                    max=2048,
+                    step=64,
+                    tooltip="Output image resolution."
+                ),
+                io.Float.Input(
+                    "azimuth",
+                    default=0.0,
+                    min=-180.0,
+                    max=180.0,
+                    step=1.0,
+                    tooltip="Camera azimuth angle in degrees (horizontal rotation)."
+                ),
+                io.Float.Input(
+                    "elevation",
+                    default=20.0,
+                    min=-90.0,
+                    max=90.0,
+                    step=1.0,
+                    tooltip="Camera elevation angle in degrees."
+                ),
+                io.Float.Input(
+                    "distance",
+                    default=2.0,
+                    min=0.5,
+                    max=10.0,
+                    step=0.1,
+                    tooltip="Camera distance from object."
+                ),
+            ],
+            outputs=[
+                io.Image.Output(
+                    tooltip="Rendered image from specified viewpoint."
+                ),
+            ],
+        )
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("image",)
-    FUNCTION = "render_single"
-    CATEGORY = "SAM3DObjects"
-
-    def render_single(
-        self,
+    @classmethod
+    def execute(
+        cls,
         gaussian_splat: Any,
         resolution: int,
         azimuth: float,
         elevation: float,
         distance: float,
-    ):
+    ) -> io.NodeOutput:
         """
         Render single view with specific camera parameters.
 
@@ -227,7 +297,7 @@ class SAM3DRenderSingle:
 
             print(f"[SAM3DObjects] Rendering completed! Shape: {rendered_image.shape}")
 
-            return (rendered_image,)
+            return io.NodeOutput(rendered_image)
 
         except Exception as e:
             raise RuntimeError(f"Failed to render view: {e}") from e

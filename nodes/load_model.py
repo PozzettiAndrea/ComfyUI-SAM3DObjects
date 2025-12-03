@@ -4,7 +4,6 @@ import os
 import torch
 from pathlib import Path
 from typing import Any
-from comfy_api.latest import io
 
 from .utils import (
     _MODEL_CACHE,
@@ -13,7 +12,7 @@ from .utils import (
 )
 
 
-class LoadSAM3DModel(io.ComfyNode):
+class LoadSAM3DModel:
     """
     Load SAM 3D Objects model for generating 3D objects from images.
 
@@ -22,39 +21,25 @@ class LoadSAM3DModel(io.ComfyNode):
     """
 
     @classmethod
-    def define_schema(cls) -> io.Schema:
-        return io.Schema(
-            node_id="LoadSAM3DModel",
-            display_name="Load SAM3D Model",
-            category="SAM3DObjects",
-            inputs=[
-                io.Combo.Input(
-                    "model_tag",
-                    options=["hf"],
-                    default="hf",
-                    tooltip="Model variant to load. 'hf' is the HuggingFace released model."
-                ),
-                io.Bool.Input(
-                    "compile",
-                    default=False,
-                    tooltip="Enable torch.compile for faster inference (requires PyTorch 2.0+). First run will be slower."
-                ),
-                io.Bool.Input(
-                    "force_reload",
-                    default=False,
-                    tooltip="Force reload the model even if cached."
-                ),
-            ],
-            outputs=[
-                io.Any.Output(
-                    "model",
-                    tooltip="SAM3D inference pipeline model. Connect to SAM3DGenerate node."
-                ),
-            ],
-        )
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_tag": (["hf"], {"default": "hf"}),
+                "compile": ("BOOLEAN", {"default": False}),
+                "force_reload": ("BOOLEAN", {"default": False}),
+            },
+            "optional": {
+                "hf_token": ("STRING", {"default": "", "multiline": False}),
+            }
+        }
 
-    @classmethod
-    def execute(cls, model_tag: str, compile: bool, force_reload: bool) -> io.NodeOutput:
+    RETURN_TYPES = ("SAM3D_MODEL",)
+    RETURN_NAMES = ("model",)
+    FUNCTION = "load_model"
+    CATEGORY = "SAM3DObjects"
+    DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
+
+    def load_model(self, model_tag: str, compile: bool, force_reload: bool, hf_token: str = ""):
         """
         Load the SAM3D model.
 
@@ -62,6 +47,7 @@ class LoadSAM3DModel(io.ComfyNode):
             model_tag: Model variant to load
             compile: Whether to compile the model
             force_reload: Force reload even if cached
+            hf_token: HuggingFace token for private/gated repos (optional)
 
         Returns:
             Loaded inference pipeline
@@ -89,10 +75,10 @@ class LoadSAM3DModel(io.ComfyNode):
         # Return cached model if available and not forcing reload
         if not force_reload and cache_key in _MODEL_CACHE:
             print(f"[SAM3DObjects] Using cached model: {cache_key}")
-            return io.NodeOutput(_MODEL_CACHE[cache_key])
+            return (_MODEL_CACHE[cache_key],)
 
         # Get checkpoint path
-        checkpoint_path = cls._get_or_download_checkpoint(model_tag)
+        checkpoint_path = self._get_or_download_checkpoint(model_tag, hf_token)
 
         # Import Inference class from our vendored copy
         try:
@@ -105,11 +91,11 @@ class LoadSAM3DModel(io.ComfyNode):
             ) from e
 
         # Load model
-        config_path = checkpoint_path / "pipeline.yaml"
+        config_path = checkpoint_path / "checkpoints" / "pipeline.yaml"
         if not config_path.exists():
             raise FileNotFoundError(
                 f"Config file not found: {config_path}\n"
-                "Please ensure the checkpoint contains pipeline.yaml"
+                "Please ensure the checkpoint contains checkpoints/pipeline.yaml"
             )
 
         print(f"[SAM3DObjects] Loading model from config: {config_path}")
@@ -128,15 +114,16 @@ class LoadSAM3DModel(io.ComfyNode):
         _MODEL_CACHE[cache_key] = inference_pipeline
         print(f"[SAM3DObjects] Model cached as: {cache_key}")
 
-        return io.NodeOutput(inference_pipeline)
+        return (inference_pipeline,)
 
     @classmethod
-    def _get_or_download_checkpoint(cls, model_tag: str) -> Path:
+    def _get_or_download_checkpoint(cls, model_tag: str, hf_token: str = "") -> Path:
         """
         Get checkpoint path, downloading if necessary.
 
         Args:
             model_tag: Model variant tag
+            hf_token: HuggingFace token for authentication (optional)
 
         Returns:
             Path to checkpoint directory
@@ -145,7 +132,7 @@ class LoadSAM3DModel(io.ComfyNode):
         checkpoint_dir = models_dir / model_tag
 
         # Check if checkpoint already exists
-        if checkpoint_dir.exists() and (checkpoint_dir / "pipeline.yaml").exists():
+        if checkpoint_dir.exists() and (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
             print(f"[SAM3DObjects] Found existing checkpoint at: {checkpoint_dir}")
             return checkpoint_dir
 
@@ -154,7 +141,7 @@ class LoadSAM3DModel(io.ComfyNode):
         print(f"[SAM3DObjects] Download location: {checkpoint_dir}")
 
         try:
-            cls._download_checkpoint(model_tag, checkpoint_dir)
+            cls._download_checkpoint(model_tag, checkpoint_dir, hf_token)
         except Exception as e:
             raise RuntimeError(
                 f"Failed to download checkpoint: {e}\n"
@@ -162,28 +149,29 @@ class LoadSAM3DModel(io.ComfyNode):
             ) from e
 
         # Verify download
-        if not (checkpoint_dir / "pipeline.yaml").exists():
+        if not (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
             raise RuntimeError(
-                f"Download completed but pipeline.yaml not found in {checkpoint_dir}"
+                f"Download completed but checkpoints/pipeline.yaml not found in {checkpoint_dir}"
             )
 
         print("[SAM3DObjects] Checkpoint downloaded successfully!")
         return checkpoint_dir
 
     @classmethod
-    def _download_checkpoint(cls, model_tag: str, target_dir: Path):
+    def _download_checkpoint(cls, model_tag: str, target_dir: Path, hf_token: str = ""):
         """
         Download checkpoint from HuggingFace.
 
         Args:
             model_tag: Model variant tag
             target_dir: Target directory for download
+            hf_token: HuggingFace token for authentication (optional)
         """
         target_dir.mkdir(parents=True, exist_ok=True)
 
         # Map model tags to HuggingFace repo IDs
         repo_mapping = {
-            "hf": "bennyguo/sam-3d-objects-hf",  # This is a placeholder - update with actual repo
+            "hf": "facebook/sam-3d-objects",
         }
 
         if model_tag not in repo_mapping:
@@ -202,6 +190,7 @@ class LoadSAM3DModel(io.ComfyNode):
                 repo_id=repo_id,
                 local_dir=str(target_dir),
                 local_dir_use_symlinks=False,
+                token=hf_token or None,  # Use token if provided, None otherwise
             )
 
         except ImportError:
