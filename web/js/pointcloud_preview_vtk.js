@@ -32,8 +32,9 @@ app.registerExtension({
                 container.style.overflow = "hidden";
 
                 // Create iframe for VTK viewer
+                // Use the folder name (lowercase) for the extension path
                 const iframe = document.createElement("iframe");
-                iframe.src = "/extensions/ComfyUI-SAM3DObjects/viewer_vtk.html";
+                iframe.src = "/extensions/comfyui-sam3dobjects/viewer_vtk.html";
                 iframe.style.width = "100%";
                 iframe.style.height = "100%";
                 iframe.style.border = "none";
@@ -53,8 +54,83 @@ app.registerExtension({
                 // Add widget using ComfyUI's addDOMWidget API
                 const widget = this.addDOMWidget("preview", "POINTCLOUD_PREVIEW_VTK", container, {
                     getValue() { return ""; },
-                    setValue(v) { }
+                    setValue(v) { 
+                        // When widget value changes, try to load the point cloud
+                        if (v && typeof v === 'string' && v.trim() !== '') {
+                            console.log('[SAM3DObjects] Widget value changed:', v);
+                            this.loadPointCloudFromPath(v);
+                        }
+                    }
                 });
+                
+                // Helper function to load point cloud from file path
+                this.loadPointCloudFromPath = function(filePath) {
+                    if (!filePath || filePath.trim() === '') {
+                        console.warn('[SAM3DObjects] Empty file path in loadPointCloudFromPath');
+                        return;
+                    }
+                    
+                    if (!this._vtkIframe) {
+                        console.warn('[SAM3DObjects] iframe not available');
+                        return;
+                    }
+                    
+                    // Normalize path separators (Windows backslash to forward slash)
+                    filePath = filePath.replace(/\\/g, '/').trim();
+                    
+                    // Extract relative path from output/input folder
+                    const outputMatch = filePath.match(/(?:^|\/)(output|input)\/(.+)$/);
+                    
+                    let url;
+                    if (outputMatch) {
+                        const [, type, relativePath] = outputMatch;
+                        const pathParts = relativePath.split('/');
+                        const filename = pathParts.pop();
+                        const subfolder = pathParts.join('/');
+                        url = `/view?filename=${encodeURIComponent(filename)}&type=${type}&subfolder=${encodeURIComponent(subfolder)}`;
+                    } else {
+                        // Fallback: try to use filename directly
+                        const filename = filePath.split('/').pop();
+                        url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=`;
+                        console.warn('[SAM3DObjects] Could not parse output/input path, using filename only:', filename);
+                    }
+                    
+                    console.log('[SAM3DObjects] File path:', filePath);
+                    console.log('[SAM3DObjects] Constructed URL:', url);
+                    
+                    // Send message to iframe
+                    const sendMessage = () => {
+                        console.log('[SAM3DObjects] Sending postMessage to iframe with URL:', url);
+                        if (this._vtkIframe && this._vtkIframe.contentWindow) {
+                            this._vtkIframe.contentWindow.postMessage({
+                                type: 'loadPointCloud',
+                                url: url
+                            }, '*');
+                            console.log('[SAM3DObjects] postMessage sent successfully');
+                        } else {
+                            console.warn('[SAM3DObjects] iframe or contentWindow not available');
+                        }
+                    };
+                    
+                    // Wait for iframe to be ready
+                    if (this._vtkIframe.contentWindow && this._vtkIframe.contentDocument?.readyState === 'complete') {
+                        sendMessage();
+                    } else {
+                        // Wait for iframe to load
+                        const checkReady = () => {
+                            if (this._vtkIframe.contentWindow && this._vtkIframe.contentDocument?.readyState === 'complete') {
+                                sendMessage();
+                            } else {
+                                setTimeout(checkReady, 100);
+                            }
+                        };
+                        this._vtkIframe.addEventListener('load', () => {
+                            console.log('[SAM3DObjects] iframe load event fired, sending message');
+                            setTimeout(sendMessage, 100); // Small delay to ensure iframe is fully ready
+                        }, { once: true });
+                        checkReady();
+                    }
+                };
 
                 // Set widget size
                 widget.computeSize = function(width) {
@@ -78,66 +154,39 @@ app.registerExtension({
                 onExecuted?.apply(this, arguments);
 
                 console.log('[SAM3DObjects] VTK Preview node executed with message:', message);
+                console.log('[SAM3DObjects] Full message object:', JSON.stringify(message, null, 2));
                 
-                if (message?.file_path && this._vtkIframe) {
-                    console.log('[SAM3DObjects] Loading point cloud in VTK viewer from:', message.file_path);
-
-                    // Handle file_path as array
-                    let filePath = Array.isArray(message.file_path) ? message.file_path[0] : message.file_path;
-
-                    if (!filePath) return;
-
-                    // Normalize path separators (Windows backslash to forward slash)
-                    filePath = filePath.replace(/\\/g, '/');
-
-                    // Extract relative path from output/input folder
-                    // Handle both: "output/inference_9/file.ply" and "C:/full/path/output/inference_9/file.ply"
-                    const outputMatch = filePath.match(/(?:^|\/)(output|input)\/(.+)$/);
-
-                    let url;
-                    if (outputMatch) {
-                        const [, type, relativePath] = outputMatch;
-                        const pathParts = relativePath.split('/');
-                        const filename = pathParts.pop(); // Last part is filename
-                        const subfolder = pathParts.join('/'); // Rest is subfolder (e.g., "inference_9")
-                        url = `/view?filename=${encodeURIComponent(filename)}&type=${type}&subfolder=${encodeURIComponent(subfolder)}`;
-                    } else {
-                        // Fallback: try to use filename directly
-                        const filename = filePath.split('/').pop();
-                        url = `/view?filename=${encodeURIComponent(filename)}&type=output&subfolder=`;
-                        console.warn('[SAM3DObjects] Could not parse output/input path, using filename only:', filename);
+                // Try multiple ways to get the file path:
+                // 1. From message.ui.file_path (ComfyUI UI data)
+                // 2. From message.file_path (direct)
+                // 3. From widget value
+                let filePath = null;
+                
+                if (message?.ui?.file_path) {
+                    filePath = Array.isArray(message.ui.file_path) ? message.ui.file_path[0] : message.ui.file_path;
+                    console.log('[SAM3DObjects] Found file_path in message.ui.file_path:', filePath);
+                } else if (message?.file_path) {
+                    filePath = Array.isArray(message.file_path) ? message.file_path[0] : message.file_path;
+                    console.log('[SAM3DObjects] Found file_path in message.file_path:', filePath);
+                } else if (this.widgets && this.widgets.length > 0) {
+                    // Try to get from widget value
+                    const filePathWidget = this.widgets.find(w => w.name === 'file_path');
+                    if (filePathWidget) {
+                        filePath = filePathWidget.value;
+                        console.log('[SAM3DObjects] Found file_path in widget value:', filePath);
                     }
-
-                    console.log('[SAM3DObjects] File path:', filePath);
-                    console.log('[SAM3DObjects] Constructed URL:', url);
-                    
-                    // Send message to iframe once it's loaded
-                    const sendMessage = () => {
-                        console.log('[SAM3DObjects] Sending postMessage to iframe with URL:', url);
-                        if (this._vtkIframe && this._vtkIframe.contentWindow) {
-                            this._vtkIframe.contentWindow.postMessage({
-                                type: 'loadPointCloud',
-                                url: url
-                            }, '*');
-                            console.log('[SAM3DObjects] postMessage sent successfully');
-                        } else {
-                            console.warn('[SAM3DObjects] iframe or contentWindow not available');
-                        }
-                    };
-
-                    // If iframe is already loaded, send immediately
-                    if (this._vtkIframe.contentWindow) {
-                        console.log('[SAM3DObjects] iframe contentWindow available, sending immediately');
-                        sendMessage();
+                }
+                
+                // Use the helper function if we found a file path
+                if (filePath && filePath.trim() !== '') {
+                    console.log('[SAM3DObjects] Loading point cloud from onExecuted, file path:', filePath);
+                    if (this.loadPointCloudFromPath) {
+                        this.loadPointCloudFromPath(filePath);
                     } else {
-                        console.log('[SAM3DObjects] iframe contentWindow not available yet, waiting for load event');
+                        console.warn('[SAM3DObjects] loadPointCloudFromPath function not available yet');
                     }
-
-                    // Also send on load in case it wasn't ready
-                    this._vtkIframe.addEventListener('load', () => {
-                        console.log('[SAM3DObjects] iframe load event fired, sending message');
-                        sendMessage();
-                    }, { once: true });
+                } else {
+                    console.warn('[SAM3DObjects] No file path found in message or widgets');
                 }
             };
         }

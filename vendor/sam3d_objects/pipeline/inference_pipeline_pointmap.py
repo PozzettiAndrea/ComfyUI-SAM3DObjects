@@ -353,8 +353,10 @@ class InferencePipelinePointMap(InferencePipeline):
         use_cache=False,
         texture_mode="opt",
         rendering_engine="pytorch3d",
+        merge_mask=True,
+        auto_resize_mask=True,
     ) -> dict:
-        image = self.merge_image_and_mask(image, mask)
+        image = self.merge_image_and_mask(image, mask, merge_mask=merge_mask, auto_resize_mask=auto_resize_mask)
         with self.device: 
             pointmap_dict = self.compute_pointmap(image, pointmap)
             pointmap = pointmap_dict["pointmap"]
