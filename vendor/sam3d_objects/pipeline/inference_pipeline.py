@@ -475,6 +475,10 @@ class InferencePipeline:
         use_vertex_color=False,
         stage1_inference_steps=None,
         stage2_inference_steps=None,
+        stage1_cfg_strength=None,
+        stage2_cfg_strength=None,
+        texture_size=1024,
+        simplify=0.95,
         use_stage1_distillation=False,
         use_stage2_distillation=False,
         decode_formats=None,
@@ -495,6 +499,21 @@ class InferencePipeline:
             ss_input_dict = self.preprocess_image(image, self.ss_preprocessor)
             slat_input_dict = self.preprocess_image(image, self.slat_preprocessor)
             torch.manual_seed(seed)
+
+            # Runtime CFG strength override (if provided)
+            if stage1_cfg_strength is not None:
+                self.override_ss_generator_cfg_config(
+                    self.models["ss_generator"],
+                    cfg_strength=stage1_cfg_strength,
+                    inference_steps=stage1_inference_steps or self.ss_inference_steps,
+                )
+            if stage2_cfg_strength is not None:
+                self.override_slat_generator_cfg_config(
+                    self.models["slat_generator"],
+                    cfg_strength=stage2_cfg_strength,
+                    inference_steps=stage2_inference_steps or self.slat_inference_steps,
+                )
+
             ss_return_dict = self.sample_sparse_structure(
                 ss_input_dict,
                 inference_steps=stage1_inference_steps,
@@ -522,7 +541,8 @@ class InferencePipeline:
                 slat, self.decode_formats if decode_formats is None else decode_formats
             )
             outputs = self.postprocess_slat_output(
-                outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color
+                outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
+                texture_size=texture_size, simplify=simplify
             )
             logger.info("Finished!")
 
@@ -532,7 +552,8 @@ class InferencePipeline:
             }
 
     def postprocess_slat_output(
-        self, outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color
+        self, outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
+        texture_size=1024, simplify=0.95
     ):
         # GLB files can be extracted from the outputs
         logger.info(
@@ -543,8 +564,8 @@ class InferencePipeline:
                 outputs["gaussian"][0],
                 outputs["mesh"][0],
                 # Optional parameters
-                simplify=0.95,  # Ratio of triangles to remove in the simplification process
-                texture_size=1024,  # Size of the texture used for the GLB
+                simplify=simplify,  # Ratio of triangles to remove in the simplification process
+                texture_size=texture_size,  # Size of the texture used for the GLB
                 verbose=False,
                 with_mesh_postprocess=with_mesh_postprocess,
                 with_texture_baking=with_texture_baking,

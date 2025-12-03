@@ -14,8 +14,11 @@ ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D 
 ## Requirements
 
 ### Hardware
-- NVIDIA GPU with **32GB+ VRAM** (recommended)
+- **Recommended**: NVIDIA RTX 30xx/40xx or A100/H100 with **32GB+ VRAM** (supports bfloat16 precision)
+- **Minimum**: NVIDIA RTX 30xx with **24GB VRAM**
+- **Older GPUs**: RTX 20xx/GTX 10xx supported with **automatic precision fallback** to float16
 - CUDA 12.1 or compatible
+- The node automatically detects your GPU capabilities and selects optimal precision
 
 ### Software
 - ComfyUI (with modern `comfy_api.latest` support)
@@ -59,6 +62,8 @@ Load the SAM 3D Objects inference pipeline.
 - `model_tag`: Model variant ("hf" for HuggingFace release)
 - `compile`: Enable torch.compile for faster inference (slower first run)
 - `force_reload`: Force reload even if cached
+- `dtype`: Model precision - "bfloat16" (default, RTX 30xx+), "float16" (older GPUs), "float32" (most compatible), or "auto" (automatic GPU detection)
+- `keep_model_loaded`: Keep model in GPU memory between inferences (default: True). Disable to free VRAM after each inference
 
 **Outputs:**
 - `model`: SAM3D inference pipeline
@@ -66,6 +71,7 @@ Load the SAM 3D Objects inference pipeline.
 **Notes:**
 - Checkpoints are automatically downloaded to `ComfyUI/models/sam3d/`
 - Models are cached globally to avoid reloading
+- Automatic GPU capability detection ensures compatibility with all NVIDIA GPUs
 
 #### SAM3DGenerate
 Generate 3D object from image and mask.
@@ -75,10 +81,16 @@ Generate 3D object from image and mask.
 - `image`: Input image (RGB)
 - `mask`: Binary mask indicating object region
 - `seed`: Random seed for reproducibility
+- `stage1_inference_steps`: Denoising steps for Stage 1 (sparse structure, default: 25)
+- `stage2_inference_steps`: Denoising steps for Stage 2 (SLAT generation, default: 25)
+- `stage1_cfg_strength`: CFG strength for Stage 1 (default: 7.0, higher = stronger adherence to input)
+- `stage2_cfg_strength`: CFG strength for Stage 2 (default: 5.0)
+- `texture_size`: Texture resolution - 512/1024/2048/4096 (default: 1024)
+- `simplify`: Mesh simplification ratio 0.0-1.0 (default: 0.95, keep 95% of faces)
 
 **Outputs:**
-- `gaussian_splat`: 3D Gaussian Splat representation
-- `mesh`: Full output data (for mesh export)
+- `glb_filepath`: Path to the generated GLB mesh file (textured 3D mesh)
+- `ply_filepath`: Path to the generated Gaussian PLY file (colored point cloud)
 - `pose_data`: Object pose information (rotation, translation, scale)
 
 #### SAM3DGenerateRGBA

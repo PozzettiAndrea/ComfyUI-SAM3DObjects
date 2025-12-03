@@ -315,10 +315,10 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         output = model.run(
             image, mask,
             seed=seed,
-            ss_inference_steps=stage1_inference_steps,
-            slat_inference_steps=stage2_inference_steps,
-            ss_cfg_strength=stage1_cfg_strength,
-            slat_cfg_strength=stage2_cfg_strength,
+            stage1_inference_steps=stage1_inference_steps,
+            stage2_inference_steps=stage2_inference_steps,
+            stage1_cfg_strength=stage1_cfg_strength,
+            stage2_cfg_strength=stage2_cfg_strength,
             simplify=simplify,
             texture_size=texture_size,
             with_mesh_postprocess=False,  # Keep disabled
