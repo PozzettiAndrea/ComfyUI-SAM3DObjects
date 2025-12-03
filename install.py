@@ -2,7 +2,7 @@
 """
 Installation script for ComfyUI-SAM3DObjects with isolated environment.
 
-This script sets up an isolated micromamba environment with all dependencies
+This script sets up an isolated Python virtual environment with all dependencies
 required for SAM 3D Objects. The environment is completely isolated from
 ComfyUI's main environment, preventing any dependency conflicts.
 
@@ -19,7 +19,7 @@ def main():
     print("[SAM3DObjects] ComfyUI-SAM3DObjects Installation")
     print("[SAM3DObjects] ========================================")
     print()
-    print("[SAM3DObjects] This will create an isolated micromamba environment")
+    print("[SAM3DObjects] This will create an isolated Python venv")
     print("[SAM3DObjects] for SAM3D inference, completely separate from ComfyUI.")
     print()
 
@@ -38,9 +38,8 @@ def main():
         print("[SAM3DObjects] Isolated environment already exists and is ready!")
         print(f"[SAM3DObjects] Location: {env_mgr.env_dir}")
         print()
-        print("[SAM3DObjects] If you want to reinstall, delete the following directories:")
+        print("[SAM3DObjects] If you want to reinstall, delete the following directory:")
         print(f"[SAM3DObjects]   - {env_mgr.env_dir}")
-        print(f"[SAM3DObjects]   - {env_mgr.micromamba_dir}")
         print()
         print("[SAM3DObjects] Installation complete!")
         return 0
