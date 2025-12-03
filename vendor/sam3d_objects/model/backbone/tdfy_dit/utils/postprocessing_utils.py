@@ -595,6 +595,7 @@ def to_glb(
     with_texture_baking=True,
     use_vertex_color=False,
     rendering_engine: str = "nvdiffrast",  # nvdiffrast OR "pytorch3d"
+    texture_mode: str = "opt",  # "fast" (5s, nearest neighbor) or "opt" (30-60s, gradient descent)
 ) -> trimesh.Trimesh:
     """
     Convert a generated asset to a glb file.
@@ -650,7 +651,7 @@ def to_glb(
             extrinsics,
             intrinsics,
             texture_size=texture_size,
-            mode="fast",
+            mode=texture_mode,
             lambda_tv=0.01,
             verbose=verbose,
             rendering_engine=rendering_engine

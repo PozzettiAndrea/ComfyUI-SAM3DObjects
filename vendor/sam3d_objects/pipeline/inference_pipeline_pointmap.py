@@ -351,6 +351,8 @@ class InferencePipelinePointMap(InferencePipeline):
         decode_formats=None,
         estimate_plane=False,
         use_cache=False,
+        texture_mode="opt",
+        rendering_engine="pytorch3d",
     ) -> dict:
         image = self.merge_image_and_mask(image, mask)
         with self.device: 
@@ -383,6 +385,32 @@ class InferencePipelinePointMap(InferencePipeline):
                     cfg_strength=stage2_cfg_strength,
                     inference_steps=stage2_inference_steps or self.slat_inference_steps,
                 )
+
+            # If stage2_output is provided with actual gaussian/mesh data, skip directly to Stage 3
+            # This handles TextureBake which loads from files and doesn't have stage1_data
+            if stage2_output is not None and ("gaussian" in stage2_output or "mesh" in stage2_output):
+                stage1_data = stage2_output.get("stage1_data", {})
+                if stage1_data:
+                    # Has stage1_data, extract it for Stage 1 skip
+                    logger.info("Extracting Stage 1 data from Stage 2 output to skip Stage 1 computation")
+                    stage1_output = stage1_data
+                else:
+                    # No stage1_data (loaded from files), jump directly to postprocessing
+                    logger.info("Stage 2 output has no stage1_data, jumping directly to postprocessing")
+                    outputs = stage2_output
+                    ss_return_dict = {}
+                    # Jump to postprocessing
+                    outputs = self.postprocess_slat_output(
+                        outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
+                        texture_size=texture_size, simplify=simplify, texture_mode=texture_mode,
+                        rendering_engine=rendering_engine
+                    )
+                    logger.info("Finished!")
+                    return {
+                        **outputs,
+                        "pointmap": pts.cpu().permute((1, 2, 0)),
+                        "pointmap_colors": pts_colors.cpu().permute((1, 2, 0)),
+                    }
 
             # If slat_output is provided, extract stage1_data to skip Stage 1
             # This must happen before the stage1_output check to prevent Stage 1 from running
@@ -614,7 +642,8 @@ class InferencePipelinePointMap(InferencePipeline):
             # Run postprocessing (Stage 3)
             outputs = self.postprocess_slat_output(
                 outputs, with_mesh_postprocess, with_texture_baking, use_vertex_color,
-                texture_size=texture_size, simplify=simplify
+                texture_size=texture_size, simplify=simplify, texture_mode=texture_mode,
+                rendering_engine=rendering_engine
             )
             glb = outputs.get("glb", None)
 

@@ -3,7 +3,6 @@
 import torch
 import numpy as np
 import os
-import time
 from typing import Any
 
 import folder_paths
@@ -47,7 +46,36 @@ class SAM3D_DepthEstimate:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Run MoGe depth estimation to get camera intrinsics and point cloud PLY."
 
-    def _save_pointcloud_ply(self, pointmap: np.ndarray, image_pil, output_dir: str, timestamp: int = None) -> str:
+    def _get_next_inference_dir(self, base_output_dir: str) -> str:
+        """
+        Find the next available sam3d_inference_N directory.
+
+        Args:
+            base_output_dir: ComfyUI output directory
+
+        Returns:
+            Path to the new sam3d_inference_N directory (created)
+        """
+        # Find existing sam3d_inference_N directories
+        existing = []
+        if os.path.exists(base_output_dir):
+            for name in os.listdir(base_output_dir):
+                if name.startswith("sam3d_inference_") and os.path.isdir(os.path.join(base_output_dir, name)):
+                    try:
+                        num = int(name.split("_")[-1])
+                        existing.append(num)
+                    except ValueError:
+                        pass
+
+        # Get next number
+        next_num = max(existing) + 1 if existing else 1
+        inference_dir = os.path.join(base_output_dir, f"sam3d_inference_{next_num}")
+        os.makedirs(inference_dir, exist_ok=True)
+
+        print(f"[SAM3DObjects] Created inference directory: {inference_dir}")
+        return inference_dir
+
+    def _save_pointcloud_ply(self, pointmap: np.ndarray, image_pil, output_dir: str) -> str:
         """
         Save pointmap as a PLY file with vertex colors from the image.
 
@@ -55,7 +83,6 @@ class SAM3D_DepthEstimate:
             pointmap: Point cloud data (H, W, 3)
             image_pil: PIL Image for vertex colors
             output_dir: Directory to save the PLY file
-            timestamp: Optional timestamp for filename
 
         Returns:
             Path to the saved PLY file
@@ -92,11 +119,8 @@ class SAM3D_DepthEstimate:
         if len(valid_points) == 0:
             raise RuntimeError("No valid points in pointmap")
 
-        # Generate output filename
-        if timestamp is None:
-            timestamp = int(time.time() * 1000)
-        filename = f"pointcloud_{timestamp}.ply"
-        filepath = os.path.join(output_dir, filename)
+        # Save as pointcloud.ply in the inference directory
+        filepath = os.path.join(output_dir, "pointcloud.ply")
 
         # Write PLY file manually (simple ASCII format with colors)
         with open(filepath, 'w') as f:
@@ -166,17 +190,17 @@ class SAM3D_DepthEstimate:
         else:
             pointmap_np = pointmap
 
-        output_dir = folder_paths.get_output_directory()
-        timestamp = int(time.time() * 1000)
+        # Create sam3d_inference_N directory
+        base_output_dir = folder_paths.get_output_directory()
+        inference_dir = self._get_next_inference_dir(base_output_dir)
 
         # Save pointmap tensor for SparseGen (preserves H×W structure)
-        pointmap_filename = f"pointmap_{timestamp}.pt"
-        pointmap_path = os.path.join(output_dir, pointmap_filename)
+        pointmap_path = os.path.join(inference_dir, "pointmap.pt")
         torch.save(torch.from_numpy(pointmap_np), pointmap_path)
         print(f"[SAM3DObjects] Saved pointmap tensor: {pointmap_path}")
 
         # Save PLY file for visualization
-        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, output_dir, timestamp)
+        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
 
         # Create depth visualization
         # Pointmap is in HWC format (H, W, 3) where channel 2 is Z (depth)

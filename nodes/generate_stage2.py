@@ -1,5 +1,6 @@
 """SAM3DSLATGen node for SLAT generation via diffusion."""
 
+import os
 import torch
 from typing import Any
 
@@ -49,6 +50,10 @@ class SAM3DSLATGen:
                     "step": 0.1,
                     "tooltip": "Classifier-free guidance strength for Stage 2. Higher = stronger adherence to input"
                 }),
+                "use_stage2_distillation": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Enable distillation mode for faster inference. Disables CFG guidance but uses learned shortcuts."
+                }),
             }
         }
 
@@ -68,6 +73,7 @@ class SAM3DSLATGen:
         seed: int,
         stage2_inference_steps: int = 25,
         stage2_cfg_strength: float = 5.0,
+        use_stage2_distillation: bool = False,
     ):
         """
         Generate SLAT latents via diffusion.
@@ -80,16 +86,20 @@ class SAM3DSLATGen:
             seed: Random seed (must match SparseGen)
             stage2_inference_steps: Denoising steps for SLAT generation
             stage2_cfg_strength: CFG strength for SLAT generation
+            use_stage2_distillation: Enable distillation mode for faster inference
 
         Returns:
             Tuple of (slat_path,) - path to SLAT latent for decoder nodes
         """
         print(f"[SAM3DObjects] SLATGen: Generating SLAT from sparse structure")
-        print(f"[SAM3DObjects] SLAT parameters: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}")
+        print(f"[SAM3DObjects] SLAT parameters: steps={stage2_inference_steps}, cfg={stage2_cfg_strength}, distillation={use_stage2_distillation}")
 
         # Convert ComfyUI tensors to formats expected by SAM3D
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
+
+        # Derive output_dir from sparse_structure path (same directory)
+        output_dir = os.path.dirname(sparse_structure)
 
         # Run SLAT generation only (no decoding)
         try:
@@ -101,6 +111,8 @@ class SAM3DSLATGen:
                 slat_only=True,  # CRITICAL: Only generate SLAT, skip decoding
                 stage2_inference_steps=stage2_inference_steps,
                 stage2_cfg_strength=stage2_cfg_strength,
+                use_stage2_distillation=use_stage2_distillation,
+                output_dir=output_dir,  # Use same directory as sparse_structure
             )
 
         except Exception as e:

@@ -66,11 +66,19 @@ class IsolatedSAM3DModel:
         with_mesh_postprocess: bool = False,
         with_texture_baking: bool = True,
         use_vertex_color: bool = False,
+        use_stage1_distillation: bool = False,
+        use_stage2_distillation: bool = False,
         # NEW: Depth estimation and memory management
         depth_only: bool = False,
         unload_model: str = None,
         pointmap_path: str = None,
         intrinsics: Any = None,
+        # Texture baking mode
+        texture_mode: str = "opt",
+        # Rendering engine
+        rendering_engine: str = "pytorch3d",
+        # Output directory (from depth_estimate)
+        output_dir: str = None,
     ) -> dict[str, Any]:
         """
         Run inference on the given image and mask.
@@ -117,11 +125,19 @@ class IsolatedSAM3DModel:
             with_mesh_postprocess=with_mesh_postprocess,
             with_texture_baking=with_texture_baking,
             use_vertex_color=use_vertex_color,
+            use_stage1_distillation=use_stage1_distillation,
+            use_stage2_distillation=use_stage2_distillation,
             # NEW: Depth estimation and memory management
             depth_only=depth_only,
             unload_model=unload_model,
             pointmap_path=pointmap_path,
             intrinsics=intrinsics,
+            # Texture baking mode
+            texture_mode=texture_mode,
+            # Rendering engine
+            rendering_engine=rendering_engine,
+            # Output directory (from depth_estimate)
+            output_dir=output_dir,
         )
 
     def __repr__(self) -> str:

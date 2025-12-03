@@ -1,5 +1,6 @@
 """SAM3DGaussianDecode node for decoding SLAT to Gaussian splats."""
 
+import os
 import torch
 from typing import Any
 
@@ -83,6 +84,9 @@ class SAM3DGaussianDecode:
         image_pil = comfy_image_to_pil(image)
         mask_np = comfy_mask_to_numpy(mask)
 
+        # Derive output_dir from slat path (same directory)
+        output_dir = os.path.dirname(slat)
+
         # Run Gaussian decoding only
         try:
             print("[SAM3DObjects] Running Gaussian decode...")
@@ -92,6 +96,7 @@ class SAM3DGaussianDecode:
                 slat_output=slat,  # Resume from SLAT path
                 gaussian_only=True,  # CRITICAL: Only decode to Gaussian
                 save_files=save_ply,  # Save PLY if requested
+                output_dir=output_dir,  # Use same directory as SLAT
             )
 
         except Exception as e:
