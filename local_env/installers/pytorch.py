@@ -185,7 +185,7 @@ class PipDependenciesInstaller(Installer):
                     f.write("widgetsnbextension<0.0.1\n")
                     f.write("jupyter-server<0.0.1\n")
                     f.write("notebook<0.0.1\n")
-                    f.write("ipywidgets<0.0.1\n")  # Optional pyvista dep for Jupyter
+                    # NOTE: ipywidgets is ALLOWED because open3d requires it
                     f.write("trame<0.0.1\n")  # Optional pyvista dep for Jupyter
                     # NOTE: pyvista and vtk are now ALLOWED (needed by pymeshfix)
 
