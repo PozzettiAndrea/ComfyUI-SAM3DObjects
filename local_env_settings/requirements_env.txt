@@ -75,6 +75,6 @@ zstandard>=0.22.0  # For decompressing conda packages (.tar.zst)
 ninja>=1.10.0  # Required by gsplat wheels and for CUDA JIT compilation
 jaxtyping  # Required by gsplat
 
-# Git repository dependencies
-git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb2bd3e255b
+# Vendored packages (included in vendor/ directory, no installation needed)
+# moge - depth estimation model (vendored at vendor/moge/ to avoid git clone)
 # nvdiffrast - installed separately via env_manager.py from prebuilt wheel to avoid JIT compilation
