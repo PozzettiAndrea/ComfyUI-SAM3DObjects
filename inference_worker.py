@@ -484,7 +484,19 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 # Convert trimesh to MeshExtractResult (expected by postprocessing_utils.to_glb)
                 from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
 
-                vertices_tensor = torch.tensor(np.array(trimesh_mesh.vertices), dtype=torch.float32, device=device)
+                # Get vertices from loaded GLB
+                vertices_np = np.array(trimesh_mesh.vertices)
+
+                # IMPORTANT: The saved GLB has Y-up coordinates (transformed during save).
+                # The PLY Gaussians are in Z-up coordinates (no transformation on save).
+                # The downstream to_glb() expects Z-up and will transform again.
+                # So we need to reverse the Y-up back to Z-up to match Gaussians.
+                # Y-up to Z-up transformation (inverse of [[1,0,0], [0,0,-1], [0,1,0]])
+                Y_TO_Z_UP = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+                vertices_np = vertices_np @ Y_TO_Z_UP
+                print(f"[Worker] Transformed mesh vertices from Y-up to Z-up to match Gaussians", file=sys.stderr)
+
+                vertices_tensor = torch.tensor(vertices_np, dtype=torch.float32, device=device)
                 faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
 
                 # Get vertex colors if available, otherwise use white
