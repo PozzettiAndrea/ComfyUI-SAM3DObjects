@@ -296,24 +296,27 @@ class SAM3DEnvironmentManager:
 
         # Step 3: Install PyTorch + PyTorch3D together via micromamba
         # This ensures CUDA version compatibility!
-        print("[SAM3DObjects] Installing PyTorch 2.5.1 + PyTorch3D via micromamba...")
-        print("[SAM3DObjects] (Installing together ensures CUDA compatibility)")
+        # NOTE: Using PyTorch 2.4.1 because PyTorch3D hasn't built packages for 2.5.x yet
+        print("[SAM3DObjects] Installing PyTorch 2.4.1 + PyTorch3D via micromamba...")
+        print("[SAM3DObjects] (Using PyTorch 2.4.1 - latest with PyTorch3D prebuilt support)")
 
         _run_subprocess_logged(
             [
                 str(self.micromamba_exe), "install",
                 "-p", str(self.env_dir),
-                "-c", "pytorch",       # PyTorch official channel
+                "-c", "pytorch",       # PRIMARY: PyTorch official channel (MUST BE FIRST!)
                 "-c", "pytorch3d",     # PyTorch3D channel
+                "-c", "nvidia",        # NVIDIA CUDA packages
                 "-c", "fvcore",        # PyTorch3D dependency
-                "-c", "conda-forge",   # Fallback
-                "pytorch=2.5.1",
-                "torchvision",
-                "pytorch3d",
+                "-c", "conda-forge",   # Fallback (LAST!)
+                "pytorch==2.4.1",      # PyTorch 2.4.1 - latest with PyTorch3D support
+                "pytorch-cuda=12.1",   # Explicitly specify CUDA build variant
+                "torchvision==0.19.1", # Matching version for PyTorch 2.4.1
+                "pytorch3d==0.7.8",    # Latest PyTorch3D with 2.4.1 support
                 "-y"
             ],
             self.log_file,
-            "Install PyTorch 2.5.1 + PyTorch3D via micromamba",
+            "Install PyTorch 2.4.1 + torchvision 0.19.1 + PyTorch3D 0.7.8 via micromamba",
             check=True
         )
 
@@ -352,11 +355,11 @@ class SAM3DEnvironmentManager:
         # Note: We skip `pip check` because some packages (like xformers) may complain
         # about PyTorch version, but we intentionally pin it to 2.5.1 for PyTorch3D compatibility
 
-        # Install dependencies but with constraints to keep PyTorch at 2.5.1
+        # Install dependencies but with constraints to keep PyTorch at 2.4.1
         constraints_file = self.node_root / "_pytorch_constraints.txt"
         with open(constraints_file, 'w') as f:
-            f.write("torch==2.5.1\n")
-            f.write("torchvision==0.20.1\n")
+            f.write("torch==2.4.1\n")
+            f.write("torchvision==0.19.1\n")
 
         _run_subprocess_logged(
             [
@@ -380,10 +383,10 @@ class SAM3DEnvironmentManager:
             [
                 str(python_exe), "-m", "pip", "install",
                 "kaolin==0.17.0",
-                "-f", "https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu121.html"
+                "-f", "https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.4.1_cu121.html"
             ],
             self.log_file,
-            "Install kaolin from NVIDIA S3",
+            "Install kaolin from NVIDIA S3 for PyTorch 2.4.1",
             check=True
         )
 
