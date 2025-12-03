@@ -15,6 +15,7 @@ from typing import Any, Dict
 import numpy as np
 from PIL import Image
 import io
+import torch
 
 
 # Global model cache
