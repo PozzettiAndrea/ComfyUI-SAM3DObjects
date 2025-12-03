@@ -228,6 +228,32 @@ class InferenceWorkerBridge:
 
         return deserialized
 
+    def load_output_from_disk(self, saved_output: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Load output from disk using file paths.
+
+        Returns file paths (not file contents) - following ComfyUI pattern.
+        This allows nodes to decide whether to load/preview the files.
+        """
+        from pathlib import Path
+
+        result = {
+            "output_dir": saved_output["output_dir"],
+            "metadata": saved_output.get("metadata", {})
+        }
+
+        # Return GLB file path (not contents!)
+        if "glb" in saved_output.get("files", {}):
+            glb_path = Path(saved_output["files"]["glb"])
+            if glb_path.exists():
+                result["glb_path"] = str(glb_path)
+                print(f"[SAM3DObjects] GLB saved to: {glb_path}")
+            else:
+                print(f"[SAM3DObjects] Warning: GLB file not found: {glb_path}")
+                result["glb_path"] = None
+
+        return result
+
     def run_inference(
         self,
         config_path: str,
@@ -235,7 +261,8 @@ class InferenceWorkerBridge:
         mask: np.ndarray,
         seed: int = 42,
         compile: bool = False,
-        with_mesh_postprocess: bool = True
+        with_mesh_postprocess: bool = True,
+        output_dir: str = None
     ) -> Dict[str, Any]:
         """
         Run inference on the isolated worker.
@@ -247,14 +274,23 @@ class InferenceWorkerBridge:
             seed: Random seed
             compile: Whether to compile model
             with_mesh_postprocess: Whether to perform mesh postprocessing
+            output_dir: Directory to save outputs (defaults to ComfyUI output directory)
 
         Returns:
-            Inference output dict
+            Inference output dict with file paths
         """
         # Ensure worker is running
         self.start_worker()
 
+        # Determine output directory
+        if output_dir is None:
+            # Try to find ComfyUI's output directory
+            import os
+            comfy_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+            output_dir = os.path.join(comfy_dir, "output")
+
         print(f"[SAM3DObjects] Sending inference request to isolated worker...")
+        print(f"[SAM3DObjects] Output directory: {output_dir}")
 
         # Prepare request
         request = {
@@ -264,6 +300,7 @@ class InferenceWorkerBridge:
             "mask": self.serialize_mask(mask),
             "seed": seed,
             "with_mesh_postprocess": with_mesh_postprocess,
+            "output_dir": output_dir,  # Pass output directory to worker
         }
 
         # Send request
@@ -278,8 +315,8 @@ class InferenceWorkerBridge:
                 f"Traceback:\n{traceback_msg}"
             )
 
-        # Deserialize output
-        output = self.deserialize_output(response["output"])
+        # New simple deserialization - just load files from disk
+        output = self.load_output_from_disk(response["output"])
 
         print(f"[SAM3DObjects] Inference completed successfully")
         return output

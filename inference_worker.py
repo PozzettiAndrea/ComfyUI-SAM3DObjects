@@ -175,44 +175,85 @@ def deserialize_mask(mask_b64: str) -> np.ndarray:
     return pickle.loads(mask_bytes)
 
 
-def serialize_output(output: Dict[str, Any]) -> Dict[str, Any]:
-    """Serialize output for IPC transfer."""
-    # We need to serialize complex objects
-    serialized = {}
+def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
+    """
+    Save output to disk and return file paths.
 
-    for key, value in output.items():
-        if value is None:
-            serialized[key] = None
-        elif isinstance(value, (int, float, str, bool)):
-            serialized[key] = value
-        elif isinstance(value, np.ndarray):
-            # Serialize numpy arrays as base64 pickles
-            serialized[key] = {
-                "_type": "numpy",
-                "_data": base64.b64encode(pickle.dumps(value)).decode('utf-8')
-            }
-        elif isinstance(value, dict):
-            # Recursively serialize dicts
-            serialized[key] = serialize_output(value)
-        elif isinstance(value, (list, tuple)):
-            # Serialize lists/tuples
-            serialized[key] = {
-                "_type": "list" if isinstance(value, list) else "tuple",
-                "_data": [serialize_output({"v": v})["v"] for v in value]
-            }
+    This is much more robust than trying to serialize complex objects through IPC.
+    Following ComfyUI's standard pattern of saving outputs to disk.
+    """
+    import json
+
+    # Create sequentially numbered output directory (inference_1, inference_2, etc.)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Find next available number
+    existing = [d.name for d in output_dir.iterdir() if d.is_dir() and d.name.startswith("inference_")]
+    numbers = []
+    for dirname in existing:
+        try:
+            num = int(dirname.split("_")[1])
+            numbers.append(num)
+        except (IndexError, ValueError):
+            pass
+
+    next_num = max(numbers) + 1 if numbers else 1
+    save_dir = output_dir / f"inference_{next_num}"
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"[Worker] Saving outputs to: {save_dir}", file=sys.stderr)
+
+    result = {
+        "output_dir": str(save_dir),
+        "files": {},
+        "metadata": {}
+    }
+
+    # Save GLB file (textured mesh)
+    if "glb" in output and output["glb"] is not None:
+        glb_path = save_dir / "mesh.glb"
+
+        # Check if it's a Trimesh object that needs to be exported
+        import trimesh
+        if isinstance(output["glb"], trimesh.Trimesh):
+            # Export Trimesh to GLB format
+            glb_bytes = output["glb"].export(file_type="glb")
+            with open(glb_path, 'wb') as f:
+                f.write(glb_bytes)
+            print(f"[Worker] Saved GLB: {glb_path} ({len(glb_bytes)} bytes)", file=sys.stderr)
         else:
-            # For complex objects (gaussian splats, etc), pickle them
-            try:
-                serialized[key] = {
-                    "_type": "pickle",
-                    "_data": base64.b64encode(pickle.dumps(value)).decode('utf-8'),
-                    "_class": type(value).__name__
-                }
-            except Exception as e:
-                print(f"[Worker] Warning: Could not serialize {key}: {e}", file=sys.stderr)
-                serialized[key] = None
+            # Already bytes
+            with open(glb_path, 'wb') as f:
+                f.write(output["glb"])
+            print(f"[Worker] Saved GLB: {glb_path} ({len(output['glb'])} bytes)", file=sys.stderr)
 
-    return serialized
+        result["files"]["glb"] = str(glb_path)
+
+    # Save metadata (simple types only)
+    metadata = {}
+    for key, value in output.items():
+        if isinstance(value, (int, float, str, bool)):
+            metadata[key] = value
+        elif isinstance(value, np.ndarray):
+            # Convert numpy arrays to lists for JSON serialization
+            metadata[key] = value.tolist()
+        elif isinstance(value, dict) and key not in ["glb", "gaussian_splat", "mesh"]:
+            # Save simple dict metadata
+            try:
+                json.dumps(value)  # Test if it's JSON-serializable
+                metadata[key] = value
+            except:
+                pass
+
+    if metadata:
+        metadata_path = save_dir / "metadata.json"
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        result["files"]["metadata"] = str(metadata_path)
+        result["metadata"] = metadata
+
+    return result
 
 
 def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -225,6 +266,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         mask_b64 = request["mask"]
         seed = request.get("seed", 42)
         with_mesh_postprocess = request.get("with_mesh_postprocess", True)
+        output_dir = request.get("output_dir", "/tmp/sam3d_output")  # Default fallback
 
         # Load model
         model = load_model(config_path, compile_model)
@@ -247,16 +289,23 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             print(f"[Worker] Converted mask to uint8: shape={mask.shape}, range=[{mask.min()}, {mask.max()}]", file=sys.stderr)
 
         # Run inference using the run() method
-        output = model.run(image, mask, seed=seed, with_mesh_postprocess=with_mesh_postprocess)
+        # Using TRELLIS nvdiffrast 0.3.3 built for PyTorch 2.4.0 (compatible with our 2.4.1)
+        output = model.run(
+            image, mask,
+            seed=seed,
+            with_mesh_postprocess=with_mesh_postprocess,
+            with_texture_baking=True  # Enabled - using compatible TRELLIS wheel
+        )
 
         print(f"[Worker] Inference completed", file=sys.stderr)
 
-        # Serialize output
-        serialized_output = serialize_output(output)
+        # Save output to disk and return file paths (industry standard approach)
+        # This avoids complex pickle serialization and module dependency issues
+        saved_output = save_output_to_disk(output, Path(output_dir))
 
         return {
             "status": "success",
-            "output": serialized_output
+            "output": saved_output
         }
 
     except Exception as e:

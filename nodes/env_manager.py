@@ -354,33 +354,43 @@ class SAM3DEnvironmentManager:
         import zipfile
         import shutil
 
-        nvdiffrast_wheel_url = "https://huggingface.co/spaces/neil-ni/Unique3D/resolve/69ac8ac1b4c6efd2684d69805e6437b58ab554d3/package/nvdiffrast-0.3.1.torch-cp310-cp310-linux_x86_64.whl"
+        # Using TRELLIS wheel built for PyTorch 2.4.0 (compatible with our 2.4.1)
+        nvdiffrast_wheel_url = "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl"
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir_path = Path(tmpdir)
             wheel_path = tmpdir_path / "nvdiffrast.whl"
             urllib.request.urlretrieve(nvdiffrast_wheel_url, wheel_path)
 
-            # Extract wheel (it's a zip file)
+            # Extract wheel completely (it's a zip file)
             extract_dir = tmpdir_path / "extracted"
             extract_dir.mkdir()
             with zipfile.ZipFile(wheel_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_dir)
 
-            # Find the nvdiffrast package directory
+            # Copy ALL package files to site-packages
+            site_packages = self.env_dir / "lib" / "python3.10" / "site-packages"
+
+            # Copy the nvdiffrast package directory
             nvdiffrast_src = extract_dir / "nvdiffrast"
-            if not nvdiffrast_src.exists():
-                raise RuntimeError("nvdiffrast directory not found in wheel")
+            if nvdiffrast_src.exists():
+                nvdiffrast_dest = site_packages / "nvdiffrast"
+                if nvdiffrast_dest.exists():
+                    shutil.rmtree(nvdiffrast_dest)
+                shutil.copytree(nvdiffrast_src, nvdiffrast_dest)
+                print(f"[SAM3DObjects] Installed nvdiffrast package to {nvdiffrast_dest}")
 
-            # Copy directly to site-packages
-            site_packages = self.env_dir / "lib" / f"python3.10" / "site-packages"
-            nvdiffrast_dest = site_packages / "nvdiffrast"
+            # Copy ALL .so files (the compiled CUDA plugins - this is critical!)
+            so_count = 0
+            for so_file in extract_dir.glob("*.so"):
+                shutil.copy2(so_file, site_packages / so_file.name)
+                print(f"[SAM3DObjects] Installed compiled plugin: {so_file.name}")
+                so_count += 1
 
-            if nvdiffrast_dest.exists():
-                shutil.rmtree(nvdiffrast_dest)
+            if so_count == 0:
+                print("[SAM3DObjects] Warning: No .so plugins found in wheel!")
 
-            shutil.copytree(nvdiffrast_src, nvdiffrast_dest)
-            print(f"[SAM3DObjects] nvdiffrast installed to {nvdiffrast_dest}", file=sys.stderr)
+            print(f"[SAM3DObjects] nvdiffrast installation complete ({so_count} plugin(s) installed)")
 
         # Step 5: Install all other dependencies via pip
         print("[SAM3DObjects] Installing remaining dependencies via pip...")
