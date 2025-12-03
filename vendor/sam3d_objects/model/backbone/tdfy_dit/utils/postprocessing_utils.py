@@ -11,7 +11,7 @@ import xatlas
 import pyvista as pv
 from pymeshfix import _meshfix
 import igraph
-import cv2
+from sam3d_objects.pipeline.image_operations import inpaint
 from PIL import Image
 from .random_utils import sphere_hammersley_sequence
 from .render_utils import render_multiview
@@ -467,7 +467,7 @@ def bake_texture(
             .astype(np.uint8)
             .reshape(texture_size, texture_size)
         )
-        texture = cv2.inpaint(texture, mask, 3, cv2.INPAINT_TELEA)
+        texture = inpaint(texture, mask, inpaint_radius=3)
 
     elif mode == "opt":
         rastctx = utils3d.torch.RastContext(backend=device if device.startswith("cuda") else "cuda")
@@ -575,7 +575,7 @@ def bake_texture(
         mask = 1 - utils3d.torch.rasterize_triangle_faces(
             rastctx, (uvs * 2 - 1)[None], faces, texture_size, texture_size
         )["mask"][0].detach().cpu().numpy().astype(np.uint8)
-        texture = cv2.inpaint(texture, mask, 3, cv2.INPAINT_TELEA)
+        texture = inpaint(texture, mask, inpaint_radius=3)
     else:
         raise ValueError(f"Unknown mode: {mode}")
 

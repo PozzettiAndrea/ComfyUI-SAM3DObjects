@@ -27,9 +27,10 @@ diffusers
 lightning>=2.0.0  # Code uses 'import lightning.pytorch' which requires the 'lightning' package
 
 # Image processing
-opencv-python>=4.9.0
+# opencv removed - using scipy/PIL/skimage via image_operations.py (avoids Windows DLL issues)
 scikit-image>=0.23.1
 imageio>=2.36.0
+Pillow>=10.0.0  # Required for image_operations.py text rendering
 
 # 3D processing libraries
 # open3d>=0.18.0  # OPTIONAL: Has DLL issues on Windows, falls back to trimesh

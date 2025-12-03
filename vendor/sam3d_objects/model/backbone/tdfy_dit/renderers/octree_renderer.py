@@ -3,8 +3,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import math
-import cv2
 from scipy.stats import qmc
+from sam3d_objects.pipeline.image_operations import get_text_size, put_text
 from easydict import EasyDict as edict
 from ..representations.octree import DfsOctree
 
@@ -256,19 +256,15 @@ class OctreeRenderer:
 
         if self.unsupported:
             image = np.zeros((512, 512, 3), dtype=np.uint8)
-            text_bbox = cv2.getTextSize("Unsupported", cv2.FONT_HERSHEY_SIMPLEX, 2, 3)[
-                0
-            ]
-            origin = (512 - text_bbox[0]) // 2, (512 - text_bbox[1]) // 2
-            image = cv2.putText(
+            text_bbox = get_text_size("Unsupported", font_scale=2, thickness=3)
+            origin = ((512 - text_bbox[0]) // 2, (512 + text_bbox[1]) // 2)
+            image = put_text(
                 image,
                 "Unsupported",
                 origin,
-                cv2.FONT_HERSHEY_SIMPLEX,
-                2,
-                (255, 255, 255),
-                3,
-                cv2.LINE_AA,
+                font_scale=2,
+                color=(255, 255, 255),
+                thickness=3,
             )
             return {
                 "color": torch.tensor(image, dtype=torch.float32).permute(2, 0, 1)

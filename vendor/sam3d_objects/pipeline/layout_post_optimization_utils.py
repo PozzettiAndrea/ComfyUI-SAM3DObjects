@@ -3,7 +3,6 @@ import os
 import torch
 import torch.nn.functional as F
 import numpy as np
-import cv2
 from pytorch3d.structures import Meshes
 from pytorch3d.transforms import quaternion_to_matrix
 from pytorch3d.renderer import (
@@ -17,8 +16,14 @@ from pytorch3d.renderer import (
 )
 from pytorch3d.transforms import quaternion_to_matrix, Transform3d
 import random
-import open3d as o3d
 from scipy.ndimage import label, binary_dilation, binary_fill_holes, binary_erosion, minimum_filter
+from sam3d_objects.pipeline.geometry_operations import (
+    HAS_OPEN3D,
+    load_and_simplify_mesh,
+    tensor_to_point_cloud,
+    point_cloud_to_tensor,
+    run_ICP,
+)
 
 def remove_small_regions(mask, min_area=100):
     """
@@ -298,32 +303,7 @@ def set_seed(seed=100):
     torch.backends.cudnn.benchmark = False
 
 
-def load_and_simplify_mesh(Mesh, device, target_triangles=5000):
-
-    vertices = np.asarray(Mesh.vertices)
-    faces = np.asarray(Mesh.faces)
-    mesh_o3d = o3d.geometry.TriangleMesh()
-    mesh_o3d.vertices = o3d.utility.Vector3dVector(vertices)
-    mesh_o3d.triangles = o3d.utility.Vector3iVector(faces)
-
-    mesh_o3d.remove_duplicated_vertices()
-    mesh_o3d.remove_degenerate_triangles()
-    mesh_o3d.remove_duplicated_triangles()
-    mesh_o3d.remove_non_manifold_edges()
-
-    if len(mesh_o3d.triangles) > target_triangles:
-        mesh_simplified = mesh_o3d.simplify_quadric_decimation(target_triangles)
-    else:
-        mesh_simplified = mesh_o3d
-
-    verts = torch.tensor(
-        np.asarray(mesh_simplified.vertices), dtype=torch.float32, device=device
-    )
-    faces = torch.tensor(
-        np.asarray(mesh_simplified.triangles), dtype=torch.int64, device=device
-    )
-
-    return verts, faces
+# load_and_simplify_mesh is now imported from geometry_operations
 
 
 def compute_iou(render_mask_obj, mask_obj_gt, threshold=0.5):
@@ -368,39 +348,7 @@ def denormalize_f(norm_K, height, width):
     return abs_K
 
 
-# Convert torch tensors to Open3D point clouds
-def tensor_to_o3d_pcd(tensor):
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(tensor.cpu().numpy())
-    return pcd
-
-
-# Convert Open3D back to torch tensor
-def o3d_to_tensor(pcd):
-    return torch.tensor(np.asarray(pcd.points), dtype=torch.float32)
-
-
-def run_ICP(source_points_mesh, source_points, target_points, threshold):
-    # Convert your point clouds
-    mesh_src_pcd = tensor_to_o3d_pcd(source_points_mesh.verts_padded().squeeze(0))
-    src_pcd = tensor_to_o3d_pcd(source_points)
-    tgt_pcd = tensor_to_o3d_pcd(target_points)
-
-    # Run ICP
-    trans_init = np.eye(4)
-    reg_p2p = o3d.pipelines.registration.registration_icp(
-        src_pcd,
-        tgt_pcd,
-        threshold,
-        trans_init,
-        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-    )
-
-    # Apply transformation
-    mesh_src_pcd.transform(reg_p2p.transformation)
-    points_aligned_icp = o3d_to_tensor(mesh_src_pcd).to(source_points.device)
-
-    return points_aligned_icp, reg_p2p.transformation
+# tensor_to_o3d_pcd, o3d_to_tensor, and run_ICP are now imported from geometry_operations
 
 
 def run_render_compare(mesh, center, renderer, mask, device):

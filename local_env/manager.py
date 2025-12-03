@@ -156,7 +156,7 @@ class SAM3DEnvironmentManager:
             success, error = self.platform.bundle_vc_dlls_to_env(self.env_dir)
             if not success:
                 self.logger.warning(f"Could not bundle VC++ DLLs: {error}")
-                self.logger.warning("Open3D may fail to load. See error message above for fix.")
+                self.logger.warning("Some native extensions may fail to load. See error message above for fix.")
 
         # Final verification
         self.logger.info("")
