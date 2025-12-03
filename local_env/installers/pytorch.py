@@ -103,15 +103,9 @@ class PipDependenciesInstaller(Installer):
             return False
 
         try:
-            # Step 1: Upgrade pip
-            self.logger.info("Upgrading pip...")
-            self.run_pip(["install", "--upgrade", "pip"], step_name="Upgrade pip", check=True)
+            # Note: uv is already installed by PyTorchPipInstaller
 
-            # Step 2: Install uv for faster package installation
-            self.logger.info("Installing uv package manager...")
-            self.run_pip(["install", "uv"], step_name="Install uv", check=True)
-
-            # Step 3: Separate git dependencies from regular packages
+            # Step 1: Separate git dependencies from regular packages
             # uv has issues finding git on Windows, so we handle git deps separately
             regular_reqs = []
             git_reqs = []
@@ -131,19 +125,7 @@ class PipDependenciesInstaller(Installer):
             with open(temp_reqs_file, 'w') as f:
                 f.write('\n'.join(regular_reqs))
 
-            # Step 4: Install regular packages without deps first to avoid PyTorch upgrade
-            self.logger.info("Installing packages (protecting PyTorch version)...")
-            self.run_uv_pip(
-                [
-                    "install",
-                    "--no-deps",
-                    "-r", str(temp_reqs_file)
-                ],
-                step_name="Install packages (no deps)",
-                check=True
-            )
-
-            # Step 5: Install with constraints to keep PyTorch at specific version
+            # Step 2: Create constraints file to protect PyTorch version
             constraints_file = self.env_dir.parent / "_pytorch_constraints.txt"
             with open(constraints_file, 'w') as f:
                 f.write(f"torch=={self.config.pytorch_version}\n")
@@ -154,52 +136,30 @@ class PipDependenciesInstaller(Installer):
             is_windows = platform.system() == 'Windows'
 
             if is_windows:
-                # On Windows, we need to avoid installing ipywidgets/jupyterlab due to Long Path issues
-                # Strategy: install all packages without deps first, then install deps selectively
-
-                # First pass: install all top-level packages without dependencies
-                self.logger.info("Installing packages without dependencies (avoiding Long Path issues)...")
-                self.run_pip(
-                    [
-                        "install",
-                        "-r", str(temp_reqs_file),
-                        "--no-deps",
-                        "--no-cache-dir",
-                    ],
-                    step_name="Install packages (no deps)",
-                    check=True
-                )
-
-                # Second pass: install dependencies but exclude problematic packages
-                # We'll use pip's --dry-run to see what deps are needed, then filter
-                self.logger.info("Resolving and installing dependencies (excluding jupyterlab)...")
-
-                # Install most dependencies via a separate pip call that excludes problematic packages
-                # Use a constraint file to block ipywidgets and jupyterlab
+                # On Windows, we need to avoid installing jupyterlab due to Long Path issues
+                # Create exclusion file for problematic packages
                 exclude_file = self.env_dir.parent / "_exclude_packages.txt"
                 with open(exclude_file, 'w') as f:
-                    # These packages cause Windows Long Path issues via jupyterlab
+                    # Only block packages that actually cause Windows Long Path issues
                     f.write("# Blocked packages - cause Windows Long Path issues\n")
-                    f.write("jupyterlab<0.0.1\n")
-                    f.write("jupyterlab-widgets<0.0.1\n")
-                    f.write("widgetsnbextension<0.0.1\n")
-                    f.write("jupyter-server<0.0.1\n")
-                    f.write("notebook<0.0.1\n")
-                    # NOTE: ipywidgets is ALLOWED because open3d requires it
-                    f.write("trame<0.0.1\n")  # Optional pyvista dep for Jupyter
-                    # NOTE: pyvista and vtk are now ALLOWED (needed by pymeshfix)
+                    f.write("jupyterlab<0.0.1\n")  # Main culprit for long paths
+                    f.write("notebook<0.0.1\n")  # Also has long paths
+                    f.write("trame<0.0.1\n")  # Optional pyvista dep, pulls in large deps
+                    # NOTE: ipywidgets, jupyterlab-widgets, widgetsnbextension are ALLOWED
+                    # (needed by open3d, and they don't cause long path issues themselves)
+                    # NOTE: pyvista and vtk are ALLOWED (needed by pymeshfix)
 
-                # Try to install with exclusions. If packages conflict, that's OK - we'll handle manually
+                # Install with uv (much faster than pip)
+                self.logger.info("Installing packages with uv (excluding jupyterlab)...")
                 try:
-                    self.run_pip(
+                    self.run_uv_pip(
                         [
                             "install",
                             "-r", str(temp_reqs_file),
                             "-c", str(constraints_file),
                             "-c", str(exclude_file),
-                            "--no-cache-dir",
                         ],
-                        step_name="Install dependencies (excluding jupyterlab)",
+                        step_name="Install dependencies via uv",
                         check=True
                     )
                 except subprocess.CalledProcessError:
@@ -208,12 +168,11 @@ class PipDependenciesInstaller(Installer):
                     self.logger.warning("Batch install failed, installing packages individually...")
                     for req in regular_reqs:
                         try:
-                            self.run_pip(
+                            self.run_uv_pip(
                                 [
                                     "install", req,
                                     "-c", str(constraints_file),
                                     "-c", str(exclude_file),
-                                    "--no-cache-dir",
                                 ],
                                 step_name=f"Install {req[:30]}",
                                 check=False  # Don't fail on individual packages
@@ -225,20 +184,18 @@ class PipDependenciesInstaller(Installer):
                 if exclude_file.exists():
                     exclude_file.unlink()
             else:
-                # On Linux/macOS, install normally
-                self.run_pip(
+                # On Linux/macOS, install normally with uv
+                self.run_uv_pip(
                     [
                         "install",
                         "-r", str(temp_reqs_file),
                         "-c", str(constraints_file),
-                        "--upgrade",
-                        "--no-cache-dir",
                     ],
-                    step_name="Install dependencies with constraints",
+                    step_name="Install dependencies via uv",
                     check=True
                 )
 
-            # Step 6: Install git dependencies
+            # Step 3: Install git dependencies
             # On Windows, the venv may not have git in PATH, so we need to ensure
             # the parent environment's PATH is available
             if git_reqs:
@@ -276,7 +233,7 @@ class PipDependenciesInstaller(Installer):
             if temp_reqs_file.exists():
                 temp_reqs_file.unlink()
 
-            self.logger.success("Pip dependencies installed")
+            self.logger.success("Dependencies installed via uv")
             return True
 
         except subprocess.CalledProcessError as e:

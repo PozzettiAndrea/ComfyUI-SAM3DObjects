@@ -43,20 +43,22 @@ class PyTorchPipInstaller(Installer):
         self.logger.info(f"Installing PyTorch {self.config.pytorch_version} + PyTorch3D {self.config.pytorch3d_version} via pip...")
 
         try:
-            # Step 1: Upgrade pip first
+            # Step 1: Upgrade pip and install uv for faster installs
             self.logger.info("Upgrading pip...")
             self.run_pip(["install", "--upgrade", "pip"], step_name="Upgrade pip", check=True)
+            self.logger.info("Installing uv package manager...")
+            self.run_pip(["install", "uv"], step_name="Install uv", check=True)
 
-            # Step 2: Install PyTorch with CUDA from official index
+            # Step 2: Install PyTorch with CUDA from official index (using uv)
             self.logger.info(f"Installing PyTorch {self.config.pytorch_version} with CUDA {self.config.cuda_version}...")
-            self.run_pip(
+            self.run_uv_pip(
                 [
                     "install",
                     f"torch=={self.config.pytorch_version}",
                     f"torchvision=={self.config.torchvision_version}",
                     "--index-url", PYTORCH_PIP_INDEX_URL,
                 ],
-                step_name=f"Install PyTorch {self.config.pytorch_version} from pip",
+                step_name=f"Install PyTorch {self.config.pytorch_version} via uv",
                 check=True
             )
 
@@ -68,7 +70,7 @@ class PyTorchPipInstaller(Installer):
                 raise RuntimeError(f"PyTorch verification failed: {result.stderr}")
             self.logger.info(f"Verified: {result.stdout.strip()}")
 
-            # Step 3: Install PyTorch3D from third-party wheel index
+            # Step 3: Install PyTorch3D from third-party wheel index (using uv)
             pytorch3d_version = get_pytorch3d_pip_version(
                 self.config.pytorch_version,
                 self.config.cuda_version
@@ -76,13 +78,13 @@ class PyTorchPipInstaller(Installer):
             self.logger.info(f"Installing PyTorch3D {pytorch3d_version}...")
             self.logger.info("(Using prebuilt wheel from MiroPsota's repository)")
 
-            self.run_pip(
+            self.run_uv_pip(
                 [
                     "install",
                     f"pytorch3d=={pytorch3d_version}",
                     "--extra-index-url", PYTORCH3D_PIP_INDEX_URL,
                 ],
-                step_name=f"Install PyTorch3D from pip",
+                step_name=f"Install PyTorch3D via uv",
                 check=True
             )
 
