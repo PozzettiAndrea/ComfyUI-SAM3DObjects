@@ -1,0 +1,62 @@
+# ============================================================================
+# Requirements for SAM3D Inference Worker Environment
+# ============================================================================
+# This file contains all packages installed via UV into the minimal conda env.
+# The conda env (environment.yml) provides only: python, pytorch, pytorch3d, CUDA
+# UV installs everything else (10-100x faster than conda for PyPI packages)
+# ============================================================================
+
+# Core scientific computing
+numpy>=1.24.0,<2.0
+scipy>=1.11.0
+
+# Machine learning frameworks
+timm>=0.9.16
+transformers
+diffusers
+lightning>=2.0.0
+
+# Image processing
+opencv-python>=4.9.0
+scikit-image>=0.23.1
+imageio>=2.36.0
+
+# 3D processing libraries
+open3d>=0.18.0
+trimesh
+point-cloud-utils>=0.29.5
+pyvista>=0.43.0
+
+# Visualization
+matplotlib>=3.9.0
+seaborn>=0.13.0
+plotly>=5.24.0
+
+# Utilities
+hydra-core>=1.3.2
+easydict>=1.13
+loguru>=0.7.2
+huggingface-hub
+python-igraph>=1.0.0
+tqdm>=4.67.0
+optree>=0.11.0
+astor>=0.8.0
+
+# Pip-only dependencies (not available via conda)
+einops-exts>=0.0.4
+roma>=1.5.1
+xatlas>=0.0.9
+pymeshfix>=0.16.0
+
+# CUDA-specific packages (available on PyPI)
+spconv-cu121>=2.3.8
+xformers>=0.0.28
+gsplat>=1.4.0
+
+# Additional utilities
+gdown>=5.2.0
+gradio>=4.44.0
+
+# Git repository dependencies
+git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb2bd3e255b
+git+https://github.com/NVlabs/nvdiffrast.git
