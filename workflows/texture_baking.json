@@ -1,0 +1,996 @@
+{
+  "id": "75f35396-f717-4e89-8313-13aac9a4acdc",
+  "revision": 0,
+  "last_node_id": 59,
+  "last_link_id": 168,
+  "nodes": [
+    {
+      "id": 37,
+      "type": "SAM3DGaussianDecode",
+      "pos": [
+        582.3066688273926,
+        -285.7531810386207
+      ],
+      "size": [
+        271.125,
+        170
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "slat_decoder_gs",
+          "type": "SAM3D_MODEL",
+          "link": 134
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 100
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 101
+        },
+        {
+          "name": "slat",
+          "type": "STRING",
+          "widget": {
+            "name": "slat"
+          },
+          "link": 105
+        }
+      ],
+      "outputs": [
+        {
+          "name": "ply_filepath",
+          "type": "STRING",
+          "links": [
+            119
+          ]
+        },
+        {
+          "name": "gaussian_data",
+          "type": "SAM3D_GAUSSIAN",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "237d5bef006bce1edc5640549e7701bb581b4045",
+        "Node name for S&R": "SAM3DGaussianDecode",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "",
+        42,
+        "fixed",
+        true
+      ]
+    },
+    {
+      "id": 45,
+      "type": "SAM3DMeshDecode",
+      "pos": [
+        322.29779238131835,
+        -663.5486378416228
+      ],
+      "size": [
+        271.11328125,
+        194
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "slat_decoder_mesh",
+          "type": "SAM3D_MODEL",
+          "link": 135
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 116
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 117
+        },
+        {
+          "name": "slat",
+          "type": "STRING",
+          "widget": {
+            "name": "slat"
+          },
+          "link": 124
+        }
+      ],
+      "outputs": [
+        {
+          "name": "glb_filepath",
+          "type": "STRING",
+          "links": [
+            118
+          ]
+        },
+        {
+          "name": "mesh_data",
+          "type": "SAM3D_MESH",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "3decef428f8a38bf8e78bb6d040298ba4c29e337",
+        "Node name for S&R": "SAM3DMeshDecode",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "",
+        42,
+        "fixed",
+        true,
+        0.95
+      ]
+    },
+    {
+      "id": 28,
+      "type": "InvertMask",
+      "pos": [
+        -67.43214701834569,
+        85.25537255785275
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 62
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            89,
+            117,
+            142
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "Node name for S&R": "InvertMask"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 54,
+      "type": "SAM3D_PreviewPointCloud",
+      "pos": [
+        211.7118018595948,
+        199.62692009533072
+      ],
+      "size": [
+        512,
+        602
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "file_path",
+          "type": "STRING",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": 162
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "d86f99a8fd2c8ebf4bf7505290a5ea854ebb1147",
+        "Node name for S&R": "SAM3D_PreviewPointCloud",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 55,
+      "type": "PreviewAny",
+      "pos": [
+        231.6383738722381,
+        -11.742514590723715
+      ],
+      "size": [
+        210,
+        88
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 146
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 35,
+      "type": "SAM3DSLATGen",
+      "pos": [
+        247.39737724528297,
+        -306.8642155552352
+      ],
+      "size": [
+        291.423828125,
+        218
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "slat_generator",
+          "type": "SAM3D_MODEL",
+          "link": 133
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 90
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 89
+        },
+        {
+          "name": "sparse_structure",
+          "type": "STRING",
+          "widget": {
+            "name": "sparse_structure"
+          },
+          "link": 145
+        }
+      ],
+      "outputs": [
+        {
+          "name": "slat_path",
+          "type": "STRING",
+          "links": [
+            105,
+            124
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "2e2bd62009a38312d9af76b4609d5e29ee9bb601",
+        "Node name for S&R": "SAM3DSLATGen",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "",
+        42,
+        "fixed",
+        25,
+        5,
+        true
+      ]
+    },
+    {
+      "id": 47,
+      "type": "SAM3DTextureBake",
+      "pos": [
+        889.3686390364724,
+        -597.1186038423805
+      ],
+      "size": [
+        292.73046875,
+        314
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "embedders",
+          "type": "SAM3D_MODEL",
+          "link": 136
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 121
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 122
+        },
+        {
+          "name": "glb_path",
+          "type": "STRING",
+          "widget": {
+            "name": "glb_path"
+          },
+          "link": 118
+        },
+        {
+          "name": "ply_path",
+          "type": "STRING",
+          "widget": {
+            "name": "ply_path"
+          },
+          "link": 119
+        }
+      ],
+      "outputs": [
+        {
+          "name": "glb_filepath",
+          "type": "STRING",
+          "links": [
+            125
+          ]
+        },
+        {
+          "name": "ply_filepath",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "pose_data",
+          "type": "SAM3D_POSE_DATA",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "3decef428f8a38bf8e78bb6d040298ba4c29e337",
+        "Node name for S&R": "SAM3DTextureBake",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "",
+        "",
+        42,
+        "fixed",
+        true,
+        true,
+        "fast",
+        1024,
+        0.95,
+        "nvdiffrast"
+      ]
+    },
+    {
+      "id": 52,
+      "type": "SAM3DSparseGen",
+      "pos": [
+        -115.46417517752211,
+        -291.2734315082722
+      ],
+      "size": [
+        294.4453125,
+        262
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "ss_generator",
+          "type": "SAM3D_MODEL",
+          "link": 143
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 141
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 142
+        },
+        {
+          "name": "intrinsics",
+          "shape": 7,
+          "type": "SAM3D_INTRINSICS",
+          "link": 164
+        },
+        {
+          "name": "pointmap_path",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "pointmap_path"
+          },
+          "link": 165
+        }
+      ],
+      "outputs": [
+        {
+          "name": "sparse_structure_path",
+          "type": "STRING",
+          "links": [
+            145
+          ]
+        },
+        {
+          "name": "pose",
+          "type": "SAM3D_POSE",
+          "links": [
+            146
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "d86f99a8fd2c8ebf4bf7505290a5ea854ebb1147",
+        "Node name for S&R": "SAM3DSparseGen",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        42,
+        "fixed",
+        "",
+        25,
+        7,
+        true
+      ]
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [
+        -736.5796730302636,
+        -52.23595698553818
+      ],
+      "size": [
+        274.080078125,
+        314
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            90,
+            100,
+            116,
+            121,
+            141,
+            161
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            62,
+            101,
+            122
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.70",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "elephant.png",
+        "image"
+      ]
+    },
+    {
+      "id": 53,
+      "type": "MaskPreview",
+      "pos": [
+        -257.87222591215806,
+        111.55744278300918
+      ],
+      "size": [
+        140,
+        246
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 160
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "Node name for S&R": "MaskPreview"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 59,
+      "type": "SAM3D_DepthEstimate",
+      "pos": [
+        -363.63635264491694,
+        -236.5892055861812
+      ],
+      "size": [
+        193.78125,
+        86
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "depth_model",
+          "type": "SAM3D_MODEL",
+          "link": 163
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 161
+        }
+      ],
+      "outputs": [
+        {
+          "name": "intrinsics",
+          "type": "SAM3D_INTRINSICS",
+          "links": [
+            164
+          ]
+        },
+        {
+          "name": "pointmap_path",
+          "type": "STRING",
+          "links": [
+            165
+          ]
+        },
+        {
+          "name": "pointcloud_ply",
+          "type": "STRING",
+          "links": [
+            162
+          ]
+        },
+        {
+          "name": "depth_mask",
+          "type": "MASK",
+          "links": [
+            160
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "2ed412a6e508b9b21010ef034cc914d9d27679d5",
+        "Node name for S&R": "SAM3D_DepthEstimate",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 48,
+      "type": "Preview3D",
+      "pos": [
+        1300.3189601332733,
+        -617.4372498097706
+      ],
+      "size": [
+        400,
+        550
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "camera_info",
+          "shape": 7,
+          "type": "LOAD3D_CAMERA",
+          "link": null
+        },
+        {
+          "name": "bg_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "model_file",
+          "type": "STRING",
+          "widget": {
+            "name": "model_file"
+          },
+          "link": 125
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.71",
+        "Node name for S&R": "Preview3D",
+        "Last Time Model File": "/home/shadeform/sam3do/ComfyUI/output/sam3d_inference_2/mesh.glb",
+        "Resource Folder": "shadeform/sam3do/ComfyUI/output/sam3d_inference_2",
+        "Camera Info": {
+          "position": {
+            "x": 0.6496046654928261,
+            "y": 1.152219451690077,
+            "z": 8.113127248138785
+          },
+          "target": {
+            "x": 0,
+            "y": 1.8283702326679883,
+            "z": 0
+          },
+          "zoom": 1,
+          "cameraType": "perspective"
+        }
+      },
+      "widgets_values": [
+        "/home/shadeform/sam3do/ComfyUI/output/sam3d_inference_2/mesh.glb",
+        ""
+      ]
+    },
+    {
+      "id": 44,
+      "type": "LoadSAM3DModel",
+      "pos": [
+        -402.1867693006629,
+        -584.6801339630986
+      ],
+      "size": [
+        270,
+        254
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "depth_model",
+          "type": "SAM3D_MODEL",
+          "links": [
+            163
+          ]
+        },
+        {
+          "name": "ss_generator",
+          "type": "SAM3D_MODEL",
+          "links": [
+            143
+          ]
+        },
+        {
+          "name": "slat_generator",
+          "type": "SAM3D_MODEL",
+          "links": [
+            133
+          ]
+        },
+        {
+          "name": "slat_decoder_gs",
+          "type": "SAM3D_MODEL",
+          "links": [
+            134
+          ]
+        },
+        {
+          "name": "slat_decoder_mesh",
+          "type": "SAM3D_MODEL",
+          "links": [
+            135
+          ]
+        },
+        {
+          "name": "embedders",
+          "type": "SAM3D_MODEL",
+          "links": [
+            136
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "aa546ff6ccd914423ce95493d5ad51f9374634cd",
+        "Node name for S&R": "LoadSAM3DModel",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "hf",
+        false,
+        true,
+        "your_token",
+        "bfloat16"
+      ]
+    }
+  ],
+  "links": [
+    [
+      62,
+      4,
+      1,
+      28,
+      0,
+      "MASK"
+    ],
+    [
+      89,
+      28,
+      0,
+      35,
+      2,
+      "MASK"
+    ],
+    [
+      90,
+      4,
+      0,
+      35,
+      1,
+      "IMAGE"
+    ],
+    [
+      100,
+      4,
+      0,
+      37,
+      1,
+      "IMAGE"
+    ],
+    [
+      101,
+      4,
+      1,
+      37,
+      2,
+      "MASK"
+    ],
+    [
+      105,
+      35,
+      0,
+      37,
+      3,
+      "STRING"
+    ],
+    [
+      116,
+      4,
+      0,
+      45,
+      1,
+      "IMAGE"
+    ],
+    [
+      117,
+      28,
+      0,
+      45,
+      2,
+      "MASK"
+    ],
+    [
+      118,
+      45,
+      0,
+      47,
+      3,
+      "STRING"
+    ],
+    [
+      119,
+      37,
+      0,
+      47,
+      4,
+      "STRING"
+    ],
+    [
+      121,
+      4,
+      0,
+      47,
+      1,
+      "IMAGE"
+    ],
+    [
+      122,
+      4,
+      1,
+      47,
+      2,
+      "MASK"
+    ],
+    [
+      124,
+      35,
+      0,
+      45,
+      3,
+      "STRING"
+    ],
+    [
+      125,
+      47,
+      0,
+      48,
+      2,
+      "STRING"
+    ],
+    [
+      133,
+      44,
+      2,
+      35,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      134,
+      44,
+      3,
+      37,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      135,
+      44,
+      4,
+      45,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      136,
+      44,
+      5,
+      47,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      141,
+      4,
+      0,
+      52,
+      1,
+      "IMAGE"
+    ],
+    [
+      142,
+      28,
+      0,
+      52,
+      2,
+      "MASK"
+    ],
+    [
+      143,
+      44,
+      1,
+      52,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      145,
+      52,
+      0,
+      35,
+      3,
+      "STRING"
+    ],
+    [
+      146,
+      52,
+      1,
+      55,
+      0,
+      "*"
+    ],
+    [
+      160,
+      59,
+      3,
+      53,
+      0,
+      "MASK"
+    ],
+    [
+      161,
+      4,
+      0,
+      59,
+      1,
+      "IMAGE"
+    ],
+    [
+      162,
+      59,
+      2,
+      54,
+      0,
+      "STRING"
+    ],
+    [
+      163,
+      44,
+      0,
+      59,
+      0,
+      "SAM3D_MODEL"
+    ],
+    [
+      164,
+      59,
+      0,
+      52,
+      3,
+      "SAM3D_INTRINSICS"
+    ],
+    [
+      165,
+      59,
+      1,
+      52,
+      4,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5524900479550411,
+      "offset": [
+        816.1614510867633,
+        1021.8213266708484
+      ]
+    },
+    "frontendVersion": "1.32.9",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

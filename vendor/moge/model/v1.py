@@ -358,7 +358,7 @@ class MoGeModel(nn.Module):
                 focal = focal[None].expand(points.shape[0])
             _, shift = recover_focal_shift(points, mask_binary, focal=focal)
         fx = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5 / aspect_ratio
-        fy = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5 
+        fy = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5
         intrinsics = utils3d.torch.intrinsics_from_focal_center(fx, fy, 0.5, 0.5)
         depth = points[..., 2] + shift[..., None, None]
         
