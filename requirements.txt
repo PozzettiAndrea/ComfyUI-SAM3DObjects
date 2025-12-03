@@ -46,6 +46,18 @@ MoGe @ git+https://github.com/microsoft/MoGe.git@a8c37341bc0325ca99b9d57981cc3bb
 # Utilities
 gdown==5.2.0
 huggingface-hub
+python-igraph>=1.0.0
+torchsde>=0.2.6
+
+# Core Python dependencies
+astor>=0.8.0
+optree>=0.11.0
+scipy>=1.11.0
+numpy>=1.24.0,<2.0
+torchvision>=0.15.0
+
+# PyTorch Lightning for model management
+lightning>=2.0.0
 
 # Visualization dependencies
 seaborn>=0.13.0
@@ -56,6 +68,9 @@ imageio>=2.36.0
 tqdm>=4.67.0
 
 # 3D processing and rendering
-kaolin>=0.17.0
-utils3d @ git+https://github.com/EasternJournalist/utils3d.git
+# kaolin>=0.17.0  # NOTE: kaolin must be installed via conda: conda install -c nvidia -c conda-forge kaolin
+#                 # Or it will be automatically installed by install.py
+utils3d @ git+https://github.com/EasternJournalist/utils3d.git@bb71df4
 gsplat>=1.4.0
+pyvista>=0.43.0
+pymeshfix>=0.16.0
