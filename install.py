@@ -164,13 +164,13 @@ def check_pytorch_cuda():
 
 def install_pytorch_cuda():
     """
-    Install PyTorch with CUDA 12.1 support.
+    Install PyTorch with CUDA support (latest compatible version).
 
     Returns:
         bool: True if successful, False otherwise
     """
     print("[SAM3DObjects] ")
-    print("[SAM3DObjects] Installing PyTorch with CUDA 12.1 support...")
+    print("[SAM3DObjects] Installing PyTorch with CUDA support...")
     print("[SAM3DObjects] This is required for SAM3DObjects to function properly.")
     print("[SAM3DObjects] ")
 
@@ -208,15 +208,15 @@ def install_pytorch_cuda():
             "torchaudio"
         ], check=False, capture_output=True)
 
-        # Install CUDA-enabled PyTorch (specific versions to match xformers)
-        print("[SAM3DObjects] Installing PyTorch 2.5.1 with CUDA 12.1...")
+        # Install CUDA-enabled PyTorch (flexible version for compatibility)
+        print("[SAM3DObjects] Installing PyTorch with CUDA support...")
         subprocess.check_call([
             sys.executable,
             "-m",
             "pip",
             "install",
-            "torch==2.5.1+cu121",
-            "torchvision==0.20.1+cu121",
+            "torch",
+            "torchvision",
             "--index-url",
             "https://download.pytorch.org/whl/cu121"
         ])
@@ -577,13 +577,22 @@ def install():
                     "-m",
                     "pip",
                     "install",
-                    req
                 ]
 
-                # For xformers, use CUDA 12.1 index to ensure CUDA-enabled version
+                # Special handling for xformers to prevent torch version conflicts
                 if "xformers" in req.lower():
-                    install_cmd.extend(["--index-url", "https://download.pytorch.org/whl/cu121"])
-                    print(f"[SAM3DObjects]   → Using CUDA 12.1 index for xformers")
+                    install_cmd.extend([
+                        "--upgrade-strategy", "only-if-needed",  # Don't upgrade existing packages
+                        "--index-url", "https://download.pytorch.org/whl/cu121",
+                        req
+                    ])
+                    print(f"[SAM3DObjects]   → Using CUDA 12.1 index for xformers (preserving torch version)")
+                # Special handling for nvdiffrast (git install with CUDA support)
+                elif "nvdiffrast" in req.lower():
+                    print(f"[SAM3DObjects]   → Installing nvdiffrast from source (requires CUDA)")
+                    install_cmd.append(req)
+                else:
+                    install_cmd.append(req)
 
                 subprocess.check_call(install_cmd)
 
