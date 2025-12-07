@@ -126,7 +126,7 @@
         <button id="resetCamera">Reset View</button>
     </div>
 
-    <script src="/extensions/ComfyUI-SAM3DObjects/libs/vtk.min.lib"></script>
+    <script src="/extensions/comfyui-sam3dobjects/libs/vtk.min.lib"></script>
 
     <script>
         // Get VTK.js classes from global vtk object
@@ -386,8 +386,9 @@
                 console.log('[SAM3D VTK Viewer] Load complete');
 
             } catch (error) {
-                console.error('[SAM3D VTK Viewer] Error:', error);
-                showError(error.message);
+                console.error('[SAM3D VTK Viewer] Error loading point cloud:', error);
+                console.error('[SAM3D VTK Viewer] Error stack:', error.stack);
+                showError(`Failed to load point cloud: ${error.message}\n\nURL: ${filepath}`);
             }
         }
 
@@ -446,8 +447,20 @@
         // Listen for messages from parent
         window.addEventListener('message', (event) => {
             console.log('[SAM3D VTK Viewer] Received message:', event.data);
-            if (event.data.type === 'loadPointCloud' && event.data.url) {
-                loadPointCloud(event.data.url);
+            console.log('[SAM3D VTK Viewer] Message type:', event.data?.type);
+            console.log('[SAM3D VTK Viewer] Message URL:', event.data?.url);
+            
+            if (event.data && event.data.type === 'loadPointCloud') {
+                const url = event.data.url;
+                if (url) {
+                    console.log('[SAM3D VTK Viewer] Loading point cloud from URL:', url);
+                    loadPointCloud(url);
+                } else {
+                    console.error('[SAM3D VTK Viewer] No URL provided in message');
+                    showError('No file URL provided');
+                }
+            } else {
+                console.warn('[SAM3D VTK Viewer] Unexpected message format:', event.data);
             }
         });
 

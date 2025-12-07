@@ -800,6 +800,8 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         use_stage2_distillation = request.get("use_stage2_distillation", False)
         texture_mode = request.get("texture_mode", "opt")
         rendering_engine = request.get("rendering_engine", "pytorch3d")
+        merge_mask = request.get("merge_mask", True)
+        auto_resize_mask = request.get("auto_resize_mask", True)
 
         # Load pointmap from .pt file if provided
         pointmap = None
@@ -1018,6 +1020,8 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             use_stage2_distillation=use_stage2_distillation,
             texture_mode=texture_mode,
             rendering_engine=rendering_engine,
+            merge_mask=merge_mask,
+            auto_resize_mask=auto_resize_mask,
         )
 
         print(f"[Worker] Inference completed", file=sys.stderr)

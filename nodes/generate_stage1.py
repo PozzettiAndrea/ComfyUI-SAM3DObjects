@@ -59,6 +59,14 @@ class SAM3DSparseGen:
                     "default": False,
                     "tooltip": "Enable distillation mode for faster inference. Disables CFG guidance but uses learned shortcuts."
                 }),
+                "merge_mask_with_image": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "If False, skip merging mask with image. Useful when mask size doesn't match image size (e.g., 64x64 mask with 1500x1500 image)."
+                }),
+                "auto_resize_mask": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "If True, automatically resize mask to match image size if they differ. If False, will raise error on size mismatch."
+                }),
             }
         }
 
@@ -83,6 +91,8 @@ class SAM3DSparseGen:
         stage1_inference_steps: int = 25,
         stage1_cfg_strength: float = 7.0,
         use_stage1_distillation: bool = False,
+        merge_mask_with_image: bool = True,
+        auto_resize_mask: bool = True,
     ):
         """
         Generate sparse voxel structure.
@@ -122,6 +132,8 @@ class SAM3DSparseGen:
                 pointmap_path=pointmap_path,  # Pass pointmap tensor path if available
                 intrinsics=intrinsics,  # Pass pre-computed intrinsics if available
                 output_dir=output_dir,  # Derived from pointmap_path directory
+                merge_mask=merge_mask_with_image,
+                auto_resize_mask=auto_resize_mask,
             )
 
         except Exception as e:
