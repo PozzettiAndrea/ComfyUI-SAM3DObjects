@@ -482,6 +482,8 @@ class InferencePipeline:
         use_stage1_distillation=False,
         use_stage2_distillation=False,
         decode_formats=None,
+        merge_mask=True,
+        auto_resize_mask=True,
     ) -> dict:
         """
         Parameters:
@@ -490,11 +492,13 @@ class InferencePipeline:
         - stage1_only (bool, optional): If True, only the sparse structure is sampled and returned. Default is False.
         - with_mesh_postprocess (bool, optional): If True, performs mesh post-processing. Default is True.
         - with_texture_baking (bool, optional): If True, applies texture baking to the 3D model. Default is True.
+        - merge_mask (bool, optional): If False, skip merging mask with image. Default is True.
+        - auto_resize_mask (bool, optional): If True, automatically resize mask to match image size if they differ. Default is True.
         Returns:
         - dict: A dictionary containing the GLB file and additional data from the sparse structure sampling.
         """
         # This should only happen if called from demo
-        image = self.merge_image_and_mask(image, mask)
+        image = self.merge_image_and_mask(image, mask, merge_mask=merge_mask, auto_resize_mask=auto_resize_mask)
         with self.device:
             ss_input_dict = self.preprocess_image(image, self.ss_preprocessor)
             slat_input_dict = self.preprocess_image(image, self.slat_preprocessor)
@@ -594,18 +598,51 @@ class InferencePipeline:
         self,
         image: Union[np.ndarray, Image.Image],
         mask: Union[None, np.ndarray, Image.Image],
+        merge_mask: bool = True,
+        auto_resize_mask: bool = True,
     ):
-        if mask is not None:
-            if isinstance(image, Image.Image):
-                image = np.array(image)
+        """
+        Merge mask with image, replacing the alpha channel.
+        
+        Args:
+            image: Input image
+            mask: Input mask (can be None)
+            merge_mask: If False, skip merging entirely and return image as-is
+            auto_resize_mask: If True, automatically resize mask to match image size if they differ
+            
+        Returns:
+            Image with mask merged into alpha channel (or original image if merge_mask=False)
+        """
+        if mask is None or not merge_mask:
+            image = np.array(image)
+            return image
+            
+        if isinstance(image, Image.Image):
+            image = np.array(image)
 
-            mask = np.array(mask)
-            if mask.ndim == 2:
-                mask = mask[..., None]
+        mask = np.array(mask)
+        if mask.ndim == 2:
+            mask = mask[..., None]
 
-            logger.info(f"Replacing alpha channel with the provided mask")
-            assert mask.shape[:2] == image.shape[:2]
-            image = np.concatenate([image[..., :3], mask], axis=-1)
+        # Check if sizes match
+        if mask.shape[:2] != image.shape[:2]:
+            if auto_resize_mask:
+                # Auto-resize mask to match image size
+                import cv2
+                logger.info(f"Resizing mask from {mask.shape[:2]} to {image.shape[:2]} to match image")
+                mask = cv2.resize(mask, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+                # Ensure mask still has the right number of dimensions
+                if mask.ndim == 2:
+                    mask = mask[..., None]
+            else:
+                # Raise error if auto-resize is disabled
+                raise ValueError(
+                    f"Mask shape {mask.shape[:2]} does not match image shape {image.shape[:2]}. "
+                    f"Enable 'auto_resize_mask' to automatically resize the mask, or ensure masks match image size."
+                )
+
+        logger.info(f"Replacing alpha channel with the provided mask")
+        image = np.concatenate([image[..., :3], mask], axis=-1)
 
         image = np.array(image)
         return image

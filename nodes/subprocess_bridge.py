@@ -411,6 +411,9 @@ class InferenceWorkerBridge:
         texture_mode: str = "opt",
         # Rendering engine
         rendering_engine: str = "pytorch3d",
+        # Mask merge controls
+        merge_mask: bool = True,
+        auto_resize_mask: bool = True,
     ) -> Dict[str, Any]:
         """
         Run inference on the isolated worker.
@@ -488,6 +491,9 @@ class InferenceWorkerBridge:
             "texture_mode": texture_mode,
             # Rendering engine
             "rendering_engine": rendering_engine,
+            # Mask merge controls
+            "merge_mask": merge_mask,
+            "auto_resize_mask": auto_resize_mask,
         }
 
         # Send request

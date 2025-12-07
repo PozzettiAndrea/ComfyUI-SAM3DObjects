@@ -54,6 +54,14 @@ class SAM3DSLATGen:
                     "default": False,
                     "tooltip": "Enable distillation mode for faster inference. Disables CFG guidance but uses learned shortcuts."
                 }),
+                "merge_mask_with_image": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "If False, skip merging mask with image. Useful when mask size doesn't match image size (e.g., 64x64 mask with 1500x1500 image)."
+                }),
+                "auto_resize_mask": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "If True, automatically resize mask to match image size if they differ. If False, will raise error on size mismatch."
+                }),
             }
         }
 
@@ -74,6 +82,8 @@ class SAM3DSLATGen:
         stage2_inference_steps: int = 25,
         stage2_cfg_strength: float = 5.0,
         use_stage2_distillation: bool = False,
+        merge_mask_with_image: bool = True,
+        auto_resize_mask: bool = True,
     ):
         """
         Generate SLAT latents via diffusion.
@@ -111,6 +121,8 @@ class SAM3DSLATGen:
                 stage2_cfg_strength=stage2_cfg_strength,
                 use_stage2_distillation=use_stage2_distillation,
                 output_dir=output_dir,  # Use same directory as sparse_structure
+                merge_mask=merge_mask_with_image,
+                auto_resize_mask=auto_resize_mask,
             )
 
         except Exception as e:
