@@ -46,12 +46,7 @@ class LinuxPlatformProvider(PlatformProvider):
         )
 
     def check_prerequisites(self) -> Tuple[bool, Optional[str]]:
-        # Check for WSL
-        if self._detect_wsl():
-            return (False,
-                    "Running in Windows Subsystem for Linux (WSL).\n"
-                    "This package requires native Windows Python, not WSL.\n"
-                    "Please install and run from Windows PowerShell or Command Prompt.")
+        # WSL2 with NVIDIA CUDA drivers is supported
         return (True, None)
 
     def _detect_wsl(self) -> bool:
