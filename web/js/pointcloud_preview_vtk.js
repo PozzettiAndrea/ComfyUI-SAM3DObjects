@@ -32,9 +32,8 @@ app.registerExtension({
                 container.style.overflow = "hidden";
 
                 // Create iframe for VTK viewer
-                // Use the folder name (lowercase) for the extension path
                 const iframe = document.createElement("iframe");
-                iframe.src = "/extensions/comfyui-sam3dobjects/viewer_vtk.html";
+                iframe.src = "/extensions/ComfyUI-SAM3DObjects/viewer_vtk.html";
                 iframe.style.width = "100%";
                 iframe.style.height = "100%";
                 iframe.style.border = "none";

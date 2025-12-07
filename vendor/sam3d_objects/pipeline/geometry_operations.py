@@ -92,9 +92,9 @@ def load_and_simplify_mesh(mesh, device, target_triangles=5000):
         # Create a copy to avoid modifying the original
         mesh_copy = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
 
-        # Clean the mesh
-        mesh_copy.remove_duplicate_faces()
-        mesh_copy.remove_degenerate_faces()
+        # Clean the mesh (using trimesh 4.x compatible API)
+        mesh_copy.update_faces(mesh_copy.unique_faces())
+        mesh_copy.update_faces(mesh_copy.nondegenerate_faces())
         mesh_copy.merge_vertices()
 
         # Simplify if needed
