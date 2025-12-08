@@ -56,7 +56,7 @@ class GsplatInstaller(Installer):
             if validation['valid']:
                 try:
                     self.run_pip(
-                        ["install", wheel_url, "--force-reinstall"],
+                        ["install", wheel_url, "--no-deps"],
                         step_name="Install gsplat from sam3dobjects-wheels",
                         check=True
                     )
@@ -125,7 +125,7 @@ class NvdiffrastInstaller(Installer):
             if validation['valid']:
                 try:
                     self.run_pip(
-                        ["install", wheel_url, "--force-reinstall"],
+                        ["install", wheel_url, "--no-deps"],
                         step_name="Install nvdiffrast from sam3dobjects-wheels",
                         check=True
                     )
@@ -153,7 +153,7 @@ class NvdiffrastInstaller(Installer):
 
         try:
             self.run_pip(
-                ["install", str(wheel_path), "--force-reinstall"],
+                ["install", str(wheel_path), "--no-deps"],
                 step_name="Install nvdiffrast from local wheel",
                 check=True
             )
