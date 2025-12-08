@@ -121,9 +121,19 @@ class NvdiffrastInstaller(Installer):
 
         if wheel_url:
             self.logger.info(f"Using sam3dobjects-wheels (CUDA {self.config.cuda_version})...")
-            result = self._install_from_wheel(wheel_url)
-            if result:
-                return True
+            validation = validate_url(wheel_url, timeout=10)
+            if validation['valid']:
+                try:
+                    self.run_pip(
+                        ["install", wheel_url, "--force-reinstall"],
+                        step_name="Install nvdiffrast from sam3dobjects-wheels",
+                        check=True
+                    )
+                    if self.verify_import("nvdiffrast"):
+                        self.logger.success("nvdiffrast installed from sam3dobjects-wheels")
+                        return True
+                except subprocess.CalledProcessError:
+                    self.logger.warning("sam3dobjects-wheels failed, trying fallbacks...")
 
         # Fall back to local wheel (bundled with the custom node)
         node_root = self.env_dir.parent
