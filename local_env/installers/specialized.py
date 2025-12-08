@@ -15,7 +15,7 @@ import zipfile
 from pathlib import Path
 
 from .base import Installer
-from ..config import NVDIFFRAST_WHEEL_URLS, get_gsplat_index_url
+from ..config import get_gsplat_wheel_url, get_gsplat_index_url, get_nvdiffrast_wheel_url
 from ..utils import validate_url
 
 
@@ -30,8 +30,8 @@ class GsplatInstaller(Installer):
         return self.verify_import("gsplat")
 
     def install(self) -> bool:
-        """Install gsplat from prebuilt wheel index."""
-        self.logger.info(f"Installing gsplat >= {self.config.gsplat_version}...")
+        """Install gsplat from prebuilt wheel."""
+        self.logger.info(f"Installing gsplat {self.config.gsplat_version}...")
 
         # Install gsplat dependencies first (rich is required but not auto-installed from prebuilt wheel)
         self.logger.info("Installing gsplat dependencies...")
@@ -44,32 +44,54 @@ class GsplatInstaller(Installer):
         except subprocess.CalledProcessError:
             self.logger.warning("Failed to install some gsplat dependencies")
 
-        index_url = get_gsplat_index_url(
-            self.config.pytorch_version,
-            self.config.cuda_version
+        # Try sam3dobjects-wheels first (supports cu124 and cu128)
+        wheel_url = get_gsplat_wheel_url(
+            self.config.cuda_version,
+            self.platform.name.capitalize()
         )
 
-        try:
-            self.run_pip(
-                [
-                    "install",
-                    f"gsplat>={self.config.gsplat_version}",
-                    "--index-url", index_url,
-                ],
-                step_name="Install gsplat prebuilt wheel",
-                check=True
+        if wheel_url:
+            self.logger.info(f"Using sam3dobjects-wheels (CUDA {self.config.cuda_version})...")
+            validation = validate_url(wheel_url, timeout=10)
+            if validation['valid']:
+                try:
+                    self.run_pip(
+                        ["install", wheel_url, "--force-reinstall"],
+                        step_name="Install gsplat from sam3dobjects-wheels",
+                        check=True
+                    )
+                    if self.verify_import("gsplat"):
+                        self.logger.success("gsplat installed from sam3dobjects-wheels")
+                        return True
+                except subprocess.CalledProcessError:
+                    self.logger.warning("sam3dobjects-wheels failed, trying official index...")
+
+        # Fall back to official gsplat index (only works for cu124)
+        if self.config.cuda_version == "12.4":
+            index_url = get_gsplat_index_url(
+                self.config.pytorch_version,
+                self.config.cuda_version
             )
 
-            if self.verify_import("gsplat"):
-                self.logger.success("gsplat installed")
-                return True
-            else:
-                self.logger.error("gsplat import failed after installation")
-                return False
+            try:
+                self.run_pip(
+                    [
+                        "install",
+                        f"gsplat>={self.config.gsplat_version}",
+                        "--index-url", index_url,
+                    ],
+                    step_name="Install gsplat from official index",
+                    check=True
+                )
 
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"gsplat installation failed: {e}")
-            return False
+                if self.verify_import("gsplat"):
+                    self.logger.success("gsplat installed from official index")
+                    return True
+            except subprocess.CalledProcessError as e:
+                self.logger.error(f"gsplat installation failed: {e}")
+
+        self.logger.error("gsplat import failed after installation")
+        return False
 
 
 class NvdiffrastInstaller(Installer):
@@ -89,20 +111,31 @@ class NvdiffrastInstaller(Installer):
 
     def install(self) -> bool:
         """Install nvdiffrast."""
-        # Try local wheel first (bundled with the custom node)
-        # env_dir is _env, so parent is the node root
+        self.logger.info(f"Installing nvdiffrast {self.config.nvdiffrast_version}...")
+
+        # Try sam3dobjects-wheels first (supports cu124 and cu128)
+        wheel_url = get_nvdiffrast_wheel_url(
+            self.config.cuda_version,
+            self.platform.name.capitalize()
+        )
+
+        if wheel_url:
+            self.logger.info(f"Using sam3dobjects-wheels (CUDA {self.config.cuda_version})...")
+            result = self._install_from_wheel(wheel_url)
+            if result:
+                return True
+
+        # Fall back to local wheel (bundled with the custom node)
         node_root = self.env_dir.parent
         local_wheel = node_root / "local_env_settings" / "nvdiffrast-0.3.5-py3-none-any.whl"
         if local_wheel.exists():
-            return self._install_from_local_wheel(local_wheel)
+            self.logger.info("Trying bundled local wheel...")
+            result = self._install_from_local_wheel(local_wheel)
+            if result:
+                return True
 
-        # Fall back to remote wheel
-        wheel_url = NVDIFFRAST_WHEEL_URLS.get(self.platform.name.capitalize())
-
-        if wheel_url:
-            return self._install_from_wheel(wheel_url)
-        else:
-            return self._install_from_source()
+        # Last resort: install from source
+        return self._install_from_source()
 
     def _install_from_local_wheel(self, wheel_path: Path) -> bool:
         """Install nvdiffrast from local wheel."""
