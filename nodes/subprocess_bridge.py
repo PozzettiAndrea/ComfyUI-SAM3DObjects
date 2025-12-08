@@ -410,7 +410,7 @@ class InferenceWorkerBridge:
         # Texture baking mode
         texture_mode: str = "opt",
         # Rendering engine
-        rendering_engine: str = "pytorch3d",
+        rendering_engine: str = "nvdiffrast",
         # Mask merge controls
         merge_mask: bool = True,
         auto_resize_mask: bool = True,

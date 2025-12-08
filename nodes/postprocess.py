@@ -72,9 +72,9 @@ class SAM3DTextureBake:
                     "step": 0.01,
                     "tooltip": "Mesh simplification ratio (0.9 = aggressive, 0.98 = gentle)"
                 }),
-                "rendering_engine": (["pytorch3d", "nvdiffrast"], {
-                    "default": "pytorch3d",
-                    "tooltip": "Rendering backend for texture baking. pytorch3d = portable, nvdiffrast = faster but needs CUDA compilation"
+                "rendering_engine": (["nvdiffrast", "pytorch3d"], {
+                    "default": "nvdiffrast",
+                    "tooltip": "Rendering backend for texture baking. nvdiffrast = faster/better quality, pytorch3d = fallback"
                 }),
             }
         }
@@ -103,7 +103,7 @@ class SAM3DTextureBake:
         texture_mode: str = "opt",
         texture_size: int = 1024,
         simplify: float = 0.95,
-        rendering_engine: str = "pytorch3d",
+        rendering_engine: str = "nvdiffrast",
     ):
         """
         Bake Gaussian appearance into mesh UV textures.

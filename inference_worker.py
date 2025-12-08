@@ -54,8 +54,7 @@ def load_model(config_path: str, compile: bool = False):
     os.environ['PYTHONUTF8'] = '1'  # PEP 540: Force UTF-8 mode in Python 3.7+
 
     # Add venv's bin directory to PATH for ninja (required by nvdiffrast JIT compilation)
-    # Note: Even though we use pytorch3d as rendering_engine, postprocessing (_fill_holes)
-    # still uses nvdiffrast through utils3d.torch.RastContext
+    # nvdiffrast is the default rendering engine for better quality
     venv_bin = (Path(__file__).parent / "_env" / "bin").resolve()
     if venv_bin.exists():
         os.environ['PATH'] = f"{venv_bin}{os.pathsep}{os.environ.get('PATH', '')}"
@@ -215,7 +214,7 @@ def load_model(config_path: str, compile: bool = False):
 
     # Load config and instantiate model using Hydra (like original SAM3D does)
     config = OmegaConf.load(config_path)
-    config.rendering_engine = "pytorch3d"  # overwrite to disable nvdiffrast
+    # rendering_engine comes from user's node parameter, not hardcoded here
     config.compile_model = compile
     config.workspace_dir = os.path.dirname(config_path)
 
@@ -799,7 +798,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         use_stage1_distillation = request.get("use_stage1_distillation", False)
         use_stage2_distillation = request.get("use_stage2_distillation", False)
         texture_mode = request.get("texture_mode", "opt")
-        rendering_engine = request.get("rendering_engine", "pytorch3d")
+        rendering_engine = request.get("rendering_engine", "nvdiffrast")
         merge_mask = request.get("merge_mask", True)
         auto_resize_mask = request.get("auto_resize_mask", True)
 

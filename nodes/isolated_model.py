@@ -76,7 +76,7 @@ class IsolatedSAM3DModel:
         # Texture baking mode
         texture_mode: str = "opt",
         # Rendering engine
-        rendering_engine: str = "pytorch3d",
+        rendering_engine: str = "nvdiffrast",
         # Output directory (from depth_estimate)
         output_dir: str = None,
         # Mask merge controls
