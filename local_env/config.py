@@ -8,6 +8,22 @@ options for the installation process.
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
+from .gpu_detection import get_recommended_cuda_version, get_gpu_summary
+
+
+def _get_pytorch_version(cuda_version: str) -> str:
+    """Get PyTorch version based on CUDA version."""
+    if cuda_version == "12.8":
+        return "2.8.0"
+    return "2.4.1"
+
+
+def _get_torchvision_version(cuda_version: str) -> str:
+    """Get torchvision version based on CUDA version."""
+    if cuda_version == "12.8":
+        return "0.23.0"
+    return "0.19.1"
+
 
 @dataclass
 class InstallConfig:
@@ -16,13 +32,14 @@ class InstallConfig:
     # Python version for the isolated environment
     python_version: str = "3.10"
 
-    # PyTorch version - pinned for PyTorch3D compatibility
-    # NOTE: PyTorch3D 0.7.8 requires PyTorch 2.4.x
-    pytorch_version: str = "2.4.1"
-    torchvision_version: str = "0.19.1"
+    # CUDA version - auto-detected based on GPU
+    # Blackwell GPUs (RTX 50xx) need 12.8, others use 12.4
+    cuda_version: str = field(default_factory=get_recommended_cuda_version)
 
-    # CUDA version for GPU support
-    cuda_version: str = "12.4"
+    # PyTorch version - depends on CUDA version
+    # cu124 -> PyTorch 2.4.1, cu128 -> PyTorch 2.8.0
+    pytorch_version: str = field(default="")
+    torchvision_version: str = field(default="")
 
     # PyTorch3D version
     pytorch3d_version: str = "0.7.8"
@@ -33,18 +50,74 @@ class InstallConfig:
     log_file: str = "install.log"
 
     # Package versions
-    gsplat_version: str = "1.4.0"
-    nvdiffrast_version: str = "0.3.5"
+    gsplat_version: str = "1.5.0"
+    nvdiffrast_version: str = "0.4.0"
+
+    def __post_init__(self):
+        """Set PyTorch versions based on detected CUDA version."""
+        if not self.pytorch_version:
+            self.pytorch_version = _get_pytorch_version(self.cuda_version)
+        if not self.torchvision_version:
+            self.torchvision_version = _get_torchvision_version(self.cuda_version)
+
+    def get_gpu_info(self) -> str:
+        """Get GPU detection summary for logging."""
+        return get_gpu_summary()
 
 
-# nvdiffrast prebuilt wheel URLs by platform
-NVDIFFRAST_WHEEL_URLS: Dict[str, str] = {
-    "Linux": "https://huggingface.co/spaces/microsoft/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl",
-    "Windows": "https://pozzettiandrea.github.io/nvdiffrast-wheels/cu124/nvdiffrast-0.3.5%2Bpt2.4.1cu124-py3-none-any.whl",
-    # Darwin: No prebuilt wheel, falls back to source compilation
-}
+# sam3dobjects-wheels GitHub releases base URL
+SAM3DO_WHEELS_BASE = "https://github.com/PozzettiAndrea/sam3dobjects-wheels/releases/download"
 
-# gsplat wheel index URL template
+
+def get_nvdiffrast_wheel_url(cuda_version: str, platform: str) -> Optional[str]:
+    """
+    Get nvdiffrast wheel URL for specific CUDA version and platform.
+
+    Args:
+        cuda_version: "12.4" or "12.8"
+        platform: "Linux" or "Windows"
+
+    Returns:
+        Wheel URL or None if not available
+    """
+    cu = cuda_version.replace(".", "")  # "12.4" -> "124"
+    tag = f"nvdiffrast-cu{cu}"
+
+    if platform == "Linux":
+        wheel = f"nvdiffrast-0.4.0%2Bcu{cu}-cp310-cp310-linux_x86_64.whl"
+    elif platform == "Windows":
+        wheel = f"nvdiffrast-0.4.0%2Bcu{cu}-cp310-cp310-win_amd64.whl"
+    else:
+        return None  # macOS - fall back to source
+
+    return f"{SAM3DO_WHEELS_BASE}/{tag}/{wheel}"
+
+
+def get_gsplat_wheel_url(cuda_version: str, platform: str) -> Optional[str]:
+    """
+    Get gsplat wheel URL for specific CUDA version and platform.
+
+    Args:
+        cuda_version: "12.4" or "12.8"
+        platform: "Linux" or "Windows"
+
+    Returns:
+        Wheel URL or None if not available
+    """
+    cu = cuda_version.replace(".", "")  # "12.4" -> "124"
+    tag = f"gsplat-cu{cu}"
+
+    if platform == "Linux":
+        wheel = f"gsplat-1.5.3%2Bcu{cu}-cp310-cp310-linux_x86_64.whl"
+    elif platform == "Windows":
+        wheel = f"gsplat-1.5.3%2Bcu{cu}-cp310-cp310-win_amd64.whl"
+    else:
+        return None  # macOS - fall back to source
+
+    return f"{SAM3DO_WHEELS_BASE}/{tag}/{wheel}"
+
+
+# Legacy: gsplat wheel index URL template (fallback to official)
 def get_gsplat_index_url(pytorch_version: str, cuda_version: str) -> str:
     """Get gsplat wheel index URL for specific PyTorch/CUDA versions."""
     pt = pytorch_version.replace(".", "")[:2]  # "2.4.1" -> "24"
@@ -52,7 +125,13 @@ def get_gsplat_index_url(pytorch_version: str, cuda_version: str) -> str:
     return f"https://docs.gsplat.studio/whl/pt{pt}cu{cu}"
 
 
-# PyTorch pip wheel index URL (with CUDA support)
+def get_pytorch_index_url(cuda_version: str) -> str:
+    """Get PyTorch wheel index URL for specific CUDA version."""
+    cu = cuda_version.replace(".", "")  # "12.4" -> "124"
+    return f"https://download.pytorch.org/whl/cu{cu}"
+
+
+# Legacy constant for backwards compatibility
 PYTORCH_PIP_INDEX_URL = "https://download.pytorch.org/whl/cu124"
 
 # PyTorch3D third-party wheel index (MiroPsota's repository)

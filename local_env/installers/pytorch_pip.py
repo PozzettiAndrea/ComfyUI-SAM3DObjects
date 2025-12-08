@@ -8,9 +8,9 @@ import subprocess
 
 from .base import Installer
 from ..config import (
-    PYTORCH_PIP_INDEX_URL,
     PYTORCH3D_PIP_INDEX_URL,
     get_pytorch3d_pip_version,
+    get_pytorch_index_url,
 )
 
 
@@ -50,13 +50,14 @@ class PyTorchPipInstaller(Installer):
             self.run_pip(["install", "uv"], step_name="Install uv", check=True)
 
             # Step 2: Install PyTorch with CUDA from official index (using uv)
+            pytorch_index_url = get_pytorch_index_url(self.config.cuda_version)
             self.logger.info(f"Installing PyTorch {self.config.pytorch_version} with CUDA {self.config.cuda_version}...")
             self.run_uv_pip(
                 [
                     "install",
                     f"torch=={self.config.pytorch_version}",
                     f"torchvision=={self.config.torchvision_version}",
-                    "--index-url", PYTORCH_PIP_INDEX_URL,
+                    "--index-url", pytorch_index_url,
                 ],
                 step_name=f"Install PyTorch {self.config.pytorch_version} via uv",
                 check=True
