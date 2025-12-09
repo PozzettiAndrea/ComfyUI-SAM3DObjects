@@ -533,7 +533,7 @@ def _load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     Returns:
         Pointmap tensor in HWC format (H, W, 3)
     """
-    pointmap = torch.load(pointmap_path)
+    pointmap = torch.load(pointmap_path, weights_only=False)
     print(f"[Worker] Loaded pointmap tensor: shape={pointmap.shape}", file=sys.stderr)
 
     if torch.cuda.is_available():
@@ -826,7 +826,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         stage1_output = None
         if request.get("stage1_output_path") is not None and os.path.exists(request.get("stage1_output_path")):
             print(f"[Worker] Loading Stage 1 output from: {request.get('stage1_output_path')}", file=sys.stderr)
-            stage1_output = torch.load(request.get("stage1_output_path"))
+            stage1_output = torch.load(request.get("stage1_output_path"), weights_only=False)
         elif request.get("stage1_output") is not None:
             stage1_output = pickle.loads(base64.b64decode(request.get("stage1_output")))
 
@@ -968,7 +968,7 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         slat_output = None
         if request.get("slat_output_path") is not None and os.path.exists(request.get("slat_output_path")):
             print(f"[Worker] Loading SLAT output from: {request.get('slat_output_path')}", file=sys.stderr)
-            slat_output = torch.load(request.get("slat_output_path"))
+            slat_output = torch.load(request.get("slat_output_path"), weights_only=False)
         elif request.get("slat_output") is not None:
             slat_output = pickle.loads(base64.b64decode(request.get("slat_output")))
 
