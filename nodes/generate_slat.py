@@ -6,6 +6,10 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
+import torch
+import numpy as np
+from PIL import Image
+
 from .utils import comfy_image_to_pil, comfy_mask_to_numpy
 from .subprocess_bridge import InferenceWorkerBridge, run_generate_slat
 
@@ -85,14 +89,15 @@ class SAM3DGenerateSLAT:
             }
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("slat_path",)
+    RETURN_TYPES = ("STRING", "IMAGE")
+    RETURN_NAMES = ("slat_path", "debug_preprocessed")
     OUTPUT_TOOLTIPS = (
-        "Path to SLAT file - pass to GaussianDecode and MeshDecode",
+        "Path to SLAT file. Pass to GaussianDecode and MeshDecode",
+        "Debug: Preprocessed image that was actually fed to the model (cropped/masked)",
     )
     FUNCTION = "generate_slat"
     CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Generate SLAT from image+mask+depth. Combines sparse structure and SLAT generation with smart caching."
+    DESCRIPTION = "Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate."
 
     def _get_stage1_cache_key(self, seed: int, steps: int, cfg: float, cfg_pm: float) -> str:
         """Generate a cache key for Stage 1 params."""
@@ -174,7 +179,6 @@ class SAM3DGenerateSLAT:
         print(f"[SAM3DObjects] GenerateSLAT: Running Stage 2 (SLAT generation)...")
 
         # Get bridge and run combined generation
-        # Use the generator's config_path so models are loaded from ComfyUI/models/
         bridge = self.get_bridge()
         bridge.start_worker()
 
@@ -215,5 +219,24 @@ class SAM3DGenerateSLAT:
         if not slat_path:
             raise RuntimeError("SLAT file was not generated")
 
+        # Load debug image if available
+        debug_image = None
+        debug_image_path = result.get("debug_image")
+        if not debug_image_path and "files" in result:
+            debug_image_path = result["files"].get("debug_image")
+
+        if debug_image_path and os.path.exists(debug_image_path):
+            try:
+                pil_img = Image.open(debug_image_path).convert("RGB")
+                img_np = np.array(pil_img).astype(np.float32) / 255.0
+                debug_image = torch.from_numpy(img_np).unsqueeze(0)  # [1, H, W, C]
+                print(f"[SAM3DObjects] Debug image loaded: {debug_image.shape}")
+            except Exception as e:
+                print(f"[SAM3DObjects] Failed to load debug image: {e}")
+
+        # Create placeholder if no debug image
+        if debug_image is None:
+            debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
+
         print(f"[SAM3DObjects] GenerateSLAT completed: {slat_path}")
-        return (slat_path,)
+        return (slat_path, debug_image)

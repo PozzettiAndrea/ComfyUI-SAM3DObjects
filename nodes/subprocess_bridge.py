@@ -50,7 +50,7 @@ class InferenceWorkerBridge:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    from .env_manager import SAM3DEnvironmentManager
+                    from ..local_env import SAM3DEnvironmentManager
 
                     env_mgr = SAM3DEnvironmentManager(node_root)
                     python_exe = env_mgr.get_python_executable()

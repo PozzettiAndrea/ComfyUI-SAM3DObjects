@@ -86,7 +86,7 @@ class SAM3DTextureBake:
             rendering_engine: Rendering backend ("pytorch3d" or "nvdiffrast")
 
         Returns:
-            Tuple of (glb_filepath, ply_filepath)
+            Tuple of (glb_filepath,)
         """
         print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
 

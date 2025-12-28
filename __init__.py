@@ -10,15 +10,12 @@ Pipeline Nodes:
 - SAM3DGaussianDecode: Decode SLAT to Gaussian splat
 - SAM3DMeshDecode: Decode SLAT to Mesh
 - SAM3DTextureBake: Bake texture from Gaussian onto Mesh
+- SAM3DSceneGenerate: Batch process multiple masks to 3D objects
 
 Utility Nodes:
 - SAM3D_UnloadModel: Unload models to free VRAM
 - SAM3DExportPLY: Export Gaussian Splat to PLY file
 - SAM3DExportPLYBatch: Batch export PLY files
-- SAM3DExportMesh: Export mesh to OBJ/GLB/PLY format
-- SAM3DExtractMesh: Extract mesh data for processing
-- SAM3DVisualizer: Render views of 3D object
-- SAM3DRenderSingle: Render single view with camera control
 """
 
 import os
@@ -42,10 +39,9 @@ from .nodes.gaussian_decode import SAM3DGaussianDecode
 from .nodes.mesh_decode import SAM3DMeshDecode
 from .nodes.postprocess import SAM3DTextureBake
 from .nodes.export_ply import SAM3DExportPLY, SAM3DExportPLYBatch
-from .nodes.export_mesh import SAM3DExportMesh, SAM3DExtractMesh
-from .nodes.visualizer import SAM3DVisualizer, SAM3DRenderSingle
 from .nodes.preview_nodes import SAM3D_PreviewPointCloud
 from .nodes.pose_optimization import SAM3D_PoseOptimization
+from .nodes.scene_generate import SAM3DSceneGenerate
 
 
 __version__ = "1.0.0"
@@ -63,12 +59,9 @@ NODE_CLASS_MAPPINGS = {
     "SAM3DTextureBake": SAM3DTextureBake,
     "SAM3DExportPLY": SAM3DExportPLY,
     "SAM3DExportPLYBatch": SAM3DExportPLYBatch,
-    "SAM3DExportMesh": SAM3DExportMesh,
-    "SAM3DExtractMesh": SAM3DExtractMesh,
-    "SAM3DVisualizer": SAM3DVisualizer,
-    "SAM3DRenderSingle": SAM3DRenderSingle,
     "SAM3D_PreviewPointCloud": SAM3D_PreviewPointCloud,
     "SAM3D_PoseOptimization": SAM3D_PoseOptimization,
+    "SAM3DSceneGenerate": SAM3DSceneGenerate,
 }
 
 # Optional: Human-readable names for nodes
@@ -82,19 +75,16 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3DTextureBake": "SAM3D Texture Bake",
     "SAM3DExportPLY": "SAM3D Export PLY",
     "SAM3DExportPLYBatch": "SAM3D Export PLY (Batch)",
-    "SAM3DExportMesh": "SAM3D Export Mesh",
-    "SAM3DExtractMesh": "SAM3D Extract Mesh",
-    "SAM3DVisualizer": "SAM3D Visualizer",
-    "SAM3DRenderSingle": "SAM3D Render Single",
     "SAM3D_PreviewPointCloud": "SAM3D Preview Point Cloud",
     "SAM3D_PoseOptimization": "SAM3D Pose Optimization",
+    "SAM3DSceneGenerate": "SAM3D Scene Generate",
 }
 
 # Print info when loaded
 print("[SAM3DObjects] Loading ComfyUI-SAM3DObjects extension")
 print(f"[SAM3DObjects] Version: {__version__}")
 print("[SAM3DObjects] ")
-print("[SAM3DObjects] Simple pipeline (recommended):")
+print("[SAM3DObjects] Simple pipeline (single object):")
 print("[SAM3DObjects]   1. LoadSAM3DModel - Load model")
 print("[SAM3DObjects]   2. SAM3D_DepthEstimate - MoGe depth → pointmap")
 print("[SAM3DObjects]   3. SAM3DGenerateSLAT - Generate SLAT latent (~60s)")
@@ -102,12 +92,13 @@ print("[SAM3DObjects]   4. SAM3DGaussianDecode - Decode SLAT to Gaussian (~15s)"
 print("[SAM3DObjects]   5. SAM3DMeshDecode - Decode SLAT to Mesh (~15s)")
 print("[SAM3DObjects]   6. SAM3DTextureBake - Bake Gaussian into mesh texture (~30-60s)")
 print("[SAM3DObjects] ")
+print("[SAM3DObjects] Batch pipeline (multiple objects):")
+print("[SAM3DObjects]   - SAM3DSceneGenerate: Process batch of masks → multiple GLB meshes")
+print("[SAM3DObjects] ")
 print("[SAM3DObjects] Utility nodes:")
 print("[SAM3DObjects]   - SAM3D_UnloadModel (VRAM management)")
 print("[SAM3DObjects]   - SAM3D_PoseOptimization (ICP + render optimization)")
 print("[SAM3DObjects]   - SAM3DExportPLY / SAM3DExportPLYBatch")
-print("[SAM3DObjects]   - SAM3DExportMesh / SAM3DExtractMesh")
-print("[SAM3DObjects]   - SAM3DVisualizer / SAM3DRenderSingle")
 print("[SAM3DObjects]   - SAM3D_PreviewPointCloud")
 print("[SAM3DObjects] ")
 
