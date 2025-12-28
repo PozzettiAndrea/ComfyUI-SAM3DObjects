@@ -450,12 +450,15 @@ class InferenceWorkerBridge:
 
         print(f"[SAM3DObjects] Sending inference request to isolated worker...")
         print(f"[SAM3DObjects] Output directory: {output_dir}")
+        if not use_gpu_cache:
+            print(f"[SAM3DObjects] Lazy loading ENABLED (use_gpu_cache=False)")
 
         # Prepare request
         request = {
             "config_path": config_path,
             "compile": compile,
             "use_cache": not use_gpu_cache,  # Invert: gpu_cache=True means internal use_cache=False
+            "use_lazy_loading": not use_gpu_cache,  # When gpu_cache=False, use lazy loading to reduce VRAM
             "image": self.serialize_image(image) if image is not None else None,
             "mask": self.serialize_mask(mask) if mask is not None else None,
             "seed": seed,
@@ -575,3 +578,64 @@ class InferenceWorkerBridge:
     def __del__(self):
         """Cleanup when bridge is destroyed."""
         self.stop_worker()
+
+
+def run_texture_bake_direct(
+    ply_path: str,
+    glb_path: str,
+    output_dir: str,
+    texture_mode: str = "opt",
+    texture_size: int = 1024,
+    simplify: float = 0.95,
+    with_mesh_postprocess: bool = False,
+    rendering_engine: str = "nvdiffrast",
+) -> Dict[str, Any]:
+    """
+    Run texture baking directly without loading any models.
+
+    This function loads the Gaussian from PLY and Mesh from GLB,
+    then calls to_glb() for texture baking. No embedders or generators needed.
+
+    Args:
+        ply_path: Path to Gaussian PLY file
+        glb_path: Path to Mesh GLB file
+        output_dir: Output directory for textured GLB
+        texture_mode: "opt" (gradient descent) or "fast" (nearest neighbor)
+        texture_size: Texture resolution
+        simplify: Mesh simplification ratio
+        with_mesh_postprocess: Enable hole filling
+        rendering_engine: "nvdiffrast" or "pytorch3d"
+
+    Returns:
+        Dict with glb_path
+    """
+    print(f"[SAM3DObjects] Running direct texture baking (no models needed)")
+    print(f"[SAM3DObjects] PLY: {ply_path}")
+    print(f"[SAM3DObjects] GLB: {glb_path}")
+    print(f"[SAM3DObjects] Mode: {texture_mode}, Size: {texture_size}")
+
+    # Get bridge instance
+    node_root = Path(__file__).parent.parent
+    bridge = InferenceWorkerBridge.get_instance(node_root)
+    bridge.start_worker()
+
+    # Build request
+    request = {
+        "command": "texture_bake_direct",
+        "ply_path": ply_path,
+        "glb_path": glb_path,
+        "output_dir": output_dir,
+        "texture_mode": texture_mode,
+        "texture_size": texture_size,
+        "simplify": simplify,
+        "with_mesh_postprocess": with_mesh_postprocess,
+        "rendering_engine": rendering_engine,
+    }
+
+    # Send request
+    response = bridge._send_request(request)
+
+    if response.get("status") == "error":
+        raise RuntimeError(f"Texture baking failed: {response.get('error')}")
+
+    return response.get("output", {})

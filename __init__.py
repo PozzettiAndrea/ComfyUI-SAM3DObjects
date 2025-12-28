@@ -74,7 +74,7 @@ NODE_CLASS_MAPPINGS = {
 
 # Optional: Human-readable names for nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadSAM3DModel": "Load SAM3D Model",
+    "LoadSAM3DModel": "(down)Load SAM3D Model",
     "SAM3D_DepthEstimate": "SAM3D Depth Estimate",
     "SAM3DSparseGen": "SAM3D Sparse Gen",
     "SAM3D_UnloadModel": "SAM3D Unload Model",
