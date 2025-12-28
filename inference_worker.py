@@ -26,6 +26,7 @@ from inference_scripts import (
     run_texture_bake_direct,
     run_pose_optimization,
     run_generate_slat,
+    run_decode,
 )
 
 
@@ -98,6 +99,8 @@ def main():
                 response = run_texture_bake_direct(request)
             elif request.get("command") == "generate_slat":
                 response = run_generate_slat(request)
+            elif request.get("command") == "decode":
+                response = run_decode(request)
             else:
                 # Run inference
                 response = run_inference(request)

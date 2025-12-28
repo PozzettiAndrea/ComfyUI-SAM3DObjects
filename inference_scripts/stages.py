@@ -27,6 +27,7 @@ def run_stage1_lazy(
     seed: int = 42,
     inference_steps: int = 25,
     cfg_strength: float = 7.0,
+    cfg_strength_pm: float = 0.0,
     unload_after: bool = True,
     output_dir: str = None
 ) -> Dict[str, Any]:
@@ -44,6 +45,7 @@ def run_stage1_lazy(
         seed: Random seed
         inference_steps: Number of inference steps
         cfg_strength: CFG strength
+        cfg_strength_pm: Pointmap guidance strength (how much depth influences structure)
         unload_after: Whether to unload models after use
         output_dir: Directory to save output files
 
@@ -96,7 +98,7 @@ def run_stage1_lazy(
     # Configure generator
     ss_generator.no_shortcut = True
     ss_generator.reverse_fn.strength = cfg_strength
-    ss_generator.reverse_fn.strength_pm = lazy_manager.get_config_value('ss_cfg_strength_pm', 0.0)
+    ss_generator.reverse_fn.strength_pm = cfg_strength_pm
     ss_generator.inference_steps = inference_steps
 
     print(f"[Worker] Running sparse structure generation...", file=sys.stderr)
@@ -637,6 +639,7 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
         seed = request.get("seed", 42)
         stage1_steps = request.get("stage1_steps", 12)
         stage1_cfg = request.get("stage1_cfg", 7.5)
+        stage1_cfg_pm = request.get("stage1_cfg_pm", 0.0)
         stage2_steps = request.get("stage2_steps", 12)
         stage2_cfg = request.get("stage2_cfg", 5.0)
         skip_stage1 = request.get("skip_stage1", False)
@@ -658,13 +661,10 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
         pointmap = load_pointmap_from_file(pointmap_path)
         print(f"[Worker] Pointmap shape: {pointmap.shape}", file=sys.stderr)
 
-        # Get config path from pointmap directory
-        # The config should be at the same level as the vendor directory
-        node_root = Path(__file__).parent.parent
-        config_path = node_root / "vendor" / "sam3d_objects" / "configs" / "inference.yaml"
-        if not config_path.exists():
-            # Try alternate locations
-            config_path = node_root / "sam3d_objects" / "configs" / "inference.yaml"
+        # Get config path from request (passed from LoadSAM3DModel via generator)
+        config_path = request.get("config_path")
+        if not config_path:
+            raise ValueError("config_path not provided in request")
 
         print(f"[Worker] Config path: {config_path}", file=sys.stderr)
 
@@ -688,6 +688,7 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
                 seed=seed,
                 inference_steps=stage1_steps,
                 cfg_strength=stage1_cfg,
+                cfg_strength_pm=stage1_cfg_pm,
                 unload_after=True,
                 output_dir=output_dir
             )
@@ -737,6 +738,81 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
 
     except Exception as e:
         print(f"[Worker] Error in generate_slat: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle decode command - loads only decoder, no image needed.
+
+    This is a dedicated command handler for decoding SLAT to Gaussian or Mesh.
+    It only loads the specific decoder model needed, nothing else.
+
+    Args:
+        request: Dict containing:
+            - config_path: Path to pipeline.yaml
+            - slat_path: Path to slat.pt file
+            - output_dir: Directory to save output
+            - decode_format: "gaussian" or "mesh"
+            - with_postprocess: (mesh only) Apply simplification
+            - simplify: (mesh only) Simplification ratio
+
+    Returns:
+        Dict with status and file paths (ply_path or glb_path)
+    """
+    import os
+    import traceback
+
+    from .lazy_manager import get_lazy_manager
+
+    try:
+        # Extract parameters
+        config_path = request.get("config_path")
+        slat_path = request.get("slat_path")
+        output_dir = request.get("output_dir")
+        decode_format = request.get("decode_format", "gaussian")
+        with_postprocess = request.get("with_postprocess", False)
+        simplify = request.get("simplify", 0.95)
+
+        if not config_path:
+            raise ValueError("config_path not provided in request")
+        if not slat_path:
+            raise ValueError("slat_path not provided in request")
+
+        print(f"[Worker] Decode command: format={decode_format}", file=sys.stderr)
+        print(f"[Worker] Config path: {config_path}", file=sys.stderr)
+        print(f"[Worker] SLAT path: {slat_path}", file=sys.stderr)
+        print(f"[Worker] Output dir: {output_dir}", file=sys.stderr)
+
+        # Load SLAT data
+        slat_data = torch.load(slat_path, weights_only=False)
+        print(f"[Worker] Loaded SLAT data", file=sys.stderr)
+
+        # Get lazy manager and run decode
+        lazy_manager = get_lazy_manager(str(config_path), compile=False)
+
+        result = run_decode_lazy(
+            lazy_manager,
+            slat_data,
+            decode_format=decode_format,
+            unload_after=True,
+            output_dir=output_dir,
+            with_postprocess=with_postprocess,
+            simplify=simplify
+        )
+
+        return {
+            "status": "success",
+            **result
+        }
+
+    except Exception as e:
+        print(f"[Worker] Error in decode: {e}", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         return {
             "status": "error",

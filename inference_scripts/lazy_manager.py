@@ -84,7 +84,7 @@ class LazyModelManager:
         # Setup model cache directory
         config_dir = self.checkpoint_dir.parent
         models_cache_dir = config_dir / "_models_cache"
-        models_cache_dir.mkdir(exist_ok=True)
+        models_cache_dir.mkdir(parents=True, exist_ok=True)
 
         os.environ['TORCH_HOME'] = str(models_cache_dir / "torch")
         os.environ['HF_HOME'] = str(models_cache_dir / "huggingface")
@@ -138,23 +138,54 @@ class LazyModelManager:
         else:
             return torch.float32
 
-    def load_depth_model(self):
-        """Load only the depth model (MoGe)."""
-        if self.depth_model is not None:
-            return self.depth_model
+    def load_depth_model(self, backend: str = "moge2"):
+        """
+        Load only the depth model (MoGe).
 
-        print(f"[LazyManager] Loading depth model (MoGe)...", file=sys.stderr)
+        Args:
+            backend: "moge2" (newer, metric scale) or "moge" (original v1)
+        """
+        # Check if we already have the right backend loaded
+        if self.depth_model is not None:
+            current_backend = getattr(self, '_depth_backend', 'moge2')
+            if current_backend == backend:
+                return self.depth_model
+            else:
+                # Different backend requested, unload current
+                print(f"[LazyManager] Switching depth backend from {current_backend} to {backend}", file=sys.stderr)
+                self.unload_depth_model()
+
+        print(f"[LazyManager] Loading depth model (backend={backend})...", file=sys.stderr)
 
         from hydra.utils import instantiate
+        from omegaconf import OmegaConf
 
-        depth_config = self._config.get('depth_model')
-        if depth_config:
-            self.depth_model = instantiate(depth_config)
-            if hasattr(self.depth_model, 'cuda'):
-                self.depth_model = self.depth_model.cuda()
-            print(f"[LazyManager] Depth model loaded", file=sys.stderr)
+        # Build depth model config based on backend selection
+        if backend == "moge2":
+            # MoGe v2 - newer model with metric scale
+            depth_config = OmegaConf.create({
+                "_target_": "sam3d_objects.pipeline.depth_models.moge.MoGe",
+                "model": {
+                    "_target_": "moge.model.v2.MoGeModel.from_pretrained",
+                    "pretrained_model_name_or_path": "Ruicheng/moge-2-vitl"
+                }
+            })
         else:
-            raise RuntimeError("No depth_model config found in pipeline.yaml")
+            # MoGe v1 - original model
+            depth_config = OmegaConf.create({
+                "_target_": "sam3d_objects.pipeline.depth_models.moge.MoGe",
+                "model": {
+                    "_target_": "moge.model.v1.MoGeModel.from_pretrained",
+                    "pretrained_model_name_or_path": "Ruicheng/moge-vitl"
+                }
+            })
+
+        self.depth_model = instantiate(depth_config)
+        if hasattr(self.depth_model, 'cuda'):
+            self.depth_model = self.depth_model.cuda()
+
+        self._depth_backend = backend
+        print(f"[LazyManager] Depth model loaded ({backend})", file=sys.stderr)
 
         return self.depth_model
 

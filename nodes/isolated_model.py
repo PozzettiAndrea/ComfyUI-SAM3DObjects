@@ -70,6 +70,7 @@ class IsolatedSAM3DModel:
         use_stage2_distillation: bool = False,
         # NEW: Depth estimation and memory management
         depth_only: bool = False,
+        depth_backend: str = "moge2",
         unload_model: str = None,
         pointmap_path: str = None,
         intrinsics: Any = None,
@@ -132,6 +133,7 @@ class IsolatedSAM3DModel:
             use_stage2_distillation=use_stage2_distillation,
             # NEW: Depth estimation and memory management
             depth_only=depth_only,
+            depth_backend=depth_backend,
             unload_model=unload_model,
             pointmap_path=pointmap_path,
             intrinsics=intrinsics,

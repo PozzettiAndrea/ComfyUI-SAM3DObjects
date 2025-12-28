@@ -112,7 +112,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
         simplify=0,  # No simplification - should be done in MeshDecode
         fill_holes=False,
         texture_size=texture_size,
-        verbose=True,
+        verbose=False,
         with_mesh_postprocess=False,  # No postprocessing - should be done in MeshDecode
         with_texture_baking=True,
         rendering_engine=rendering_engine,

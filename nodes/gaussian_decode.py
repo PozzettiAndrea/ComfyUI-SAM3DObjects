@@ -1,7 +1,10 @@
 """SAM3DGaussianDecode node for decoding SLAT to Gaussian splats."""
 
 import os
+from pathlib import Path
 from typing import Any
+
+from .subprocess_bridge import InferenceWorkerBridge, run_decode
 
 
 class SAM3DGaussianDecode:
@@ -15,11 +18,16 @@ class SAM3DGaussianDecode:
     """
 
     @classmethod
+    def get_bridge(cls):
+        node_root = Path(__file__).parent.parent
+        return InferenceWorkerBridge.get_instance(node_root)
+
+    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel"}),
-                "slat": ("STRING", {"tooltip": "Path to SLAT from SAM3DSLATGen"}),
+                "slat": ("STRING", {"forceInput": True, "tooltip": "Path to SLAT from SAM3DGenerateSLAT"}),
             },
         }
 
@@ -41,8 +49,8 @@ class SAM3DGaussianDecode:
         Decode SLAT to Gaussian splats.
 
         Args:
-            slat_decoder_gs: SAM3D Gaussian decoder
-            slat: Path to SLAT from SAM3DSLATGen
+            slat_decoder_gs: SAM3D model (provides config_path)
+            slat: Path to SLAT from SAM3DGenerateSLAT
 
         Returns:
             ply_filepath
@@ -52,24 +60,41 @@ class SAM3DGaussianDecode:
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
 
-        # Run Gaussian decoding
-        try:
-            gaussian_output = slat_decoder_gs(
-                slat_output=slat,  # SLAT path
-                gaussian_only=True,  # Only decode to Gaussian
-                save_files=True,  # Always save PLY
-                output_dir=output_dir,  # Use same directory as SLAT
-            )
+        # Get config path from model and bridge
+        config_path = slat_decoder_gs.config_path
+        bridge = self.get_bridge()
+        bridge.start_worker()
 
+        # Run Gaussian decoding via dedicated decode command
+        try:
+            result = run_decode(
+                bridge=bridge,
+                config_path=config_path,
+                slat_path=slat,
+                output_dir=output_dir,
+                decode_format="gaussian",
+            )
         except Exception as e:
             raise RuntimeError(f"SAM3D Gaussian decode failed: {e}") from e
 
-        # Extract PLY path
-        ply_path = gaussian_output.get("ply_path", None)
+        # Extract PLY path from nested result structure
+        ply_path = result.get("ply_path", None)
 
-        # Check files dict (bridge returns this structure)
-        if not ply_path and "files" in gaussian_output and "ply" in gaussian_output["files"]:
-            ply_path = gaussian_output["files"]["ply"]
+        # Check nested output.files structure (from run_decode_lazy)
+        if not ply_path and "output" in result:
+            output = result["output"]
+            if isinstance(output, dict) and "files" in output:
+                ply_path = output["files"].get("ply")
+
+        # Check file_output.files structure (alternative key)
+        if not ply_path and "file_output" in result:
+            file_output = result["file_output"]
+            if isinstance(file_output, dict) and "files" in file_output:
+                ply_path = file_output["files"].get("ply")
+
+        # Fallback: check direct files dict
+        if not ply_path and "files" in result and "ply" in result["files"]:
+            ply_path = result["files"]["ply"]
 
         if not ply_path:
             raise RuntimeError("PLY file was not generated")

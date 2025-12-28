@@ -14,7 +14,7 @@ import numpy as np
 import torch
 
 
-def run_depth_only_lazy(lazy_manager, image, unload_after: bool = True) -> Dict[str, Any]:
+def run_depth_only_lazy(lazy_manager, image, unload_after: bool = True, depth_backend: str = "moge2") -> Dict[str, Any]:
     """
     Run depth estimation using lazy loading (loads only MoGe, not entire pipeline).
 
@@ -24,6 +24,7 @@ def run_depth_only_lazy(lazy_manager, image, unload_after: bool = True) -> Dict[
         lazy_manager: LazyModelManager instance
         image: PIL Image
         unload_after: Whether to unload depth model after use
+        depth_backend: "moge2" (newer, metric scale) or "moge" (original)
 
     Returns:
         Dict with pointmap, intrinsics, depth
@@ -31,10 +32,10 @@ def run_depth_only_lazy(lazy_manager, image, unload_after: bool = True) -> Dict[
     from pytorch3d.renderer import look_at_view_transform
     from pytorch3d.transforms import Transform3d
 
-    print(f"[Worker] Running depth estimation with lazy loading", file=sys.stderr)
+    print(f"[Worker] Running depth estimation with lazy loading (backend={depth_backend})", file=sys.stderr)
 
     # Load only the depth model
-    depth_model = lazy_manager.load_depth_model()
+    depth_model = lazy_manager.load_depth_model(backend=depth_backend)
 
     # Convert image to tensor format expected by depth model
     image_np = np.array(image)
