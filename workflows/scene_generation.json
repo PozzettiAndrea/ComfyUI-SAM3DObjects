@@ -97,10 +97,10 @@
       ],
       "outputs": [],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "d86f99a8fd2c8ebf4bf7505290a5ea854ebb1147",
         "Node name for S&R": "SAM3D_PreviewPointCloud",
-        "cnr_id": "comfyui-sam3dobjects"
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         "",
@@ -143,10 +143,12 @@
         }
       ],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "SAM3DGaussianDecode"
-      }
+        "Node name for S&R": "SAM3DGaussianDecode",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": []
     },
     {
       "id": 73,
@@ -190,9 +192,10 @@
         }
       ],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "SAM3DTextureBake"
+        "Node name for S&R": "SAM3DTextureBake",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         "",
@@ -293,68 +296,6 @@
       ]
     },
     {
-      "id": 70,
-      "type": "SAM3DGenerateSLAT",
-      "pos": [
-        -162.4256232139758,
-        -460.471535695592
-      ],
-      "size": [
-        270,
-        286
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "generator",
-          "type": "SAM3D_MODEL",
-          "link": 218
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 214
-        },
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 211
-        },
-        {
-          "name": "pointmap_path",
-          "type": "STRING",
-          "link": 210
-        }
-      ],
-      "outputs": [
-        {
-          "name": "slat_path",
-          "type": "STRING",
-          "links": [
-            200,
-            201
-          ]
-        }
-      ],
-      "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "SAM3DGenerateSLAT"
-      },
-      "widgets_values": [
-        847035301,
-        "randomize",
-        12,
-        7.5,
-        0,
-        12,
-        5,
-        false
-      ]
-    },
-    {
       "id": 4,
       "type": "LoadImage",
       "pos": [
@@ -442,9 +383,10 @@
         }
       ],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "LoadSAM3DModel"
+        "Node name for S&R": "LoadSAM3DModel",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         false,
@@ -505,10 +447,10 @@
         }
       ],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "2ed412a6e508b9b21010ef034cc914d9d27679d5",
         "Node name for S&R": "SAM3D_DepthEstimate",
-        "cnr_id": "comfyui-sam3dobjects"
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         "moge2"
@@ -550,13 +492,77 @@
         }
       ],
       "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects",
+        "cnr_id": "comfyui-sam3dobjects",
         "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "SAM3DMeshDecode"
+        "Node name for S&R": "SAM3DMeshDecode",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         false,
         0.95
+      ]
+    },
+    {
+      "id": 70,
+      "type": "SAM3DGenerateSLAT",
+      "pos": [
+        -162.4256232139758,
+        -460.471535695592
+      ],
+      "size": [
+        270,
+        286
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "generator",
+          "type": "SAM3D_MODEL",
+          "link": 218
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 214
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 211
+        },
+        {
+          "name": "pointmap_path",
+          "type": "STRING",
+          "link": 210
+        }
+      ],
+      "outputs": [
+        {
+          "name": "slat_path",
+          "type": "STRING",
+          "links": [
+            200,
+            201
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "Node name for S&R": "SAM3DGenerateSLAT",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        42,
+        "fixed",
+        12,
+        7.5,
+        0,
+        12,
+        5,
+        false
       ]
     }
   ],

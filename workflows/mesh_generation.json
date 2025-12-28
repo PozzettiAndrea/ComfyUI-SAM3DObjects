@@ -34,67 +34,6 @@
       "widgets_values": []
     },
     {
-      "id": 61,
-      "type": "SAM3DGenerateSLAT",
-      "pos": [
-        -114.37216622169224,
-        -444.0217681606462
-      ],
-      "size": [
-        270,
-        286
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "generator",
-          "type": "SAM3D_MODEL",
-          "link": 174
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 183
-        },
-        {
-          "name": "mask",
-          "type": "MASK",
-          "link": 182
-        },
-        {
-          "name": "pointmap_path",
-          "type": "STRING",
-          "link": 180
-        }
-      ],
-      "outputs": [
-        {
-          "name": "slat_path",
-          "type": "STRING",
-          "links": [
-            186
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3dobjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "SAM3DGenerateSLAT"
-      },
-      "widgets_values": [
-        1154713391,
-        "randomize",
-        12,
-        7.5,
-        0,
-        12,
-        5,
-        false
-      ]
-    },
-    {
       "id": 28,
       "type": "InvertMask",
       "pos": [
@@ -379,6 +318,67 @@
         false,
         0.95
       ]
+    },
+    {
+      "id": 61,
+      "type": "SAM3DGenerateSLAT",
+      "pos": [
+        -114.37216622169224,
+        -444.0217681606462
+      ],
+      "size": [
+        270,
+        286
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "generator",
+          "type": "SAM3D_MODEL",
+          "link": 174
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 183
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 182
+        },
+        {
+          "name": "pointmap_path",
+          "type": "STRING",
+          "link": 180
+        }
+      ],
+      "outputs": [
+        {
+          "name": "slat_path",
+          "type": "STRING",
+          "links": [
+            186
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "Node name for S&R": "SAM3DGenerateSLAT"
+      },
+      "widgets_values": [
+        42,
+        "fixed",
+        12,
+        7.5,
+        0,
+        12,
+        5,
+        false
+      ]
     }
   ],
   "links": [
@@ -475,10 +475,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.6077390527505461,
+      "scale": 0.808900679210977,
       "offset": [
-        1021.6823121185313,
-        1059.6454140974931
+        810.5350452127394,
+        797.952109876995
       ]
     },
     "frontendVersion": "1.35.9",

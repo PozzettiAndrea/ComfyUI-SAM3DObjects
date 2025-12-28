@@ -283,63 +283,6 @@
       ]
     },
     {
-      "id": 74,
-      "type": "LoadSAM3DModel",
-      "pos": [
-        -873.6361968768963,
-        -311.4846306645467
-      ],
-      "size": [
-        278.358984375,
-        166
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "depth_model",
-          "type": "SAM3D_MODEL",
-          "links": [
-            219
-          ]
-        },
-        {
-          "name": "generator",
-          "type": "SAM3D_MODEL",
-          "links": [
-            218
-          ]
-        },
-        {
-          "name": "slat_decoder_gs",
-          "type": "SAM3D_MODEL",
-          "links": [
-            216
-          ]
-        },
-        {
-          "name": "slat_decoder_mesh",
-          "type": "SAM3D_MODEL",
-          "links": [
-            217
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3dobjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
-        "Node name for S&R": "LoadSAM3DModel",
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
-      },
-      "widgets_values": [
-        false,
-        true,
-        "bfloat16"
-      ]
-    },
-    {
       "id": 59,
       "type": "SAM3D_DepthEstimate",
       "pos": [
@@ -555,14 +498,71 @@
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
-        398729524,
-        "randomize",
+        42,
+        "fixed",
         12,
         7.5,
         0,
         12,
         5,
         false
+      ]
+    },
+    {
+      "id": 74,
+      "type": "LoadSAM3DModel",
+      "pos": [
+        -873.6361968768963,
+        -311.4846306645467
+      ],
+      "size": [
+        278.358984375,
+        166
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "depth_model",
+          "type": "SAM3D_MODEL",
+          "links": [
+            219
+          ]
+        },
+        {
+          "name": "generator",
+          "type": "SAM3D_MODEL",
+          "links": [
+            218
+          ]
+        },
+        {
+          "name": "slat_decoder_gs",
+          "type": "SAM3D_MODEL",
+          "links": [
+            216
+          ]
+        },
+        {
+          "name": "slat_decoder_mesh",
+          "type": "SAM3D_MODEL",
+          "links": [
+            217
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "Node name for S&R": "LoadSAM3DModel",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        false,
+        false,
+        "bfloat16"
       ]
     }
   ],
@@ -703,7 +703,7 @@
       "scale": 0.7433216497454801,
       "offset": [
         1010.6468749343758,
-        748.5008076548577
+        748.3326435767056
       ]
     },
     "frontendVersion": "1.35.9",
