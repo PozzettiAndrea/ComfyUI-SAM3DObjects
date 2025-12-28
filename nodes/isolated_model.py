@@ -45,8 +45,8 @@ class IsolatedSAM3DModel:
 
     def __call__(
         self,
-        image: Image.Image,
-        mask: np.ndarray,
+        image: Image.Image = None,
+        mask: np.ndarray = None,
         seed: int = 42,
         stage1_inference_steps: int = 25,
         stage2_inference_steps: int = 25,

@@ -3,15 +3,16 @@ ComfyUI-SAM3DObjects: ComfyUI custom nodes for SAM 3D Objects
 
 Generate 3D objects from single images using SAM 3D Objects.
 
-Nodes:
+Pipeline Nodes:
 - LoadSAM3DModel: Load SAM3D inference pipeline
-- SAM3D_DepthEstimate: Run MoGe depth estimation (outputs pointmap + intrinsics)
-- SAM3DSparseGen: Generate sparse structure (outputs sparse coords + pose)
+- SAM3D_DepthEstimate: Run MoGe depth estimation (outputs pointmap)
+- SAM3DGenerateSLAT: Generate SLAT latent (Stage 1 + 2 combined with caching)
+- SAM3DGaussianDecode: Decode SLAT to Gaussian splat
+- SAM3DMeshDecode: Decode SLAT to Mesh
+- SAM3DTextureBake: Bake texture from Gaussian onto Mesh
+
+Utility Nodes:
 - SAM3D_UnloadModel: Unload models to free VRAM
-- SAM3DSLATGen: Generate SLAT latents (cache-efficient)
-- SAM3DGaussianDecode: Decode SLAT to Gaussian (cache-efficient)
-- SAM3DMeshDecode: Decode SLAT to Mesh (cache-efficient)
-- SAM3DTextureBake: Bake texture from Gaussian + Mesh (cache-efficient)
 - SAM3DExportPLY: Export Gaussian Splat to PLY file
 - SAM3DExportPLYBatch: Batch export PLY files
 - SAM3DExportMesh: Export mesh to OBJ/GLB/PLY format
@@ -35,9 +36,8 @@ WEB_DIRECTORY = os.path.join(os.path.dirname(__file__), "web")
 # Import all node classes
 from .nodes.load_model import LoadSAM3DModel
 from .nodes.depth_estimate import SAM3D_DepthEstimate
-from .nodes.generate_stage1 import SAM3DSparseGen
+from .nodes.generate_slat import SAM3DGenerateSLAT
 from .nodes.unload_model import SAM3D_UnloadModel
-from .nodes.generate_stage2 import SAM3DSLATGen
 from .nodes.gaussian_decode import SAM3DGaussianDecode
 from .nodes.mesh_decode import SAM3DMeshDecode
 from .nodes.postprocess import SAM3DTextureBake
@@ -56,9 +56,8 @@ __author__ = "ComfyUI-SAM3DObjects Contributors"
 NODE_CLASS_MAPPINGS = {
     "LoadSAM3DModel": LoadSAM3DModel,
     "SAM3D_DepthEstimate": SAM3D_DepthEstimate,
-    "SAM3DSparseGen": SAM3DSparseGen,
+    "SAM3DGenerateSLAT": SAM3DGenerateSLAT,
     "SAM3D_UnloadModel": SAM3D_UnloadModel,
-    "SAM3DSLATGen": SAM3DSLATGen,
     "SAM3DGaussianDecode": SAM3DGaussianDecode,
     "SAM3DMeshDecode": SAM3DMeshDecode,
     "SAM3DTextureBake": SAM3DTextureBake,
@@ -76,9 +75,8 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadSAM3DModel": "(down)Load SAM3D Model",
     "SAM3D_DepthEstimate": "SAM3D Depth Estimate",
-    "SAM3DSparseGen": "SAM3D Sparse Gen",
+    "SAM3DGenerateSLAT": "SAM3D Generate SLAT",
     "SAM3D_UnloadModel": "SAM3D Unload Model",
-    "SAM3DSLATGen": "SAM3D SLAT Gen",
     "SAM3DGaussianDecode": "SAM3D Gaussian Decode",
     "SAM3DMeshDecode": "SAM3D Mesh Decode",
     "SAM3DTextureBake": "SAM3D Texture Bake",
@@ -96,14 +94,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 print("[SAM3DObjects] Loading ComfyUI-SAM3DObjects extension")
 print(f"[SAM3DObjects] Version: {__version__}")
 print("[SAM3DObjects] ")
-print("[SAM3DObjects] Modular pipeline nodes:")
+print("[SAM3DObjects] Simple pipeline (recommended):")
 print("[SAM3DObjects]   1. LoadSAM3DModel - Load model")
-print("[SAM3DObjects]   2. SAM3D_DepthEstimate - MoGe depth → pointmap + intrinsics")
-print("[SAM3DObjects]   3. SAM3DSparseGen - Sparse structure + pose (~3s)")
-print("[SAM3DObjects]   4. SAM3DSLATGen - SLAT latent generation via diffusion (~60s)")
-print("[SAM3DObjects]   5. SAM3DGaussianDecode - Decode SLAT to Gaussian (~15s)")
-print("[SAM3DObjects]   6. SAM3DMeshDecode - Decode SLAT to Mesh (~15s)")
-print("[SAM3DObjects]   7. SAM3DTextureBake - Bake Gaussian into mesh texture (~30-60s)")
+print("[SAM3DObjects]   2. SAM3D_DepthEstimate - MoGe depth → pointmap")
+print("[SAM3DObjects]   3. SAM3DGenerateSLAT - Generate SLAT latent (~60s)")
+print("[SAM3DObjects]   4. SAM3DGaussianDecode - Decode SLAT to Gaussian (~15s)")
+print("[SAM3DObjects]   5. SAM3DMeshDecode - Decode SLAT to Mesh (~15s)")
+print("[SAM3DObjects]   6. SAM3DTextureBake - Bake Gaussian into mesh texture (~30-60s)")
 print("[SAM3DObjects] ")
 print("[SAM3DObjects] Utility nodes:")
 print("[SAM3DObjects]   - SAM3D_UnloadModel (VRAM management)")

@@ -376,8 +376,8 @@ class InferenceWorkerBridge:
     def run_inference(
         self,
         config_path: str,
-        image: Image.Image,
-        mask: np.ndarray,
+        image: Optional[Image.Image] = None,
+        mask: Optional[np.ndarray] = None,
         seed: int = 42,
         compile: bool = False,
         use_gpu_cache: bool = True,
@@ -586,8 +586,6 @@ def run_texture_bake_direct(
     output_dir: str,
     texture_mode: str = "opt",
     texture_size: int = 1024,
-    simplify: float = 0.95,
-    with_mesh_postprocess: bool = False,
     rendering_engine: str = "nvdiffrast",
 ) -> Dict[str, Any]:
     """
@@ -602,8 +600,6 @@ def run_texture_bake_direct(
         output_dir: Output directory for textured GLB
         texture_mode: "opt" (gradient descent) or "fast" (nearest neighbor)
         texture_size: Texture resolution
-        simplify: Mesh simplification ratio
-        with_mesh_postprocess: Enable hole filling
         rendering_engine: "nvdiffrast" or "pytorch3d"
 
     Returns:
@@ -627,8 +623,6 @@ def run_texture_bake_direct(
         "output_dir": output_dir,
         "texture_mode": texture_mode,
         "texture_size": texture_size,
-        "simplify": simplify,
-        "with_mesh_postprocess": with_mesh_postprocess,
         "rendering_engine": rendering_engine,
     }
 
@@ -639,3 +633,70 @@ def run_texture_bake_direct(
         raise RuntimeError(f"Texture baking failed: {response.get('error')}")
 
     return response.get("output", {})
+
+
+def run_generate_slat(
+    bridge: InferenceWorkerBridge,
+    image: Image.Image,
+    mask: np.ndarray,
+    pointmap_path: str,
+    output_dir: str,
+    seed: int = 42,
+    stage1_steps: int = 12,
+    stage1_cfg: float = 7.5,
+    stage2_steps: int = 12,
+    stage2_cfg: float = 5.0,
+    skip_stage1: bool = False,
+    use_distillation: bool = False,
+) -> Dict[str, Any]:
+    """
+    Run SLAT generation (Stage 1 + Stage 2) with lazy loading.
+
+    Args:
+        bridge: InferenceWorkerBridge instance
+        image: Input PIL image
+        mask: Input numpy mask
+        pointmap_path: Path to pointmap.pt from depth estimation
+        output_dir: Output directory
+        seed: Random seed
+        stage1_steps: Inference steps for Stage 1
+        stage1_cfg: CFG strength for Stage 1
+        stage2_steps: Inference steps for Stage 2
+        stage2_cfg: CFG strength for Stage 2
+        skip_stage1: If True, load existing sparse_structure.pt instead of running Stage 1
+        use_distillation: Use distilled models for faster generation
+
+    Returns:
+        Dict with slat_path and other outputs
+    """
+    # Serialize image
+    img_buffer = io.BytesIO()
+    image.save(img_buffer, format='PNG')
+    image_b64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+
+    # Serialize mask
+    mask_b64 = base64.b64encode(pickle.dumps(mask)).decode('utf-8')
+
+    # Build request
+    request = {
+        "command": "generate_slat",
+        "image": image_b64,
+        "mask": mask_b64,
+        "pointmap_path": pointmap_path,
+        "output_dir": output_dir,
+        "seed": seed,
+        "stage1_steps": stage1_steps,
+        "stage1_cfg": stage1_cfg,
+        "stage2_steps": stage2_steps,
+        "stage2_cfg": stage2_cfg,
+        "skip_stage1": skip_stage1,
+        "use_distillation": use_distillation,
+    }
+
+    # Send request (10 minute timeout for both stages)
+    response = bridge._send_request(request, timeout=600.0)
+
+    if response.get("status") == "error":
+        raise RuntimeError(f"SLAT generation failed: {response.get('error')}\n{response.get('traceback', '')}")
+
+    return response
