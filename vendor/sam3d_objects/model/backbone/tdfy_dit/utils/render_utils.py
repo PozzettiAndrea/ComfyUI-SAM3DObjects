@@ -87,8 +87,15 @@ def render_frames(
         raise ValueError(f"Unsupported sample type: {type(sample)}")
 
     rets = {}
+    import sys
     for j, (extr, intr) in tqdm(
-        enumerate(zip(extrinsics, intrinsics)), desc="Rendering", disable=not verbose
+        enumerate(zip(extrinsics, intrinsics)),
+        total=len(extrinsics),
+        desc="Rendering views",
+        disable=not verbose,
+        file=sys.stderr,
+        ncols=80,
+        bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
     ):
         if not isinstance(sample, MeshExtractResult):
             res = renderer.render(sample, extr, intr, colors_overwrite=colors_overwrite)
@@ -178,7 +185,7 @@ def render_video(
     )
 
 
-def render_multiview(sample, resolution=512, nviews=30):
+def render_multiview(sample, resolution=512, nviews=30, verbose=True):
     r = 2
     fov = 40
     cams = [sphere_hammersley_sequence(i, nviews) for i in range(nviews)]
@@ -191,7 +198,8 @@ def render_multiview(sample, resolution=512, nviews=30):
         sample,
         extrinsics,
         intrinsics,
-        {"resolution": resolution, "bg_color": (0, 0, 0), "backend": "gsplat"},  # Use gsplat backend instead of inria (diff_gaussian_rasterization)
+        {"resolution": resolution, "bg_color": (0, 0, 0), "backend": "gsplat"},
+        verbose=verbose,
     )
     return res["color"], extrinsics, intrinsics
 

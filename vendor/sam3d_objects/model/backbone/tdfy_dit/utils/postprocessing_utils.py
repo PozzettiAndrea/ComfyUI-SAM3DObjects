@@ -422,12 +422,20 @@ def bake_texture(
             (texture_size * texture_size), dtype=torch.float32
         ).to(device)
         rastctx = utils3d.torch.RastContext(backend=device if device.startswith("cuda") else "cuda")
-        for i, (view, projection) in enumerate(tqdm(
-            zip(views, projections),
-            total=len(views),
+        total_views = len(views)
+
+        # Use tqdm with file=sys.stderr for subprocess compatibility
+        import sys
+        pbar = tqdm(
+            enumerate(zip(views, projections)),
+            total=total_views,
             disable=not verbose,
             desc="Texture baking (fast)",
-        )):
+            file=sys.stderr,
+            ncols=80,
+            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
+        )
+        for i, (view, projection) in pbar:
             # Load observation and mask on-demand (saves ~1.2GB VRAM)
             observation = torch.tensor(observations[i] / 255.0).float().to(device)
             obs_mask = torch.tensor(masks[i] > 0).bool().to(device)
@@ -487,12 +495,20 @@ def bake_texture(
         masks_gpu = [torch.tensor(m > 0).bool().to(device).flip(0) for m in masks]
         _uv = []
         _uv_dr = []
-        for observation, view, projection in tqdm(
-            zip(observations_gpu, views, projections),
-            total=len(views),
+        total_views = len(views)
+
+        # Use tqdm with file=sys.stderr for subprocess compatibility
+        import sys
+        uv_pbar = tqdm(
+            enumerate(zip(observations_gpu, views, projections)),
+            total=total_views,
             disable=not verbose,
-            desc="Texture baking (opt): UV",
-        ):
+            desc="Preparing UV maps",
+            file=sys.stderr,
+            ncols=80,
+            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
+        )
+        for i, (observation, view, projection) in uv_pbar:
             with torch.no_grad():
                 rast = utils3d.torch.rasterize_triangle_faces(
                     rastctx,
@@ -547,40 +563,48 @@ def bake_texture(
         
         
         total_steps = 2500
-        
-        with tqdm(
-            total=total_steps,
-            disable=not verbose,
-            desc="Texture baking (opt): optimizing",
-            ) as pbar:
-            for step in range(total_steps):
-                optimizer.zero_grad()
-                selected = np.random.randint(0, len(views))
-                uv, uv_dr, observation, mask = (
-                    _uv[selected],
-                    _uv_dr[selected],
-                    observations_gpu[selected],
-                    masks_gpu[selected],
-                )
-                
-                if rendering_engine == "nvdiffrast":
-                    import nvdiffrast.torch as dr
-                    render = dr.texture(texture, uv, uv_dr)[0]
 
-                if rendering_engine == "pytorch3d":
-                    render = render_pt3d_texture(texture, uv)
-                    
-                loss = torch.nn.functional.l1_loss(render[mask], observation[mask])
-                if lambda_tv > 0:
-                    loss += lambda_tv * tv_loss(texture)
-                loss.backward()
-                optimizer.step()
-                # annealing
-                optimizer.param_groups[0]["lr"] = cosine_anealing(
-                    optimizer, step, total_steps, 1e-2, 1e-5
-                    )
-                pbar.set_postfix({"loss": loss.item()})
-                pbar.update()
+        # Use tqdm with file=sys.stderr for subprocess compatibility
+        import sys
+        pbar = tqdm(
+            range(total_steps),
+            disable=not verbose,
+            desc="Texture baking (opt)",
+            file=sys.stderr,
+            ncols=80,
+            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{postfix}]'
+        )
+
+        for step in pbar:
+            optimizer.zero_grad()
+            selected = np.random.randint(0, len(views))
+            uv, uv_dr, observation, mask = (
+                _uv[selected],
+                _uv_dr[selected],
+                observations_gpu[selected],
+                masks_gpu[selected],
+            )
+
+            if rendering_engine == "nvdiffrast":
+                import nvdiffrast.torch as dr
+                render = dr.texture(texture, uv, uv_dr)[0]
+
+            if rendering_engine == "pytorch3d":
+                render = render_pt3d_texture(texture, uv)
+
+            loss = torch.nn.functional.l1_loss(render[mask], observation[mask])
+            if lambda_tv > 0:
+                loss += lambda_tv * tv_loss(texture)
+            loss.backward()
+            optimizer.step()
+            # annealing
+            optimizer.param_groups[0]["lr"] = cosine_anealing(
+                optimizer, step, total_steps, 1e-2, 1e-5
+                )
+
+            # Update progress bar with loss
+            if step % 100 == 0:
+                pbar.set_postfix_str(f"loss={loss.item():.4f}")
 
         # Free GPU memory before final texture processing
         del observations_gpu, masks_gpu, _uv, _uv_dr
@@ -654,7 +678,7 @@ def to_glb(
 
         # bake texture - render 100 views from Gaussian
         observations, extrinsics, intrinsics = render_multiview(
-            app_rep, resolution=1024, nviews=100
+            app_rep, resolution=1024, nviews=100, verbose=verbose
         )
         masks = [np.any(observation > 0, axis=-1) for observation in observations]
         extrinsics = [extrinsics[i].cpu().numpy() for i in range(len(extrinsics))]
@@ -728,7 +752,7 @@ def simplify_gs(
 
     # simplify
     observations, extrinsics, intrinsics = render_multiview(
-        gs, resolution=1024, nviews=100
+        gs, resolution=1024, nviews=100, verbose=verbose
     )
     observations = [
         torch.tensor(obs / 255.0).float().cuda().permute(2, 0, 1)

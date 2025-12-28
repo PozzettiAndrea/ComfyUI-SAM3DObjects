@@ -1,4 +1,4 @@
-"""SAM3DTextureBake node for texture baking and mesh postprocessing."""
+"""SAM3DTextureBake node for texture baking."""
 
 import os
 import torch
@@ -11,14 +11,17 @@ class SAM3DTextureBake:
     """
     Texture Baking.
 
-    Bakes Gaussian appearance into mesh UV textures using gradient descent optimization.
-    Also performs mesh simplification and optional hole filling.
+    Bakes Gaussian appearance into mesh UV textures.
+    Uses gradient descent optimization ('opt') or fast nearest neighbor ('fast').
 
     Requires GLB and PLY file paths as inputs.
-    Final stage that produces textured GLB output (~30-60 seconds).
+    Final stage that produces textured GLB output.
 
     NOTE: This node does NOT require any models - it directly loads the Gaussian
     and Mesh from files and performs texture baking.
+
+    TIP: Apply mesh simplification in SAM3DMeshDecode BEFORE texture baking
+    for faster processing and lower memory usage.
     """
 
     @classmethod
@@ -37,10 +40,6 @@ class SAM3DTextureBake:
                 }),
             },
             "optional": {
-                "with_mesh_postprocess": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Simplify mesh + fill holes. Enable for faster texture baking; disable to preserve full mesh detail."
-                }),
                 "texture_mode": (["opt", "fast"], {
                     "default": "opt",
                     "tooltip": "Texture baking mode: 'opt' = gradient descent (30-60s, better quality), 'fast' = nearest neighbor (5s)"
@@ -52,13 +51,6 @@ class SAM3DTextureBake:
                     "step": 512,
                     "tooltip": "Texture resolution. Higher = better quality but more memory"
                 }),
-                "simplify": ("FLOAT", {
-                    "default": 0.95,
-                    "min": 0.9,
-                    "max": 0.98,
-                    "step": 0.01,
-                    "tooltip": "Mesh simplification ratio (0.9 = aggressive, 0.98 = gentle)"
-                }),
                 "rendering_engine": (["nvdiffrast", "pytorch3d"], {
                     "default": "nvdiffrast",
                     "tooltip": "Rendering backend for texture baking. nvdiffrast = faster/better quality, pytorch3d = fallback"
@@ -66,24 +58,21 @@ class SAM3DTextureBake:
             }
         }
 
-    RETURN_TYPES = ("STRING", "STRING")
-    RETURN_NAMES = ("glb_filepath", "ply_filepath")
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("glb_filepath",)
     OUTPUT_TOOLTIPS = (
         "Path to saved textured GLB mesh file",
-        "Path to PLY Gaussian file (unchanged)",
     )
     FUNCTION = "bake_texture"
     CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Bake Gaussian appearance into mesh UV textures (~30-60 seconds). No models required."
+    DESCRIPTION = "Bake Gaussian appearance into mesh UV textures. 'opt' mode: 30-60s, 'fast' mode: ~5s."
 
     def bake_texture(
         self,
         glb_path: str,
         ply_path: str,
-        with_mesh_postprocess: bool = False,
         texture_mode: str = "opt",
         texture_size: int = 1024,
-        simplify: float = 0.95,
         rendering_engine: str = "nvdiffrast",
     ):
         """
@@ -92,10 +81,8 @@ class SAM3DTextureBake:
         Args:
             glb_path: Path to input GLB mesh file
             ply_path: Path to input PLY Gaussian file
-            with_mesh_postprocess: Enable mesh hole filling + cleanup
             texture_mode: Texture baking mode ("opt" or "fast")
             texture_size: Texture resolution
-            simplify: Mesh simplification ratio
             rendering_engine: Rendering backend ("pytorch3d" or "nvdiffrast")
 
         Returns:
@@ -123,8 +110,6 @@ class SAM3DTextureBake:
                 output_dir=output_dir,
                 texture_mode=texture_mode,
                 texture_size=texture_size,
-                simplify=simplify,
-                with_mesh_postprocess=with_mesh_postprocess,
                 rendering_engine=rendering_engine,
             )
 
@@ -137,4 +122,4 @@ class SAM3DTextureBake:
             raise RuntimeError("GLB file was not generated")
 
         print(f"[SAM3DObjects] TextureBake completed: {output_glb_path}")
-        return (output_glb_path, ply_path)
+        return (output_glb_path,)

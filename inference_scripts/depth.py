@@ -1,0 +1,176 @@
+"""
+Depth estimation for SAM3D inference.
+
+This module contains:
+- Lazy depth estimation (loads only MoGe model)
+- Full pipeline depth estimation
+"""
+
+import sys
+import base64
+import pickle
+from typing import Any, Dict
+import numpy as np
+import torch
+
+
+def run_depth_only_lazy(lazy_manager, image, unload_after: bool = True) -> Dict[str, Any]:
+    """
+    Run depth estimation using lazy loading (loads only MoGe, not entire pipeline).
+
+    This uses ~2GB VRAM instead of 15GB+ for the full pipeline.
+
+    Args:
+        lazy_manager: LazyModelManager instance
+        image: PIL Image
+        unload_after: Whether to unload depth model after use
+
+    Returns:
+        Dict with pointmap, intrinsics, depth
+    """
+    from pytorch3d.renderer import look_at_view_transform
+    from pytorch3d.transforms import Transform3d
+
+    print(f"[Worker] Running depth estimation with lazy loading", file=sys.stderr)
+
+    # Load only the depth model
+    depth_model = lazy_manager.load_depth_model()
+
+    # Convert image to tensor format expected by depth model
+    image_np = np.array(image)
+    if image_np.ndim == 2:
+        image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
+    elif image_np.shape[-1] == 3:
+        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        image_np = np.concatenate([image_np, alpha], axis=-1)
+
+    print(f"[Worker] Image shape: {image_np.shape}", file=sys.stderr)
+
+    # Convert to float and tensor
+    loaded_image = image_np.astype(np.float32) / 255.0
+    loaded_image = torch.from_numpy(loaded_image)
+    loaded_image = loaded_image.permute(2, 0, 1).contiguous()[:3]  # CHW, RGB only
+
+    # Run depth model
+    with torch.no_grad():
+        with torch.autocast(device_type="cuda", dtype=lazy_manager._get_dtype()):
+            output = depth_model(loaded_image)
+
+    pointmaps = output["pointmaps"]
+
+    # Apply camera convention transform (R3 -> PyTorch3D camera space)
+    device = pointmaps.device
+    r3_to_p3d_R, r3_to_p3d_T = look_at_view_transform(
+        eye=np.array([[0, 0, -1]]),
+        at=np.array([[0, 0, 0]]),
+        up=np.array([[0, -1, 0]]),
+        device=device,
+    )
+    camera_transform = Transform3d().rotate(r3_to_p3d_R).to(device)
+    points_tensor = camera_transform.transform_points(pointmaps)
+
+    intrinsics = output.get("intrinsics", None)
+
+    # Convert to CHW format
+    points_tensor = points_tensor.permute(2, 0, 1)
+
+    # Infer intrinsics if not provided
+    if intrinsics is None:
+        from sam3d_objects.pipeline.utils.pointmap import infer_intrinsics_from_pointmap
+        intrinsics_result = infer_intrinsics_from_pointmap(
+            points_tensor.permute(1, 2, 0), device=device
+        )
+        intrinsics = intrinsics_result["intrinsics"]
+
+    print(f"[Worker] Pointmap computed: shape={points_tensor.shape}", file=sys.stderr)
+    print(f"[Worker] Intrinsics available: {intrinsics is not None}", file=sys.stderr)
+
+    # Unload depth model if requested (frees ~2GB VRAM)
+    if unload_after:
+        lazy_manager.unload_depth_model()
+        print(f"[Worker] Depth model unloaded", file=sys.stderr)
+
+    # Serialize for transfer
+    # Transpose from CHW (3, H, W) to HWC (H, W, 3)
+    pointmap_hwc = points_tensor.permute(1, 2, 0).contiguous()
+    pointmap_np = pointmap_hwc.cpu().numpy()
+    print(f"[Worker] Pointmap transposed to HWC: {pointmap_np.shape}", file=sys.stderr)
+
+    if intrinsics is not None and hasattr(intrinsics, 'cpu'):
+        intrinsics_np = intrinsics.cpu().numpy()
+    else:
+        intrinsics_np = intrinsics
+
+    pointmap_b64 = base64.b64encode(pickle.dumps(pointmap_np)).decode('utf-8')
+    intrinsics_b64 = base64.b64encode(pickle.dumps(intrinsics_np)).decode('utf-8') if intrinsics_np is not None else None
+
+    return {
+        "status": "success",
+        "depth_only": True,
+        "lazy_loading": True,
+        "pointmap": pointmap_b64,
+        "intrinsics": intrinsics_b64,
+    }
+
+
+def run_depth_only(model, image) -> Dict[str, Any]:
+    """
+    Run only depth estimation (MoGe) and return pointmap + intrinsics.
+
+    Args:
+        model: InferencePipelinePointMap instance
+        image: PIL Image
+
+    Returns:
+        Dict with pointmap, intrinsics, depth
+    """
+    print(f"[Worker] Running depth-only mode (full pipeline)", file=sys.stderr)
+
+    # Convert image to numpy array with alpha channel (as expected by compute_pointmap)
+    image_np = np.array(image)
+    if image_np.ndim == 2:
+        # Grayscale - convert to RGBA
+        image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
+    elif image_np.shape[-1] == 3:
+        # RGB - add alpha channel
+        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        image_np = np.concatenate([image_np, alpha], axis=-1)
+
+    print(f"[Worker] Image shape for depth estimation: {image_np.shape}", file=sys.stderr)
+
+    # Run compute_pointmap from the model
+    pointmap_dict = model.compute_pointmap(image_np)
+
+    pointmap = pointmap_dict["pointmap"]
+    intrinsics = pointmap_dict.get("intrinsics")
+
+    print(f"[Worker] Pointmap computed: shape={pointmap.shape if hasattr(pointmap, 'shape') else 'unknown'}", file=sys.stderr)
+    print(f"[Worker] Intrinsics: {intrinsics is not None}", file=sys.stderr)
+
+    # Serialize pointmap and intrinsics for transfer
+    # Convert tensors to CPU numpy for pickle serialization
+    # IMPORTANT: compute_pointmap returns CHW format (3, H, W), but model.run() expects HWC (H, W, 3)
+    # So we transpose here for downstream compatibility
+    if hasattr(pointmap, 'cpu'):
+        # Transpose from CHW (3, H, W) to HWC (H, W, 3)
+        pointmap_hwc = pointmap.permute(1, 2, 0).contiguous()
+        pointmap_np = pointmap_hwc.cpu().numpy()
+        print(f"[Worker] Pointmap transposed to HWC: {pointmap_np.shape}", file=sys.stderr)
+    else:
+        pointmap_np = pointmap
+
+    if intrinsics is not None and hasattr(intrinsics, 'cpu'):
+        intrinsics_np = intrinsics.cpu().numpy()
+    else:
+        intrinsics_np = intrinsics
+
+    # Serialize for transfer back to main process
+    pointmap_b64 = base64.b64encode(pickle.dumps(pointmap_np)).decode('utf-8')
+    intrinsics_b64 = base64.b64encode(pickle.dumps(intrinsics_np)).decode('utf-8') if intrinsics_np is not None else None
+
+    return {
+        "status": "success",
+        "depth_only": True,
+        "pointmap": pointmap_b64,
+        "intrinsics": intrinsics_b64,
+    }
