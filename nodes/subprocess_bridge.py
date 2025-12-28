@@ -404,6 +404,7 @@ class InferenceWorkerBridge:
         use_stage2_distillation: bool = False,
         # NEW: Depth estimation and memory management
         depth_only: bool = False,
+        depth_backend: str = "moge2",
         unload_model: str = None,
         pointmap_path: str = None,
         intrinsics: Any = None,
@@ -487,6 +488,7 @@ class InferenceWorkerBridge:
             "use_stage2_distillation": use_stage2_distillation,
             # NEW: Depth estimation and memory management
             "depth_only": depth_only,
+            "depth_backend": depth_backend,
             "unload_model": unload_model,
             "pointmap_path": pointmap_path,  # Pass pointmap tensor path directly (no serialization needed)
             "intrinsics": self._serialize_tensor(intrinsics) if intrinsics is not None else None,
@@ -637,6 +639,7 @@ def run_texture_bake_direct(
 
 def run_generate_slat(
     bridge: InferenceWorkerBridge,
+    config_path: str,
     image: Image.Image,
     mask: np.ndarray,
     pointmap_path: str,
@@ -644,6 +647,7 @@ def run_generate_slat(
     seed: int = 42,
     stage1_steps: int = 12,
     stage1_cfg: float = 7.5,
+    stage1_cfg_pm: float = 0.0,
     stage2_steps: int = 12,
     stage2_cfg: float = 5.0,
     skip_stage1: bool = False,
@@ -654,6 +658,7 @@ def run_generate_slat(
 
     Args:
         bridge: InferenceWorkerBridge instance
+        config_path: Path to pipeline.yaml config file
         image: Input PIL image
         mask: Input numpy mask
         pointmap_path: Path to pointmap.pt from depth estimation
@@ -661,6 +666,7 @@ def run_generate_slat(
         seed: Random seed
         stage1_steps: Inference steps for Stage 1
         stage1_cfg: CFG strength for Stage 1
+        stage1_cfg_pm: Pointmap guidance strength for Stage 1
         stage2_steps: Inference steps for Stage 2
         stage2_cfg: CFG strength for Stage 2
         skip_stage1: If True, load existing sparse_structure.pt instead of running Stage 1
@@ -680,6 +686,7 @@ def run_generate_slat(
     # Build request
     request = {
         "command": "generate_slat",
+        "config_path": config_path,
         "image": image_b64,
         "mask": mask_b64,
         "pointmap_path": pointmap_path,
@@ -687,6 +694,7 @@ def run_generate_slat(
         "seed": seed,
         "stage1_steps": stage1_steps,
         "stage1_cfg": stage1_cfg,
+        "stage1_cfg_pm": stage1_cfg_pm,
         "stage2_steps": stage2_steps,
         "stage2_cfg": stage2_cfg,
         "skip_stage1": skip_stage1,
@@ -698,5 +706,51 @@ def run_generate_slat(
 
     if response.get("status") == "error":
         raise RuntimeError(f"SLAT generation failed: {response.get('error')}\n{response.get('traceback', '')}")
+
+    return response
+
+
+def run_decode(
+    bridge: InferenceWorkerBridge,
+    config_path: str,
+    slat_path: str,
+    output_dir: str,
+    decode_format: str = "gaussian",
+    with_postprocess: bool = False,
+    simplify: float = 0.95,
+) -> Dict[str, Any]:
+    """
+    Run decode command - converts SLAT to Gaussian or Mesh.
+
+    This only loads the specific decoder model needed, no image required.
+
+    Args:
+        bridge: InferenceWorkerBridge instance
+        config_path: Path to pipeline.yaml config file
+        slat_path: Path to slat.pt file
+        output_dir: Output directory
+        decode_format: "gaussian" or "mesh"
+        with_postprocess: (mesh only) Apply simplification + hole filling
+        simplify: (mesh only) Simplification ratio
+
+    Returns:
+        Dict with file paths (ply_path for gaussian, glb_path for mesh)
+    """
+    # Build request
+    request = {
+        "command": "decode",
+        "config_path": config_path,
+        "slat_path": slat_path,
+        "output_dir": output_dir,
+        "decode_format": decode_format,
+        "with_postprocess": with_postprocess,
+        "simplify": simplify,
+    }
+
+    # Send request
+    response = bridge._send_request(request, timeout=300.0)
+
+    if response.get("status") == "error":
+        raise RuntimeError(f"Decode failed: {response.get('error')}\n{response.get('traceback', '')}")
 
     return response

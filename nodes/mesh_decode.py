@@ -1,7 +1,10 @@
 """SAM3DMeshDecode node for decoding SLAT to mesh."""
 
 import os
+from pathlib import Path
 from typing import Any
+
+from .subprocess_bridge import InferenceWorkerBridge, run_decode
 
 
 class SAM3DMeshDecode:
@@ -16,11 +19,16 @@ class SAM3DMeshDecode:
     """
 
     @classmethod
+    def get_bridge(cls):
+        node_root = Path(__file__).parent.parent
+        return InferenceWorkerBridge.get_instance(node_root)
+
+    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "slat_decoder_mesh": ("SAM3D_MODEL", {"tooltip": "Mesh decoder from LoadSAM3DModel"}),
-                "slat": ("STRING", {"tooltip": "Path to SLAT from SAM3DSLATGen"}),
+                "slat": ("STRING", {"forceInput": True, "tooltip": "Path to SLAT from SAM3DGenerateSLAT"}),
             },
             "optional": {
                 "with_postprocess": ("BOOLEAN", {
@@ -57,8 +65,8 @@ class SAM3DMeshDecode:
         Decode SLAT to mesh.
 
         Args:
-            slat_decoder_mesh: SAM3D mesh decoder
-            slat: Path to SLAT from SAM3DSLATGen
+            slat_decoder_mesh: SAM3D model (provides config_path)
+            slat: Path to SLAT from SAM3DGenerateSLAT
             with_postprocess: Apply mesh simplification + hole filling
             simplify: Fraction of faces to remove (0.5-0.98)
 
@@ -72,27 +80,43 @@ class SAM3DMeshDecode:
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
 
-        # Run Mesh decoding
-        try:
-            mesh_output = slat_decoder_mesh(
-                slat_output=slat,  # SLAT path
-                mesh_only=True,  # Only decode to Mesh
-                save_files=True,  # Always save GLB
-                use_vertex_color=True,  # Use vertex colors (no texture baking)
-                output_dir=output_dir,  # Use same directory as SLAT
-                with_mesh_postprocess=with_postprocess,  # Simplify + fill holes
-                simplify=simplify,  # Simplification ratio
-            )
+        # Get config path from model and bridge
+        config_path = slat_decoder_mesh.config_path
+        bridge = self.get_bridge()
+        bridge.start_worker()
 
+        # Run Mesh decoding via dedicated decode command
+        try:
+            result = run_decode(
+                bridge=bridge,
+                config_path=config_path,
+                slat_path=slat,
+                output_dir=output_dir,
+                decode_format="mesh",
+                with_postprocess=with_postprocess,
+                simplify=simplify,
+            )
         except Exception as e:
             raise RuntimeError(f"SAM3D Mesh decode failed: {e}") from e
 
-        # Extract GLB path
-        glb_path = mesh_output.get("glb_path", None)
+        # Extract GLB path from nested result structure
+        glb_path = result.get("glb_path", None)
 
-        # Check files dict (bridge returns this structure)
-        if not glb_path and "files" in mesh_output and "glb" in mesh_output["files"]:
-            glb_path = mesh_output["files"]["glb"]
+        # Check nested output.files structure (from run_decode_lazy)
+        if not glb_path and "output" in result:
+            output = result["output"]
+            if isinstance(output, dict) and "files" in output:
+                glb_path = output["files"].get("glb")
+
+        # Check file_output.files structure (alternative key)
+        if not glb_path and "file_output" in result:
+            file_output = result["file_output"]
+            if isinstance(file_output, dict) and "files" in file_output:
+                glb_path = file_output["files"].get("glb")
+
+        # Fallback: check direct files dict
+        if not glb_path and "files" in result and "glb" in result["files"]:
+            glb_path = result["files"]["glb"]
 
         if not glb_path:
             raise RuntimeError("GLB file was not generated")

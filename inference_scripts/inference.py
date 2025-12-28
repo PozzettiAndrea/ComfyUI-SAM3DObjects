@@ -46,15 +46,16 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             image_b64 = request["image"]
             image = deserialize_image(image_b64)
             use_lazy_loading = request.get("use_lazy_loading", True)
+            depth_backend = request.get("depth_backend", "moge2")
 
             if use_lazy_loading:
                 # Lazy loading: loads only depth model (~2GB VRAM)
-                print("[Worker] Running depth-only mode with LAZY LOADING (low VRAM)", file=sys.stderr)
+                print(f"[Worker] Running depth-only mode with LAZY LOADING (backend={depth_backend})", file=sys.stderr)
                 lazy_manager = get_lazy_manager(config_path, compile_model)
-                return run_depth_only_lazy(lazy_manager, image, unload_after=True)
+                return run_depth_only_lazy(lazy_manager, image, unload_after=True, depth_backend=depth_backend)
             else:
                 # Full pipeline loading (15GB+ VRAM)
-                print("[Worker] Running depth-only mode (full pipeline)", file=sys.stderr)
+                print(f"[Worker] Running depth-only mode (full pipeline, backend={depth_backend})", file=sys.stderr)
                 model = load_model(config_path, compile_model)
                 return run_depth_only(model, image)
 
@@ -243,7 +244,10 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 mask = mask.astype(np.uint8)
 
         # LAZY LOADING BRANCHES
-        if use_lazy_loading and (stage1_only or slat_only or gaussian_only or mesh_only):
+        # For decode-only operations (gaussian_only, mesh_only), always use lazy loading
+        # since we don't need the full pipeline and don't have an image
+        is_decode_only = (gaussian_only or mesh_only) and has_slat_input
+        if (use_lazy_loading and (stage1_only or slat_only or gaussian_only or mesh_only)) or is_decode_only:
             print(f"[Worker] *** LAZY LOADING MODE *** (low VRAM)", file=sys.stderr)
             lazy_manager = get_lazy_manager(config_path, compile_model)
 

@@ -32,9 +32,10 @@ class SAM3DGenerateSLAT:
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "generator": ("SAM3D_MODEL", {"tooltip": "Generator from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "mask": ("MASK", {"tooltip": "Binary mask for object"}),
-                "pointmap_path": ("STRING", {"tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
+                "pointmap_path": ("STRING", {"forceInput": True, "tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
                 "seed": ("INT", {
                     "default": 42,
                     "min": 0,
@@ -56,6 +57,13 @@ class SAM3DGenerateSLAT:
                     "max": 15.0,
                     "step": 0.5,
                     "tooltip": "CFG strength for Stage 1"
+                }),
+                "stage1_cfg_pm": ("FLOAT", {
+                    "default": 0.0,
+                    "min": 0.0,
+                    "max": 10.0,
+                    "step": 0.5,
+                    "tooltip": "Pointmap guidance strength for Stage 1. Higher = more depth influence on structure"
                 }),
                 "stage2_steps": ("INT", {
                     "default": 12,
@@ -86,12 +94,12 @@ class SAM3DGenerateSLAT:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate SLAT from image+mask+depth. Combines sparse structure and SLAT generation with smart caching."
 
-    def _get_stage1_cache_key(self, seed: int, steps: int, cfg: float) -> str:
+    def _get_stage1_cache_key(self, seed: int, steps: int, cfg: float, cfg_pm: float) -> str:
         """Generate a cache key for Stage 1 params."""
-        params = f"{seed}_{steps}_{cfg}"
+        params = f"{seed}_{steps}_{cfg}_{cfg_pm}"
         return hashlib.md5(params.encode()).hexdigest()[:8]
 
-    def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float) -> bool:
+    def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
         """Check if Stage 1 output exists with matching params."""
         sparse_path = os.path.join(output_dir, "sparse_structure.pt")
         metadata_path = os.path.join(output_dir, "stage1_metadata.json")
@@ -109,14 +117,15 @@ class SAM3DGenerateSLAT:
             # Check if params match
             if (cached.get("seed") == seed and
                 cached.get("steps") == steps and
-                cached.get("cfg") == cfg):
+                cached.get("cfg") == cfg and
+                cached.get("cfg_pm", 0.0) == cfg_pm):
                 return True
         except:
             pass
 
         return False
 
-    def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float):
+    def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
         """Save Stage 1 params for cache validation."""
         metadata_path = os.path.join(output_dir, "stage1_metadata.json")
         with open(metadata_path, 'w') as f:
@@ -124,16 +133,19 @@ class SAM3DGenerateSLAT:
                 "seed": seed,
                 "steps": steps,
                 "cfg": cfg,
+                "cfg_pm": cfg_pm,
             }, f)
 
     def generate_slat(
         self,
+        generator,
         image,
         mask,
         pointmap_path: str,
         seed: int,
         stage1_steps: int = 12,
         stage1_cfg: float = 7.5,
+        stage1_cfg_pm: float = 0.0,
         stage2_steps: int = 12,
         stage2_cfg: float = 5.0,
         use_distillation: bool = False,
@@ -152,23 +164,27 @@ class SAM3DGenerateSLAT:
         mask_np = comfy_mask_to_numpy(mask)
 
         # Check Stage 1 cache
-        use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg)
+        use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
 
         if use_cached_stage1:
             print(f"[SAM3DObjects] GenerateSLAT: Using cached Stage 1 output")
-            sparse_path = os.path.join(output_dir, "sparse_structure.pt")
         else:
             print(f"[SAM3DObjects] GenerateSLAT: Running Stage 1 (sparse structure)...")
 
         print(f"[SAM3DObjects] GenerateSLAT: Running Stage 2 (SLAT generation)...")
 
         # Get bridge and run combined generation
+        # Use the generator's config_path so models are loaded from ComfyUI/models/
         bridge = self.get_bridge()
         bridge.start_worker()
+
+        # Get config path from generator model
+        config_path = generator.config_path
 
         try:
             result = run_generate_slat(
                 bridge=bridge,
+                config_path=config_path,
                 image=image_pil,
                 mask=mask_np,
                 pointmap_path=pointmap_path,
@@ -176,6 +192,7 @@ class SAM3DGenerateSLAT:
                 seed=seed,
                 stage1_steps=stage1_steps,
                 stage1_cfg=stage1_cfg,
+                stage1_cfg_pm=stage1_cfg_pm,
                 stage2_steps=stage2_steps,
                 stage2_cfg=stage2_cfg,
                 skip_stage1=use_cached_stage1,
@@ -186,7 +203,7 @@ class SAM3DGenerateSLAT:
 
         # Save Stage 1 metadata for future cache hits (if we ran Stage 1)
         if not use_cached_stage1:
-            self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg)
+            self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
 
         # Extract SLAT path
         slat_path = result.get("slat_path")

@@ -405,12 +405,13 @@ def bake_texture(
     # Keep observations and masks as numpy arrays - load to GPU on-demand to save ~1.2GB VRAM
     # observations = [torch.tensor(obs / 255.0).float().to(device) for obs in observations]
     # masks = [torch.tensor(m > 0).bool().to(device) for m in masks]
+    # Note: utils3d functions create internal CPU tensors, so we compute on CPU then move to GPU
     views = [
-        utils3d.torch.extrinsics_to_view(torch.tensor(extr).to(device))
+        utils3d.torch.extrinsics_to_view(torch.tensor(extr)).to(device)
         for extr in extrinsics
     ]
     projections = [
-        utils3d.torch.intrinsics_to_perspective(torch.tensor(intr).to(device), near, far)
+        utils3d.torch.intrinsics_to_perspective(torch.tensor(intr), near, far).to(device)
         for intr in intrinsics
     ]
 
