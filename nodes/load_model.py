@@ -24,10 +24,6 @@ class LoadSAM3DModel:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_tag": (["hf"], {
-                    "default": "hf",
-                    "tooltip": "Model variant to load (hf = facebook/sam-3d-objects from HuggingFace)"
-                }),
                 "compile": ("BOOLEAN", {
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference (requires more VRAM)"
@@ -38,11 +34,6 @@ class LoadSAM3DModel:
                 }),
             },
             "optional": {
-                "hf_token": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "HuggingFace token for private/gated repositories (leave empty for public models)"
-                }),
                 "dtype": (["bfloat16", "float16", "float32", "auto"], {
                     "default": "bfloat16",
                     "tooltip": "Model precision: bfloat16 (RTX 30xx+, fastest), float16 (older GPUs), float32 (slowest, most compatible), auto (detect based on GPU)"
@@ -50,29 +41,26 @@ class LoadSAM3DModel:
             }
         }
 
-    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
-    RETURN_NAMES = ("depth_model", "ss_generator", "slat_generator", "slat_decoder_gs", "slat_decoder_mesh", "embedders")
+    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
+    RETURN_NAMES = ("depth_model", "ss_generator", "slat_generator", "slat_decoder_gs", "slat_decoder_mesh")
     OUTPUT_TOOLTIPS = (
         "Depth estimation model (MoGe) - use with SAM3D_DepthEstimate",
         "Sparse structure generator (Stage 1)",
         "SLAT generator (Stage 2)",
         "Gaussian decoder (Stage 3)",
         "Mesh decoder (Stage 3)",
-        "Condition embedders (shared across stages)"
     )
     FUNCTION = "load_model"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
 
-    def load_model(self, model_tag: str, compile: bool, use_gpu_cache: bool, hf_token: str = "", dtype: str = "bfloat16"):
+    def load_model(self, compile: bool, use_gpu_cache: bool, dtype: str = "bfloat16"):
         """
         Load the SAM3D model.
 
         Args:
-            model_tag: Model variant to load
             compile: Whether to compile the model
             use_gpu_cache: Keep models on GPU between stages (higher VRAM, faster)
-            hf_token: HuggingFace token for private/gated repos (optional)
             dtype: Model precision (bfloat16/float16/float32/auto)
 
         Returns:
@@ -95,17 +83,17 @@ class LoadSAM3DModel:
                 )
 
         # Create cache key
-        cache_key = f"{model_tag}_{compile}_{use_gpu_cache}"
+        cache_key = f"{compile}_{use_gpu_cache}"
 
         # Return cached model if available
         if cache_key in _MODEL_CACHE:
             print(f"[SAM3DObjects] Using cached model")
             model = _MODEL_CACHE[cache_key]
-            # Return same model 6 times (one for each output)
-            return (model, model, model, model, model, model)
+            # Return same model 5 times (one for each output)
+            return (model, model, model, model, model)
 
         # Get checkpoint path
-        checkpoint_path = self._get_or_download_checkpoint(model_tag, hf_token)
+        checkpoint_path = self._get_or_download_checkpoint()
 
         # Get config path
         config_path = checkpoint_path / "checkpoints" / "pipeline.yaml"
@@ -142,33 +130,29 @@ class LoadSAM3DModel:
         _MODEL_CACHE[cache_key] = inference_pipeline
         print(f"[SAM3DObjects] Model loaded successfully")
 
-        # Return same model 6 times (one for each output)
-        return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
+        # Return same model 5 times (one for each output)
+        return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
 
     @classmethod
-    def _get_or_download_checkpoint(cls, model_tag: str, hf_token: str = "") -> Path:
+    def _get_or_download_checkpoint(cls) -> Path:
         """
         Get checkpoint path, downloading if necessary.
-
-        Args:
-            model_tag: Model variant tag
-            hf_token: HuggingFace token for authentication (optional)
 
         Returns:
             Path to checkpoint directory
         """
         models_dir = get_sam3d_models_path()
-        checkpoint_dir = models_dir / model_tag
+        checkpoint_dir = models_dir / "sam-3d-objects"
 
         # Check if checkpoint already exists
         if checkpoint_dir.exists() and (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
             return checkpoint_dir
 
         # Download checkpoint
-        print(f"[SAM3DObjects] Downloading model '{model_tag}'...")
+        print(f"[SAM3DObjects] Downloading model...")
 
         try:
-            cls._download_checkpoint(model_tag, checkpoint_dir, hf_token)
+            cls._download_checkpoint(checkpoint_dir)
         except Exception as e:
             raise RuntimeError(
                 f"Failed to download checkpoint: {e}\n"
@@ -184,26 +168,16 @@ class LoadSAM3DModel:
         return checkpoint_dir
 
     @classmethod
-    def _download_checkpoint(cls, model_tag: str, target_dir: Path, hf_token: str = ""):
+    def _download_checkpoint(cls, target_dir: Path):
         """
         Download checkpoint from HuggingFace.
 
         Args:
-            model_tag: Model variant tag
             target_dir: Target directory for download
-            hf_token: HuggingFace token for authentication (optional)
         """
         target_dir.mkdir(parents=True, exist_ok=True)
 
-        # Map model tags to HuggingFace repo IDs
-        repo_mapping = {
-            "hf": "facebook/sam-3d-objects",
-        }
-
-        if model_tag not in repo_mapping:
-            raise ValueError(f"Unknown model tag: {model_tag}")
-
-        repo_id = repo_mapping[model_tag]
+        repo_id = "jetjodh/sam-3d-objects"
 
         try:
             from huggingface_hub import snapshot_download
@@ -215,7 +189,6 @@ class LoadSAM3DModel:
                 repo_id=repo_id,
                 local_dir=str(target_dir),
                 local_dir_use_symlinks=False,
-                token=hf_token or None,  # Use token if provided, None otherwise
             )
 
         except ImportError:

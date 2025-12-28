@@ -402,8 +402,9 @@ def bake_texture(
     vertices = torch.tensor(vertices).to(device)
     faces = torch.tensor(faces.astype(np.int32)).to(device)
     uvs = torch.tensor(uvs).to(device)
-    observations = [torch.tensor(obs / 255.0).float().to(device) for obs in observations]
-    masks = [torch.tensor(m > 0).bool().to(device) for m in masks]
+    # Keep observations and masks as numpy arrays - load to GPU on-demand to save ~1.2GB VRAM
+    # observations = [torch.tensor(obs / 255.0).float().to(device) for obs in observations]
+    # masks = [torch.tensor(m > 0).bool().to(device) for m in masks]
     views = [
         utils3d.torch.extrinsics_to_view(torch.tensor(extr).to(device))
         for extr in extrinsics
@@ -421,12 +422,16 @@ def bake_texture(
             (texture_size * texture_size), dtype=torch.float32
         ).to(device)
         rastctx = utils3d.torch.RastContext(backend=device if device.startswith("cuda") else "cuda")
-        for observation, view, projection in tqdm(
-            zip(observations, views, projections),
-            total=len(observations),
+        for i, (view, projection) in enumerate(tqdm(
+            zip(views, projections),
+            total=len(views),
             disable=not verbose,
             desc="Texture baking (fast)",
-        ):
+        )):
+            # Load observation and mask on-demand (saves ~1.2GB VRAM)
+            observation = torch.tensor(observations[i] / 255.0).float().to(device)
+            obs_mask = torch.tensor(masks[i] > 0).bool().to(device)
+
             with torch.no_grad():
                 rast = utils3d.torch.rasterize_triangle_faces(
                     rastctx,
@@ -439,7 +444,7 @@ def bake_texture(
                     projection=projection,
                 )
                 uv_map = rast["uv"][0].detach().flip(0)
-                mask = rast["mask"][0].detach().bool() & masks[0]
+                mask = rast["mask"][0].detach().bool() & obs_mask  # Fixed: use correct mask for each view
 
             # nearest neighbor interpolation
             uv_map = (uv_map * texture_size).floor().long()
@@ -452,6 +457,11 @@ def bake_texture(
                 idx,
                 torch.ones((obs.shape[0]), dtype=torch.float32, device=texture.device),
             )
+
+            # Free memory periodically
+            del observation, obs_mask, rast, uv_map, obs, mask
+            if i % 20 == 0:
+                torch.cuda.empty_cache()
 
         mask = texture_weights > 0
         texture[mask] /= texture_weights[mask][:, None]
@@ -471,12 +481,14 @@ def bake_texture(
 
     elif mode == "opt":
         rastctx = utils3d.torch.RastContext(backend=device if device.startswith("cuda") else "cuda")
-        observations = [observations.flip(0) for observations in observations]
-        masks = [m.flip(0) for m in masks]
+        # For "opt" mode, we need all observations on GPU for 2500 optimization steps
+        # Convert to tensors and flip (observations are numpy arrays at this point)
+        observations_gpu = [torch.tensor(obs / 255.0).float().to(device).flip(0) for obs in observations]
+        masks_gpu = [torch.tensor(m > 0).bool().to(device).flip(0) for m in masks]
         _uv = []
         _uv_dr = []
         for observation, view, projection in tqdm(
-            zip(observations, views, projections),
+            zip(observations_gpu, views, projections),
             total=len(views),
             disable=not verbose,
             desc="Texture baking (opt): UV",
@@ -547,8 +559,8 @@ def bake_texture(
                 uv, uv_dr, observation, mask = (
                     _uv[selected],
                     _uv_dr[selected],
-                    observations[selected],
-                    masks[selected],
+                    observations_gpu[selected],
+                    masks_gpu[selected],
                 )
                 
                 if rendering_engine == "nvdiffrast":
@@ -569,6 +581,11 @@ def bake_texture(
                     )
                 pbar.set_postfix({"loss": loss.item()})
                 pbar.update()
+
+        # Free GPU memory before final texture processing
+        del observations_gpu, masks_gpu, _uv, _uv_dr
+        torch.cuda.empty_cache()
+
         texture = np.clip(
             texture[0].flip(0).detach().cpu().numpy() * 255, 0, 255
         ).astype(np.uint8)
@@ -635,13 +652,18 @@ def to_glb(
         vertices, faces, uvs = parametrize_mesh(vertices, faces)
         logger.info("Baking texture ...")
 
-        # bake texture
+        # bake texture - render 100 views from Gaussian
         observations, extrinsics, intrinsics = render_multiview(
             app_rep, resolution=1024, nviews=100
         )
         masks = [np.any(observation > 0, axis=-1) for observation in observations]
         extrinsics = [extrinsics[i].cpu().numpy() for i in range(len(extrinsics))]
         intrinsics = [intrinsics[i].cpu().numpy() for i in range(len(intrinsics))]
+
+        # Free GPU memory before texture baking (Gaussian no longer needed)
+        # Note: We can't delete app_rep since it's owned by caller, but we can clear cache
+        torch.cuda.empty_cache()
+
         texture = bake_texture(
             vertices,
             faces,
@@ -656,6 +678,11 @@ def to_glb(
             verbose=verbose,
             rendering_engine=rendering_engine
         )
+
+        # Free memory after texture baking
+        del observations, masks
+        torch.cuda.empty_cache()
+
         texture = Image.fromarray(texture)
         material = trimesh.visual.material.PBRMaterial(
             roughnessFactor=1.0,

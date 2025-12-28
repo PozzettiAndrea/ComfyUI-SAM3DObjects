@@ -41,13 +41,6 @@ class SAM3DMeshDecode:
                     "default": True,
                     "tooltip": "Save mesh as vertex-colored GLB file"
                 }),
-                "simplify": ("FLOAT", {
-                    "default": 0.95,
-                    "min": 0.9,
-                    "max": 0.98,
-                    "step": 0.01,
-                    "tooltip": "Mesh simplification ratio (0.9 = aggressive, 0.98 = gentle)"
-                }),
             }
         }
 
@@ -69,7 +62,6 @@ class SAM3DMeshDecode:
         mask: torch.Tensor,
         seed: int,
         save_glb: bool = True,
-        simplify: float = 0.95,
     ):
         """
         Decode SLAT to mesh.
@@ -81,7 +73,6 @@ class SAM3DMeshDecode:
             mask: Input mask tensor [N, H, W]
             seed: Random seed
             save_glb: Whether to save GLB file
-            simplify: Mesh simplification ratio
 
         Returns:
             Tuple of (glb_filepath, mesh_data)
