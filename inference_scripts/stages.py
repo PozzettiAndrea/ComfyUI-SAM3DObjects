@@ -64,13 +64,23 @@ def run_stage1_lazy(
 
     # Convert image/mask to numpy
     image_np = np.array(image)
+    mask_np = np.array(mask) if mask is not None else None
+
+    # Ensure RGBA format - USE MASK AS ALPHA CHANNEL for proper cropping
     if image_np.ndim == 2:
         image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
     elif image_np.shape[-1] == 3:
-        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        if mask_np is not None:
+            # Use mask as alpha channel - this enables proper bbox cropping
+            if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
+                alpha = (mask_np * 255).astype(np.uint8)
+            else:
+                alpha = mask_np.astype(np.uint8)
+            if alpha.ndim == 2:
+                alpha = alpha[:, :, np.newaxis]
+        else:
+            alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
         image_np = np.concatenate([image_np, alpha], axis=-1)
-
-    mask_np = np.array(mask) if mask is not None else None
 
     # Get preprocessor and preprocess image
     print(f"[Worker] Preprocessing image...", file=sys.stderr)
@@ -84,6 +94,27 @@ def run_stage1_lazy(
 
     # Preprocess
     ss_input_dict = preprocess_image_lazy(image_np, mask_np, ss_preprocessor, pointmap=pointmap_tensor)
+
+    # Save debug image showing what was actually passed to the model
+    debug_image_path = None
+    if output_dir:
+        try:
+            from PIL import Image as PILImage
+            # Get the preprocessed RGB image (CHW format, normalized)
+            debug_img = ss_input_dict.get("rgb_image", ss_input_dict.get("image"))
+            if debug_img is not None:
+                # Remove batch dim if present, convert CHW->HWC
+                if debug_img.dim() == 4:
+                    debug_img = debug_img[0]
+                debug_img_np = debug_img.cpu().permute(1, 2, 0).numpy()
+                # Denormalize and convert to uint8
+                debug_img_np = (debug_img_np * 255).clip(0, 255).astype(np.uint8)
+                debug_pil = PILImage.fromarray(debug_img_np)
+                debug_image_path = str(Path(output_dir) / "debug_preprocessed_stage1.png")
+                debug_pil.save(debug_image_path)
+                print(f"[Worker] Saved debug image: {debug_image_path}", file=sys.stderr)
+        except Exception as e:
+            print(f"[Worker] Failed to save debug image: {e}", file=sys.stderr)
 
     # Store pointmap scale/shift for pose decoding
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
@@ -219,6 +250,8 @@ def run_stage1_lazy(
         "files": {"sparse_structure": str(sparse_path)},
         "metadata": {}
     }
+    if debug_image_path:
+        saved_output["files"]["debug_image"] = debug_image_path
 
     # Extract pose data for direct access
     rotation = return_dict.get("rotation")
@@ -240,6 +273,7 @@ def run_stage1_lazy(
         "rotation": rotation,
         "translation": translation,
         "scale": scale,
+        "debug_image": debug_image_path,
     }
 
 
@@ -281,15 +315,25 @@ def run_stage2_lazy(
     # Set seed
     torch.manual_seed(seed)
 
-    # Convert image to numpy
+    # Convert image/mask to numpy
     image_np = np.array(image)
+    mask_np = np.array(mask) if mask is not None else None
+
+    # Ensure RGBA format - USE MASK AS ALPHA CHANNEL for proper cropping
     if image_np.ndim == 2:
         image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
     elif image_np.shape[-1] == 3:
-        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        if mask_np is not None:
+            # Use mask as alpha channel - this enables proper bbox cropping
+            if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
+                alpha = (mask_np * 255).astype(np.uint8)
+            else:
+                alpha = mask_np.astype(np.uint8)
+            if alpha.ndim == 2:
+                alpha = alpha[:, :, np.newaxis]
+        else:
+            alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
         image_np = np.concatenate([image_np, alpha], axis=-1)
-
-    mask_np = np.array(mask) if mask is not None else None
 
     # Get preprocessor and preprocess image
     print(f"[Worker] Preprocessing image for SLAT...", file=sys.stderr)
@@ -674,10 +718,15 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
         # Stage 1: Sparse structure generation
         stage1_output = None
         sparse_path = os.path.join(output_dir, "sparse_structure.pt")
+        debug_image_path = None
 
         if skip_stage1 and os.path.exists(sparse_path):
             print(f"[Worker] Skipping Stage 1 - loading cached sparse structure", file=sys.stderr)
             stage1_output = torch.load(sparse_path, weights_only=False)
+            # Check for cached debug image
+            cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
+            if os.path.exists(cached_debug):
+                debug_image_path = cached_debug
         else:
             print(f"[Worker] Running Stage 1 (sparse gen)...", file=sys.stderr)
             result = run_stage1_lazy(
@@ -695,6 +744,9 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
 
             if result.get("status") != "success":
                 return result
+
+            # Capture debug image path from Stage 1
+            debug_image_path = result.get("debug_image")
 
             # Load the saved sparse structure for Stage 2
             stage1_output = torch.load(sparse_path, weights_only=False)
@@ -726,7 +778,7 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
 
         print(f"[Worker] SLAT generation complete: {slat_path}", file=sys.stderr)
 
-        return {
+        result = {
             "status": "success",
             "slat_path": slat_path,
             "files": {
@@ -735,6 +787,13 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
             },
             "output_dir": output_dir,
         }
+
+        # Include debug image if available
+        if debug_image_path:
+            result["debug_image"] = debug_image_path
+            result["files"]["debug_image"] = debug_image_path
+
+        return result
 
     except Exception as e:
         print(f"[Worker] Error in generate_slat: {e}", file=sys.stderr)
