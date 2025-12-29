@@ -32,12 +32,6 @@ class SAM3D_DepthEstimate:
                 "depth_model": ("SAM3D_MODEL", {"tooltip": "Depth model from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
             },
-            "optional": {
-                "depth_backend": (["moge2", "moge"], {
-                    "default": "moge2",
-                    "tooltip": "Depth model backend: moge2 (newer, metric scale) or moge (original)"
-                }),
-            },
         }
 
     RETURN_TYPES = ("SAM3D_INTRINSICS", "STRING", "STRING", "MASK")
@@ -151,7 +145,6 @@ class SAM3D_DepthEstimate:
         self,
         depth_model: Any,
         image: torch.Tensor,
-        depth_backend: str = "moge2",
     ):
         """
         Run depth estimation.
@@ -159,23 +152,23 @@ class SAM3D_DepthEstimate:
         Args:
             depth_model: SAM3D model wrapper (IsolatedSAM3DModel)
             image: Input image tensor [B, H, W, C]
-            depth_backend: Depth model backend ("moge2" or "moge")
 
         Returns:
-            Tuple of (intrinsics, pointcloud_ply, depth_mask)
+            Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
         """
+        # Get depth_backend from model config
+        depth_backend = getattr(depth_model, 'depth_backend', 'moge2')
         print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_backend}...")
 
         # Convert ComfyUI tensor to PIL
         image_pil = comfy_image_to_pil(image)
 
-        # Run depth-only inference
+        # Run depth-only inference (depth_backend comes from model config)
         try:
             result = depth_model(
                 image_pil,
                 None,  # No mask needed for depth
                 depth_only=True,  # depth-only mode
-                depth_backend=depth_backend,  # MoGe version selection
             )
         except Exception as e:
             raise RuntimeError(f"Depth estimation failed: {e}") from e

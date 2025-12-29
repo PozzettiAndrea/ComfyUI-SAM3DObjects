@@ -16,7 +16,13 @@ class IsolatedSAM3DModel:
     conflicting with ComfyUI or other custom nodes.
     """
 
-    def __init__(self, config_path: str, compile: bool = False, use_gpu_cache: bool = True):
+    def __init__(
+        self,
+        config_path: str,
+        compile: bool = False,
+        use_gpu_cache: bool = True,
+        depth_backend: str = "moge2",
+    ):
         """
         Initialize the isolated model.
 
@@ -24,16 +30,17 @@ class IsolatedSAM3DModel:
             config_path: Path to pipeline config
             compile: Whether to compile the model
             use_gpu_cache: Keep models on GPU between stages (higher VRAM, faster)
+            depth_backend: Depth model backend (moge2 or moge)
         """
         self.config_path = str(config_path)
         self.compile = compile
         self.use_gpu_cache = use_gpu_cache
+        self.depth_backend = depth_backend
         self._bridge = None
 
     def get_bridge(self):
         """Get or create the subprocess bridge."""
         if self._bridge is None:
-            from pathlib import Path
             from .subprocess_bridge import InferenceWorkerBridge
 
             # Get node root (parent of nodes/ directory)
@@ -70,7 +77,7 @@ class IsolatedSAM3DModel:
         use_stage2_distillation: bool = False,
         # NEW: Depth estimation and memory management
         depth_only: bool = False,
-        depth_backend: str = "moge2",
+        depth_backend: str = None,  # Uses self.depth_backend if not specified
         unload_model: str = None,
         pointmap_path: str = None,
         intrinsics: Any = None,
@@ -133,7 +140,7 @@ class IsolatedSAM3DModel:
             use_stage2_distillation=use_stage2_distillation,
             # NEW: Depth estimation and memory management
             depth_only=depth_only,
-            depth_backend=depth_backend,
+            depth_backend=depth_backend if depth_backend is not None else self.depth_backend,
             unload_model=unload_model,
             pointmap_path=pointmap_path,
             intrinsics=intrinsics,
@@ -149,4 +156,4 @@ class IsolatedSAM3DModel:
         )
 
     def __repr__(self) -> str:
-        return f"IsolatedSAM3DModel(config={self.config_path}, compile={self.compile}, use_gpu_cache={self.use_gpu_cache})"
+        return f"IsolatedSAM3DModel(config={self.config_path}, compile={self.compile}, use_gpu_cache={self.use_gpu_cache}, depth_backend={self.depth_backend})"

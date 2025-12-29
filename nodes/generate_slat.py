@@ -99,11 +99,6 @@ class SAM3DGenerateSLAT:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate."
 
-    def _get_stage1_cache_key(self, seed: int, steps: int, cfg: float, cfg_pm: float) -> str:
-        """Generate a cache key for Stage 1 params."""
-        params = f"{seed}_{steps}_{cfg}_{cfg_pm}"
-        return hashlib.md5(params.encode()).hexdigest()[:8]
-
     def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
         """Check if Stage 1 output exists with matching params."""
         sparse_path = os.path.join(output_dir, "sparse_structure.pt")

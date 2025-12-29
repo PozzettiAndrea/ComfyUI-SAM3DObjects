@@ -12,7 +12,6 @@ import io
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 import threading
-import queue
 from PIL import Image
 import numpy as np
 
