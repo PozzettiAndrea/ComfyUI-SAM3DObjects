@@ -99,7 +99,8 @@ def load_and_simplify_mesh(mesh, device, target_triangles=5000):
 
         # Simplify if needed
         if len(mesh_copy.faces) > target_triangles:
-            mesh_copy = mesh_copy.simplify_quadric_decimation(target_triangles)
+            # Use face_count keyword arg - positional arg is now target_reduction (0-1 ratio)
+            mesh_copy = mesh_copy.simplify_quadric_decimation(face_count=target_triangles)
 
         verts = torch.tensor(
             np.asarray(mesh_copy.vertices), dtype=torch.float32, device=device

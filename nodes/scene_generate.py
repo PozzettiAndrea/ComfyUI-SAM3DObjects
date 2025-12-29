@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 
 from .utils import comfy_image_to_pil
-from .subprocess_bridge import InferenceWorkerBridge, run_generate_slat, run_decode, run_texture_bake_direct
+from .subprocess_bridge import InferenceWorkerBridge, run_generate_slat, run_decode, run_texture_bake_direct, run_scene_generate_batch
 
 
 class SAM3DSceneGenerate:
@@ -42,6 +42,7 @@ class SAM3DSceneGenerate:
                 "slat_decoder_mesh": ("SAM3D_MODEL", {"tooltip": "Mesh decoder from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "masks": ("MASK", {"tooltip": "Batch of masks [N, H, W] - each becomes a 3D object"}),
+                "intrinsics": ("SAM3D_INTRINSICS", {"tooltip": "Camera intrinsics from SAM3DDepthEstimate"}),
                 "pointmap_path": ("STRING", {"forceInput": True, "tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
                 "seed": ("INT", {
                     "default": 42,
@@ -189,6 +190,7 @@ class SAM3DSceneGenerate:
         slat_decoder_mesh,
         image,
         masks,
+        intrinsics,
         pointmap_path: str,
         seed: int,
         stage1_steps: int = 12,
@@ -206,6 +208,12 @@ class SAM3DSceneGenerate:
         """
         Generate 3D objects for each mask in the batch.
 
+        Uses phase-based batch processing for efficiency:
+        - Loads Stage1 models ONCE, processes ALL masks, then unloads
+        - Loads Stage2 models ONCE, processes ALL sparse structures, then unloads
+        - Loads MeshDecoder ONCE, processes ALL SLATs, then unloads
+        - (Optional) Loads GaussianDecoder ONCE, texture bakes ALL meshes, then unloads
+
         Returns path to output folder containing object_0/, object_1/, etc.
         """
         # Get batch size from mask tensor [N, H, W]
@@ -215,7 +223,7 @@ class SAM3DSceneGenerate:
             batch_size = 1
             masks = masks.unsqueeze(0)
 
-        print(f"[SAM3DObjects] SceneGenerate: Processing {batch_size} object(s)")
+        print(f"[SAM3DObjects] SceneGenerate: Processing {batch_size} object(s) with phase-based batching")
         if add_textures:
             print(f"[SAM3DObjects] SceneGenerate: Texture baking enabled (mode={texture_mode}, size={texture_size})")
 
@@ -225,136 +233,95 @@ class SAM3DSceneGenerate:
         # Convert image once (shared across all masks)
         image_pil = comfy_image_to_pil(image)
 
+        # Save intrinsics for pose optimization
+        intrinsics_path = os.path.join(base_output_dir, "intrinsics.pt")
+        torch.save(intrinsics, intrinsics_path)
+        print(f"[SAM3DObjects] SceneGenerate: Saved intrinsics to {intrinsics_path}")
+
+        # Save image for pose optimization (needed for render-and-compare)
+        image_path = os.path.join(base_output_dir, "image.png")
+        image_pil.save(image_path)
+        print(f"[SAM3DObjects] SceneGenerate: Saved image to {image_path}")
+
         # Get config paths from models
         generator_config = generator.config_path
         mesh_config = slat_decoder_mesh.config_path
-        gs_config = slat_decoder_gs.config_path
+        gs_config = slat_decoder_gs.config_path if add_textures else None
 
-        # Start bridge worker once for all operations
-        bridge = self.get_bridge()
-        bridge.start_worker()
-
+        # Convert masks to list of numpy arrays
+        masks_list = []
         for idx in range(batch_size):
-            print(f"\n[SAM3DObjects] SceneGenerate: === Object {idx + 1}/{batch_size} ===")
-
-            # Extract single mask
             single_mask = masks[idx]  # [H, W]
             mask_np = single_mask.cpu().numpy()
+            masks_list.append(mask_np)
 
-            # Create object directory
+            # Create object directory and save mask for pose optimization
             object_dir = os.path.join(base_output_dir, f"object_{idx}")
             os.makedirs(object_dir, exist_ok=True)
+            mask_path = os.path.join(object_dir, "mask.npy")
+            np.save(mask_path, mask_np)
 
-            # Copy pointmap to object directory if not exists
+            # Copy pointmap to object directory
             object_pointmap_path = os.path.join(object_dir, "pointmap.pt")
             if not os.path.exists(object_pointmap_path):
                 shutil.copy(pointmap_path, object_pointmap_path)
 
-            # === Step 1: Generate SLAT ===
-            use_cached_stage1 = self._check_stage1_cache(
-                object_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm
+        # Start bridge worker
+        bridge = self.get_bridge()
+        bridge.start_worker()
+
+        # Run batch processing - models are loaded once per phase
+        print(f"[SAM3DObjects] SceneGenerate: Starting batch processing...")
+        try:
+            result = run_scene_generate_batch(
+                bridge=bridge,
+                image=image_pil,
+                masks=masks_list,
+                pointmap_path=pointmap_path,
+                base_output_dir=base_output_dir,
+                config_path=generator_config,
+                mesh_config_path=mesh_config,
+                gs_config_path=gs_config,
+                seed=seed,
+                stage1_steps=stage1_steps,
+                stage1_cfg=stage1_cfg,
+                stage1_cfg_pm=stage1_cfg_pm,
+                stage2_steps=stage2_steps,
+                stage2_cfg=stage2_cfg,
+                with_postprocess=with_postprocess,
+                simplify=simplify,
+                add_textures=add_textures,
+                texture_mode=texture_mode,
+                texture_size=texture_size,
             )
+        except Exception as e:
+            raise RuntimeError(f"Batch scene generation failed: {e}") from e
 
-            if use_cached_stage1:
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Using cached Stage 1")
-            else:
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Running Stage 1 + 2...")
+        # Process results and save pose data
+        objects = result.get("objects", [])
+        for obj_result in objects:
+            idx = obj_result.get("index", 0)
+            object_dir = os.path.join(base_output_dir, f"object_{idx}")
 
-            try:
-                slat_result = run_generate_slat(
-                    bridge=bridge,
-                    config_path=generator_config,
-                    image=image_pil,
-                    mask=mask_np,
-                    pointmap_path=object_pointmap_path,
-                    output_dir=object_dir,
-                    seed=seed,
-                    stage1_steps=stage1_steps,
-                    stage1_cfg=stage1_cfg,
-                    stage1_cfg_pm=stage1_cfg_pm,
-                    stage2_steps=stage2_steps,
-                    stage2_cfg=stage2_cfg,
-                    skip_stage1=use_cached_stage1,
-                    use_distillation=use_distillation,
-                )
-            except Exception as e:
-                raise RuntimeError(f"SLAT generation failed for object {idx}: {e}") from e
+            # Save pose data if available
+            rotation = obj_result.get("rotation")
+            translation = obj_result.get("translation")
+            scale = obj_result.get("scale")
+            if rotation is not None or translation is not None or scale is not None:
+                pose_data = {
+                    "rotation": rotation,
+                    "translation": translation,
+                    "scale": scale,
+                }
+                pose_path = os.path.join(object_dir, "pose.pt")
+                torch.save(pose_data, pose_path)
+                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Saved pose to {pose_path}")
 
-            if not use_cached_stage1:
-                self._save_stage1_metadata(object_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
-
-            slat_path = slat_result.get("slat_path")
-            if not slat_path and "files" in slat_result:
-                slat_path = slat_result["files"].get("slat")
-            if not slat_path:
-                raise RuntimeError(f"SLAT not generated for object {idx}")
-
-            print(f"[SAM3DObjects] SceneGenerate [{idx}]: SLAT -> {slat_path}")
-
-            # === Step 2: Decode to Mesh ===
-            print(f"[SAM3DObjects] SceneGenerate [{idx}]: Decoding mesh...")
-
-            try:
-                mesh_result = run_decode(
-                    bridge=bridge,
-                    config_path=mesh_config,
-                    slat_path=slat_path,
-                    output_dir=object_dir,
-                    decode_format="mesh",
-                    with_postprocess=with_postprocess,
-                    simplify=simplify,
-                )
-            except Exception as e:
-                raise RuntimeError(f"Mesh decode failed for object {idx}: {e}") from e
-
-            glb_path = self._extract_path(mesh_result, "glb", "glb")
-            if not glb_path:
-                raise RuntimeError(f"GLB not generated for object {idx}")
-
-            print(f"[SAM3DObjects] SceneGenerate [{idx}]: Mesh -> {glb_path}")
-
-            # === Step 3 (optional): Texture Baking ===
-            if add_textures:
-                # First decode Gaussian
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Decoding Gaussian...")
-
-                try:
-                    gs_result = run_decode(
-                        bridge=bridge,
-                        config_path=gs_config,
-                        slat_path=slat_path,
-                        output_dir=object_dir,
-                        decode_format="gaussian",
-                    )
-                except Exception as e:
-                    raise RuntimeError(f"Gaussian decode failed for object {idx}: {e}") from e
-
-                ply_path = self._extract_path(gs_result, "ply", "ply")
-                if not ply_path:
-                    raise RuntimeError(f"PLY not generated for object {idx}")
-
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Gaussian -> {ply_path}")
-
-                # Then bake texture
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Baking texture...")
-
-                try:
-                    texture_result = run_texture_bake_direct(
-                        ply_path=ply_path,
-                        glb_path=glb_path,
-                        output_dir=object_dir,
-                        texture_mode=texture_mode,
-                        texture_size=texture_size,
-                        rendering_engine="nvdiffrast",
-                    )
-                except Exception as e:
-                    raise RuntimeError(f"Texture baking failed for object {idx}: {e}") from e
-
-                textured_glb = texture_result.get("glb_path")
-                if textured_glb:
-                    print(f"[SAM3DObjects] SceneGenerate [{idx}]: Textured -> {textured_glb}")
-
-            print(f"[SAM3DObjects] SceneGenerate [{idx}]: Done!")
+            # Log output paths
+            if obj_result.get("glb_path"):
+                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Mesh -> {obj_result['glb_path']}")
+            if obj_result.get("textured_glb_path"):
+                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Textured -> {obj_result['textured_glb_path']}")
 
         print(f"\n[SAM3DObjects] SceneGenerate: Completed {batch_size} object(s)")
         print(f"[SAM3DObjects] SceneGenerate: Output folder: {base_output_dir}")

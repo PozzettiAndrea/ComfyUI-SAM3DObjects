@@ -778,6 +778,25 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
 
         print(f"[Worker] SLAT generation complete: {slat_path}", file=sys.stderr)
 
+        # Load pose data from sparse_structure.pt
+        rotation = None
+        translation = None
+        scale = None
+        if stage1_output is not None:
+            rotation = stage1_output.get("rotation")
+            translation = stage1_output.get("translation")
+            scale = stage1_output.get("scale")
+
+            # Convert tensors to lists for JSON serialization
+            if rotation is not None and hasattr(rotation, 'tolist'):
+                rotation = rotation.cpu().tolist() if hasattr(rotation, 'cpu') else rotation.tolist()
+            if translation is not None and hasattr(translation, 'tolist'):
+                translation = translation.cpu().tolist() if hasattr(translation, 'cpu') else translation.tolist()
+            if scale is not None and hasattr(scale, 'tolist'):
+                scale = scale.cpu().tolist() if hasattr(scale, 'cpu') else scale.tolist()
+
+            print(f"[Worker] Extracted pose data from Stage 1", file=sys.stderr)
+
         result = {
             "status": "success",
             "slat_path": slat_path,
@@ -786,6 +805,9 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
                 "sparse_structure": sparse_path,
             },
             "output_dir": output_dir,
+            "rotation": rotation,
+            "translation": translation,
+            "scale": scale,
         }
 
         # Include debug image if available
