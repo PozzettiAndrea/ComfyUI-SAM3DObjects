@@ -301,6 +301,12 @@ cd ComfyUI/models/sam3d
 2. **Rendering**: Visualization nodes use placeholder implementation
 3. **VRAM**: High memory requirements may limit usability
 
+## Community
+
+Questions or feature requests? Open a [Discussion](https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects/discussions) on GitHub.
+
+Join the [Comfy3D Discord](https://discord.gg/PN743tE5) for help, updates, and chat about 3D workflows in ComfyUI.
+
 ## Contributing
 
 Contributions are welcome! Please:
