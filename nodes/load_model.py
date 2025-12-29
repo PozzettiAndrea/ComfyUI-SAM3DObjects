@@ -12,6 +12,51 @@ from .utils import (
 )
 
 
+# HuggingFace repo for SAM3D checkpoints
+REPO_ID = "jetjodh/sam-3d-objects"
+
+# Output names for detecting which are connected
+OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
+
+# Map outputs to required checkpoint files
+REQUIRED_FILES = {
+    "depth_model": [],  # Depth uses separate moge2 model from HuggingFace
+    "generator": [
+        "ss_generator.ckpt",
+        "ss_generator.yaml",
+        "ss_decoder.ckpt",
+        "ss_decoder.yaml",
+        "slat_generator.ckpt",
+        "slat_generator.yaml",
+    ],
+    "slat_decoder_gs": [
+        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs.yaml",
+        "slat_decoder_gs_4.ckpt",
+        "slat_decoder_gs_4.yaml",
+    ],
+    "slat_decoder_mesh": [
+        "slat_decoder_mesh.ckpt",
+        "slat_decoder_mesh.yaml",
+    ],
+}
+
+# Expected file sizes for verification (within 10% tolerance)
+EXPECTED_SIZES = {
+    "ss_generator.ckpt": 6_690_000_000,   # ~6.69GB
+    "slat_generator.ckpt": 4_910_000_000,  # ~4.91GB
+    "ss_decoder.ckpt": 147_600_000,        # ~141MB
+    "slat_decoder_gs.ckpt": 171_000_000,   # ~171MB
+    "slat_decoder_gs_4.ckpt": 170_000_000, # ~170MB
+    "slat_decoder_mesh.ckpt": 364_000_000, # ~364MB
+}
+
+# Config files to always download (tiny, needed for all operations)
+ALWAYS_DOWNLOAD = [
+    "pipeline.yaml",
+]
+
+
 class LoadSAM3DModel:
     """
     Load SAM 3D Objects model for generating 3D objects from images.
@@ -38,6 +83,14 @@ class LoadSAM3DModel:
                     "default": "bfloat16",
                     "tooltip": "Model precision: bfloat16 (RTX 30xx+, fastest), float16 (older GPUs), float32 (slowest, most compatible), auto (detect based on GPU)"
                 }),
+                "depth_backend": (["moge2", "moge"], {
+                    "default": "moge2",
+                    "tooltip": "Depth model backend: moge2 (newer, metric scale) or moge (original)"
+                }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "prompt": "PROMPT",
             }
         }
 
@@ -53,7 +106,15 @@ class LoadSAM3DModel:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Load SAM 3D Objects model for generating 3D objects from images."
 
-    def load_model(self, compile: bool, use_gpu_cache: bool, dtype: str = "bfloat16"):
+    def load_model(
+        self,
+        compile: bool,
+        use_gpu_cache: bool,
+        dtype: str = "bfloat16",
+        depth_backend: str = "moge2",
+        unique_id: str = None,
+        prompt: dict = None,
+    ):
         """
         Load the SAM3D model.
 
@@ -61,11 +122,21 @@ class LoadSAM3DModel:
             compile: Whether to compile the model
             use_gpu_cache: Keep models on GPU between stages (higher VRAM, faster)
             dtype: Model precision (bfloat16/float16/float32/auto)
+            depth_backend: Depth model backend (moge2/moge)
+            unique_id: Node ID (hidden input for graph analysis)
+            prompt: Workflow prompt (hidden input for graph analysis)
 
         Returns:
-            5 model outputs (all point to same model wrapper, selective loading handled by worker)
+            4 model outputs (all point to same model wrapper, selective loading handled by worker)
         """
         print(f"[SAM3DObjects] Loading SAM3D model...")
+
+        # Detect which outputs are connected downstream
+        used_outputs = self._detect_used_outputs(prompt, unique_id)
+        if used_outputs:
+            print(f"[SAM3DObjects] Connected outputs: {', '.join(used_outputs)}")
+        else:
+            print(f"[SAM3DObjects] Could not detect connections, will download all models")
 
         # Check CUDA availability
         device = get_device()
@@ -82,7 +153,7 @@ class LoadSAM3DModel:
                 )
 
         # Create cache key
-        cache_key = f"{compile}_{use_gpu_cache}"
+        cache_key = f"{compile}_{use_gpu_cache}_{depth_backend}"
 
         # Return cached model if available
         if cache_key in _MODEL_CACHE:
@@ -91,8 +162,8 @@ class LoadSAM3DModel:
             # Return same model 4 times (one for each output)
             return (model, model, model, model)
 
-        # Get checkpoint path
-        checkpoint_path = self._get_or_download_checkpoint()
+        # Get checkpoint path, downloading required files if needed
+        checkpoint_path = self._get_or_download_checkpoint(used_outputs)
 
         # Get config path
         config_path = checkpoint_path / "checkpoints" / "pipeline.yaml"
@@ -101,7 +172,6 @@ class LoadSAM3DModel:
                 f"Config file not found: {config_path}\n"
                 "Please ensure the checkpoint contains checkpoints/pipeline.yaml"
             )
-
 
         # Import isolated model wrapper
         try:
@@ -119,7 +189,8 @@ class LoadSAM3DModel:
             inference_pipeline = IsolatedSAM3DModel(
                 str(config_path),
                 compile=compile,
-                use_gpu_cache=use_gpu_cache
+                use_gpu_cache=use_gpu_cache,
+                depth_backend=depth_backend,
             )
 
         except Exception as e:
@@ -132,72 +203,152 @@ class LoadSAM3DModel:
         # Return same model 4 times (one for each output)
         return (inference_pipeline, inference_pipeline, inference_pipeline, inference_pipeline)
 
-    @classmethod
-    def _get_or_download_checkpoint(cls) -> Path:
+    def _detect_used_outputs(self, prompt: dict, unique_id: str) -> set:
         """
-        Get checkpoint path, downloading if necessary.
+        Analyze the workflow to find which outputs are connected downstream.
+
+        Args:
+            prompt: Workflow prompt dictionary
+            unique_id: This node's ID
+
+        Returns:
+            Set of output names that are connected (e.g., {"depth_model", "generator"})
+        """
+        if not prompt or not unique_id:
+            return set()  # Can't detect, return empty (will download all)
+
+        used = set()
+
+        for node_id, node_info in prompt.items():
+            if not isinstance(node_info, dict):
+                continue
+
+            for input_name, input_value in node_info.get("inputs", {}).items():
+                # Check if this input links to one of our outputs
+                # Links are represented as [node_id, output_index]
+                if isinstance(input_value, list) and len(input_value) == 2:
+                    linked_node_id, output_index = input_value
+                    if str(linked_node_id) == str(unique_id) and output_index < len(OUTPUT_NAMES):
+                        used.add(OUTPUT_NAMES[output_index])
+
+        return used
+
+    @classmethod
+    def _get_or_download_checkpoint(cls, used_outputs: set = None) -> Path:
+        """
+        Get checkpoint path, downloading required files if necessary.
+
+        Args:
+            used_outputs: Set of output names that are connected (for selective download)
 
         Returns:
             Path to checkpoint directory
         """
         models_dir = get_sam3d_models_path()
         checkpoint_dir = models_dir / "sam-3d-objects"
+        checkpoints_path = checkpoint_dir / "checkpoints"
 
-        # Check if checkpoint already exists
-        if checkpoint_dir.exists() and (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
-            return checkpoint_dir
+        # Determine which files are required
+        required_files = set(ALWAYS_DOWNLOAD)
+        if used_outputs:
+            for output in used_outputs:
+                required_files.update(REQUIRED_FILES.get(output, []))
+        else:
+            # No detection available - download everything
+            for files in REQUIRED_FILES.values():
+                required_files.update(files)
 
-        # Download checkpoint
-        print(f"[SAM3DObjects] Downloading model...")
+        # Check which files are missing or invalid
+        missing_files = []
+        for filename in required_files:
+            filepath = checkpoints_path / filename
+            if not cls._verify_checkpoint(filepath, filename):
+                missing_files.append(filename)
 
-        try:
-            cls._download_checkpoint(checkpoint_dir)
-        except Exception as e:
-            raise RuntimeError(
-                f"Failed to download checkpoint: {e}\n"
-                "Please check your internet connection and try again."
-            ) from e
+        if missing_files:
+            print(f"[SAM3DObjects] Need to download {len(missing_files)} file(s)...")
+            cls._download_files(checkpoint_dir, missing_files)
 
-        # Verify download
-        if not (checkpoint_dir / "checkpoints" / "pipeline.yaml").exists():
-            raise RuntimeError(
-                f"Download completed but checkpoints/pipeline.yaml not found in {checkpoint_dir}"
-            )
+            # Verify downloads succeeded
+            still_missing = []
+            for filename in missing_files:
+                filepath = checkpoints_path / filename
+                if not cls._verify_checkpoint(filepath, filename):
+                    still_missing.append(filename)
+
+            if still_missing:
+                raise RuntimeError(
+                    f"Download verification failed for: {', '.join(still_missing)}\n"
+                    "Please check your internet connection and try again."
+                )
+        else:
+            print(f"[SAM3DObjects] All required checkpoints present")
 
         return checkpoint_dir
 
     @classmethod
-    def _download_checkpoint(cls, target_dir: Path):
+    def _verify_checkpoint(cls, filepath: Path, filename: str) -> bool:
         """
-        Download checkpoint from HuggingFace.
+        Verify a checkpoint file exists and has expected size.
+
+        Args:
+            filepath: Path to the file
+            filename: Filename for size lookup
+
+        Returns:
+            True if file exists and size is valid
+        """
+        if not filepath.exists():
+            return False
+
+        # YAML config files just need to exist and not be empty
+        if filename.endswith('.yaml'):
+            return filepath.stat().st_size > 0
+
+        # For checkpoint files, verify size is within 10% of expected
+        expected = EXPECTED_SIZES.get(filename)
+        if expected:
+            actual = filepath.stat().st_size
+            tolerance = expected * 0.1
+            if abs(actual - expected) > tolerance:
+                print(f"[SAM3DObjects] Warning: {filename} size mismatch (got {actual}, expected ~{expected})")
+                return False
+
+        return True
+
+    @classmethod
+    def _download_files(cls, target_dir: Path, files: list):
+        """
+        Download specific files from HuggingFace.
 
         Args:
             target_dir: Target directory for download
+            files: List of filenames to download (relative to checkpoints/)
         """
         target_dir.mkdir(parents=True, exist_ok=True)
 
-        repo_id = "jetjodh/sam-3d-objects"
-
         try:
-            from huggingface_hub import snapshot_download
-
-            print(f"[SAM3DObjects] Downloading from HuggingFace: {repo_id} (this may take a while)")
-
-            # Download all files from the repo
-            snapshot_download(
-                repo_id=repo_id,
-                local_dir=str(target_dir),
-                local_dir_use_symlinks=False,
-            )
-
+            from huggingface_hub import hf_hub_download
         except ImportError:
             raise ImportError(
                 "huggingface_hub is required for downloading checkpoints. "
                 "Please install it: pip install huggingface-hub"
             )
-        except Exception as e:
-            # Clean up partial download
-            import shutil
-            if target_dir.exists():
-                shutil.rmtree(target_dir)
-            raise RuntimeError(f"Download failed: {e}") from e
+
+        print(f"[SAM3DObjects] Downloading from HuggingFace: {REPO_ID}")
+
+        for filename in files:
+            hf_path = f"checkpoints/{filename}"
+            print(f"[SAM3DObjects] Downloading {filename}...")
+
+            try:
+                hf_hub_download(
+                    repo_id=REPO_ID,
+                    filename=hf_path,
+                    local_dir=str(target_dir),
+                    local_dir_use_symlinks=False,
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed to download {filename}: {e}") from e
+
+        print(f"[SAM3DObjects] Download complete")
