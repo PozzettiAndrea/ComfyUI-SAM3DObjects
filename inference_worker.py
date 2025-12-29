@@ -25,8 +25,10 @@ from inference_scripts import (
     run_inference,
     run_texture_bake_direct,
     run_pose_optimization,
+    run_pose_optimization_batch,
     run_generate_slat,
     run_decode,
+    run_scene_generate_batch,
 )
 
 
@@ -95,18 +97,25 @@ def main():
                 break
             elif request.get("command") == "pose_optimization":
                 response = run_pose_optimization(request)
+            elif request.get("command") == "pose_optimization_batch":
+                response = run_pose_optimization_batch(request)
             elif request.get("command") == "texture_bake_direct":
                 response = run_texture_bake_direct(request)
             elif request.get("command") == "generate_slat":
                 response = run_generate_slat(request)
             elif request.get("command") == "decode":
                 response = run_decode(request)
+            elif request.get("command") == "scene_generate_batch":
+                response = run_scene_generate_batch(request)
+                print(f"[Worker] scene_generate_batch returned, preparing JSON response", file=sys.stderr)
             else:
                 # Run inference
                 response = run_inference(request)
 
             # Send response
-            print(json.dumps(response), flush=True)
+            response_json = json.dumps(response)
+            print(f"[Worker] Sending JSON response ({len(response_json)} bytes)", file=sys.stderr)
+            print(response_json, flush=True)
 
         except Exception as e:
             print(f"[Worker] Error processing request: {e}", file=sys.stderr)

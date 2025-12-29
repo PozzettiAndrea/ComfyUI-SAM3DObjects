@@ -12,6 +12,14 @@ This package contains modular components for the inference worker:
 - inference: Main inference orchestration
 """
 
+# Set up vendor path before any imports that need sam3d_objects
+import sys
+from pathlib import Path
+
+_VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
+if _VENDOR_PATH not in sys.path:
+    sys.path.insert(0, _VENDOR_PATH)
+
 from .lazy_manager import LazyModelManager, get_lazy_manager, load_model
 from .utils import (
     deserialize_image,
@@ -22,9 +30,10 @@ from .utils import (
 )
 from .preprocessing import load_pointmap_from_file, preprocess_image_lazy
 from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy, run_generate_slat, run_decode
+from .scene_batch import run_scene_generate_batch
 from .depth import run_depth_only_lazy, run_depth_only
 from .texture_baking import run_texture_bake_direct
-from .pose_optimization import run_pose_optimization
+from .pose_optimization import run_pose_optimization, run_pose_optimization_batch
 from .inference import run_inference
 
 __all__ = [
@@ -47,6 +56,8 @@ __all__ = [
     "run_decode_lazy",
     "run_generate_slat",
     "run_decode",
+    # Scene batch
+    "run_scene_generate_batch",
     # Depth
     "run_depth_only_lazy",
     "run_depth_only",
@@ -54,6 +65,7 @@ __all__ = [
     "run_texture_bake_direct",
     # Pose optimization
     "run_pose_optimization",
+    "run_pose_optimization_batch",
     # Main inference
     "run_inference",
 ]

@@ -226,7 +226,7 @@ class InferenceWorkerBridge:
         # Skip any non-JSON lines that may be polluting stdout from libraries
         import time
         start_time = time.time()
-        max_attempts = 100  # Limit attempts to prevent infinite loops
+        max_attempts = 1000  # Increased for batch processing which may have more output
         attempts = 0
 
         while attempts < max_attempts:
@@ -260,11 +260,13 @@ class InferenceWorkerBridge:
                     attempts += 1
                     continue
             else:
-                # Not JSON - likely a log message that slipped through (skip silently)
+                # Not JSON - likely a log message that slipped through
+                if attempts < 5 or attempts % 100 == 0:
+                    print(f"[SAM3DObjects] Skipping non-JSON line #{attempts}: {response_line[:80]}...")
                 attempts += 1
                 continue
 
-        raise RuntimeError(f"Failed to get valid JSON response after {max_attempts} attempts")
+        raise RuntimeError(f"Failed to get valid JSON response after {max_attempts} attempts. Last line: {response_line[:200] if response_line else 'empty'}")
 
     def serialize_image(self, image: Image.Image) -> str:
         """Serialize PIL Image to base64."""
@@ -705,6 +707,105 @@ def run_generate_slat(
 
     if response.get("status") == "error":
         raise RuntimeError(f"SLAT generation failed: {response.get('error')}\n{response.get('traceback', '')}")
+
+    return response
+
+
+def run_scene_generate_batch(
+    bridge: InferenceWorkerBridge,
+    image: Image.Image,
+    masks: list,
+    pointmap_path: str,
+    base_output_dir: str,
+    config_path: str,
+    mesh_config_path: str,
+    gs_config_path: Optional[str] = None,
+    seed: int = 42,
+    stage1_steps: int = 12,
+    stage1_cfg: float = 7.5,
+    stage1_cfg_pm: float = 0.0,
+    stage2_steps: int = 12,
+    stage2_cfg: float = 5.0,
+    with_postprocess: bool = False,
+    simplify: float = 0.95,
+    add_textures: bool = False,
+    texture_mode: str = "opt",
+    texture_size: int = 1024,
+) -> Dict[str, Any]:
+    """
+    Run batch scene generation with phase-based model loading.
+
+    This function processes multiple masks efficiently by:
+    1. Loading Stage1 models ONCE, processing ALL masks, then unloading
+    2. Loading Stage2 models ONCE, processing ALL sparse structures, then unloading
+    3. Loading MeshDecoder ONCE, processing ALL SLATs, then unloading
+    4. (Optional) Loading GaussianDecoder ONCE, texture baking ALL meshes, then unloading
+
+    Args:
+        bridge: InferenceWorkerBridge instance
+        image: Input PIL image (shared across all masks)
+        masks: List of numpy masks (one per object)
+        pointmap_path: Path to pointmap.pt from depth estimation
+        base_output_dir: Base output directory (will contain object_0/, object_1/, etc.)
+        config_path: Path to pipeline.yaml config file (generator)
+        mesh_config_path: Path to mesh decoder config
+        gs_config_path: Path to gaussian decoder config (optional, for textures)
+        seed: Random seed
+        stage1_steps: Inference steps for Stage 1
+        stage1_cfg: CFG strength for Stage 1
+        stage1_cfg_pm: Pointmap guidance strength for Stage 1
+        stage2_steps: Inference steps for Stage 2
+        stage2_cfg: CFG strength for Stage 2
+        with_postprocess: Apply mesh postprocessing
+        simplify: Mesh simplification ratio
+        add_textures: Enable texture baking
+        texture_mode: "opt" or "fast"
+        texture_size: Texture resolution
+
+    Returns:
+        Dict with status and per-object results
+    """
+    # Serialize image
+    img_buffer = io.BytesIO()
+    image.save(img_buffer, format='PNG')
+    image_b64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+
+    # Serialize all masks
+    masks_b64 = []
+    for mask in masks:
+        mask_b64 = base64.b64encode(pickle.dumps(mask)).decode('utf-8')
+        masks_b64.append(mask_b64)
+
+    # Build request
+    request = {
+        "command": "scene_generate_batch",
+        "image": image_b64,
+        "masks": masks_b64,
+        "pointmap_path": pointmap_path,
+        "base_output_dir": base_output_dir,
+        "config_path": config_path,
+        "mesh_config_path": mesh_config_path,
+        "gs_config_path": gs_config_path,
+        "seed": seed,
+        "stage1_steps": stage1_steps,
+        "stage1_cfg": stage1_cfg,
+        "stage1_cfg_pm": stage1_cfg_pm,
+        "stage2_steps": stage2_steps,
+        "stage2_cfg": stage2_cfg,
+        "with_postprocess": with_postprocess,
+        "simplify": simplify,
+        "add_textures": add_textures,
+        "texture_mode": texture_mode,
+        "texture_size": texture_size,
+    }
+
+    # Send request - longer timeout for batch processing
+    # Estimate: ~60s per object for full pipeline
+    timeout = max(600.0, len(masks) * 120.0)
+    response = bridge._send_request(request, timeout=timeout)
+
+    if response.get("status") == "error":
+        raise RuntimeError(f"Batch scene generation failed: {response.get('error')}\n{response.get('traceback', '')}")
 
     return response
 

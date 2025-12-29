@@ -1,5 +1,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
+import torch.nn.functional as F
 import numpy as np
 import trimesh
 from pytorch3d.structures import Meshes
@@ -99,8 +100,19 @@ def layout_post_optimization(
     # get mask and renderer
     mask, renderer = get_mask_renderer(Mask, min_size, Intrinsics, device)
 
+    # Resize Point_Map to match the resized mask
+    H, W = mask.shape[-2:]
+    Point_Map_resized = F.interpolate(
+        Point_Map.unsqueeze(0) if Point_Map.dim() == 3 else Point_Map,
+        size=(H, W),
+        mode="bilinear",
+        align_corners=False,
+    )
+    if Point_Map_resized.dim() == 4:
+        Point_Map_resized = Point_Map_resized.squeeze(0)
+
     # check occlusion
-    if check_occlusion(mask[0, 0].cpu().numpy(), Point_Map.cpu().numpy()):
+    if check_occlusion(mask[0, 0].cpu().numpy(), Point_Map_resized.cpu().numpy()):
         return (
             Quaternion,
             Translation,
@@ -113,7 +125,7 @@ def layout_post_optimization(
     # Step 1: Manual Alignment
     source_points, target_points, center, tfm1, mesh, ori_iou, final_iou, flag_notgt = (
         run_alignment(
-            Point_Map, mask, mesh, center, faces_idx, textures, renderer, device
+            Point_Map_resized, mask, mesh, center, faces_idx, textures, renderer, device
         )
     )
 

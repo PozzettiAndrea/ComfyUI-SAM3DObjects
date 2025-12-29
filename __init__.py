@@ -42,6 +42,7 @@ from .nodes.export_ply import SAM3DExportPLY, SAM3DExportPLYBatch
 from .nodes.preview_nodes import SAM3D_PreviewPointCloud
 from .nodes.pose_optimization import SAM3D_PoseOptimization
 from .nodes.scene_generate import SAM3DSceneGenerate
+from .nodes.scene_pose_optimize import SAM3D_ScenePoseOptimize
 
 
 __version__ = "1.0.0"
@@ -62,6 +63,7 @@ NODE_CLASS_MAPPINGS = {
     "SAM3D_PreviewPointCloud": SAM3D_PreviewPointCloud,
     "SAM3D_PoseOptimization": SAM3D_PoseOptimization,
     "SAM3DSceneGenerate": SAM3DSceneGenerate,
+    "SAM3D_ScenePoseOptimize": SAM3D_ScenePoseOptimize,
 }
 
 # Optional: Human-readable names for nodes
@@ -78,6 +80,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3D_PreviewPointCloud": "SAM3D Preview Point Cloud",
     "SAM3D_PoseOptimization": "SAM3D Pose Optimization",
     "SAM3DSceneGenerate": "SAM3D Scene Generate",
+    "SAM3D_ScenePoseOptimize": "SAM3D Scene Pose Optimize",
 }
 
 # Print info when loaded
