@@ -205,7 +205,10 @@ def main():
         cuda=cuda_version,
         pytorch_version=pytorch_version,
         requirements_file=node_root / "local_env_settings" / "requirements_env.txt",
-        requirements=[f"pytorch3d=={pytorch3d_version}"],
+        requirements=[
+            f"torch=={pytorch_version}",  # Pin torch to prevent upgrades
+            f"pytorch3d=={pytorch3d_version}",
+        ],
         wheel_sources=[
             "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
         ],
