@@ -20,16 +20,38 @@ from comfyui_isolation import IsolatedEnv, WorkerBridge, detect_cuda_version
 # Node root directory
 NODE_ROOT = Path(__file__).parent.parent
 
-# Environment configuration for SAM3DObjects
-ENV_CONFIG = IsolatedEnv(
-    name="sam3dobjects",
-    python="3.10",
-    cuda=detect_cuda_version(),
-    requirements_file=NODE_ROOT / "local_env_settings" / "requirements_env.txt",
-    wheel_sources=[
-        "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
-    ],
-)
+
+def _get_env_config() -> IsolatedEnv:
+    """Build environment config with version-matched pytorch3d."""
+    cuda_version = detect_cuda_version() or "12.4"
+    cuda_short = cuda_version.replace(".", "")
+
+    # PyTorch version depends on CUDA (Blackwell needs 2.8.0)
+    if cuda_version == "12.8":
+        pytorch_version = "2.8.0"
+    else:
+        pytorch_version = "2.4.1"
+
+    # pytorch3d version string for MiroPsota wheels
+    pytorch3d_version = f"0.7.8+5043d15pt{pytorch_version}cu{cuda_short}"
+
+    return IsolatedEnv(
+        name="sam3dobjects",
+        python="3.10",
+        cuda=cuda_version,
+        pytorch_version=pytorch_version,
+        requirements_file=NODE_ROOT / "local_env_settings" / "requirements_env.txt",
+        requirements=[f"pytorch3d=={pytorch3d_version}"],
+        wheel_sources=[
+            "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
+        ],
+        index_urls=[
+            "https://miropsota.github.io/torch_packages_builder",
+        ],
+    )
+
+
+ENV_CONFIG = _get_env_config()
 
 # Singleton bridge instance
 _bridge: Optional[WorkerBridge] = None
