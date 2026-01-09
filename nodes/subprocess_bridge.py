@@ -41,7 +41,10 @@ def _get_env_config() -> IsolatedEnv:
         cuda=cuda_version,
         pytorch_version=pytorch_version,
         requirements_file=NODE_ROOT / "local_env_settings" / "requirements_env.txt",
-        requirements=[f"pytorch3d=={pytorch3d_version}"],
+        requirements=[
+            f"pytorch3d=={pytorch3d_version}",
+            "comfyui-isolation @ git+https://github.com/PozzettiAndrea/comfyui-isolation",
+        ],
         wheel_sources=[
             "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
         ],
