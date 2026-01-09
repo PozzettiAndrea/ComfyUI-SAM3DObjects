@@ -5,11 +5,14 @@ Installation script for ComfyUI-SAM3DObjects with isolated environment.
 This script sets up an isolated Python virtual environment with all dependencies
 required for SAM 3D Objects. The environment is completely isolated from
 ComfyUI's main environment, preventing any dependency conflicts.
+
+Uses comfyui-isolation package for environment management.
 """
 
 import sys
 import os
 import platform
+import subprocess
 from pathlib import Path
 
 
@@ -148,6 +151,24 @@ def ensure_vcredist():
 # Main Installation
 # =============================================================================
 
+def ensure_comfyui_isolation():
+    """Install comfyui-isolation package if not already installed."""
+    try:
+        import comfyui_isolation
+        return True
+    except ImportError:
+        print("[SAM3DObjects] Installing comfyui-isolation package...")
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install",
+                "git+https://github.com/PozzettiAndrea/comfyui-isolation"
+            ])
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"[SAM3DObjects] Failed to install comfyui-isolation: {e}")
+            return False
+
+
 def main():
     """Main installation function."""
     # Check VC++ Redistributable first (required for PyTorch CUDA and native extensions)
@@ -155,23 +176,43 @@ def main():
         print("[SAM3DObjects] WARNING: VC++ Redistributable installation failed.")
         print("[SAM3DObjects] Some features may not work. Continuing anyway...")
 
+    # Ensure comfyui-isolation is installed
+    if not ensure_comfyui_isolation():
+        print("[SAM3DObjects] Cannot continue without comfyui-isolation package.")
+        return 1
+
+    from comfyui_isolation import IsolatedEnv, IsolatedEnvManager, detect_cuda_version
+
     node_root = Path(__file__).parent.absolute()
-    sys.path.insert(0, str(node_root))
 
-    from local_env import SAM3DEnvironmentManager, InstallConfig
+    # Define the isolated environment configuration
+    env_config = IsolatedEnv(
+        name="sam3dobjects",
+        python="3.10",
+        cuda=detect_cuda_version(),
+        requirements_file=node_root / "local_env_settings" / "requirements_env.txt",
+        wheel_sources=[
+            "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
+        ],
+    )
 
-    env_mgr = SAM3DEnvironmentManager(node_root, InstallConfig())
+    # Create environment manager
+    def log(msg):
+        print(f"[SAM3DObjects] {msg}")
+
+    manager = IsolatedEnvManager(base_dir=node_root, log_callback=log)
 
     # Check if already ready
-    if env_mgr.is_environment_ready():
+    if manager.is_ready(env_config, verify_packages=["torch", "pytorch3d"]):
+        env_dir = manager.get_env_dir(env_config)
         print("[SAM3DObjects] Isolated environment already exists and is ready!")
-        print(f"[SAM3DObjects] Location: {env_mgr.env_dir}")
-        print("[SAM3DObjects] To reinstall, delete the _env directory.")
+        print(f"[SAM3DObjects] Location: {env_dir}")
+        print("[SAM3DObjects] To reinstall, delete the environment directory.")
         return 0
 
     # Setup environment
     try:
-        env_mgr.setup_environment()
+        manager.setup(env_config, verify_packages=["torch", "pytorch3d"])
         return 0
     except Exception as e:
         print(f"\n[SAM3DObjects] Installation FAILED: {e}")
