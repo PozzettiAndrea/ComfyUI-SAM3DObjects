@@ -185,14 +185,32 @@ def main():
 
     node_root = Path(__file__).parent.absolute()
 
+    # Detect CUDA and set matching PyTorch/pytorch3d versions
+    cuda_version = detect_cuda_version() or "12.4"
+    cuda_short = cuda_version.replace(".", "")
+
+    # PyTorch version depends on CUDA (Blackwell needs 2.8.0)
+    if cuda_version == "12.8":
+        pytorch_version = "2.8.0"
+    else:
+        pytorch_version = "2.4.1"
+
+    # pytorch3d version string for MiroPsota wheels
+    pytorch3d_version = f"0.7.8+5043d15pt{pytorch_version}cu{cuda_short}"
+
     # Define the isolated environment configuration
     env_config = IsolatedEnv(
         name="sam3dobjects",
         python="3.10",
-        cuda=detect_cuda_version(),
+        cuda=cuda_version,
+        pytorch_version=pytorch_version,
         requirements_file=node_root / "local_env_settings" / "requirements_env.txt",
+        requirements=[f"pytorch3d=={pytorch3d_version}"],
         wheel_sources=[
             "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
+        ],
+        index_urls=[
+            "https://miropsota.github.io/torch_packages_builder",
         ],
     )
 
