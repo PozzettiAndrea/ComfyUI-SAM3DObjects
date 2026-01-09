@@ -4,6 +4,8 @@ Inference worker for SAM3D that runs in the isolated environment.
 This worker loads the SAM3D model and handles inference requests
 via IPC (stdin/stdout communication).
 
+Uses comfyui-isolation's BaseWorker for the IPC protocol.
+
 The actual implementation is split into modules in inference_scripts/:
 - lazy_manager: Lazy loading of models for low-VRAM GPUs
 - utils: Serialization, coordinate transforms, file I/O
@@ -16,9 +18,29 @@ The actual implementation is split into modules in inference_scripts/:
 """
 
 import sys
-import json
-import traceback
+import os
 from pathlib import Path
+
+# CRITICAL: Suppress all library output BEFORE any imports
+# Libraries like OmegaConf, Hydra, PyTorch, CUDA can print to stdout,
+# which interferes with our JSON-based IPC protocol
+import warnings
+import logging
+
+warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['HYDRA_FULL_ERROR'] = '0'
+logging.disable(logging.CRITICAL)
+
+# Configure loguru early
+try:
+    from loguru import logger
+    logger.remove()
+    logger.add(sys.stderr, level="ERROR", format="{message}")
+except ImportError:
+    pass
+
+from comfyui_isolation import BaseWorker, register
 
 # Import from modular inference scripts
 from inference_scripts import (
@@ -32,103 +54,71 @@ from inference_scripts import (
 )
 
 
-def main():
-    """Main worker loop - reads requests from stdin, writes responses to stdout."""
+class SAM3DWorker(BaseWorker):
+    """
+    SAM3D inference worker.
 
-    # CRITICAL: Suppress all library output to prevent stdout pollution
-    # Libraries like OmegaConf, Hydra, PyTorch, CUDA can print to stdout,
-    # which interferes with our JSON-based IPC protocol
-    import warnings
-    import logging
-    import os
+    Handles all inference requests for the SAM3DObjects ComfyUI node.
+    Each method receives kwargs and passes them as a dict to the
+    underlying run_* functions from inference_scripts.
+    """
 
-    # Suppress Python warnings from all libraries
-    warnings.filterwarnings("ignore")
+    def setup(self):
+        """Called once when worker starts - verify critical dependencies."""
+        self.log("SAM3D inference worker starting...")
+        self.log(f"Python: {sys.executable}")
+        self.log(f"Working directory: {Path.cwd()}")
 
-    # Suppress TensorFlow logs (if used by any dependency)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-    # Suppress Hydra full error traces
-    os.environ['HYDRA_FULL_ERROR'] = '0'
-
-    # Disable all Python logging from libraries
-    logging.disable(logging.CRITICAL)
-
-    # Configure loguru to only show errors (suppress INFO/WARNING spam from vendor code)
-    try:
-        from loguru import logger
-        logger.remove()  # Remove default handler
-        logger.add(sys.stderr, level="ERROR", format="{message}")
-    except ImportError:
-        pass  # loguru not available yet
-
-    print("[Worker] SAM3D inference worker started", file=sys.stderr)
-    print(f"[Worker] Python: {sys.executable}", file=sys.stderr)
-    print(f"[Worker] Working directory: {Path.cwd()}", file=sys.stderr)
-
-    # Verify critical imports
-    try:
-        import torch
-        import pytorch3d
-        print(f"[Worker] PyTorch version: {torch.__version__}", file=sys.stderr)
-        print(f"[Worker] PyTorch3D version: {pytorch3d.__version__}", file=sys.stderr)
-        print(f"[Worker] CUDA available: {torch.cuda.is_available()}", file=sys.stderr)
-    except Exception as e:
-        print(f"[Worker] Warning: Could not verify dependencies: {e}", file=sys.stderr)
-
-    print("[Worker] Ready for requests", file=sys.stderr)
-
-    # Read requests from stdin
-    for line in sys.stdin:
-        line = line.strip()
-        if not line:
-            continue
-
+        # Verify critical imports
         try:
-            request = json.loads(line)
-
-            # Handle special commands
-            if request.get("command") == "ping":
-                response = {"status": "pong"}
-            elif request.get("command") == "shutdown":
-                print("[Worker] Shutdown requested", file=sys.stderr)
-                response = {"status": "shutdown"}
-                print(json.dumps(response), flush=True)
-                break
-            elif request.get("command") == "pose_optimization":
-                response = run_pose_optimization(request)
-            elif request.get("command") == "pose_optimization_batch":
-                response = run_pose_optimization_batch(request)
-            elif request.get("command") == "texture_bake_direct":
-                response = run_texture_bake_direct(request)
-            elif request.get("command") == "generate_slat":
-                response = run_generate_slat(request)
-            elif request.get("command") == "decode":
-                response = run_decode(request)
-            elif request.get("command") == "scene_generate_batch":
-                response = run_scene_generate_batch(request)
-                print(f"[Worker] scene_generate_batch returned, preparing JSON response", file=sys.stderr)
-            else:
-                # Run inference
-                response = run_inference(request)
-
-            # Send response
-            response_json = json.dumps(response)
-            print(f"[Worker] Sending JSON response ({len(response_json)} bytes)", file=sys.stderr)
-            print(response_json, flush=True)
-
+            import torch
+            import pytorch3d
+            self.log(f"PyTorch version: {torch.__version__}")
+            self.log(f"PyTorch3D version: {pytorch3d.__version__}")
+            self.log(f"CUDA available: {torch.cuda.is_available()}")
         except Exception as e:
-            print(f"[Worker] Error processing request: {e}", file=sys.stderr)
-            traceback.print_exc(file=sys.stderr)
-            error_response = {
-                "status": "error",
-                "error": str(e),
-                "traceback": traceback.format_exc()
-            }
-            print(json.dumps(error_response), flush=True)
+            self.log(f"Warning: Could not verify dependencies: {e}")
 
-    print("[Worker] Worker shutting down", file=sys.stderr)
+        self.log("Ready for requests")
+
+    @register("inference")
+    def inference(self, **kwargs):
+        """Run main inference pipeline."""
+        return run_inference(kwargs)
+
+    @register("decode")
+    def decode(self, **kwargs):
+        """Decode SLAT to Gaussian or Mesh."""
+        return run_decode(kwargs)
+
+    @register("generate_slat")
+    def generate_slat(self, **kwargs):
+        """Generate SLAT from image."""
+        return run_generate_slat(kwargs)
+
+    @register("texture_bake_direct")
+    def texture_bake_direct(self, **kwargs):
+        """Bake texture directly from Gaussian PLY to Mesh GLB."""
+        return run_texture_bake_direct(kwargs)
+
+    @register("pose_optimization")
+    def pose_optimization(self, **kwargs):
+        """Run pose optimization."""
+        return run_pose_optimization(kwargs)
+
+    @register("pose_optimization_batch")
+    def pose_optimization_batch(self, **kwargs):
+        """Run batch pose optimization."""
+        return run_pose_optimization_batch(kwargs)
+
+    @register("scene_generate_batch")
+    def scene_generate_batch(self, **kwargs):
+        """Run batch scene generation."""
+        self.log("Starting scene_generate_batch")
+        result = run_scene_generate_batch(kwargs)
+        self.log("scene_generate_batch complete")
+        return result
 
 
 if __name__ == "__main__":
-    main()
+    SAM3DWorker().run()
