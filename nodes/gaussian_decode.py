@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from .subprocess_bridge import InferenceWorkerBridge, run_decode
+from .subprocess_bridge import get_bridge, run_decode
 from .load_model import LoadSAM3DModel, REQUIRED_FILES
 
 
@@ -20,8 +20,7 @@ class SAM3DGaussianDecode:
 
     @classmethod
     def get_bridge(cls):
-        node_root = Path(__file__).parent.parent
-        return InferenceWorkerBridge.get_instance(node_root)
+        return get_bridge()
 
     @classmethod
     def INPUT_TYPES(cls):

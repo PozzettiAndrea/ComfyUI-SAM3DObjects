@@ -123,9 +123,8 @@ class SAM3D_PoseOptimization:
             return (glb_path, pose, -1.0)
 
         # Get the worker bridge
-        from .subprocess_bridge import InferenceWorkerBridge
-        node_root = Path(__file__).parent.parent
-        bridge = InferenceWorkerBridge.get_instance(node_root)
+        from .subprocess_bridge import get_bridge
+        bridge = get_bridge()
 
         # Prepare mask for serialization
         if mask.dim() == 3:
