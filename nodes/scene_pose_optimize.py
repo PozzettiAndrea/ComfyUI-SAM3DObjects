@@ -201,7 +201,6 @@ class SAM3D_ScenePoseOptimize:
                 intrinsics_np = np.array(intrinsics)
 
             request = {
-                "command": "pose_optimization_batch",
                 "object_dir": object_dir,
                 "glb_path": mesh_path,
                 "pointmap_path": pointmap_path,
@@ -215,7 +214,7 @@ class SAM3D_ScenePoseOptimize:
 
             try:
                 print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Running optimization...")
-                response = bridge._send_request(request, timeout=180.0)
+                response = bridge.call("pose_optimization_batch", timeout=180.0, **request)
 
                 if response.get("status") == "error":
                     print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Worker error: {response.get('error')}")
