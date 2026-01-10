@@ -24,7 +24,7 @@ def cleanup_orphaned_workers():
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
             cmdline = proc.info.get('cmdline') or []
-            if any('inference_worker.py' in arg for arg in cmdline):
+            if any('worker.py' in arg for arg in cmdline):
                 proc.terminate()
                 print(f"[SAM3DObjects]   Killed worker PID {proc.pid}")
                 killed_count += 1

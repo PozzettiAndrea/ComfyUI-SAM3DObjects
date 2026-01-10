@@ -36,7 +36,7 @@ def get_bridge() -> WorkerBridge:
         # Load environment config from comfyui_isolation_reqs.toml
         _bridge = WorkerBridge.from_config_file(
             node_dir=NODE_ROOT,
-            worker_script=NODE_ROOT / "inference_worker.py",
+            worker_script=NODE_ROOT / "worker.py",
             log_callback=log,
         )
     return _bridge
