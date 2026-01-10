@@ -586,21 +586,17 @@ def run_decode_lazy(
             if with_postprocess:
                 print(f"[Worker] Applying mesh postprocessing (simplify={simplify})...", file=sys.stderr)
                 print(f"[Worker] Note: Vertex colors will be interpolated after simplification", file=sys.stderr)
-                try:
-                    from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
-                    vertices, faces = postprocess_mesh(
-                        vertices,
-                        faces,
-                        simplify=True,
-                        simplify_ratio=simplify,
-                        fill_holes=True,
-                        verbose=True,
-                    )
-                    print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
-                    original_vertex_colors = None
-                except ImportError as e:
-                    print(f"[Worker] Warning: Postprocessing unavailable ({e}), skipping simplification", file=sys.stderr)
-                    print(f"[Worker] To enable postprocessing, install gsplat: pip install gsplat", file=sys.stderr)
+                from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
+                vertices, faces = postprocess_mesh(
+                    vertices,
+                    faces,
+                    simplify=True,
+                    simplify_ratio=simplify,
+                    fill_holes=True,
+                    verbose=True,
+                )
+                print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
+                original_vertex_colors = None
 
             # Process vertex colors if available
             vertex_colors = None
