@@ -7,6 +7,8 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
+from .subprocess_bridge import run_inference
+
 
 class IsolatedSAM3DModel:
     """
@@ -36,14 +38,6 @@ class IsolatedSAM3DModel:
         self.compile = compile
         self.use_gpu_cache = use_gpu_cache
         self.depth_backend = depth_backend
-        self._bridge = None
-
-    def get_bridge(self):
-        """Get or create the subprocess bridge."""
-        if self._bridge is None:
-            from .subprocess_bridge import get_bridge
-            self._bridge = get_bridge()
-        return self._bridge
 
     def __call__(
         self,
@@ -105,8 +99,7 @@ class IsolatedSAM3DModel:
         Returns:
             Output dictionary with gaussian splats, mesh, and pose data
         """
-        bridge = self.get_bridge()
-        return bridge.run_inference(
+        return run_inference(
             config_path=self.config_path,
             image=image,
             mask=mask,

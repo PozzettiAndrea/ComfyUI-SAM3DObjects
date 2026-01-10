@@ -29,10 +29,6 @@ class SAM3DSceneGenerate:
     """
 
     @classmethod
-    def get_bridge(cls):
-        return get_bridge()
-
-    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
@@ -265,9 +261,8 @@ class SAM3DSceneGenerate:
             if not os.path.exists(object_pointmap_path):
                 shutil.copy(pointmap_path, object_pointmap_path)
 
-        # Start bridge worker
-        bridge = self.get_bridge()
-        bridge.start_worker()
+        # Get bridge (auto-starts worker on first call)
+        bridge = get_bridge()
 
         # Run batch processing - models are loaded once per phase
         print(f"[SAM3DObjects] SceneGenerate: Starting batch processing...")

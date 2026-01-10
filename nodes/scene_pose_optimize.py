@@ -7,6 +7,8 @@ import numpy as np
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from .subprocess_bridge import get_bridge
+
 
 class SAM3D_ScenePoseOptimize:
     """
@@ -48,11 +50,6 @@ class SAM3D_ScenePoseOptimize:
     FUNCTION = "optimize_poses"
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Optimize poses for all objects in a scene folder using alignment algorithms."
-
-    @classmethod
-    def get_bridge(cls):
-        from .subprocess_bridge import get_bridge
-        return get_bridge()
 
     def _discover_objects(self, output_folder: str) -> List[str]:
         """Discover all object_N/ folders in sorted order."""
@@ -121,8 +118,7 @@ class SAM3D_ScenePoseOptimize:
         enable_render = optimization_mode == "manual_icp_render"
 
         # Get bridge for worker communication
-        bridge = self.get_bridge()
-        bridge.start_worker()
+        bridge = get_bridge()
 
         glb_paths = []
         iou_scores = []
