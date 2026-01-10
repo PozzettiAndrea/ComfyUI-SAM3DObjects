@@ -1,22 +1,18 @@
 """
-Lazy model loading manager for SAM3D.
+On-demand model loading manager for SAM3D.
 
-Loads models only when needed and unloads them after use when use_gpu_cache=False.
+Loads models only when needed and can unload them after use.
 This allows running on GPUs with less than 32GB VRAM.
 """
 
 import sys
 import os
-import platform
-import shutil
 from pathlib import Path
 from typing import Dict, Any, Optional
 import torch
 
 
-# Global model cache
-_MODEL = None
-_CURRENT_CONFIG = None
+# Global model manager instance
 _LAZY_MANAGER = None
 
 
@@ -400,154 +396,17 @@ class LazyModelManager:
         return torch.tensor(slat_mean), torch.tensor(slat_std)
 
 
-def get_lazy_manager(config_path: str, compile: bool = False) -> LazyModelManager:
-    """Get or create a LazyModelManager instance."""
+def get_model_manager(config_path: str, compile: bool = False) -> LazyModelManager:
+    """Get or create a ModelManager instance (lazy loading)."""
     global _LAZY_MANAGER
 
     if _LAZY_MANAGER is not None and _LAZY_MANAGER.config_path == config_path:
         return _LAZY_MANAGER
 
-    print(f"[Worker] Creating LazyModelManager for {config_path}", file=sys.stderr)
+    print(f"[Worker] Creating ModelManager for {config_path}", file=sys.stderr)
     _LAZY_MANAGER = LazyModelManager(config_path, compile)
     return _LAZY_MANAGER
 
 
-def load_model(config_path: str, compile: bool = False):
-    """Load the SAM3D model (full pipeline)."""
-    global _MODEL, _CURRENT_CONFIG
-
-    config_key = f"{config_path}_{compile}"
-
-    if _MODEL is not None and _CURRENT_CONFIG == config_key:
-        return _MODEL
-
-    print(f"[Worker] Loading model from {config_path}", file=sys.stderr)
-
-    # Add vendor directory to path
-    vendor_path = Path(__file__).parent.parent / "vendor"
-    if str(vendor_path) not in sys.path:
-        sys.path.insert(0, str(vendor_path))
-        print(f"[Worker] Added vendor path: {vendor_path}", file=sys.stderr)
-
-    os.environ['LIDRA_SKIP_INIT'] = '1'
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    os.environ['PYTHONUTF8'] = '1'
-
-    # Setup venv paths
-    venv_bin = (Path(__file__).parent.parent / "_env" / "bin").resolve()
-    if venv_bin.exists():
-        os.environ['PATH'] = f"{venv_bin}{os.pathsep}{os.environ.get('PATH', '')}"
-
-    # Setup compiler for CUDA JIT
-    _setup_compiler(venv_bin)
-
-    # Setup CUDA_HOME
-    _setup_cuda_home(Path(__file__).parent.parent / "_env")
-
-    # Setup model cache
-    config_dir = Path(config_path).parent.parent
-    models_cache_dir = config_dir / "_models_cache"
-    models_cache_dir.mkdir(exist_ok=True)
-
-    os.environ['TORCH_HOME'] = str(models_cache_dir / "torch")
-    os.environ['HF_HOME'] = str(models_cache_dir / "huggingface")
-    os.environ['TRANSFORMERS_CACHE'] = str(models_cache_dir / "transformers")
-
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-
-    config = OmegaConf.load(config_path)
-    config.compile_model = compile
-    config.workspace_dir = os.path.dirname(config_path)
-
-    _MODEL = instantiate(config)
-    _CURRENT_CONFIG = config_key
-
-    print(f"[Worker] Model loaded successfully", file=sys.stderr)
-    return _MODEL
-
-
-def _setup_compiler(compiler_bin: Path):
-    """Setup compiler symlinks for CUDA JIT compilation."""
-    if not compiler_bin.exists():
-        return
-
-    os.environ['PATH'] = f"{compiler_bin}{os.pathsep}{os.environ['PATH']}"
-
-    system = platform.system()
-
-    if system == "Linux":
-        wrapper_gxx = compiler_bin / "x86_64-conda-linux-gnu-g++"
-        wrapper_gcc = compiler_bin / "x86_64-conda-linux-gnu-gcc"
-        target_gxx = compiler_bin / "g++"
-        target_gcc = compiler_bin / "gcc"
-        cxx_name, cc_name = "g++", "gcc"
-        use_symlink = True
-    elif system == "Windows":
-        cl_exe = compiler_bin / "cl.exe"
-        if cl_exe.exists():
-            os.environ['CXX'] = str(cl_exe)
-            os.environ['CC'] = str(cl_exe)
-            return
-        wrapper_gxx = compiler_bin / "x86_64-w64-mingw32-g++.exe"
-        wrapper_gcc = compiler_bin / "x86_64-w64-mingw32-gcc.exe"
-        target_gxx = compiler_bin / "g++.exe"
-        target_gcc = compiler_bin / "gcc.exe"
-        cxx_name, cc_name = "g++.exe", "gcc.exe"
-        use_symlink = False
-    elif system == "Darwin":
-        darwin_gxx = list(compiler_bin.glob("*-apple-darwin*-clang++"))
-        darwin_gcc = list(compiler_bin.glob("*-apple-darwin*-clang"))
-        if darwin_gxx and darwin_gcc:
-            wrapper_gxx = darwin_gxx[0]
-            wrapper_gcc = [w for w in darwin_gcc if not w.name.endswith("++")][0]
-            target_gxx = compiler_bin / "clang++"
-            target_gcc = compiler_bin / "clang"
-            cxx_name, cc_name = "clang++", "clang"
-            use_symlink = True
-        else:
-            return
-    else:
-        return
-
-    # Create symlinks/copies
-    for wrapper, target in [(wrapper_gxx, target_gxx), (wrapper_gcc, target_gcc)]:
-        if wrapper.exists() and not target.exists():
-            try:
-                if use_symlink:
-                    target.symlink_to(wrapper.name)
-                else:
-                    shutil.copy2(wrapper, target)
-            except (FileExistsError, OSError):
-                pass
-
-    os.environ['CXX'] = cxx_name
-    os.environ['CC'] = cc_name
-
-
-def _setup_cuda_home(venv_root: Path):
-    """Setup CUDA_HOME for JIT compilation."""
-    cuda_home = None
-
-    # Option 1: conda-forge CUDA
-    conda_cuda = venv_root / "cuda"
-    if (conda_cuda / "bin" / "nvcc").exists():
-        cuda_home = conda_cuda
-
-    # Option 2: PyPI CUDA
-    if not cuda_home:
-        try:
-            nvcc_pattern = "nvcc.exe" if os.name == "nt" else "nvcc"
-            nvcc_paths = list(venv_root.glob(f"**/{nvcc_pattern}"))
-            if nvcc_paths:
-                nvcc_path = nvcc_paths[0]
-                if nvcc_path.parent.name == "bin":
-                    cuda_home = nvcc_path.parent.parent
-        except Exception:
-            pass
-
-    if cuda_home:
-        os.environ['CUDA_HOME'] = str(cuda_home)
-        cuda_bin = cuda_home / "bin"
-        if cuda_bin.exists():
-            os.environ['PATH'] = f"{cuda_bin}{os.pathsep}{os.environ.get('PATH', '')}"
+# Backward compatibility alias
+get_lazy_manager = get_model_manager

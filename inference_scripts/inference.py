@@ -14,17 +14,16 @@ from typing import Any, Dict
 import numpy as np
 import torch
 
-from .lazy_manager import get_lazy_manager, load_model
+from .lazy_manager import get_model_manager
 from .utils import (
     deserialize_image,
     deserialize_mask,
     transform_to_global_coordinates,
     save_output_to_disk,
-    unload_model,
 )
 from .preprocessing import load_pointmap_from_file
 from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy
-from .depth import run_depth_only_lazy, run_depth_only
+from .depth import run_depth_only
 
 
 def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -34,30 +33,16 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
         config_path = request.get("config_path")
         compile_model = request.get("compile", False)
 
-        # Handle unload_model command
-        if request.get("unload_model"):
-            model_type = request.get("unload_model")
-            print(f"[Worker] Unloading model: {model_type}", file=sys.stderr)
-            model = load_model(config_path, compile_model)
-            return unload_model(model, model_type)
-
         # Handle depth_only mode (MoGe depth estimation only)
         if request.get("depth_only", False):
             image_b64 = request["image"]
             image = deserialize_image(image_b64)
-            use_lazy_loading = request.get("use_lazy_loading", True)
             depth_backend = request.get("depth_backend", "moge2")
+            unload_after = not request.get("keep_in_vram", False)
 
-            if use_lazy_loading:
-                # Lazy loading: loads only depth model (~2GB VRAM)
-                print(f"[Worker] Running depth-only mode with LAZY LOADING (backend={depth_backend})", file=sys.stderr)
-                lazy_manager = get_lazy_manager(config_path, compile_model)
-                return run_depth_only_lazy(lazy_manager, image, unload_after=True, depth_backend=depth_backend)
-            else:
-                # Full pipeline loading (15GB+ VRAM)
-                print(f"[Worker] Running depth-only mode (full pipeline, backend={depth_backend})", file=sys.stderr)
-                model = load_model(config_path, compile_model)
-                return run_depth_only(model, image)
+            print(f"[Worker] Running depth estimation (backend={depth_backend})", file=sys.stderr)
+            model_manager = get_model_manager(config_path, compile_model)
+            return run_depth_only(model_manager, image, unload_after=unload_after, depth_backend=depth_backend)
 
         # Extract request parameters
         use_cache = request.get("use_cache", False)
@@ -103,41 +88,37 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             intrinsics = torch.from_numpy(intrinsics_np).cuda() if torch.cuda.is_available() else torch.from_numpy(intrinsics_np)
             print(f"[Worker] Intrinsics shape: {intrinsics.shape}", file=sys.stderr)
 
-        # Determine lazy loading mode
-        use_lazy_loading = request.get("use_lazy_loading", use_cache)
-
-        # Check if we're running an individual stage that supports lazy loading
+        # Check if we're running an individual stage (on-demand loading)
         has_stage1_input = request.get("stage1_output_path") is not None or request.get("stage1_output") is not None
         has_slat_input = request.get("slat_output_path") is not None or request.get("slat_output") is not None
-        can_use_lazy_stage = use_lazy_loading and (
+        is_single_stage = (
             (stage1_only and pointmap is not None) or
             (slat_only and has_stage1_input) or
             (gaussian_only and has_slat_input) or
             (mesh_only and has_slat_input)
         )
 
-        # Only load full pipeline if we're NOT using lazy stage loading
-        model = None
-        if not can_use_lazy_stage:
-            if use_lazy_loading:
-                try:
-                    lazy_manager = get_lazy_manager(config_path, compile_model)
-                    model = lazy_manager.get_full_pipeline()
-                except torch.cuda.OutOfMemoryError as e:
-                    import gc
-                    gc.collect()
-                    torch.cuda.empty_cache()
+        # Get model manager (always on-demand loading)
+        model_manager = get_model_manager(config_path, compile_model)
 
-                    error_msg = (
-                        f"Out of memory loading SAM3D models. "
-                        f"SAM3D requires 32GB+ VRAM for full pipeline. "
-                        f"Available VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f}GB. "
-                        f"Tip: Use individual stage nodes (DepthEstimate, SparseGen, etc.) with lazy loading "
-                        f"to run on GPUs with less VRAM."
-                    )
-                    raise RuntimeError(error_msg) from e
-            else:
-                model = load_model(config_path, compile_model)
+        # Only load full pipeline if we're NOT running a single stage
+        model = None
+        if not is_single_stage:
+            try:
+                model = model_manager.get_full_pipeline()
+            except torch.cuda.OutOfMemoryError as e:
+                import gc
+                gc.collect()
+                torch.cuda.empty_cache()
+
+                error_msg = (
+                    f"Out of memory loading SAM3D models. "
+                    f"SAM3D requires 32GB+ VRAM for full pipeline. "
+                    f"Available VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f}GB. "
+                    f"Tip: Use individual stage nodes (DepthEstimate, SparseGen, etc.) "
+                    f"to run on GPUs with less VRAM."
+                )
+                raise RuntimeError(error_msg) from e
 
         # Deserialize inputs (may be None for decode-only operations)
         image = deserialize_image(image_b64) if image_b64 else None
@@ -243,24 +224,22 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 mask = mask.astype(np.uint8)
 
-        # LAZY LOADING BRANCHES
-        # For decode-only operations (gaussian_only, mesh_only), always use lazy loading
-        # since we don't need the full pipeline and don't have an image
-        is_decode_only = (gaussian_only or mesh_only) and has_slat_input
-        if (use_lazy_loading and (stage1_only or slat_only or gaussian_only or mesh_only)) or is_decode_only:
-            print(f"[Worker] *** LAZY LOADING MODE *** (low VRAM)", file=sys.stderr)
-            lazy_manager = get_lazy_manager(config_path, compile_model)
+        # Single-stage operations (on-demand model loading)
+        unload_after = not request.get("keep_in_vram", False)
+
+        if is_single_stage:
+            print(f"[Worker] Running single stage (on-demand loading)", file=sys.stderr)
 
             # Stage 1 only
             if stage1_only and pointmap is not None:
                 from PIL import Image as PILImage
                 mask_pil = PILImage.fromarray(mask)
                 return run_stage1_lazy(
-                    lazy_manager, image, mask_pil, pointmap,
+                    model_manager, image, mask_pil, pointmap,
                     seed=seed,
                     inference_steps=stage1_inference_steps,
                     cfg_strength=stage1_cfg_strength,
-                    unload_after=True,
+                    unload_after=unload_after,
                     output_dir=output_dir
                 )
 
@@ -269,11 +248,11 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 from PIL import Image as PILImage
                 mask_pil = PILImage.fromarray(mask)
                 return run_stage2_lazy(
-                    lazy_manager, image, mask_pil, stage1_output,
+                    model_manager, image, mask_pil, stage1_output,
                     seed=seed,
                     inference_steps=stage2_inference_steps,
                     cfg_strength=stage2_cfg_strength,
-                    unload_after=True,
+                    unload_after=unload_after,
                     output_dir=output_dir
                 )
 
@@ -283,9 +262,9 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 if isinstance(slat_data, str):
                     slat_data = pickle.loads(base64.b64decode(slat_data))
                 return run_decode_lazy(
-                    lazy_manager, slat_data,
+                    model_manager, slat_data,
                     decode_format="gaussian",
-                    unload_after=True,
+                    unload_after=unload_after,
                     output_dir=output_dir
                 )
 
@@ -295,15 +274,13 @@ def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
                 if isinstance(slat_data, str):
                     slat_data = pickle.loads(base64.b64decode(slat_data))
                 return run_decode_lazy(
-                    lazy_manager, slat_data,
+                    model_manager, slat_data,
                     decode_format="mesh",
-                    unload_after=True,
+                    unload_after=unload_after,
                     output_dir=output_dir,
                     with_postprocess=with_mesh_postprocess,
                     simplify=simplify
                 )
-
-            print(f"[Worker] Lazy loading requested but falling back to full pipeline", file=sys.stderr)
 
         # Run full pipeline inference
         output = model.run(

@@ -685,7 +685,7 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
     import traceback
     from PIL import Image
 
-    from .lazy_manager import get_lazy_manager
+    from .lazy_manager import get_model_manager
     from .preprocessing import load_pointmap_from_file
 
     try:
@@ -727,7 +727,7 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
         print(f"[Worker] Config path: {config_path}", file=sys.stderr)
 
         # Get lazy manager
-        lazy_manager = get_lazy_manager(str(config_path), compile=False)
+        lazy_manager = get_model_manager(str(config_path), compile=False)
 
         # Stage 1: Sparse structure generation
         stage1_output = None
@@ -863,7 +863,7 @@ def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
     import os
     import traceback
 
-    from .lazy_manager import get_lazy_manager
+    from .lazy_manager import get_model_manager
 
     try:
         # Extract parameters
@@ -890,7 +890,7 @@ def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
         print(f"[Worker] Loaded SLAT data", file=sys.stderr)
 
         # Get lazy manager and run decode
-        lazy_manager = get_lazy_manager(str(config_path), compile=False)
+        lazy_manager = get_model_manager(str(config_path), compile=False)
 
         result = run_decode_lazy(
             lazy_manager,
