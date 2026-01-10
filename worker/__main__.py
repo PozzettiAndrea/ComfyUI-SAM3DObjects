@@ -6,8 +6,8 @@ via IPC (stdin/stdout communication).
 
 Uses comfyui-isolation's BaseWorker for the IPC protocol.
 
-The actual implementation is split into modules in inference_scripts/:
-- lazy_manager: Lazy loading of models for low-VRAM GPUs
+Modules in this package:
+- lazy_manager: On-demand model loading for low-VRAM GPUs
 - utils: Serialization, coordinate transforms, file I/O
 - preprocessing: Image/mask preprocessing
 - stages: Pipeline stages (sparse gen, SLAT gen, decode)
@@ -42,8 +42,8 @@ except ImportError:
 
 from comfyui_isolation import BaseWorker, register
 
-# Import from modular inference scripts
-from inference_scripts import (
+# Import from this package (relative imports)
+from . import (
     run_inference,
     run_texture_bake_direct,
     run_pose_optimization,
@@ -60,7 +60,7 @@ class SAM3DWorker(BaseWorker):
 
     Handles all inference requests for the SAM3DObjects ComfyUI node.
     Each method receives kwargs and passes them as a dict to the
-    underlying run_* functions from inference_scripts.
+    underlying run_* functions.
     """
 
     def setup(self):

@@ -34,9 +34,9 @@ def get_bridge() -> WorkerBridge:
             print(f"[SAM3DObjects] {msg}")
 
         # Load environment config from comfyui_isolation_reqs.toml
+        # Worker location auto-discovered from config or convention (worker/)
         _bridge = WorkerBridge.from_config_file(
             node_dir=NODE_ROOT,
-            worker_script=NODE_ROOT / "worker.py",
             log_callback=log,
         )
     return _bridge
