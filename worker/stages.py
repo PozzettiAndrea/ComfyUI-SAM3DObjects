@@ -19,6 +19,144 @@ from preprocessing import preprocess_image_lazy
 from utils import save_output_to_disk
 
 
+def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
+    """
+    Apply pose transformation (rotation, translation, scale) to a Gaussian object.
+
+    Transforms the Gaussian's internal tensors (positions, rotations, scales)
+    to world coordinates using the pose computed during Stage 1.
+
+    Based on get_gs_transformed() from original SAM3D code.
+
+    Args:
+        gaussian: Gaussian object from decoder
+        pose_data: Dict with 'rotation' (wxyz quaternion), 'translation', 'scale'
+        device: Device for tensor operations
+
+    Returns:
+        Transformed Gaussian object (modified in place)
+    """
+    from pytorch3d.transforms import quaternion_to_matrix, matrix_to_quaternion, quaternion_multiply, Transform3d
+
+    rotation = pose_data.get("rotation")
+    translation = pose_data.get("translation")
+    scale = pose_data.get("scale")
+
+    if rotation is None or translation is None or scale is None:
+        print(f"[Worker] Warning: Missing pose data, skipping Gaussian pose application", file=sys.stderr)
+        return gaussian
+
+    # Convert to tensors
+    if hasattr(rotation, 'cpu'):
+        rotation = rotation.cpu()
+    rotation = torch.tensor(rotation, dtype=torch.float32, device=device).squeeze()
+
+    if hasattr(translation, 'cpu'):
+        translation = translation.cpu()
+    translation = torch.tensor(translation, dtype=torch.float32, device=device).squeeze()
+
+    if hasattr(scale, 'cpu'):
+        scale = scale.cpu()
+    scale = torch.tensor(scale, dtype=torch.float32, device=device).squeeze()
+
+    # Ensure correct shapes
+    if rotation.dim() == 1:
+        rotation = rotation.unsqueeze(0)  # (1, 4)
+    if translation.dim() == 1:
+        translation = translation.unsqueeze(0)  # (1, 3)
+    if scale.dim() == 0:
+        scale = scale.unsqueeze(0).expand(3)  # (3,)
+    elif scale.dim() == 1 and scale.shape[0] == 1:
+        scale = scale.expand(3)
+    scale_val = scale.mean()
+
+    # Build Transform3d: scale -> rotate -> translate
+    rot_matrix = quaternion_to_matrix(rotation)  # (1, 3, 3)
+    tfm = (
+        Transform3d(device=device)
+        .scale(scale_val.expand(3)[None])
+        .rotate(rot_matrix)
+        .translate(translation)
+    )
+
+    # 1. Transform positions
+    positions = gaussian.get_xyz  # (N, 3)
+    positions_world = tfm.transform_points(positions.unsqueeze(0)).squeeze(0)
+    gaussian.from_xyz(positions_world)
+
+    # 2. Apply scale to Gaussian scaling (in log-space)
+    # _scaling stores log(scale), so we add log(scale_factor)
+    log_scale = torch.log(scale_val).expand_as(gaussian._scaling)
+    gaussian._scaling = gaussian._scaling + log_scale
+
+    # 3. Compose rotations: new_rotation = pose_rotation * current_rotation
+    # Extract pure rotation from transform matrix (remove scale)
+    tfm_matrix = tfm.get_matrix()[0]  # (4, 4)
+    rotation_matrix = tfm_matrix[:3, :3]
+    scale_factors = rotation_matrix.norm(dim=0)
+    pure_rotation_matrix = rotation_matrix / scale_factors[None, :]
+    pose_rotation_quat = matrix_to_quaternion(pure_rotation_matrix[None])  # (1, 4)
+
+    current_rotations = gaussian.get_rotation  # (N, 4)
+    new_rotations = quaternion_multiply(pose_rotation_quat, current_rotations)
+    gaussian.from_rotation(new_rotations)
+
+    print(f"[Worker] Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}", file=sys.stderr)
+
+    return gaussian
+
+
+def _apply_pose_to_vertices(vertices: np.ndarray, pose_data: Dict) -> np.ndarray:
+    """
+    Apply pose transformation (rotation, translation, scale) to vertices.
+
+    Transforms normalized mesh vertices to world coordinates using the pose
+    computed during Stage 1 (sparse structure generation).
+
+    Args:
+        vertices: Mesh vertices in normalized Z-up space, shape (N, 3)
+        pose_data: Dict with 'rotation' (wxyz quaternion), 'translation', 'scale'
+
+    Returns:
+        Transformed vertices in world coordinates (still Z-up)
+    """
+    from pytorch3d.transforms import quaternion_to_matrix
+
+    rotation = pose_data.get("rotation")
+    translation = pose_data.get("translation")
+    scale = pose_data.get("scale")
+
+    if rotation is None or translation is None or scale is None:
+        print(f"[Worker] Warning: Missing pose data, skipping pose application", file=sys.stderr)
+        return vertices
+
+    # Convert to numpy arrays
+    if hasattr(rotation, 'cpu'):
+        rotation = rotation.cpu().numpy()
+    rotation = np.array(rotation).squeeze()
+
+    if hasattr(translation, 'cpu'):
+        translation = translation.cpu().numpy()
+    translation = np.array(translation).squeeze()
+
+    if hasattr(scale, 'cpu'):
+        scale = scale.cpu().numpy()
+    scale = np.array(scale).squeeze()
+
+    # Convert quaternion (wxyz) to rotation matrix
+    quat_tensor = torch.from_numpy(rotation.astype(np.float32)).unsqueeze(0)
+    rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
+
+    # Apply scale (use mean for uniform scaling)
+    scale_val = scale.mean() if scale.ndim > 0 else float(scale)
+
+    # Apply transformation: (R * S * v) + t
+    # vertices @ rot_matrix.T applies rotation (equivalent to R @ v for each vertex)
+    vertices_transformed = (vertices @ (rot_matrix.T * scale_val)) + translation
+
+    return vertices_transformed
+
+
 def run_stage1_lazy(
     lazy_manager,
     image,
@@ -100,19 +238,22 @@ def run_stage1_lazy(
     if output_dir:
         try:
             from PIL import Image as PILImage
-            # Get the preprocessed RGB image (CHW format, normalized)
-            debug_img = ss_input_dict.get("rgb_image", ss_input_dict.get("image"))
+            # Get the CROPPED preprocessed image (CHW format) - this is what DINO sees
+            # "image" = cropped + transformed to 518x518 (what model receives)
+            # "rgb_image" = full image just resized (NOT what model receives)
+            debug_img = ss_input_dict.get("image")  # Must be "image", not "rgb_image"
             if debug_img is not None:
                 # Remove batch dim if present, convert CHW->HWC
                 if debug_img.dim() == 4:
                     debug_img = debug_img[0]
                 debug_img_np = debug_img.cpu().permute(1, 2, 0).numpy()
+                print(f"[Worker] Debug image (what DINO sees): {debug_img_np.shape}", file=sys.stderr)
                 # Denormalize and convert to uint8
                 debug_img_np = (debug_img_np * 255).clip(0, 255).astype(np.uint8)
                 debug_pil = PILImage.fromarray(debug_img_np)
                 debug_image_path = str(Path(output_dir) / "debug_preprocessed_stage1.png")
                 debug_pil.save(debug_image_path)
-                print(f"[Worker] Saved debug image: {debug_image_path}", file=sys.stderr)
+                print(f"[Worker] Saved debug image: {debug_image_path} (size: {debug_pil.size})", file=sys.stderr)
         except Exception as e:
             print(f"[Worker] Failed to save debug image: {e}", file=sys.stderr)
 
@@ -544,9 +685,26 @@ def run_decode_lazy(
     if decode_format == "gaussian":
         gaussian = output[0] if isinstance(output, (list, tuple)) else output
 
+        # Apply pose transformation to get world coordinates (still in Z-up space)
+        # Pose data comes from Stage 1 (sparse structure generation)
+        pose_data = None
+        if isinstance(slat_data, dict) and "stage1_data" in slat_data:
+            stage1 = slat_data["stage1_data"]
+            if isinstance(stage1, dict):
+                pose_data = {
+                    "rotation": stage1.get("rotation"),
+                    "translation": stage1.get("translation"),
+                    "scale": stage1.get("scale"),
+                }
+
+        if pose_data is not None and pose_data.get("rotation") is not None:
+            print(f"[Worker] Applying pose transformation to Gaussian...", file=sys.stderr)
+            gaussian = _apply_pose_to_gaussian(gaussian, pose_data)
+
         ply_path = save_dir / "gaussian.ply"
         try:
             # Compute transform matrix if Y-up is requested
+            # This is applied AFTER pose (pose is in Z-up space, then convert to Y-up for output)
             transform = None
             if up_axis == "Y-up (standard)":
                 transform = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
@@ -608,6 +766,24 @@ def run_decode_lazy(
                     alpha = np.full((vc.shape[0], 1), 255, dtype=np.uint8)
                     vc = np.concatenate([vc, alpha], axis=-1)
                 vertex_colors = vc
+
+            # Apply pose transformation to get world coordinates (still in Z-up space)
+            # Pose data comes from Stage 1 (sparse structure generation)
+            pose_data = None
+            if isinstance(slat_data, dict) and "stage1_data" in slat_data:
+                stage1 = slat_data["stage1_data"]
+                if isinstance(stage1, dict):
+                    pose_data = {
+                        "rotation": stage1.get("rotation"),
+                        "translation": stage1.get("translation"),
+                        "scale": stage1.get("scale"),
+                    }
+
+            if pose_data is not None and pose_data.get("rotation") is not None:
+                print(f"[Worker] Applying pose transformation to world coordinates...", file=sys.stderr)
+                vertices = _apply_pose_to_vertices(vertices, pose_data)
+            else:
+                print(f"[Worker] No pose data found, mesh will be in normalized coordinates", file=sys.stderr)
 
             # Transform from Z-up to Y-up if requested (GLB standard)
             if up_axis == "Y-up (standard)":

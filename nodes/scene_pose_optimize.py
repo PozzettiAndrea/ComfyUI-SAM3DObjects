@@ -2,6 +2,7 @@
 
 import os
 import re
+import json
 import torch
 import numpy as np
 from pathlib import Path
@@ -41,10 +42,10 @@ class SAM3D_ScenePoseOptimize:
         }
 
     RETURN_TYPES = ("STRING", "FLOAT")
-    RETURN_NAMES = ("glb_paths", "iou_scores")
-    OUTPUT_IS_LIST = (True, True)
+    RETURN_NAMES = ("output_folder", "iou_scores")
+    OUTPUT_IS_LIST = (False, True)
     OUTPUT_TOOLTIPS = (
-        "List of paths to aligned GLB files",
+        "Path to folder containing aligned GLB files (object_0.glb, object_1.glb, ...)",
         "List of IOU scores (quality metric, -1 if optimization failed or skipped)"
     )
     FUNCTION = "optimize_poses"
@@ -71,11 +72,44 @@ class SAM3D_ScenePoseOptimize:
         object_dirs.sort(key=lambda x: x[0])
         return [path for _, path in object_dirs]
 
+    def _check_cache(self, pose_opt_folder: str, optimization_mode: str, num_objects: int) -> Tuple[bool, List[float]]:
+        """Check if cached results exist with matching params."""
+        metadata_path = os.path.join(pose_opt_folder, "pose_opt_metadata.json")
+
+        if not os.path.exists(pose_opt_folder):
+            return False, []
+
+        if not os.path.exists(metadata_path):
+            return False, []
+
+        try:
+            with open(metadata_path, 'r') as f:
+                cached = json.load(f)
+
+            if (cached.get("optimization_mode") == optimization_mode and
+                cached.get("num_objects") == num_objects):
+                # Return cached IoU scores
+                return True, cached.get("iou_scores", [])
+        except:
+            pass
+
+        return False, []
+
+    def _save_cache_metadata(self, pose_opt_folder: str, optimization_mode: str, num_objects: int, iou_scores: List[float]):
+        """Save metadata for cache validation."""
+        metadata_path = os.path.join(pose_opt_folder, "pose_opt_metadata.json")
+        with open(metadata_path, 'w') as f:
+            json.dump({
+                "optimization_mode": optimization_mode,
+                "num_objects": num_objects,
+                "iou_scores": iou_scores,
+            }, f)
+
     def optimize_poses(
         self,
         output_folder: str,
         optimization_mode: str = "manual_icp_render",
-    ) -> Tuple[List[str], List[float]]:
+    ) -> Tuple[str, List[float]]:
         """
         Optimize poses for all objects in the scene folder.
 
@@ -84,7 +118,7 @@ class SAM3D_ScenePoseOptimize:
             optimization_mode: One of "manual_only", "manual_icp", "manual_icp_render"
 
         Returns:
-            Tuple of (list of aligned GLB paths, list of IOU scores)
+            Tuple of (path to output folder, list of IOU scores)
         """
         print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")
         print(f"[SAM3DObjects] ScenePoseOptimize: Mode = {optimization_mode}")
@@ -109,18 +143,30 @@ class SAM3D_ScenePoseOptimize:
         object_dirs = self._discover_objects(output_folder)
         if not object_dirs:
             print(f"[SAM3DObjects] ScenePoseOptimize: No object folders found")
-            return ([], [])
+            return ("", [])
 
         print(f"[SAM3DObjects] ScenePoseOptimize: Found {len(object_dirs)} object(s)")
+
+        # Define output folder for pose-optimized meshes
+        pose_opt_folder = f"{output_folder}_pose_optimized"
+
+        # Check cache - skip if already processed with same settings
+        cache_hit, cached_scores = self._check_cache(pose_opt_folder, optimization_mode, len(object_dirs))
+        if cache_hit:
+            print(f"[SAM3DObjects] ScenePoseOptimize: Using cached results from {pose_opt_folder}")
+            return (pose_opt_folder, cached_scores)
 
         # Determine optimization flags
         enable_icp = optimization_mode in ["manual_icp", "manual_icp_render"]
         enable_render = optimization_mode == "manual_icp_render"
 
+        # Create output folder
+        os.makedirs(pose_opt_folder, exist_ok=True)
+        print(f"[SAM3DObjects] ScenePoseOptimize: Output folder = {pose_opt_folder}")
+
         # Get bridge for worker communication
         bridge = get_bridge()
 
-        glb_paths = []
         iou_scores = []
 
         for idx, object_dir in enumerate(object_dirs):
@@ -129,7 +175,6 @@ class SAM3D_ScenePoseOptimize:
             # Check required files for this object
             pointmap_path = os.path.join(object_dir, "pointmap.pt")
             mask_path = os.path.join(object_dir, "mask.npy")
-            pose_path = os.path.join(object_dir, "pose.pt")
             mesh_path = os.path.join(object_dir, "mesh.glb")
 
             # Check for textured mesh first
@@ -148,23 +193,15 @@ class SAM3D_ScenePoseOptimize:
 
             if missing:
                 print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Missing files: {missing}, skipping")
-                glb_paths.append(mesh_path if os.path.exists(mesh_path) else "")
                 iou_scores.append(-1.0)
                 continue
 
-            # Load pose (or use identity)
-            if os.path.exists(pose_path):
-                pose_data = torch.load(pose_path, weights_only=False)
-                rotation = pose_data.get("rotation")
-                translation = pose_data.get("translation")
-                scale = pose_data.get("scale")
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded pose from {pose_path}")
-            else:
-                # Use identity pose
-                rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
-                translation = [[0, 0, 0]]
-                scale = [[1, 1, 1]]
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Using identity pose")
+            # Use identity pose - meshes are already in world coordinates
+            # Pose optimization refines from this starting point
+            rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
+            translation = [[0, 0, 0]]
+            scale = [[1, 1, 1]]
+            print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Using identity pose (mesh already in world coords)")
 
             # Load mask
             mask = np.load(mask_path)
@@ -200,6 +237,9 @@ class SAM3D_ScenePoseOptimize:
             else:
                 intrinsics_np = np.array(intrinsics)
 
+            # Output path in the pose-optimized folder
+            output_glb_path = os.path.join(pose_opt_folder, f"object_{idx}.glb")
+
             request = {
                 "object_dir": object_dir,
                 "glb_path": mesh_path,
@@ -210,6 +250,7 @@ class SAM3D_ScenePoseOptimize:
                 "enable_icp": enable_icp,
                 "enable_render_opt": enable_render,
                 "image_path": image_path if os.path.exists(image_path) else None,
+                "output_glb_path": output_glb_path,
             }
 
             try:
@@ -218,29 +259,31 @@ class SAM3D_ScenePoseOptimize:
 
                 if response.get("status") == "error":
                     print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Worker error: {response.get('error')}")
-                    glb_paths.append(mesh_path)
                     iou_scores.append(-1.0)
                     continue
 
                 # Extract results
-                output_glb_path = response.get("output_glb_path", mesh_path)
+                result_glb_path = response.get("output_glb_path", output_glb_path)
                 iou = response.get("iou", -1.0)
 
                 print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Done (IOU: {iou:.3f})")
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Output: {output_glb_path}")
+                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Output: {result_glb_path}")
 
-                glb_paths.append(output_glb_path)
                 iou_scores.append(float(iou))
 
             except Exception as e:
                 print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Error: {e}")
                 import traceback
                 traceback.print_exc()
-                glb_paths.append(mesh_path)
                 iou_scores.append(-1.0)
 
         print(f"\n[SAM3DObjects] ScenePoseOptimize: Completed {len(object_dirs)} object(s)")
-        return (glb_paths, iou_scores)
+        print(f"[SAM3DObjects] ScenePoseOptimize: Output folder: {pose_opt_folder}")
+
+        # Save cache metadata for future runs
+        self._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)
+
+        return (pose_opt_folder, iou_scores)
 
 
 # Node mappings

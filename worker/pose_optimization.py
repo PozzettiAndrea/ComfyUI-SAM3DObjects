@@ -126,9 +126,20 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
 
         # Apply transformation to mesh
+        # GLB files are Y-up, but layout_post_optimization works in Z-up internally.
+        # get_mesh() converts Y-up→Z-up before computing transforms.
+        # We must do the same conversion before applying the refined transform.
+        y_to_z_rotation = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Y-up to Z-up
+
         scale_val = scale_np_out.mean() if scale_np_out.ndim > 0 else float(scale_np_out)
         vertices = mesh.vertices.copy()
-        vertices_transformed = (vertices @ (rot_matrix.T * scale_val)) + trans_np
+
+        # 1. Convert Y-up (GLB) to Z-up (internal coordinate system)
+        vertices_z_up = vertices @ y_to_z_rotation
+
+        # 2. Apply refined transform (computed in Z-up space, outputs Y-up world coords)
+        vertices_transformed = (vertices_z_up @ (rot_matrix.T * scale_val)) + trans_np
+
         mesh.vertices = vertices_transformed
 
         # Save reposed GLB
@@ -290,17 +301,30 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
 
         # Apply transformation to mesh
+        # GLB files are Y-up, but layout_post_optimization works in Z-up internally.
+        # get_mesh() converts Y-up→Z-up before computing transforms.
+        # We must do the same conversion before applying the refined transform.
+        y_to_z_rotation = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Y-up to Z-up
+
         scale_val = scale_np_out.mean() if scale_np_out.ndim > 0 else float(scale_np_out)
         vertices = mesh.vertices.copy()
-        vertices_transformed = (vertices @ (rot_matrix.T * scale_val)) + trans_np
+
+        # 1. Convert Y-up (GLB) to Z-up (internal coordinate system)
+        vertices_z_up = vertices @ y_to_z_rotation
+
+        # 2. Apply refined transform (computed in Z-up space, outputs Y-up world coords)
+        vertices_transformed = (vertices_z_up @ (rot_matrix.T * scale_val)) + trans_np
+
         mesh.vertices = vertices_transformed
 
-        # Save aligned GLB - use object_dir if provided, else use input path
-        if object_dir:
-            output_glb_path = os.path.join(object_dir, "aligned_mesh.glb")
-        else:
-            input_dir = os.path.dirname(glb_path)
-            output_glb_path = os.path.join(input_dir, "aligned_mesh.glb")
+        # Save aligned GLB - use provided path, or fallback to object_dir/input_dir
+        output_glb_path = request.get("output_glb_path")
+        if not output_glb_path:
+            if object_dir:
+                output_glb_path = os.path.join(object_dir, "aligned_mesh.glb")
+            else:
+                input_dir = os.path.dirname(glb_path)
+                output_glb_path = os.path.join(input_dir, "aligned_mesh.glb")
 
         mesh.export(output_glb_path)
         print(f"[Worker] Saved aligned GLB: {output_glb_path}", file=sys.stderr)

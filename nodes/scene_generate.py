@@ -291,25 +291,10 @@ class SAM3DSceneGenerate:
         except Exception as e:
             raise RuntimeError(f"Batch scene generation failed: {e}") from e
 
-        # Process results and save pose data
+        # Process results - meshes are now in world coordinates (pose baked in)
         objects = result.get("objects", [])
         for obj_result in objects:
             idx = obj_result.get("index", 0)
-            object_dir = os.path.join(base_output_dir, f"object_{idx}")
-
-            # Save pose data if available
-            rotation = obj_result.get("rotation")
-            translation = obj_result.get("translation")
-            scale = obj_result.get("scale")
-            if rotation is not None or translation is not None or scale is not None:
-                pose_data = {
-                    "rotation": rotation,
-                    "translation": translation,
-                    "scale": scale,
-                }
-                pose_path = os.path.join(object_dir, "pose.pt")
-                torch.save(pose_data, pose_path)
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Saved pose to {pose_path}")
 
             # Log output paths
             if obj_result.get("glb_path"):
