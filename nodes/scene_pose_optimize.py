@@ -51,9 +51,8 @@ class SAM3D_ScenePoseOptimize:
 
     @classmethod
     def get_bridge(cls):
-        from .subprocess_bridge import InferenceWorkerBridge
-        node_root = Path(__file__).parent.parent
-        return InferenceWorkerBridge.get_instance(node_root)
+        from .subprocess_bridge import get_bridge
+        return get_bridge()
 
     def _discover_objects(self, output_folder: str) -> List[str]:
         """Discover all object_N/ folders in sorted order."""

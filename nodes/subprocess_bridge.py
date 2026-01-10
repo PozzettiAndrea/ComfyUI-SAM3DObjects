@@ -42,46 +42,6 @@ def get_bridge() -> WorkerBridge:
     return _bridge
 
 
-# Legacy class name for backward compatibility
-class InferenceWorkerBridge:
-    """
-    Legacy wrapper for backward compatibility.
-
-    New code should use get_bridge() directly.
-    """
-
-    _instance: Optional['InferenceWorkerBridge'] = None
-
-    def __init__(self):
-        self._bridge = get_bridge()
-
-    @classmethod
-    def get_instance(cls, node_root: Path = None) -> 'InferenceWorkerBridge':
-        """Get singleton instance."""
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
-
-    def start_worker(self):
-        """Start the worker process."""
-        self._bridge.start()
-
-    def stop_worker(self):
-        """Stop the worker process."""
-        self._bridge.stop()
-
-    @property
-    def python_exe(self):
-        return self._bridge.python_exe
-
-    def run_inference(self, **kwargs) -> Dict[str, Any]:
-        """Run inference on the worker."""
-        # Serialize complex objects before sending
-        kwargs = _serialize_args(kwargs)
-        response = self._bridge.call("inference", timeout=600.0, **kwargs)
-        return _process_inference_response(response, kwargs)
-
-
 def _serialize_args(kwargs: dict) -> dict:
     """Serialize PIL Images and numpy arrays to base64."""
     serialized = {}

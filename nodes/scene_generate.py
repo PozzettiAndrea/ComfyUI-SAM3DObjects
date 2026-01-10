@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 
 from .utils import comfy_image_to_pil
-from .subprocess_bridge import InferenceWorkerBridge, run_generate_slat, run_decode, run_texture_bake_direct, run_scene_generate_batch
+from .subprocess_bridge import get_bridge, run_generate_slat, run_decode, run_texture_bake_direct, run_scene_generate_batch
 
 
 class SAM3DSceneGenerate:
@@ -30,8 +30,7 @@ class SAM3DSceneGenerate:
 
     @classmethod
     def get_bridge(cls):
-        node_root = Path(__file__).parent.parent
-        return InferenceWorkerBridge.get_instance(node_root)
+        return get_bridge()
 
     @classmethod
     def INPUT_TYPES(cls):

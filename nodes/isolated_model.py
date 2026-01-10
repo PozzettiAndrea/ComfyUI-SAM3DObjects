@@ -41,13 +41,8 @@ class IsolatedSAM3DModel:
     def get_bridge(self):
         """Get or create the subprocess bridge."""
         if self._bridge is None:
-            from .subprocess_bridge import InferenceWorkerBridge
-
-            # Get node root (parent of nodes/ directory)
-            node_root = Path(__file__).parent.parent
-
-            self._bridge = InferenceWorkerBridge.get_instance(node_root)
-
+            from .subprocess_bridge import get_bridge
+            self._bridge = get_bridge()
         return self._bridge
 
     def __call__(

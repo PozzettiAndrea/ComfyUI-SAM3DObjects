@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 
 from .utils import comfy_image_to_pil, comfy_mask_to_numpy
-from .subprocess_bridge import InferenceWorkerBridge, run_generate_slat
+from .subprocess_bridge import get_bridge, run_generate_slat
 
 
 class SAM3DGenerateSLAT:
@@ -29,8 +29,7 @@ class SAM3DGenerateSLAT:
 
     @classmethod
     def get_bridge(cls):
-        node_root = Path(__file__).parent.parent
-        return InferenceWorkerBridge.get_instance(node_root)
+        return get_bridge()
 
     @classmethod
     def INPUT_TYPES(cls):
