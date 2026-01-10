@@ -81,12 +81,9 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
 
     # Convert to MeshExtractResult format expected by to_glb
-    # NOTE: MeshDecode saves GLB in Y-up by default (applies transform in stages.py).
-    # But to_glb() always applies Z-up→Y-up transform at the end.
-    # So we need to convert the Y-up mesh back to Z-up before passing to to_glb().
-    # Y-up to Z-up transform (inverse of Z-up to Y-up)
-    y_to_z_up = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
-    vertices_np = np.array(trimesh_mesh.vertices) @ y_to_z_up
+    # NOTE: Both Gaussian and Mesh are in the same orientation (Y-up by default).
+    # We preserve orientation by undoing to_glb's transform on output.
+    vertices_np = np.array(trimesh_mesh.vertices)
     vertices_tensor = torch.tensor(vertices_np, dtype=torch.float32, device=device)
     faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
 
@@ -120,6 +117,12 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
         rendering_engine=rendering_engine,
         texture_mode=texture_mode,
     )
+
+    # Undo to_glb's Z→Y transform to preserve input orientation
+    # to_glb always applies: vertices @ [[1,0,0],[0,0,-1],[0,1,0]]
+    # We apply the inverse to get back to original orientation
+    undo_transform = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+    result_mesh.vertices = result_mesh.vertices @ undo_transform
 
     # Save textured GLB
     output_path = Path(output_dir) / "mesh_textured.glb"
