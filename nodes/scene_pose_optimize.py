@@ -30,8 +30,8 @@ class SAM3D_ScenePoseOptimize:
         return {
             "required": {
                 "output_folder": ("STRING", {
-                    "forceInput": True,
-                    "tooltip": "Output folder from SAM3DSceneGenerate containing object_N/ subdirectories"
+                    "default": "",
+                    "tooltip": "Output folder containing object_N/ subdirectories (from SAM3DSceneGenerate or manual path)"
                 }),
                 "optimization_mode": (["manual_only", "manual_icp", "manual_icp_render"], {
                     "default": "manual_icp_render",
