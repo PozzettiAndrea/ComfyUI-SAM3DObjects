@@ -20,20 +20,20 @@ _VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
 if _VENDOR_PATH not in sys.path:
     sys.path.insert(0, _VENDOR_PATH)
 
-from .lazy_manager import LazyModelManager, get_model_manager, get_lazy_manager
-from .utils import (
+from lazy_manager import LazyModelManager, get_model_manager, get_lazy_manager
+from utils import (
     deserialize_image,
     deserialize_mask,
     transform_to_global_coordinates,
     save_output_to_disk,
 )
-from .preprocessing import load_pointmap_from_file, preprocess_image_lazy
-from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy, run_generate_slat, run_decode
-from .scene_batch import run_scene_generate_batch
-from .depth import run_depth_only
-from .texture_baking import run_texture_bake_direct
-from .pose_optimization import run_pose_optimization, run_pose_optimization_batch
-from .inference import run_inference
+from preprocessing import load_pointmap_from_file, preprocess_image_lazy
+from stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy, run_generate_slat, run_decode
+from scene_batch import run_scene_generate_batch
+from depth import run_depth_only
+from texture_baking import run_texture_bake_direct
+from pose_optimization import run_pose_optimization, run_pose_optimization_batch
+from inference import run_inference
 
 __all__ = [
     # Model manager

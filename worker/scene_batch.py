@@ -56,10 +56,10 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             - objects: List of per-object results (glb_path, pose, etc.)
             - output_dir: Base output directory
     """
-    from .lazy_manager import get_lazy_manager
-    from .preprocessing import preprocess_image_lazy, load_pointmap_from_file
-    from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy
-    from .texture_baking import run_texture_bake_direct as texture_bake_impl
+    from lazy_manager import get_lazy_manager
+    from preprocessing import preprocess_image_lazy, load_pointmap_from_file
+    from stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy
+    from texture_baking import run_texture_bake_direct as texture_bake_impl
 
     # Suppress ALL stdout output (including C-level from libraries like pymeshfix)
     # This is critical because stdout is used for JSON IPC
