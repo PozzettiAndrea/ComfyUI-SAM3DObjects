@@ -81,10 +81,12 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
 
     # Convert to MeshExtractResult format expected by to_glb
-    # NOTE: The GLB from _run_decode_lazy is saved in Z-up (raw decoder output)
-    # The Gaussian PLY is also in Z-up. Both are aligned - no transformation needed.
-    # to_glb() will apply the final Z-up→Y-up transform when saving.
-    vertices_np = np.array(trimesh_mesh.vertices)
+    # NOTE: MeshDecode saves GLB in Y-up by default (applies transform in stages.py).
+    # But to_glb() always applies Z-up→Y-up transform at the end.
+    # So we need to convert the Y-up mesh back to Z-up before passing to to_glb().
+    # Y-up to Z-up transform (inverse of Z-up to Y-up)
+    y_to_z_up = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+    vertices_np = np.array(trimesh_mesh.vertices) @ y_to_z_up
     vertices_tensor = torch.tensor(vertices_np, dtype=torch.float32, device=device)
     faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
 
