@@ -20,33 +20,31 @@ _VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
 if _VENDOR_PATH not in sys.path:
     sys.path.insert(0, _VENDOR_PATH)
 
-from .lazy_manager import LazyModelManager, get_lazy_manager, load_model
+from .lazy_manager import LazyModelManager, get_model_manager, get_lazy_manager
 from .utils import (
     deserialize_image,
     deserialize_mask,
     transform_to_global_coordinates,
     save_output_to_disk,
-    unload_model,
 )
 from .preprocessing import load_pointmap_from_file, preprocess_image_lazy
 from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy, run_generate_slat, run_decode
 from .scene_batch import run_scene_generate_batch
-from .depth import run_depth_only_lazy, run_depth_only
+from .depth import run_depth_only
 from .texture_baking import run_texture_bake_direct
 from .pose_optimization import run_pose_optimization, run_pose_optimization_batch
 from .inference import run_inference
 
 __all__ = [
-    # Lazy manager
+    # Model manager
     "LazyModelManager",
-    "get_lazy_manager",
-    "load_model",
+    "get_model_manager",
+    "get_lazy_manager",  # Backward compatibility alias
     # Utils
     "deserialize_image",
     "deserialize_mask",
     "transform_to_global_coordinates",
     "save_output_to_disk",
-    "unload_model",
     # Preprocessing
     "load_pointmap_from_file",
     "preprocess_image_lazy",
@@ -59,7 +57,6 @@ __all__ = [
     # Scene batch
     "run_scene_generate_batch",
     # Depth
-    "run_depth_only_lazy",
     "run_depth_only",
     # Texture baking
     "run_texture_bake_direct",

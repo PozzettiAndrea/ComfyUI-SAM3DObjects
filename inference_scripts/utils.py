@@ -5,7 +5,6 @@ This module contains:
 - Serialization/deserialization helpers
 - Coordinate transformation functions
 - File I/O helpers
-- Model unloading utilities
 """
 
 import sys
@@ -258,59 +257,3 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
     return result
 
 
-def unload_model(model, model_type: str) -> Dict[str, Any]:
-    """
-    Unload specific model component to free VRAM.
-
-    Args:
-        model: InferencePipelinePointMap instance
-        model_type: One of 'depth', 'sparse', 'slat', 'decoders', 'all'
-
-    Returns:
-        Status dict
-    """
-    import gc
-
-    try:
-        if model_type == "depth" or model_type == "all":
-            if hasattr(model, 'depth_model') and model.depth_model is not None:
-                model.depth_model.cpu()
-                print("[Worker] Moved depth_model to CPU", file=sys.stderr)
-
-        if model_type == "sparse" or model_type == "all":
-            if hasattr(model, 'models') and 'ss_generator' in model.models:
-                model.models['ss_generator'].cpu()
-                print("[Worker] Moved ss_generator to CPU", file=sys.stderr)
-
-        if model_type == "slat" or model_type == "all":
-            if hasattr(model, 'models') and 'slat_generator' in model.models:
-                model.models['slat_generator'].cpu()
-                print("[Worker] Moved slat_generator to CPU", file=sys.stderr)
-
-        if model_type == "decoders" or model_type == "all":
-            if hasattr(model, 'models'):
-                if 'slat_decoder_gs' in model.models:
-                    model.models['slat_decoder_gs'].cpu()
-                    print("[Worker] Moved slat_decoder_gs to CPU", file=sys.stderr)
-                if 'slat_decoder_mesh' in model.models:
-                    model.models['slat_decoder_mesh'].cpu()
-                    print("[Worker] Moved slat_decoder_mesh to CPU", file=sys.stderr)
-
-        # Force garbage collection and clear CUDA cache
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            print("[Worker] Cleared CUDA cache", file=sys.stderr)
-
-        return {
-            "status": "success",
-            "unloaded": model_type
-        }
-
-    except Exception as e:
-        print(f"[Worker] Warning during unload: {e}", file=sys.stderr)
-        return {
-            "status": "partial",
-            "unloaded": model_type,
-            "warning": str(e)
-        }
