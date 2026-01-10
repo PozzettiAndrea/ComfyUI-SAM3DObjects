@@ -17,6 +17,13 @@ import torch
 def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
     """Run pose optimization using layout_post_optimization."""
     try:
+        from pathlib import Path
+
+        # Setup environment for sam3d_objects imports
+        vendor_path = Path(__file__).parent.parent / "vendor"
+        if str(vendor_path) not in sys.path:
+            sys.path.insert(0, str(vendor_path))
+
         import trimesh
         from pytorch3d.transforms import quaternion_to_matrix
         from sam3d_objects.pipeline.inference_utils import layout_post_optimization
@@ -166,6 +173,13 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
     It's similar to run_pose_optimization but saves output as aligned_mesh.glb in the object dir.
     """
     try:
+        from pathlib import Path
+
+        # Setup environment for sam3d_objects imports
+        vendor_path = Path(__file__).parent.parent / "vendor"
+        if str(vendor_path) not in sys.path:
+            sys.path.insert(0, str(vendor_path))
+
         import trimesh
         from pytorch3d.transforms import quaternion_to_matrix
         from sam3d_objects.pipeline.inference_utils import layout_post_optimization
