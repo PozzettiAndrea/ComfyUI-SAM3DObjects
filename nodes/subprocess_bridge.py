@@ -42,6 +42,13 @@ def get_bridge() -> WorkerBridge:
     return _bridge
 
 
+def run_inference(**kwargs) -> Dict[str, Any]:
+    """Run inference on the worker with proper serialization."""
+    kwargs = _serialize_args(kwargs)
+    response = get_bridge().call("inference", timeout=600.0, **kwargs)
+    return _process_inference_response(response, kwargs)
+
+
 def _serialize_args(kwargs: dict) -> dict:
     """Serialize PIL Images and numpy arrays to base64."""
     serialized = {}

@@ -20,10 +20,6 @@ class SAM3DMeshDecode:
     """
 
     @classmethod
-    def get_bridge(cls):
-        return get_bridge()
-
-    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
@@ -91,8 +87,7 @@ class SAM3DMeshDecode:
 
         # Get config path from model and bridge
         config_path = slat_decoder_mesh.config_path
-        bridge = self.get_bridge()
-        bridge.start_worker()
+        bridge = get_bridge()
 
         # Run Mesh decoding via dedicated decode command
         try:

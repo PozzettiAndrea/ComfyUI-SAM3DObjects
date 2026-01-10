@@ -28,10 +28,6 @@ class SAM3DGenerateSLAT:
     """
 
     @classmethod
-    def get_bridge(cls):
-        return get_bridge()
-
-    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
@@ -173,8 +169,7 @@ class SAM3DGenerateSLAT:
         print(f"[SAM3DObjects] GenerateSLAT: Running Stage 2 (SLAT generation)...")
 
         # Get bridge and run combined generation
-        bridge = self.get_bridge()
-        bridge.start_worker()
+        bridge = get_bridge()
 
         # Get config path from generator model
         config_path = generator.config_path

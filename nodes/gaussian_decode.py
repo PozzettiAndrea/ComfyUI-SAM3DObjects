@@ -19,10 +19,6 @@ class SAM3DGaussianDecode:
     """
 
     @classmethod
-    def get_bridge(cls):
-        return get_bridge()
-
-    @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
@@ -73,8 +69,7 @@ class SAM3DGaussianDecode:
 
         # Get config path from model and bridge
         config_path = slat_decoder_gs.config_path
-        bridge = self.get_bridge()
-        bridge.start_worker()
+        bridge = get_bridge()
 
         # Run Gaussian decoding via dedicated decode command
         try:
