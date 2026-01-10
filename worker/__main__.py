@@ -21,6 +21,11 @@ import sys
 import os
 from pathlib import Path
 
+# Add worker directory to path for imports when run as script
+_WORKER_DIR = Path(__file__).parent
+if str(_WORKER_DIR) not in sys.path:
+    sys.path.insert(0, str(_WORKER_DIR))
+
 # CRITICAL: Suppress all library output BEFORE any imports
 # Libraries like OmegaConf, Hydra, PyTorch, CUDA can print to stdout,
 # which interferes with our JSON-based IPC protocol
@@ -42,16 +47,12 @@ except ImportError:
 
 from comfyui_isolation import BaseWorker, register
 
-# Import from this package (relative imports)
-from . import (
-    run_inference,
-    run_texture_bake_direct,
-    run_pose_optimization,
-    run_pose_optimization_batch,
-    run_generate_slat,
-    run_decode,
-    run_scene_generate_batch,
-)
+# Import from worker package (absolute imports since we added to sys.path)
+from inference import run_inference
+from texture_baking import run_texture_bake_direct
+from pose_optimization import run_pose_optimization, run_pose_optimization_batch
+from stages import run_generate_slat, run_decode
+from scene_batch import run_scene_generate_batch
 
 
 class SAM3DWorker(BaseWorker):
