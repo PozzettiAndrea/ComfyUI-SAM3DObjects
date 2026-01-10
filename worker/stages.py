@@ -15,8 +15,8 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 
-from .preprocessing import preprocess_image_lazy
-from .utils import save_output_to_disk
+from preprocessing import preprocess_image_lazy
+from utils import save_output_to_disk
 
 
 def run_stage1_lazy(
@@ -685,8 +685,8 @@ def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
     import traceback
     from PIL import Image
 
-    from .lazy_manager import get_model_manager
-    from .preprocessing import load_pointmap_from_file
+    from lazy_manager import get_model_manager
+    from preprocessing import load_pointmap_from_file
 
     try:
         # Extract parameters
@@ -863,7 +863,7 @@ def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
     import os
     import traceback
 
-    from .lazy_manager import get_model_manager
+    from lazy_manager import get_model_manager
 
     try:
         # Extract parameters

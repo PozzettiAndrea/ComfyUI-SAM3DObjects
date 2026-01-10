@@ -14,16 +14,16 @@ from typing import Any, Dict
 import numpy as np
 import torch
 
-from .lazy_manager import get_model_manager
-from .utils import (
+from lazy_manager import get_model_manager
+from utils import (
     deserialize_image,
     deserialize_mask,
     transform_to_global_coordinates,
     save_output_to_disk,
 )
-from .preprocessing import load_pointmap_from_file
-from .stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy
-from .depth import run_depth_only
+from preprocessing import load_pointmap_from_file
+from stages import run_stage1_lazy, run_stage2_lazy, run_decode_lazy
+from depth import run_depth_only
 
 
 def run_inference(request: Dict[str, Any]) -> Dict[str, Any]:
