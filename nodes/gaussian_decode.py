@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .subprocess_bridge import InferenceWorkerBridge, run_decode
+from .load_model import LoadSAM3DModel, REQUIRED_FILES
 
 
 class SAM3DGaussianDecode:
@@ -29,6 +30,12 @@ class SAM3DGaussianDecode:
                 "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel"}),
                 "slat": ("STRING", {"forceInput": True, "tooltip": "Path to SLAT from SAM3DGenerateSLAT"}),
             },
+            "optional": {
+                "up_axis": (["Y-up (standard)", "Z-up"], {
+                    "default": "Y-up (standard)",
+                    "tooltip": "Coordinate system for PLY output. Y-up is common for viewers."
+                }),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -44,6 +51,7 @@ class SAM3DGaussianDecode:
         self,
         slat_decoder_gs: Any,
         slat: str,
+        up_axis: str = "Y-up (standard)",
     ):
         """
         Decode SLAT to Gaussian splats.
@@ -56,6 +64,10 @@ class SAM3DGaussianDecode:
             ply_filepath
         """
         print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
+
+        # Ensure Gaussian decoder files are downloaded
+        # (LoadSAM3DModel might have been cached without downloading these)
+        LoadSAM3DModel._get_or_download_checkpoint({"slat_decoder_gs"})
 
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
@@ -73,6 +85,7 @@ class SAM3DGaussianDecode:
                 slat_path=slat,
                 output_dir=output_dir,
                 decode_format="gaussian",
+                up_axis=up_axis,
             )
         except Exception as e:
             raise RuntimeError(f"SAM3D Gaussian decode failed: {e}") from e
