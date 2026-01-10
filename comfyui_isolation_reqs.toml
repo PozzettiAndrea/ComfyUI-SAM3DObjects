@@ -1,0 +1,46 @@
+# SAM3D Objects - Isolated Environment Configuration
+#
+# This file defines the isolated Python environment for SAM3D inference.
+# The comfyui-isolation library auto-discovers and loads this file.
+
+[env]
+# Unique name for environment caching
+name = "sam3dobjects"
+
+# Python version
+python = "3.10"
+
+# CUDA version: "auto" detects GPU (12.8 for Blackwell, 12.4 for others)
+cuda = "auto"
+
+# PyTorch version: "auto" derives from CUDA (2.8.0 for cu128, 2.4.1 for cu124)
+pytorch_version = "auto"
+
+
+[packages]
+# Core requirements with version substitution
+# Auto-populated variables: {cuda_version}, {cuda_short}, {pytorch_version}
+requirements = [
+    # PyTorch ecosystem - versions match CUDA
+    "torch=={pytorch_version}",
+    "pytorch3d==0.7.8+5043d15pt{pytorch_version}cu{cuda_short}",
+
+    # Specialized 3D packages (prebuilt wheels from sam3dobjects-wheels)
+    "gsplat>=1.5.0",
+    "nvdiffrast>=0.3.3",
+]
+
+# Additional requirements from file
+requirements_file = "local_env_settings/requirements_env.txt"
+
+
+[sources]
+# Custom wheel sources (--find-links)
+wheel_sources = [
+    "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
+]
+
+# Extra package indexes (--extra-index-url)
+index_urls = [
+    "https://miropsota.github.io/torch_packages_builder",
+]

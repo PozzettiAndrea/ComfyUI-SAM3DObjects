@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .subprocess_bridge import InferenceWorkerBridge, run_decode
+from .load_model import LoadSAM3DModel
 
 
 class SAM3DMeshDecode:
@@ -42,6 +43,10 @@ class SAM3DMeshDecode:
                     "step": 0.01,
                     "tooltip": "Fraction of faces to remove (only used when with_postprocess=True). 0.5 = keep 50% (gentle), 0.95 = keep 5% (aggressive)"
                 }),
+                "up_axis": (["Y-up (standard)", "Z-up"], {
+                    "default": "Y-up (standard)",
+                    "tooltip": "Coordinate system for GLB output. Y-up is glTF standard."
+                }),
             }
         }
 
@@ -60,6 +65,7 @@ class SAM3DMeshDecode:
         slat: str,
         with_postprocess: bool = False,
         simplify: float = 0.95,
+        up_axis: str = "Y-up (standard)",
     ):
         """
         Decode SLAT to mesh.
@@ -76,6 +82,10 @@ class SAM3DMeshDecode:
         print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:
             print(f"[SAM3DObjects] MeshDecode: Will apply postprocessing (simplify={simplify})")
+
+        # Ensure Mesh decoder files are downloaded
+        # (LoadSAM3DModel might have been cached without downloading these)
+        LoadSAM3DModel._get_or_download_checkpoint({"slat_decoder_mesh"})
 
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
@@ -95,6 +105,7 @@ class SAM3DMeshDecode:
                 decode_format="mesh",
                 with_postprocess=with_postprocess,
                 simplify=simplify,
+                up_axis=up_axis,
             )
         except Exception as e:
             raise RuntimeError(f"SAM3D Mesh decode failed: {e}") from e

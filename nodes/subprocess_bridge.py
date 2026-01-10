@@ -3,6 +3,8 @@ Subprocess bridge for communicating with the isolated SAM3D inference worker.
 
 This module manages the worker process lifecycle and handles IPC communication.
 Uses comfyui-isolation package for process isolation.
+
+Environment configuration is loaded from comfyui_isolation_reqs.toml in the node root.
 """
 
 import io
@@ -14,47 +16,11 @@ from typing import Any, Dict, Optional
 from PIL import Image
 import numpy as np
 
-from comfyui_isolation import IsolatedEnv, WorkerBridge, detect_cuda_version
+from comfyui_isolation import WorkerBridge
 
 
 # Node root directory
 NODE_ROOT = Path(__file__).parent.parent
-
-
-def _get_env_config() -> IsolatedEnv:
-    """Build environment config with version-matched pytorch3d."""
-    cuda_version = detect_cuda_version() or "12.4"
-    cuda_short = cuda_version.replace(".", "")
-
-    # PyTorch version depends on CUDA (Blackwell needs 2.8.0)
-    if cuda_version == "12.8":
-        pytorch_version = "2.8.0"
-    else:
-        pytorch_version = "2.4.1"
-
-    # pytorch3d version string for MiroPsota wheels
-    pytorch3d_version = f"0.7.8+5043d15pt{pytorch_version}cu{cuda_short}"
-
-    return IsolatedEnv(
-        name="sam3dobjects",
-        python="3.10",
-        cuda=cuda_version,
-        pytorch_version=pytorch_version,
-        requirements_file=NODE_ROOT / "local_env_settings" / "requirements_env.txt",
-        requirements=[
-            f"torch=={pytorch_version}",  # Pin torch to prevent upgrades
-            f"pytorch3d=={pytorch3d_version}",
-        ],
-        wheel_sources=[
-            "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
-        ],
-        index_urls=[
-            "https://miropsota.github.io/torch_packages_builder",
-        ],
-    )
-
-
-ENV_CONFIG = _get_env_config()
 
 # Singleton bridge instance
 _bridge: Optional[WorkerBridge] = None
@@ -67,10 +33,10 @@ def get_bridge() -> WorkerBridge:
         def log(msg):
             print(f"[SAM3DObjects] {msg}")
 
-        _bridge = WorkerBridge(
-            env=ENV_CONFIG,
+        # Load environment config from comfyui_isolation_reqs.toml
+        _bridge = WorkerBridge.from_config_file(
+            node_dir=NODE_ROOT,
             worker_script=NODE_ROOT / "inference_worker.py",
-            base_dir=NODE_ROOT,
             log_callback=log,
         )
     return _bridge
@@ -376,6 +342,7 @@ def run_decode(
     decode_format: str = "gaussian",
     with_postprocess: bool = False,
     simplify: float = 0.95,
+    up_axis: str = "Y-up (standard)",
 ) -> Dict[str, Any]:
     """Run decode command - converts SLAT to Gaussian or Mesh."""
     response = get_bridge().call(
@@ -387,6 +354,7 @@ def run_decode(
         decode_format=decode_format,
         with_postprocess=with_postprocess,
         simplify=simplify,
+        up_axis=up_axis,
     )
 
     if isinstance(response, dict) and response.get("status") == "error":

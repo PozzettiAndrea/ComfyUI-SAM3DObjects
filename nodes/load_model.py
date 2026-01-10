@@ -152,6 +152,10 @@ class LoadSAM3DModel:
                     "SAM3D officially requires 32GB+ VRAM. May run out of memory!"
                 )
 
+        # Get checkpoint path, downloading required files if needed
+        # (Do this BEFORE cache check so new outputs trigger downloads)
+        checkpoint_path = self._get_or_download_checkpoint(used_outputs)
+
         # Create cache key
         cache_key = f"{compile}_{use_gpu_cache}_{depth_backend}"
 
@@ -161,9 +165,6 @@ class LoadSAM3DModel:
             model = _MODEL_CACHE[cache_key]
             # Return same model 4 times (one for each output)
             return (model, model, model, model)
-
-        # Get checkpoint path, downloading required files if needed
-        checkpoint_path = self._get_or_download_checkpoint(used_outputs)
 
         # Get config path
         config_path = checkpoint_path / "checkpoints" / "pipeline.yaml"

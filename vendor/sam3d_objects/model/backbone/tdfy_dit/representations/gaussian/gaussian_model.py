@@ -134,8 +134,10 @@ class Gaussian:
             l.append("rot_{}".format(i))
         return l
 
-    def save_ply(self, path):
+    def save_ply(self, path, transform=None):
         xyz = self.get_xyz.detach().cpu().numpy()
+        if transform is not None:
+            xyz = xyz @ transform
         normals = np.zeros_like(xyz)
 
         # Prepare raw SH coefficients (for Gaussian Splatting viewers)

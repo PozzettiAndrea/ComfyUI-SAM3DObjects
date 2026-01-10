@@ -448,7 +448,8 @@ def run_decode_lazy(
     unload_after: bool = True,
     output_dir: str = None,
     with_postprocess: bool = False,
-    simplify: float = 0.95
+    simplify: float = 0.95,
+    up_axis: str = "Y-up (standard)"
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding) using lazy loading.
@@ -545,7 +546,11 @@ def run_decode_lazy(
 
         ply_path = save_dir / "gaussian.ply"
         try:
-            gaussian.save_ply(str(ply_path))
+            # Compute transform matrix if Y-up is requested
+            transform = None
+            if up_axis == "Y-up (standard)":
+                transform = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
+            gaussian.save_ply(str(ply_path), transform=transform)
             saved_files["files"]["ply"] = str(ply_path)
             print(f"[Worker] Saved Gaussian PLY: {ply_path}", file=sys.stderr)
         except Exception as e:
@@ -581,17 +586,21 @@ def run_decode_lazy(
             if with_postprocess:
                 print(f"[Worker] Applying mesh postprocessing (simplify={simplify})...", file=sys.stderr)
                 print(f"[Worker] Note: Vertex colors will be interpolated after simplification", file=sys.stderr)
-                from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
-                vertices, faces = postprocess_mesh(
-                    vertices,
-                    faces,
-                    simplify=True,
-                    simplify_ratio=simplify,
-                    fill_holes=True,
-                    verbose=True,
-                )
-                print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
-                original_vertex_colors = None
+                try:
+                    from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
+                    vertices, faces = postprocess_mesh(
+                        vertices,
+                        faces,
+                        simplify=True,
+                        simplify_ratio=simplify,
+                        fill_holes=True,
+                        verbose=True,
+                    )
+                    print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
+                    original_vertex_colors = None
+                except ImportError as e:
+                    print(f"[Worker] Warning: Postprocessing unavailable ({e}), skipping simplification", file=sys.stderr)
+                    print(f"[Worker] To enable postprocessing, install gsplat: pip install gsplat", file=sys.stderr)
 
             # Process vertex colors if available
             vertex_colors = None
@@ -603,6 +612,11 @@ def run_decode_lazy(
                     alpha = np.full((vc.shape[0], 1), 255, dtype=np.uint8)
                     vc = np.concatenate([vc, alpha], axis=-1)
                 vertex_colors = vc
+
+            # Transform from Z-up to Y-up if requested (GLB standard)
+            if up_axis == "Y-up (standard)":
+                z_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
+                vertices = vertices @ z_to_y_up
 
             # Create trimesh with vertex colors
             trimesh_mesh = trimesh.Trimesh(
@@ -859,6 +873,7 @@ def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
         decode_format = request.get("decode_format", "gaussian")
         with_postprocess = request.get("with_postprocess", False)
         simplify = request.get("simplify", 0.95)
+        up_axis = request.get("up_axis", "Y-up (standard)")
 
         if not config_path:
             raise ValueError("config_path not provided in request")
@@ -884,7 +899,8 @@ def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
             unload_after=True,
             output_dir=output_dir,
             with_postprocess=with_postprocess,
-            simplify=simplify
+            simplify=simplify,
+            up_axis=up_axis
         )
 
         return {
