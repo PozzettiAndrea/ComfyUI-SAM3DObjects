@@ -181,41 +181,20 @@ def main():
         print("[SAM3DObjects] Cannot continue without comfyui-isolation package.")
         return 1
 
-    from comfyui_isolation import IsolatedEnv, IsolatedEnvManager, detect_cuda_version
+    from comfyui_isolation import IsolatedEnvManager, discover_env_config
 
     node_root = Path(__file__).parent.absolute()
 
-    # Detect CUDA and set matching PyTorch/pytorch3d versions
-    cuda_version = detect_cuda_version() or "12.4"
-    cuda_short = cuda_version.replace(".", "")
+    # Load environment config from comfyui_isolation_reqs.toml
+    env_config = discover_env_config(node_root)
+    if env_config is None:
+        print("[SAM3DObjects] ERROR: Could not find comfyui_isolation_reqs.toml")
+        return 1
 
-    # PyTorch version depends on CUDA (Blackwell needs 2.8.0)
-    if cuda_version == "12.8":
-        pytorch_version = "2.8.0"
-    else:
-        pytorch_version = "2.4.1"
-
-    # pytorch3d version string for MiroPsota wheels
-    pytorch3d_version = f"0.7.8+5043d15pt{pytorch_version}cu{cuda_short}"
-
-    # Define the isolated environment configuration
-    env_config = IsolatedEnv(
-        name="sam3dobjects",
-        python="3.10",
-        cuda=cuda_version,
-        pytorch_version=pytorch_version,
-        requirements_file=node_root / "local_env_settings" / "requirements_env.txt",
-        requirements=[
-            f"torch=={pytorch_version}",  # Pin torch to prevent upgrades
-            f"pytorch3d=={pytorch3d_version}",
-        ],
-        wheel_sources=[
-            "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
-        ],
-        index_urls=[
-            "https://miropsota.github.io/torch_packages_builder",
-        ],
-    )
+    print(f"[SAM3DObjects] Loaded config: {env_config.name}")
+    print(f"[SAM3DObjects]   CUDA: {env_config.cuda}")
+    print(f"[SAM3DObjects]   PyTorch: {env_config.pytorch_version}")
+    print(f"[SAM3DObjects]   Requirements: {len(env_config.requirements)} packages")
 
     # Create environment manager
     def log(msg):
