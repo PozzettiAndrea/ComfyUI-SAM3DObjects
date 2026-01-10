@@ -101,15 +101,23 @@ def layout_post_optimization(
     mask, renderer = get_mask_renderer(Mask, min_size, Intrinsics, device)
 
     # Resize Point_Map to match the resized mask
+    # Point_Map is HWC format (H, W, 3), but F.interpolate expects NCHW format
     H, W = mask.shape[-2:]
+    if Point_Map.dim() == 3:
+        # HWC -> CHW -> NCHW for interpolation
+        pm_nchw = Point_Map.permute(2, 0, 1).unsqueeze(0)  # (1, 3, H_orig, W_orig)
+    else:
+        # Assume already NCHW
+        pm_nchw = Point_Map
+
     Point_Map_resized = F.interpolate(
-        Point_Map.unsqueeze(0) if Point_Map.dim() == 3 else Point_Map,
+        pm_nchw,
         size=(H, W),
         mode="bilinear",
         align_corners=False,
     )
-    if Point_Map_resized.dim() == 4:
-        Point_Map_resized = Point_Map_resized.squeeze(0)
+    # NCHW -> CHW -> HWC to restore original format
+    Point_Map_resized = Point_Map_resized.squeeze(0).permute(1, 2, 0)  # (H, W, 3)
 
     # check occlusion
     if check_occlusion(mask[0, 0].cpu().numpy(), Point_Map_resized.cpu().numpy()):

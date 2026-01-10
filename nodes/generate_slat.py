@@ -88,7 +88,7 @@ class SAM3DGenerateSLAT:
     RETURN_NAMES = ("slat_path", "debug_preprocessed")
     OUTPUT_TOOLTIPS = (
         "Path to SLAT file. Pass to GaussianDecode and MeshDecode",
-        "Debug: Preprocessed image that was actually fed to the model (cropped/masked)",
+        "Debug: The exact 518x518 cropped image fed to DINO embedder (crop around mask bbox)",
     )
     FUNCTION = "generate_slat"
     CATEGORY = "SAM3DObjects"
