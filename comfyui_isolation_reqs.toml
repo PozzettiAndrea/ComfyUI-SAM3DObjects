@@ -35,12 +35,11 @@ requirements_file = "local_env_settings/requirements_env.txt"
 
 
 [sources]
-# Custom wheel sources (--find-links)
-wheel_sources = [
-    "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
-]
+# Custom wheel sources (--find-links) - for flat wheel directories
+wheel_sources = []
 
-# Extra package indexes (--extra-index-url)
+# Extra package indexes (--extra-index-url) - for PEP 503 simple indexes
 index_urls = [
+    "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
     "https://miropsota.github.io/torch_packages_builder",
 ]
