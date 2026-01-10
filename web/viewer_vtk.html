@@ -209,7 +209,6 @@
 
         let currentReader = null;
         let meshBounds = null;
-        let lastLoadedUrl = null;  // Track last loaded URL for visibility reload
 
         function showError(message) {
             loading.style.display = 'none';
@@ -384,7 +383,6 @@
                 });
 
                 loading.style.display = 'none';
-                lastLoadedUrl = filepath;  // Store for visibility reload
                 console.log('[SAM3D VTK Viewer] Load complete');
 
             } catch (error) {
@@ -463,14 +461,6 @@
                 }
             } else {
                 console.warn('[SAM3D VTK Viewer] Unexpected message format:', event.data);
-            }
-        });
-
-        // Reload point cloud when tab becomes visible again (handles WebGL context loss)
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && lastLoadedUrl) {
-                console.log('[SAM3D VTK Viewer] Tab visible, reloading point cloud');
-                loadPointCloud(lastLoadedUrl);
             }
         });
 
