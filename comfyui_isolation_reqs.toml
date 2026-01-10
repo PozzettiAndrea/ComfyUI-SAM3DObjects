@@ -9,6 +9,9 @@ python = "3.10"
 cuda = "auto"  # 12.8 for Blackwell, 12.4 for others
 pytorch_version = "auto"  # 2.8.0 for cu128, 2.4.1 for cu124
 
+[worker]
+package = "worker"  # worker/__main__.py
+
 
 [packages]
 # Variables: {cuda_version}, {cuda_short}, {pytorch_version}
