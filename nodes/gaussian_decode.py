@@ -1,13 +1,19 @@
 """SAM3DGaussianDecode node for decoding SLAT to Gaussian splats."""
 
 import os
-from pathlib import Path
 from typing import Any
 
-from .subprocess_bridge import get_bridge, run_decode
-from .load_model import LoadSAM3DModel, REQUIRED_FILES
+from comfyui_isolation import isolated
+
+from .load_model import LoadSAM3DModel
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=300.0,  # 5 minutes for Gaussian decode
+)
 class SAM3DGaussianDecode:
     """
     Gaussian Decoding.
@@ -51,57 +57,60 @@ class SAM3DGaussianDecode:
         """
         Decode SLAT to Gaussian splats.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Args:
-            slat_decoder_gs: SAM3D model (provides config_path)
+            slat_decoder_gs: SAM3DModelConfig (provides config_path)
             slat: Path to SLAT from SAM3DGenerateSLAT
 
         Returns:
             ply_filepath
         """
-        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
+        # These imports happen in the isolated subprocess
+        import os
+        import torch
+        from pathlib import Path
 
-        # Ensure Gaussian decoder files are downloaded
-        # (LoadSAM3DModel might have been cached without downloading these)
-        LoadSAM3DModel._get_or_download_checkpoint({"slat_decoder_gs"})
+        from worker.lazy_manager import get_model_manager
+        from worker.stages import run_decode_lazy
+
+        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
 
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
 
-        # Get config path from model and bridge
+        # Get config path from model
         config_path = slat_decoder_gs.config_path
-        bridge = get_bridge()
+        config_dir = str(Path(config_path).parent)
 
-        # Run Gaussian decoding via dedicated decode command
-        try:
-            result = run_decode(
-                bridge=bridge,
-                config_path=config_path,
-                slat_path=slat,
-                output_dir=output_dir,
-                decode_format="gaussian",
-                up_axis=up_axis,
-            )
-        except Exception as e:
-            raise RuntimeError(f"SAM3D Gaussian decode failed: {e}") from e
+        # Load SLAT
+        slat_data = torch.load(slat, weights_only=False)
 
-        # Extract PLY path from nested result structure
-        ply_path = result.get("ply_path", None)
+        # Get lazy manager
+        lazy_manager = get_model_manager(config_dir, compile=slat_decoder_gs.compile)
 
-        # Check nested output.files structure (from run_decode_lazy)
-        if not ply_path and "output" in result:
-            output = result["output"]
-            if isinstance(output, dict) and "files" in output:
-                ply_path = output["files"].get("ply")
+        # Run Gaussian decoding
+        result = run_decode_lazy(
+            lazy_manager,
+            slat_data={"slat": slat_data},
+            decode_format="gaussian",
+            unload_after=True,
+            output_dir=output_dir,
+            up_axis=up_axis,
+        )
 
-        # Check file_output.files structure (alternative key)
-        if not ply_path and "file_output" in result:
+        # Extract PLY path from result
+        ply_path = None
+
+        # Check file_output structure (from run_decode_lazy)
+        if "file_output" in result:
             file_output = result["file_output"]
             if isinstance(file_output, dict) and "files" in file_output:
                 ply_path = file_output["files"].get("ply")
 
         # Fallback: check direct files dict
-        if not ply_path and "files" in result and "ply" in result["files"]:
-            ply_path = result["files"]["ply"]
+        if not ply_path and "files" in result:
+            ply_path = result["files"].get("ply")
 
         if not ply_path:
             raise RuntimeError("PLY file was not generated")

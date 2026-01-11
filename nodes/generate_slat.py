@@ -2,18 +2,17 @@
 
 import os
 import json
-import hashlib
-from pathlib import Path
 from typing import Any
 
-import torch
-import numpy as np
-from PIL import Image
-
-from .utils import comfy_image_to_pil, comfy_mask_to_numpy
-from .subprocess_bridge import get_bridge, run_generate_slat
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=900.0,  # 15 minutes for SLAT generation
+)
 class SAM3DGenerateSLAT:
     """
     Generate SLAT (Structured Latent).
@@ -94,8 +93,14 @@ class SAM3DGenerateSLAT:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate."
 
+    # Include helper methods so they're available in subprocess
+    ISOLATED_METHODS = ["generate_slat", "_check_stage1_cache", "_save_stage1_metadata"]
+
     def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
         """Check if Stage 1 output exists with matching params."""
+        import os
+        import json
+
         sparse_path = os.path.join(output_dir, "sparse_structure.pt")
         metadata_path = os.path.join(output_dir, "stage1_metadata.json")
 
@@ -122,6 +127,8 @@ class SAM3DGenerateSLAT:
 
     def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
         """Save Stage 1 params for cache validation."""
+        import json
+
         metadata_path = os.path.join(output_dir, "stage1_metadata.json")
         with open(metadata_path, 'w') as f:
             json.dump({
@@ -134,8 +141,8 @@ class SAM3DGenerateSLAT:
     def generate_slat(
         self,
         generator,
-        image,
-        mask,
+        image,  # torch.Tensor [B, H, W, C]
+        mask,   # torch.Tensor [B, H, W] or [H, W]
         pointmap_path: str,
         seed: int,
         stage1_steps: int = 12,
@@ -148,72 +155,105 @@ class SAM3DGenerateSLAT:
         """
         Generate SLAT from image, mask, and pointmap.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Internally runs Stage 1 (sparse) and Stage 2 (SLAT) with lazy loading.
         Caches Stage 1 output - if params match, skips Stage 1.
         """
+        # These imports happen in the isolated subprocess
+        import os
+        import torch
+        import numpy as np
+        from pathlib import Path
+        from PIL import Image
+
+        from worker.lazy_manager import get_model_manager
+        from worker.stages import run_stage1_lazy, run_stage2_lazy
+        from worker.preprocessing import load_pointmap_from_file
+
+        print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
+
         # Derive output_dir from pointmap_path (same directory created by DepthEstimate)
         output_dir = os.path.dirname(pointmap_path)
 
-        # Convert inputs
-        image_pil = comfy_image_to_pil(image)
-        mask_np = comfy_mask_to_numpy(mask)
-
-        # Check Stage 1 cache
-        use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
-
-        if use_cached_stage1:
-            print(f"[SAM3DObjects] GenerateSLAT: Using cached Stage 1 output")
+        # Convert ComfyUI IMAGE to PIL
+        if image.dim() == 4:
+            image_np = (image[0].cpu().numpy() * 255).astype(np.uint8)
         else:
-            print(f"[SAM3DObjects] GenerateSLAT: Running Stage 1 (sparse structure)...")
+            image_np = (image.cpu().numpy() * 255).astype(np.uint8)
+        image_pil = Image.fromarray(image_np)
 
-        print(f"[SAM3DObjects] GenerateSLAT: Running Stage 2 (SLAT generation)...")
+        # Convert ComfyUI MASK to PIL
+        if mask.dim() == 3:
+            mask_np = mask[0].cpu().numpy()
+        else:
+            mask_np = mask.cpu().numpy()
+        mask_np = (mask_np * 255).astype(np.uint8)
+        mask_pil = Image.fromarray(mask_np)
 
-        # Get bridge and run combined generation
-        bridge = get_bridge()
+        # Load pointmap
+        print(f"[SAM3DObjects] Loading pointmap from: {pointmap_path}")
+        pointmap = load_pointmap_from_file(pointmap_path)
+        print(f"[SAM3DObjects] Pointmap shape: {pointmap.shape}")
 
         # Get config path from generator model
         config_path = generator.config_path
 
-        try:
-            result = run_generate_slat(
-                bridge=bridge,
-                config_path=config_path,
-                image=image_pil,
-                mask=mask_np,
-                pointmap_path=pointmap_path,
-                output_dir=output_dir,
+        # Get lazy manager
+        config_dir = str(Path(config_path).parent)
+        lazy_manager = get_model_manager(config_dir, compile=generator.compile)
+
+        # Check Stage 1 cache
+        use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
+        sparse_path = os.path.join(output_dir, "sparse_structure.pt")
+        debug_image_path = None
+
+        # Stage 1: Sparse structure generation
+        if use_cached_stage1 and os.path.exists(sparse_path):
+            print(f"[SAM3DObjects] Using cached Stage 1 output")
+            stage1_output = torch.load(sparse_path, weights_only=False)
+            # Check for cached debug image
+            cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
+            if os.path.exists(cached_debug):
+                debug_image_path = cached_debug
+        else:
+            print(f"[SAM3DObjects] Running Stage 1 (sparse structure)...")
+            result = run_stage1_lazy(
+                lazy_manager,
+                image_pil,
+                mask_pil,
+                pointmap,
                 seed=seed,
-                stage1_steps=stage1_steps,
-                stage1_cfg=stage1_cfg,
-                stage1_cfg_pm=stage1_cfg_pm,
-                stage2_steps=stage2_steps,
-                stage2_cfg=stage2_cfg,
-                skip_stage1=use_cached_stage1,
-                use_distillation=use_distillation,
+                inference_steps=stage1_steps,
+                cfg_strength=stage1_cfg,
+                cfg_strength_pointmap=stage1_cfg_pm,
             )
-        except Exception as e:
-            raise RuntimeError(f"SAM3D SLAT generation failed: {e}") from e
+            stage1_output = result["sparse_structure"]
+            debug_image_path = result.get("debug_image_path")
 
-        # Save Stage 1 metadata for future cache hits (if we ran Stage 1)
-        if not use_cached_stage1:
+            # Save Stage 1 output for potential reuse
+            torch.save(stage1_output, sparse_path)
             self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
+            print(f"[SAM3DObjects] Stage 1 complete, saved to: {sparse_path}")
 
-        # Extract SLAT path
-        slat_path = result.get("slat_path")
-        if not slat_path:
-            # Check files dict
-            if "files" in result and "slat" in result["files"]:
-                slat_path = result["files"]["slat"]
+        # Stage 2: SLAT generation
+        print(f"[SAM3DObjects] Running Stage 2 (SLAT generation)...")
+        stage2_result = run_stage2_lazy(
+            lazy_manager,
+            stage1_output,
+            seed=seed,
+            inference_steps=stage2_steps,
+            cfg_strength=stage2_cfg,
+        )
+        slat = stage2_result["slat"]
 
-        if not slat_path:
-            raise RuntimeError("SLAT file was not generated")
+        # Save SLAT
+        slat_path = os.path.join(output_dir, "slat.pt")
+        torch.save(slat, slat_path)
+        print(f"[SAM3DObjects] Stage 2 complete, saved to: {slat_path}")
 
         # Load debug image if available
         debug_image = None
-        debug_image_path = result.get("debug_image")
-        if not debug_image_path and "files" in result:
-            debug_image_path = result["files"].get("debug_image")
-
         if debug_image_path and os.path.exists(debug_image_path):
             try:
                 pil_img = Image.open(debug_image_path).convert("RGB")

@@ -2,19 +2,18 @@
 
 import os
 import json
-import hashlib
 import shutil
-from pathlib import Path
 from typing import Any
 
-import torch
-import numpy as np
-from PIL import Image
-
-from .utils import comfy_image_to_pil
-from .subprocess_bridge import get_bridge, run_generate_slat, run_decode, run_texture_bake_direct, run_scene_generate_batch
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=3600.0,  # 60 minutes for batch scene generation
+)
 class SAM3DSceneGenerate:
     """
     Scene Generation - Batch process multiple masks to 3D objects.
@@ -123,69 +122,14 @@ class SAM3DSceneGenerate:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Batch process multiple masks to 3D objects. Each mask becomes a separate GLB mesh."
 
-    def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
-        """Check if Stage 1 output exists with matching params."""
-        sparse_path = os.path.join(output_dir, "sparse_structure.pt")
-        metadata_path = os.path.join(output_dir, "stage1_metadata.json")
-
-        if not os.path.exists(sparse_path):
-            return False
-
-        if not os.path.exists(metadata_path):
-            return False
-
-        try:
-            with open(metadata_path, 'r') as f:
-                cached = json.load(f)
-
-            if (cached.get("seed") == seed and
-                cached.get("steps") == steps and
-                cached.get("cfg") == cfg and
-                cached.get("cfg_pm", 0.0) == cfg_pm):
-                return True
-        except:
-            pass
-
-        return False
-
-    def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
-        """Save Stage 1 params for cache validation."""
-        metadata_path = os.path.join(output_dir, "stage1_metadata.json")
-        with open(metadata_path, 'w') as f:
-            json.dump({
-                "seed": seed,
-                "steps": steps,
-                "cfg": cfg,
-                "cfg_pm": cfg_pm,
-            }, f)
-
-    def _extract_path(self, result: dict, key: str, files_key: str) -> str:
-        """Extract path from nested result structure."""
-        path = result.get(f"{key}_path", None)
-
-        if not path and "output" in result:
-            output = result["output"]
-            if isinstance(output, dict) and "files" in output:
-                path = output["files"].get(files_key)
-
-        if not path and "file_output" in result:
-            file_output = result["file_output"]
-            if isinstance(file_output, dict) and "files" in file_output:
-                path = file_output["files"].get(files_key)
-
-        if not path and "files" in result and files_key in result["files"]:
-            path = result["files"][files_key]
-
-        return path
-
     def generate_scene(
         self,
         generator,
         slat_decoder_gs,
         slat_decoder_mesh,
-        image,
-        masks,
-        intrinsics,
+        image,  # torch.Tensor [B, H, W, C]
+        masks,  # torch.Tensor [N, H, W]
+        intrinsics,  # numpy array
         pointmap_path: str,
         seed: int,
         stage1_steps: int = 12,
@@ -203,6 +147,8 @@ class SAM3DSceneGenerate:
         """
         Generate 3D objects for each mask in the batch.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Uses phase-based batch processing for efficiency:
         - Loads Stage1 models ONCE, processes ALL masks, then unloads
         - Loads Stage2 models ONCE, processes ALL sparse structures, then unloads
@@ -211,6 +157,19 @@ class SAM3DSceneGenerate:
 
         Returns path to output folder containing object_0/, object_1/, etc.
         """
+        # These imports happen in the isolated subprocess
+        import os
+        import io
+        import base64
+        import pickle
+        import shutil
+        import torch
+        import numpy as np
+        from pathlib import Path
+        from PIL import Image
+
+        from worker.scene_batch import run_scene_generate_batch
+
         # Get batch size from mask tensor [N, H, W]
         if len(masks.shape) == 3:
             batch_size = masks.shape[0]
@@ -225,8 +184,12 @@ class SAM3DSceneGenerate:
         # Derive base output dir from pointmap path
         base_output_dir = os.path.dirname(pointmap_path)
 
-        # Convert image once (shared across all masks)
-        image_pil = comfy_image_to_pil(image)
+        # Convert ComfyUI IMAGE to PIL
+        if image.dim() == 4:
+            image_np = (image[0].cpu().numpy() * 255).astype(np.uint8)
+        else:
+            image_np = (image.cpu().numpy() * 255).astype(np.uint8)
+        image_pil = Image.fromarray(image_np)
 
         # Save intrinsics for pose optimization
         intrinsics_path = os.path.join(base_output_dir, "intrinsics.pt")
@@ -243,12 +206,18 @@ class SAM3DSceneGenerate:
         mesh_config = slat_decoder_mesh.config_path
         gs_config = slat_decoder_gs.config_path if add_textures else None
 
-        # Convert masks to list of numpy arrays
-        masks_list = []
+        # Serialize image to base64
+        img_buffer = io.BytesIO()
+        image_pil.save(img_buffer, format="PNG")
+        image_b64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+
+        # Convert masks to list and serialize
+        masks_b64 = []
         for idx in range(batch_size):
             single_mask = masks[idx]  # [H, W]
             mask_np = single_mask.cpu().numpy()
-            masks_list.append(mask_np)
+            mask_b64 = base64.b64encode(pickle.dumps(mask_np)).decode('utf-8')
+            masks_b64.append(mask_b64)
 
             # Create object directory and save mask for pose optimization
             object_dir = os.path.join(base_output_dir, f"object_{idx}")
@@ -261,35 +230,34 @@ class SAM3DSceneGenerate:
             if not os.path.exists(object_pointmap_path):
                 shutil.copy(pointmap_path, object_pointmap_path)
 
-        # Get bridge (auto-starts worker on first call)
-        bridge = get_bridge()
+        # Build request for batch processing
+        request = {
+            "image": image_b64,
+            "masks": masks_b64,
+            "pointmap_path": pointmap_path,
+            "base_output_dir": base_output_dir,
+            "config_path": generator_config,
+            "mesh_config_path": mesh_config,
+            "gs_config_path": gs_config,
+            "seed": seed,
+            "stage1_steps": stage1_steps,
+            "stage1_cfg": stage1_cfg,
+            "stage1_cfg_pm": stage1_cfg_pm,
+            "stage2_steps": stage2_steps,
+            "stage2_cfg": stage2_cfg,
+            "with_postprocess": with_postprocess,
+            "simplify": simplify,
+            "add_textures": add_textures,
+            "texture_mode": texture_mode,
+            "texture_size": texture_size,
+        }
 
         # Run batch processing - models are loaded once per phase
         print(f"[SAM3DObjects] SceneGenerate: Starting batch processing...")
-        try:
-            result = run_scene_generate_batch(
-                bridge=bridge,
-                image=image_pil,
-                masks=masks_list,
-                pointmap_path=pointmap_path,
-                base_output_dir=base_output_dir,
-                config_path=generator_config,
-                mesh_config_path=mesh_config,
-                gs_config_path=gs_config,
-                seed=seed,
-                stage1_steps=stage1_steps,
-                stage1_cfg=stage1_cfg,
-                stage1_cfg_pm=stage1_cfg_pm,
-                stage2_steps=stage2_steps,
-                stage2_cfg=stage2_cfg,
-                with_postprocess=with_postprocess,
-                simplify=simplify,
-                add_textures=add_textures,
-                texture_mode=texture_mode,
-                texture_size=texture_size,
-            )
-        except Exception as e:
-            raise RuntimeError(f"Batch scene generation failed: {e}") from e
+        result = run_scene_generate_batch(request)
+
+        if result.get("status") == "error":
+            raise RuntimeError(f"Batch scene generation failed: {result.get('error')}")
 
         # Process results - meshes are now in world coordinates (pose baked in)
         objects = result.get("objects", [])

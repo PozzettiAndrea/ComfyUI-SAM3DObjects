@@ -1,14 +1,17 @@
 """SAM3D_PoseOptimization node for refining object pose using ICP and render optimization."""
 
 import os
-import torch
-import numpy as np
-import pickle
-import base64
 from typing import Any, Dict
-from pathlib import Path
+
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=300.0,  # 5 minutes for pose optimization
+)
 class SAM3D_PoseOptimization:
     """
     Refine object pose using ICP and render-based optimization.
@@ -68,43 +71,30 @@ class SAM3D_PoseOptimization:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Refine object pose using ICP and render-based optimization. Outputs reposed GLB."
 
-    def _serialize_tensor(self, tensor) -> str:
-        """Serialize tensor to base64 numpy array."""
-        if tensor is None:
-            return None
-        # Convert to numpy array regardless of input type
-        if isinstance(tensor, torch.Tensor):
-            arr = tensor.cpu().numpy()
-        elif isinstance(tensor, np.ndarray):
-            arr = tensor
-        elif isinstance(tensor, (list, tuple)):
-            arr = np.array(tensor)
-        else:
-            arr = np.array(tensor)
-        return base64.b64encode(pickle.dumps(arr)).decode('utf-8')
-
-    def _serialize_pose(self, pose: Dict[str, Any]) -> Dict[str, str]:
-        """Serialize pose dict with tensors to base64."""
-        return {
-            "rotation": self._serialize_tensor(pose.get("rotation")),
-            "translation": self._serialize_tensor(pose.get("translation")),
-            "scale": self._serialize_tensor(pose.get("scale")),
-        }
-
     def optimize_pose(
         self,
         glb_path: str,
         pointmap_path: str,
-        intrinsics: torch.Tensor,
+        intrinsics,  # numpy array or tensor
         pose: Dict[str, Any],
-        mask: torch.Tensor,
+        mask,  # torch.Tensor
         enable_icp: bool = True,
         enable_render_opt: bool = True,
     ):
         """
         Optimize object pose using ICP and render optimization.
-        Delegates to worker subprocess where sam3d_objects is available.
+
+        This method runs in an isolated subprocess with its own Python environment.
         """
+        # These imports happen in the isolated subprocess
+        import os
+        import pickle
+        import base64
+        import torch
+        import numpy as np
+
+        from worker.pose_optimization import run_pose_optimization
+
         print(f"[SAM3DObjects] PoseOptimization: Starting pose refinement")
 
         # Validate inputs
@@ -122,9 +112,26 @@ class SAM3D_PoseOptimization:
             print("[SAM3DObjects] Warning: Incomplete pose data, returning original")
             return (glb_path, pose, -1.0)
 
-        # Get the worker bridge
-        from .subprocess_bridge import get_bridge
-        bridge = get_bridge()
+        # Serialize helper
+        def serialize_tensor(tensor):
+            if tensor is None:
+                return None
+            if isinstance(tensor, torch.Tensor):
+                arr = tensor.cpu().numpy()
+            elif isinstance(tensor, np.ndarray):
+                arr = tensor
+            elif isinstance(tensor, (list, tuple)):
+                arr = np.array(tensor)
+            else:
+                arr = np.array(tensor)
+            return base64.b64encode(pickle.dumps(arr)).decode('utf-8')
+
+        def serialize_pose(pose_dict):
+            return {
+                "rotation": serialize_tensor(pose_dict.get("rotation")),
+                "translation": serialize_tensor(pose_dict.get("translation")),
+                "scale": serialize_tensor(pose_dict.get("scale")),
+            }
 
         # Prepare mask for serialization
         if mask.dim() == 3:
@@ -132,45 +139,37 @@ class SAM3D_PoseOptimization:
         else:
             mask_2d = mask.cpu().numpy()
 
-        # Serialize data for worker
+        # Build request for worker
         request = {
-            "command": "pose_optimization",
             "glb_path": glb_path,
             "pointmap_path": pointmap_path,
-            "intrinsics_b64": self._serialize_tensor(intrinsics),
-            "pose_b64": self._serialize_pose(pose),
+            "intrinsics_b64": serialize_tensor(intrinsics),
+            "pose_b64": serialize_pose(pose),
             "mask_b64": base64.b64encode(pickle.dumps(mask_2d.astype(np.float32))).decode('utf-8'),
             "enable_icp": enable_icp,
             "enable_render_opt": enable_render_opt,
         }
 
-        # Send to worker
-        try:
-            response = bridge._send_request(request, timeout=120.0)
+        # Run pose optimization
+        response = run_pose_optimization(request)
 
-            if response.get("status") == "error":
-                print(f"[SAM3DObjects] Worker error: {response.get('error')}")
-                return (glb_path, pose, -1.0)
-
-            # Extract results
-            output_glb_path = response.get("output_glb_path", glb_path)
-            iou = response.get("iou", -1.0)
-
-            # Deserialize refined pose
-            refined_pose_b64 = response.get("refined_pose_b64", {})
-            refined_pose = {}
-            for key in ["rotation", "translation", "scale"]:
-                if refined_pose_b64.get(key):
-                    data = pickle.loads(base64.b64decode(refined_pose_b64[key]))
-                    refined_pose[key] = torch.tensor(data)
-                else:
-                    refined_pose[key] = pose.get(key)
-
-            print(f"[SAM3DObjects] Pose optimization completed (IoU: {iou:.3f})")
-            return (output_glb_path, refined_pose, float(iou))
-
-        except Exception as e:
-            print(f"[SAM3DObjects] Error during pose optimization: {e}")
-            import traceback
-            traceback.print_exc()
+        if response.get("status") == "error":
+            print(f"[SAM3DObjects] Worker error: {response.get('error')}")
             return (glb_path, pose, -1.0)
+
+        # Extract results
+        output_glb_path = response.get("output_glb_path", glb_path)
+        iou = response.get("iou", -1.0)
+
+        # Deserialize refined pose
+        refined_pose_b64 = response.get("refined_pose_b64", {})
+        refined_pose = {}
+        for key in ["rotation", "translation", "scale"]:
+            if refined_pose_b64.get(key):
+                data = pickle.loads(base64.b64decode(refined_pose_b64[key]))
+                refined_pose[key] = torch.tensor(data)
+            else:
+                refined_pose[key] = pose.get(key)
+
+        print(f"[SAM3DObjects] Pose optimization completed (IoU: {iou:.3f})")
+        return (output_glb_path, refined_pose, float(iou))
