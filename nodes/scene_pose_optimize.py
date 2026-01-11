@@ -50,9 +50,6 @@ class SAM3D_ScenePoseOptimize:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Optimize poses for all objects in a scene folder using alignment algorithms."
 
-    # Include helper methods so they're available in subprocess
-    ISOLATED_METHODS = ["optimize_poses", "_discover_objects", "_check_cache", "_save_cache_metadata"]
-
     def _discover_objects(self, output_folder: str) -> List[str]:
         """Discover all object_N/ folders in sorted order."""
         import os
