@@ -6,12 +6,7 @@ from typing import Any
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=600.0,  # 10 minutes for texture baking
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DTextureBake:
     """
     Texture Baking.
@@ -98,7 +93,7 @@ class SAM3DTextureBake:
         # These imports happen in the isolated subprocess
         import os
 
-        from worker.texture_baking import run_texture_bake_direct
+        from utils.stages import run_texture_bake_direct
 
         print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
 

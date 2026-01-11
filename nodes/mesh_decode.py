@@ -8,12 +8,7 @@ from comfyui_isolation import isolated
 from .load_model import LoadSAM3DModel
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=300.0,  # 5 minutes for Mesh decode
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DMeshDecode:
     """
     Mesh Decoding.
@@ -87,8 +82,8 @@ class SAM3DMeshDecode:
         import torch
         from pathlib import Path
 
-        from worker.lazy_manager import get_model_manager
-        from worker.stages import run_decode_lazy
+        from utils.lazy_manager import get_model_manager
+        from utils.stages import run_decode_lazy
 
         print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:

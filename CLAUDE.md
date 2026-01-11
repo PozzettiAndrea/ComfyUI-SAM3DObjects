@@ -11,7 +11,7 @@ ComfyUI Process                    Isolated Subprocess (@isolated decorator)
 │  @isolated class   │──spawn────►│  in _env_sam3dobjects/  │
 │  - INPUT_TYPES     │            │                         │
 │  - FUNCTION method │  JSON/IPC  │  Imports from:          │
-│    (runs in        │◄──────────►│  - nodes/worker/*.py    │
+│    (runs in        │◄──────────►│  - nodes/utils/*.py     │
 │     subprocess)    │            │  - vendor/sam3d_objects │
 └────────────────────┘            └─────────────────────────┘
 ```
@@ -33,21 +33,19 @@ ComfyUI-SAM3DObjects/
 │   ├── scene_pose_optimize.py # @isolated SAM3D_ScenePoseOptimize
 │   ├── pose_optimization.py  # @isolated SAM3D_PoseOptimization
 │   ├── isolated_model.py     # SAM3DModelConfig (simple data class)
-│   ├── unload_model.py       # No-op pass-through (for compatibility)
-│   └── worker/               # Importable worker modules
+│   ├── comfy_utils.py        # Model path helpers, device utilities
+│   └── utils/                # Importable utility modules (run in subprocess)
 │       ├── __init__.py       # Exports key functions
 │       ├── lazy_manager.py   # Model loading/caching
-│       ├── stages.py         # run_stage1_lazy, run_stage2_lazy, run_decode_lazy
-│       ├── inference.py      # High-level inference API
+│       ├── stages.py         # All pipeline stages (depth, stage1, stage2, decode, texture baking)
+│       ├── helpers.py        # Preprocessing, file I/O utilities
 │       ├── scene_batch.py    # run_scene_generate_batch
-│       ├── pose_optimization.py  # run_pose_optimization, run_pose_optimization_batch
-│       ├── depth.py          # run_depth_only
-│       └── texture_baking.py # run_texture_bake_direct
+│       └── pose_optimization.py  # run_pose_optimization, run_pose_optimization_batch
 ├── vendor/                   # Vendored dependencies
 │   ├── sam3d_objects/        # Core SAM3D library
 │   ├── moge/                 # MoGe depth estimation
 │   └── cv2/                  # OpenCV shim (DLL fix)
-├── comfyui_isolation_reqs.toml  # Isolated env config
+├── comfyui_isolation_reqs.toml  # Isolated env config (auto-discovered)
 └── _env_sam3dobjects/        # Isolated Python venv (auto-created)
 ```
 
@@ -58,20 +56,15 @@ Each GPU node uses the `@isolated` decorator from `comfyui-isolation`:
 ```python
 from comfyui_isolation import isolated
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],  # "." = nodes/, "../vendor" = vendor/
-    timeout=600.0,
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3D_DepthEstimate:
     FUNCTION = "estimate_depth"
 
     def estimate_depth(self, depth_model, image):
         # This entire method runs in isolated subprocess
         # Imports happen here, inside the subprocess
-        from worker.depth import run_depth_only
-        from worker.lazy_manager import get_model_manager
+        from utils.stages import run_depth_only
+        from utils.lazy_manager import get_model_manager
 
         # depth_model is SAM3DModelConfig with config_path, etc.
         manager = get_model_manager(depth_model.config_path)
@@ -83,6 +76,8 @@ class SAM3D_DepthEstimate:
 - Method body runs in subprocess with isolated Python environment
 - ComfyUI IMAGE/MASK tensors auto-serialized via JSON IPC
 - `import_paths=[".", "../vendor"]` adds `nodes/` and `vendor/` to subprocess's sys.path
+- Config file auto-discovered (`comfyui_isolation_reqs.toml`)
+- Default timeout is 10 minutes (can override with `timeout=` if needed)
 - ComfyUI base auto-detected, so `folder_paths` works in subprocess
 - Each node invocation spawns fresh subprocess → auto VRAM cleanup
 
@@ -120,9 +115,9 @@ SAM3DSceneGenerate (image + masks batch)
 - `__init__.py` - Node registration (NODE_CLASS_MAPPINGS)
 
 ### Modifying Inference
-- `nodes/worker/stages.py` - Core decode logic, pose application
-- `nodes/worker/lazy_manager.py` - Model loading/caching
-- `nodes/worker/inference.py` - High-level inference orchestration
+- `nodes/utils/stages.py` - All pipeline stages (depth, stage1, stage2, decode, texture baking)
+- `nodes/utils/lazy_manager.py` - Model loading/caching
+- `nodes/utils/helpers.py` - Preprocessing, file I/O utilities
 
 ### Serialization
 - Automatic: ComfyUI IMAGE/MASK handled by comfyui-isolation
@@ -138,7 +133,6 @@ SAM3DSceneGenerate (image + masks batch)
 
 ### VRAM Management
 - Fresh subprocess per call = automatic cleanup
-- No need for explicit unload_model (kept for compatibility)
 - ~16GB VRAM minimum (24GB+ recommended)
 
 ### Caching
@@ -160,15 +154,13 @@ SAM3DSceneGenerate (image + masks batch)
 ### Add a new @isolated node
 1. Create `nodes/your_node.py` with @isolated decorator
 2. Import and register in `__init__.py`
-3. Method body imports from `worker/` and runs GPU code
+3. Method body imports from `utils/` and runs GPU code
 
 ### Modify decode output
-- Edit `nodes/worker/stages.py` → `run_decode_lazy()`
-- Mesh path: ~line 723
-- Gaussian path: ~line 685
+- Edit `nodes/utils/stages.py` → `run_decode_lazy()`
 
 ### Change model loading
-- Edit `nodes/worker/lazy_manager.py`
+- Edit `nodes/utils/lazy_manager.py`
 - Models registered in `_parse_config()`
 
 ### Debug subprocess

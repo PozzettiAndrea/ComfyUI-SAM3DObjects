@@ -1,10 +1,12 @@
 """
 Pipeline stages for SAM3D inference with lazy loading.
 
-This module contains:
+This module contains all pipeline stages:
+- Depth estimation (MoGe)
 - Stage 1: Sparse structure generation
 - Stage 2: SLAT generation
 - Stage 3: Gaussian/Mesh decoding
+- Texture baking
 """
 
 import sys
@@ -15,8 +17,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 
-from preprocessing import preprocess_image_lazy
-from utils import save_output_to_disk
+from .helpers import preprocess_image_lazy, save_output_to_disk
 
 
 def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
@@ -826,265 +827,226 @@ def run_decode_lazy(
         }
 
 
-def run_generate_slat(request: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Run combined Stage 1 + Stage 2 (SLAT generation) with lazy loading.
+# =============================================================================
+# Depth Estimation
+# =============================================================================
 
-    This is the main entry point for the SAM3DGenerateSLAT node.
-    Combines sparse structure generation and SLAT generation into one operation
-    with internal caching support.
+def run_depth_only(model_manager, image, unload_after: bool = True, depth_backend: str = "moge2") -> Dict[str, Any]:
+    """
+    Run depth estimation (loads only MoGe model, ~2GB VRAM).
 
     Args:
-        request: Dict containing:
-            - image: Base64-encoded PIL image
-            - mask: Base64-encoded numpy mask
-            - pointmap_path: Path to pointmap.pt from depth estimation
-            - output_dir: Directory to save outputs
-            - seed: Random seed
-            - stage1_steps: Inference steps for Stage 1
-            - stage1_cfg: CFG strength for Stage 1
-            - stage2_steps: Inference steps for Stage 2
-            - stage2_cfg: CFG strength for Stage 2
-            - skip_stage1: If True, load existing sparse_structure.pt
+        model_manager: ModelManager instance
+        image: PIL Image
+        unload_after: Whether to unload depth model after use (frees VRAM)
+        depth_backend: "moge2" (newer, metric scale) or "moge" (original)
 
     Returns:
-        Dict with status and slat_path
+        Dict with pointmap, intrinsics, depth
     """
-    import os
-    import io
-    import base64
-    import pickle
-    import traceback
-    from PIL import Image
+    from pytorch3d.renderer import look_at_view_transform
+    from pytorch3d.transforms import Transform3d
 
-    from lazy_manager import get_model_manager
-    from preprocessing import load_pointmap_from_file
+    print(f"[Worker] Running depth estimation (backend={depth_backend})", file=sys.stderr)
 
-    try:
-        # Extract parameters
-        image_b64 = request["image"]
-        mask_b64 = request["mask"]
-        pointmap_path = request["pointmap_path"]
-        output_dir = request["output_dir"]
-        seed = request.get("seed", 42)
-        stage1_steps = request.get("stage1_steps", 12)
-        stage1_cfg = request.get("stage1_cfg", 7.5)
-        stage1_cfg_pm = request.get("stage1_cfg_pm", 0.0)
-        stage2_steps = request.get("stage2_steps", 12)
-        stage2_cfg = request.get("stage2_cfg", 5.0)
-        skip_stage1 = request.get("skip_stage1", False)
-        use_distillation = request.get("use_distillation", False)
+    # Load only the depth model
+    depth_model = model_manager.load_depth_model(backend=depth_backend)
 
-        if use_distillation:
-            print(f"[Worker] WARNING: Distillation not yet supported in lazy loading mode. Using standard models.", file=sys.stderr)
+    # Convert image to tensor format expected by depth model
+    image_np = np.array(image)
+    if image_np.ndim == 2:
+        image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
+    elif image_np.shape[-1] == 3:
+        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
+        image_np = np.concatenate([image_np, alpha], axis=-1)
 
-        # Deserialize image
-        image_bytes = base64.b64decode(image_b64)
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    print(f"[Worker] Image shape: {image_np.shape}", file=sys.stderr)
 
-        # Deserialize mask
-        mask = pickle.loads(base64.b64decode(mask_b64))
-        mask_pil = Image.fromarray(mask)
+    # Convert to float and tensor
+    loaded_image = image_np.astype(np.float32) / 255.0
+    loaded_image = torch.from_numpy(loaded_image)
+    loaded_image = loaded_image.permute(2, 0, 1).contiguous()[:3]  # CHW, RGB only
 
-        # Load pointmap
-        print(f"[Worker] Loading pointmap from: {pointmap_path}", file=sys.stderr)
-        pointmap = load_pointmap_from_file(pointmap_path)
-        print(f"[Worker] Pointmap shape: {pointmap.shape}", file=sys.stderr)
+    # Run depth model
+    with torch.no_grad():
+        with torch.autocast(device_type="cuda", dtype=model_manager._get_dtype()):
+            output = depth_model(loaded_image)
 
-        # Get config path from request (passed from LoadSAM3DModel via generator)
-        config_path = request.get("config_path")
-        if not config_path:
-            raise ValueError("config_path not provided in request")
+    pointmaps = output["pointmaps"]
 
-        print(f"[Worker] Config path: {config_path}", file=sys.stderr)
+    # Apply camera convention transform (R3 -> PyTorch3D camera space)
+    device = pointmaps.device
+    r3_to_p3d_R, r3_to_p3d_T = look_at_view_transform(
+        eye=np.array([[0, 0, -1]]),
+        at=np.array([[0, 0, 0]]),
+        up=np.array([[0, -1, 0]]),
+        device=device,
+    )
+    camera_transform = Transform3d().rotate(r3_to_p3d_R).to(device)
+    points_tensor = camera_transform.transform_points(pointmaps)
 
-        # Get lazy manager
-        lazy_manager = get_model_manager(str(config_path), compile=False)
+    intrinsics = output.get("intrinsics", None)
 
-        # Stage 1: Sparse structure generation
-        stage1_output = None
-        sparse_path = os.path.join(output_dir, "sparse_structure.pt")
-        debug_image_path = None
+    # Convert to CHW format
+    points_tensor = points_tensor.permute(2, 0, 1)
 
-        if skip_stage1 and os.path.exists(sparse_path):
-            print(f"[Worker] Skipping Stage 1 - loading cached sparse structure", file=sys.stderr)
-            stage1_output = torch.load(sparse_path, weights_only=False)
-            # Check for cached debug image
-            cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
-            if os.path.exists(cached_debug):
-                debug_image_path = cached_debug
-        else:
-            print(f"[Worker] Running Stage 1 (sparse gen)...", file=sys.stderr)
-            result = run_stage1_lazy(
-                lazy_manager,
-                image,
-                mask_pil,
-                pointmap,
-                seed=seed,
-                inference_steps=stage1_steps,
-                cfg_strength=stage1_cfg,
-                cfg_strength_pm=stage1_cfg_pm,
-                unload_after=True,
-                output_dir=output_dir
-            )
-
-            if result.get("status") != "success":
-                return result
-
-            # Capture debug image path from Stage 1
-            debug_image_path = result.get("debug_image")
-
-            # Load the saved sparse structure for Stage 2
-            stage1_output = torch.load(sparse_path, weights_only=False)
-
-        # Stage 2: SLAT generation
-        print(f"[Worker] Running Stage 2 (SLAT gen)...", file=sys.stderr)
-        result = run_stage2_lazy(
-            lazy_manager,
-            image,
-            mask_pil,
-            stage1_output,
-            seed=seed,
-            inference_steps=stage2_steps,
-            cfg_strength=stage2_cfg,
-            unload_after=True,
-            output_dir=output_dir
+    # Infer intrinsics if not provided
+    if intrinsics is None:
+        from sam3d_objects.pipeline.utils.pointmap import infer_intrinsics_from_pointmap
+        intrinsics_result = infer_intrinsics_from_pointmap(
+            points_tensor.permute(1, 2, 0), device=device
         )
+        intrinsics = intrinsics_result["intrinsics"]
 
-        if result.get("status") != "success":
-            return result
+    print(f"[Worker] Pointmap computed: shape={points_tensor.shape}", file=sys.stderr)
+    print(f"[Worker] Intrinsics available: {intrinsics is not None}", file=sys.stderr)
 
-        # Extract SLAT path from result
-        slat_path = None
-        if "output" in result and "files" in result["output"]:
-            slat_path = result["output"]["files"].get("slat")
+    # Unload depth model if requested (frees ~2GB VRAM)
+    if unload_after:
+        model_manager.unload_depth_model()
+        print(f"[Worker] Depth model unloaded", file=sys.stderr)
 
-        if not slat_path:
-            slat_path = os.path.join(output_dir, "slat.pt")
+    # Serialize for transfer
+    # Transpose from CHW (3, H, W) to HWC (H, W, 3)
+    pointmap_hwc = points_tensor.permute(1, 2, 0).contiguous()
+    pointmap_np = pointmap_hwc.cpu().numpy()
+    print(f"[Worker] Pointmap transposed to HWC: {pointmap_np.shape}", file=sys.stderr)
 
-        print(f"[Worker] SLAT generation complete: {slat_path}", file=sys.stderr)
+    if intrinsics is not None and hasattr(intrinsics, 'cpu'):
+        intrinsics_np = intrinsics.cpu().numpy()
+    else:
+        intrinsics_np = intrinsics
 
-        # Load pose data from sparse_structure.pt
-        rotation = None
-        translation = None
-        scale = None
-        if stage1_output is not None:
-            rotation = stage1_output.get("rotation")
-            translation = stage1_output.get("translation")
-            scale = stage1_output.get("scale")
+    pointmap_b64 = base64.b64encode(pickle.dumps(pointmap_np)).decode('utf-8')
+    intrinsics_b64 = base64.b64encode(pickle.dumps(intrinsics_np)).decode('utf-8') if intrinsics_np is not None else None
 
-            # Convert tensors to lists for JSON serialization
-            if rotation is not None and hasattr(rotation, 'tolist'):
-                rotation = rotation.cpu().tolist() if hasattr(rotation, 'cpu') else rotation.tolist()
-            if translation is not None and hasattr(translation, 'tolist'):
-                translation = translation.cpu().tolist() if hasattr(translation, 'cpu') else translation.tolist()
-            if scale is not None and hasattr(scale, 'tolist'):
-                scale = scale.cpu().tolist() if hasattr(scale, 'cpu') else scale.tolist()
-
-            print(f"[Worker] Extracted pose data from Stage 1", file=sys.stderr)
-
-        result = {
-            "status": "success",
-            "slat_path": slat_path,
-            "files": {
-                "slat": slat_path,
-                "sparse_structure": sparse_path,
-            },
-            "output_dir": output_dir,
-            "rotation": rotation,
-            "translation": translation,
-            "scale": scale,
-        }
-
-        # Include debug image if available
-        if debug_image_path:
-            result["debug_image"] = debug_image_path
-            result["files"]["debug_image"] = debug_image_path
-
-        return result
-
-    except Exception as e:
-        print(f"[Worker] Error in generate_slat: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
-        return {
-            "status": "error",
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
+    return {
+        "status": "success",
+        "depth_only": True,
+        "pointmap": pointmap_b64,
+        "intrinsics": intrinsics_b64,
+    }
 
 
-def run_decode(request: Dict[str, Any]) -> Dict[str, Any]:
+# =============================================================================
+# Texture Baking
+# =============================================================================
+
+def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Handle decode command - loads only decoder, no image needed.
+    Run texture baking directly without loading any models.
 
-    This is a dedicated command handler for decoding SLAT to Gaussian or Mesh.
-    It only loads the specific decoder model needed, nothing else.
+    Loads Gaussian from PLY and Mesh from GLB, then calls to_glb() for texture baking.
+    No embedders, generators, or other models are needed.
 
     Args:
-        request: Dict containing:
-            - config_path: Path to pipeline.yaml
-            - slat_path: Path to slat.pt file
-            - output_dir: Directory to save output
-            - decode_format: "gaussian" or "mesh"
-            - with_postprocess: (mesh only) Apply simplification
-            - simplify: (mesh only) Simplification ratio
+        request: Dict with ply_path, glb_path, output_dir, texture_mode, etc.
 
     Returns:
-        Dict with status and file paths (ply_path or glb_path)
+        Dict with status and output (glb_path)
     """
-    import os
-    import traceback
+    import trimesh
 
-    from lazy_manager import get_model_manager
+    print("[Worker] Running direct texture baking (no models)", file=sys.stderr)
 
-    try:
-        # Extract parameters
-        config_path = request.get("config_path")
-        slat_path = request.get("slat_path")
-        output_dir = request.get("output_dir")
-        decode_format = request.get("decode_format", "gaussian")
-        with_postprocess = request.get("with_postprocess", False)
-        simplify = request.get("simplify", 0.95)
-        up_axis = request.get("up_axis", "Y-up (standard)")
+    # Extract parameters
+    ply_path = request["ply_path"]
+    glb_path = request["glb_path"]
+    output_dir = request["output_dir"]
+    texture_mode = request.get("texture_mode", "opt")
+    texture_size = request.get("texture_size", 1024)
+    rendering_engine = request.get("rendering_engine", "nvdiffrast")
 
-        if not config_path:
-            raise ValueError("config_path not provided in request")
-        if not slat_path:
-            raise ValueError("slat_path not provided in request")
+    print(f"[Worker] PLY: {ply_path}", file=sys.stderr)
+    print(f"[Worker] GLB: {glb_path}", file=sys.stderr)
+    print(f"[Worker] Mode: {texture_mode}, Size: {texture_size}", file=sys.stderr)
 
-        print(f"[Worker] Decode command: format={decode_format}", file=sys.stderr)
-        print(f"[Worker] Config path: {config_path}", file=sys.stderr)
-        print(f"[Worker] SLAT path: {slat_path}", file=sys.stderr)
-        print(f"[Worker] Output dir: {output_dir}", file=sys.stderr)
+    # Import required modules
+    from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
+    from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
+    from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
 
-        # Load SLAT data
-        slat_data = torch.load(slat_path, weights_only=False)
-        print(f"[Worker] Loaded SLAT data", file=sys.stderr)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        # Get lazy manager and run decode
-        lazy_manager = get_model_manager(str(config_path), compile=False)
+    # Load Gaussian from PLY
+    print(f"[Worker] Loading Gaussian from PLY...", file=sys.stderr)
+    gaussian = Gaussian(
+        aabb=[-1, -1, -1, 2, 2, 2],
+        sh_degree=0,
+        device=device
+    )
+    gaussian.load_ply(ply_path)
+    print(f"[Worker] Loaded Gaussian with {gaussian._xyz.shape[0]} points", file=sys.stderr)
 
-        result = run_decode_lazy(
-            lazy_manager,
-            slat_data,
-            decode_format=decode_format,
-            unload_after=True,
-            output_dir=output_dir,
-            with_postprocess=with_postprocess,
-            simplify=simplify,
-            up_axis=up_axis
-        )
+    # Load Mesh from GLB
+    print(f"[Worker] Loading Mesh from GLB...", file=sys.stderr)
+    loaded = trimesh.load(glb_path)
 
-        return {
-            "status": "success",
-            **result
+    # Handle Scene vs Mesh
+    if isinstance(loaded, trimesh.Scene):
+        meshes = [g for g in loaded.geometry.values() if isinstance(g, trimesh.Trimesh)]
+        if not meshes:
+            raise RuntimeError("No mesh geometries found in GLB")
+        trimesh_mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
+    else:
+        trimesh_mesh = loaded
+
+    print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
+
+    # Convert to MeshExtractResult format expected by to_glb
+    vertices_np = np.array(trimesh_mesh.vertices)
+    vertices_tensor = torch.tensor(vertices_np, dtype=torch.float32, device=device)
+    faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
+
+    # Get vertex colors if available
+    if trimesh_mesh.visual is not None and hasattr(trimesh_mesh.visual, 'vertex_colors') and trimesh_mesh.visual.vertex_colors is not None:
+        vertex_colors = np.array(trimesh_mesh.visual.vertex_colors)[:, :3] / 255.0
+    else:
+        vertex_colors = np.ones((len(trimesh_mesh.vertices), 3), dtype=np.float32)
+
+    vertex_attrs_tensor = torch.tensor(vertex_colors, dtype=torch.float32, device=device)
+
+    mesh = MeshExtractResult(
+        vertices=vertices_tensor,
+        faces=faces_tensor,
+        vertex_attrs=vertex_attrs_tensor,
+        res=64
+    )
+
+    # Run texture baking using to_glb
+    print(f"[Worker] Running texture baking...", file=sys.stderr)
+    result_mesh = to_glb(
+        gaussian,
+        mesh,
+        simplify=0,
+        fill_holes=False,
+        texture_size=texture_size,
+        verbose=False,
+        with_mesh_postprocess=False,
+        with_texture_baking=True,
+        rendering_engine=rendering_engine,
+        texture_mode=texture_mode,
+    )
+
+    # Undo to_glb's Z→Y transform to preserve input orientation
+    undo_transform = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+    result_mesh.vertices = result_mesh.vertices @ undo_transform
+
+    # Save textured GLB
+    output_path = Path(output_dir) / "mesh_textured.glb"
+    glb_bytes = result_mesh.export(file_type="glb")
+    with open(output_path, 'wb') as f:
+        f.write(glb_bytes)
+
+    print(f"[Worker] Saved textured GLB: {output_path}", file=sys.stderr)
+
+    # Cleanup GPU memory
+    del gaussian, mesh
+    torch.cuda.empty_cache()
+
+    return {
+        "status": "success",
+        "output": {
+            "glb_path": str(output_path),
         }
-
-    except Exception as e:
-        print(f"[Worker] Error in decode: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
-        return {
-            "status": "error",
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
+    }

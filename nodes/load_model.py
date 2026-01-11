@@ -5,7 +5,7 @@ import torch
 from pathlib import Path
 from typing import Any
 
-from .utils import (
+from .comfy_utils import (
     _MODEL_CACHE,
     get_sam3d_models_path,
     get_device,

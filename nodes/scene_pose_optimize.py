@@ -8,12 +8,7 @@ from typing import Any, Dict, List, Tuple
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=1800.0,  # 30 minutes for batch pose optimization
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3D_ScenePoseOptimize:
     """
     Scene Pose Optimization - Refine poses for all objects in a scene folder.
@@ -144,7 +139,7 @@ class SAM3D_ScenePoseOptimize:
         import numpy as np
         from pathlib import Path
 
-        from worker.pose_optimization import run_pose_optimization_batch
+        from utils.pose_optimization import run_pose_optimization_batch
 
         print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")
         print(f"[SAM3DObjects] ScenePoseOptimize: Mode = {optimization_mode}")
