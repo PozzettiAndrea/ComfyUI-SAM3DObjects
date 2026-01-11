@@ -591,7 +591,8 @@ def run_decode_lazy(
     output_dir: str = None,
     with_postprocess: bool = False,
     simplify: float = 0.95,
-    up_axis: str = "Y-up (standard)"
+    up_axis: str = "Y-up (standard)",
+    world_coordinates: bool = False,
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding) using lazy loading.
@@ -698,9 +699,11 @@ def run_decode_lazy(
                     "scale": stage1.get("scale"),
                 }
 
-        if pose_data is not None and pose_data.get("rotation") is not None:
+        if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
             print(f"[Worker] Applying pose transformation to Gaussian...", file=sys.stderr)
             gaussian = _apply_pose_to_gaussian(gaussian, pose_data)
+        elif not world_coordinates:
+            print(f"[Worker] Skipping pose (world_coordinates=False, mesh centered at origin)", file=sys.stderr)
 
         ply_path = save_dir / "gaussian.ply"
         try:
@@ -730,10 +733,13 @@ def run_decode_lazy(
             faces = mesh.faces.cpu().numpy() if hasattr(mesh.faces, 'cpu') else mesh.faces
 
             # Get vertex colors BEFORE postprocessing
+            # vertex_attrs has 6 channels: RGB (0:3) + normals (3:6), we only need RGB
             original_vertex_colors = None
             if hasattr(mesh, 'vertex_attrs') and mesh.vertex_attrs is not None:
                 if isinstance(mesh.vertex_attrs, torch.Tensor):
-                    original_vertex_colors = mesh.vertex_attrs.cpu().numpy()
+                    attrs = mesh.vertex_attrs.cpu().numpy()
+                    # Extract only RGB (first 3 channels), ignore normals (last 3)
+                    original_vertex_colors = attrs[:, :3] if attrs.shape[-1] >= 3 else attrs
                 elif isinstance(mesh.vertex_attrs, dict) and 'color' in mesh.vertex_attrs:
                     vc = mesh.vertex_attrs['color']
                     if hasattr(vc, 'cpu'):
@@ -780,9 +786,11 @@ def run_decode_lazy(
                         "scale": stage1.get("scale"),
                     }
 
-            if pose_data is not None and pose_data.get("rotation") is not None:
+            if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
                 print(f"[Worker] Applying pose transformation to world coordinates...", file=sys.stderr)
                 vertices = _apply_pose_to_vertices(vertices, pose_data)
+            elif not world_coordinates:
+                print(f"[Worker] Skipping pose (world_coordinates=False, mesh centered at origin)", file=sys.stderr)
             else:
                 print(f"[Worker] No pose data found, mesh will be in normalized coordinates", file=sys.stderr)
 

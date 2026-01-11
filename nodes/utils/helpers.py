@@ -210,3 +210,79 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
     return result
 
 
+# =============================================================================
+# Model download helpers
+# =============================================================================
+
+# HuggingFace repo for SAM3D checkpoints
+REPO_ID = "jetjodh/sam-3d-objects"
+
+# Decoder files
+DECODER_FILES = {
+    "gaussian": [
+        "slat_decoder_gs.yaml",
+        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs_4.yaml",
+        "slat_decoder_gs_4.ckpt",
+    ],
+    "mesh": [
+        "slat_decoder_mesh.yaml",
+        "slat_decoder_mesh.ckpt",
+    ],
+}
+
+
+def ensure_decoder_files(config_path: str, decoder_type: str):
+    """
+    Ensure decoder files exist, downloading if missing.
+
+    Args:
+        config_path: Path to pipeline.yaml
+        decoder_type: "gaussian" or "mesh"
+    """
+    checkpoint_dir = Path(config_path).parent
+    files = DECODER_FILES.get(decoder_type, [])
+
+    missing = [f for f in files if not (checkpoint_dir / f).exists()]
+    if missing:
+        print(f"[SAM3DObjects] Downloading missing {decoder_type} decoder files: {missing}", file=sys.stderr)
+        _download_decoder_files(checkpoint_dir, missing)
+
+
+def _download_decoder_files(checkpoint_dir: Path, files: list):
+    """
+    Download specific decoder files from HuggingFace.
+
+    Args:
+        checkpoint_dir: Directory containing checkpoints (e.g., .../checkpoints/)
+        files: List of filenames to download
+    """
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError:
+        raise ImportError(
+            "huggingface_hub is required for downloading checkpoints. "
+            "Please install it: pip install huggingface-hub"
+        )
+
+    # target_dir is parent of checkpoints/ for hf_hub_download
+    target_dir = checkpoint_dir.parent
+
+    print(f"[SAM3DObjects] Downloading from HuggingFace: {REPO_ID}", file=sys.stderr)
+
+    for filename in files:
+        hf_path = f"checkpoints/{filename}"
+        print(f"[SAM3DObjects] Downloading {filename}...", file=sys.stderr)
+
+        try:
+            hf_hub_download(
+                repo_id=REPO_ID,
+                filename=hf_path,
+                local_dir=str(target_dir),
+                local_dir_use_symlinks=False,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to download {filename}: {e}") from e
+
+    print(f"[SAM3DObjects] Download complete", file=sys.stderr)
+

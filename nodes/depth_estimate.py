@@ -82,8 +82,7 @@ class SAM3D_DepthEstimate:
         image_pil = Image.fromarray(image_np)
 
         # Get model manager and run depth estimation
-        config_dir = str(Path(depth_model.config_path).parent)
-        model_manager = get_model_manager(config_dir, compile=depth_model.compile)
+        model_manager = get_model_manager(depth_model.config_path, compile=depth_model.compile)
 
         result = run_depth_only(
             model_manager,

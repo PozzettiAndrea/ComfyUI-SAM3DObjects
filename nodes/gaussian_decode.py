@@ -5,8 +5,6 @@ from typing import Any
 
 from comfyui_isolation import isolated
 
-from .load_model import LoadSAM3DModel
-
 
 @isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DGaussianDecode:
@@ -31,6 +29,10 @@ class SAM3DGaussianDecode:
                     "default": "Y-up (standard)",
                     "tooltip": "Coordinate system for PLY output. Y-up is common for viewers."
                 }),
+                "world_coordinates": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Output in world coordinates (from depth estimation). Disabled = centered at origin."
+                }),
             },
         }
 
@@ -48,6 +50,7 @@ class SAM3DGaussianDecode:
         slat_decoder_gs: Any,
         slat: str,
         up_axis: str = "Y-up (standard)",
+        world_coordinates: bool = False,
     ):
         """
         Decode SLAT to Gaussian splats.
@@ -68,6 +71,7 @@ class SAM3DGaussianDecode:
 
         from utils.lazy_manager import get_model_manager
         from utils.stages import run_decode_lazy
+        from utils.helpers import ensure_decoder_files
 
         print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
 
@@ -76,22 +80,25 @@ class SAM3DGaussianDecode:
 
         # Get config path from model
         config_path = slat_decoder_gs.config_path
-        config_dir = str(Path(config_path).parent)
+
+        # Ensure decoder files exist (download if missing)
+        ensure_decoder_files(config_path, "gaussian")
 
         # Load SLAT
         slat_data = torch.load(slat, weights_only=False)
 
         # Get lazy manager
-        lazy_manager = get_model_manager(config_dir, compile=slat_decoder_gs.compile)
+        lazy_manager = get_model_manager(config_path, compile=slat_decoder_gs.compile)
 
         # Run Gaussian decoding
         result = run_decode_lazy(
             lazy_manager,
-            slat_data={"slat": slat_data},
+            slat_data=slat_data,
             decode_format="gaussian",
             unload_after=True,
             output_dir=output_dir,
             up_axis=up_axis,
+            world_coordinates=world_coordinates,
         )
 
         # Extract PLY path from result
