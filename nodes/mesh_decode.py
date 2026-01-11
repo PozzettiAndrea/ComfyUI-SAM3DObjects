@@ -5,8 +5,6 @@ from typing import Any
 
 from comfyui_isolation import isolated
 
-from .load_model import LoadSAM3DModel
-
 
 @isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DMeshDecode:
@@ -43,6 +41,10 @@ class SAM3DMeshDecode:
                     "default": "Y-up (standard)",
                     "tooltip": "Coordinate system for GLB output. Y-up is glTF standard."
                 }),
+                "world_coordinates": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Output in world coordinates (from depth estimation). Disabled = centered at origin."
+                }),
             }
         }
 
@@ -62,6 +64,7 @@ class SAM3DMeshDecode:
         with_postprocess: bool = False,
         simplify: float = 0.95,
         up_axis: str = "Y-up (standard)",
+        world_coordinates: bool = False,
     ):
         """
         Decode SLAT to mesh.
@@ -84,6 +87,7 @@ class SAM3DMeshDecode:
 
         from utils.lazy_manager import get_model_manager
         from utils.stages import run_decode_lazy
+        from utils.helpers import ensure_decoder_files
 
         print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:
@@ -94,24 +98,27 @@ class SAM3DMeshDecode:
 
         # Get config path from model
         config_path = slat_decoder_mesh.config_path
-        config_dir = str(Path(config_path).parent)
+
+        # Ensure decoder files exist (download if missing)
+        ensure_decoder_files(config_path, "mesh")
 
         # Load SLAT
         slat_data = torch.load(slat, weights_only=False)
 
         # Get lazy manager
-        lazy_manager = get_model_manager(config_dir, compile=slat_decoder_mesh.compile)
+        lazy_manager = get_model_manager(config_path, compile=slat_decoder_mesh.compile)
 
         # Run Mesh decoding
         result = run_decode_lazy(
             lazy_manager,
-            slat_data={"slat": slat_data},
+            slat_data=slat_data,
             decode_format="mesh",
             unload_after=True,
             output_dir=output_dir,
             with_postprocess=with_postprocess,
             simplify=simplify,
             up_axis=up_axis,
+            world_coordinates=world_coordinates,
         )
 
         # Extract GLB path from result

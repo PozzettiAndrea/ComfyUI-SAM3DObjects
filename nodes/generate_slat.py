@@ -192,8 +192,7 @@ class SAM3DGenerateSLAT:
         config_path = generator.config_path
 
         # Get lazy manager
-        config_dir = str(Path(config_path).parent)
-        lazy_manager = get_model_manager(config_dir, compile=generator.compile)
+        lazy_manager = get_model_manager(config_path, compile=generator.compile)
 
         # Check Stage 1 cache
         use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
@@ -219,12 +218,16 @@ class SAM3DGenerateSLAT:
                 inference_steps=stage1_steps,
                 cfg_strength=stage1_cfg,
                 cfg_strength_pm=stage1_cfg_pm,
+                output_dir=output_dir,
             )
-            stage1_output = result["sparse_structure"]
-            debug_image_path = result.get("debug_image_path")
+            # Load sparse structure from saved file
+            stage1_file = result["output"]["files"]["sparse_structure"]
+            stage1_output = torch.load(stage1_file, weights_only=False)
+            debug_image_path = result.get("debug_image")
 
-            # Save Stage 1 output for potential reuse
-            torch.save(stage1_output, sparse_path)
+            # Copy to expected location if different
+            if stage1_file != sparse_path:
+                torch.save(stage1_output, sparse_path)
             self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
             print(f"[SAM3DObjects] Stage 1 complete, saved to: {sparse_path}")
 
@@ -232,17 +235,18 @@ class SAM3DGenerateSLAT:
         print(f"[SAM3DObjects] Running Stage 2 (SLAT generation)...")
         stage2_result = run_stage2_lazy(
             lazy_manager,
+            image_pil,
+            mask_pil,
             stage1_output,
             seed=seed,
             inference_steps=stage2_steps,
             cfg_strength=stage2_cfg,
+            output_dir=output_dir,
         )
-        slat = stage2_result["slat"]
-
-        # Save SLAT
-        slat_path = os.path.join(output_dir, "slat.pt")
-        torch.save(slat, slat_path)
-        print(f"[SAM3DObjects] Stage 2 complete, saved to: {slat_path}")
+        # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
+        # Note: The saved file contains full dict with stage1_data for pose info
+        slat_path = stage2_result["output"]["files"]["slat"]
+        print(f"[SAM3DObjects] Stage 2 complete: {slat_path}")
 
         # Load debug image if available
         debug_image = None

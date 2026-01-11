@@ -119,8 +119,8 @@ class SAM3DTextureBake:
             "rendering_engine": rendering_engine,
         })
 
-        # Extract outputs
-        output_glb_path = output.get("glb_path")
+        # Extract outputs (nested under "output" key from run_texture_bake_direct)
+        output_glb_path = output.get("output", {}).get("glb_path")
         if output_glb_path is None:
             raise RuntimeError("GLB file was not generated")
 
