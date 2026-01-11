@@ -88,9 +88,6 @@ class SAM3DGenerateSLAT:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate."
 
-    # Include helper methods so they're available in subprocess
-    ISOLATED_METHODS = ["generate_slat", "_check_stage1_cache", "_save_stage1_metadata"]
-
     def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
         """Check if Stage 1 output exists with matching params."""
         import os

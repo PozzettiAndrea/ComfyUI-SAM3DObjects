@@ -43,9 +43,6 @@ class SAM3D_DepthEstimate:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Run MoGe depth estimation to get camera intrinsics and point cloud PLY."
 
-    # Include helper methods so they're available in subprocess
-    ISOLATED_METHODS = ["estimate_depth", "_get_next_inference_dir", "_save_pointcloud_ply"]
-
     def estimate_depth(
         self,
         depth_model: Any,
