@@ -8,12 +8,7 @@ from typing import Any
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=3600.0,  # 60 minutes for batch scene generation
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DSceneGenerate:
     """
     Scene Generation - Batch process multiple masks to 3D objects.
@@ -168,7 +163,7 @@ class SAM3DSceneGenerate:
         from pathlib import Path
         from PIL import Image
 
-        from worker.scene_batch import run_scene_generate_batch
+        from utils.scene_batch import run_scene_generate_batch
 
         # Get batch size from mask tensor [N, H, W]
         if len(masks.shape) == 3:

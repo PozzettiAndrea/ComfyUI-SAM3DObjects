@@ -6,12 +6,7 @@ from typing import Any, Dict
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=300.0,  # 5 minutes for pose optimization
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3D_PoseOptimization:
     """
     Refine object pose using ICP and render-based optimization.
@@ -93,7 +88,7 @@ class SAM3D_PoseOptimization:
         import torch
         import numpy as np
 
-        from worker.pose_optimization import run_pose_optimization
+        from utils.pose_optimization import run_pose_optimization
 
         print(f"[SAM3DObjects] PoseOptimization: Starting pose refinement")
 

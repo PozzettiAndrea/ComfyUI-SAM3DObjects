@@ -6,12 +6,7 @@ from typing import Any
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=600.0,  # 10 minutes for depth estimation
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3D_DepthEstimate:
     """
     Depth Estimation using MoGe model.
@@ -76,8 +71,8 @@ class SAM3D_DepthEstimate:
         from PIL import Image
         import folder_paths
 
-        from worker.depth import run_depth_only
-        from worker.lazy_manager import get_model_manager
+        from utils.stages import run_depth_only
+        from utils.lazy_manager import get_model_manager
 
         print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_model.depth_backend}...")
 

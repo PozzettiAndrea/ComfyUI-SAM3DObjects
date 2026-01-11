@@ -7,12 +7,7 @@ from typing import Any
 from comfyui_isolation import isolated
 
 
-@isolated(
-    env="sam3dobjects",
-    config="comfyui_isolation_reqs.toml",
-    import_paths=[".", "../vendor"],
-    timeout=900.0,  # 15 minutes for SLAT generation
-)
+@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3DGenerateSLAT:
     """
     Generate SLAT (Structured Latent).
@@ -167,9 +162,9 @@ class SAM3DGenerateSLAT:
         from pathlib import Path
         from PIL import Image
 
-        from worker.lazy_manager import get_model_manager
-        from worker.stages import run_stage1_lazy, run_stage2_lazy
-        from worker.preprocessing import load_pointmap_from_file
+        from utils.lazy_manager import get_model_manager
+        from utils.stages import run_stage1_lazy, run_stage2_lazy
+        from utils.helpers import load_pointmap_from_file
 
         print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
 
@@ -226,7 +221,7 @@ class SAM3DGenerateSLAT:
                 seed=seed,
                 inference_steps=stage1_steps,
                 cfg_strength=stage1_cfg,
-                cfg_strength_pointmap=stage1_cfg_pm,
+                cfg_strength_pm=stage1_cfg_pm,
             )
             stage1_output = result["sparse_structure"]
             debug_image_path = result.get("debug_image_path")

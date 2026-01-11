@@ -38,7 +38,6 @@ class LazyModelManager:
 
         # Store config for later use
         self._config = None
-        self._full_pipeline = None
 
         # Setup environment
         self._setup_environment()
@@ -324,24 +323,6 @@ class LazyModelManager:
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-
-    def get_full_pipeline(self):
-        """Get the full pipeline (loads everything)."""
-        if self._full_pipeline is not None:
-            return self._full_pipeline
-
-        print(f"[LazyManager] Loading full pipeline (all models)...", file=sys.stderr)
-
-        from omegaconf import OmegaConf
-        from hydra.utils import instantiate
-
-        config = OmegaConf.load(self.config_path)
-        config.compile_model = self.compile
-        config.workspace_dir = str(self.checkpoint_dir)
-
-        self._full_pipeline = instantiate(config)
-
-        return self._full_pipeline
 
     def get_preprocessor(self, preprocessor_type='ss'):
         """Get preprocessor (instantiated lazily)."""
