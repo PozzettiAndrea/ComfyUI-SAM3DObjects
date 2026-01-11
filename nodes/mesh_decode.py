@@ -1,13 +1,19 @@
 """SAM3DMeshDecode node for decoding SLAT to mesh."""
 
 import os
-from pathlib import Path
 from typing import Any
 
-from .subprocess_bridge import get_bridge, run_decode
+from comfyui_isolation import isolated
+
 from .load_model import LoadSAM3DModel
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=300.0,  # 5 minutes for Mesh decode
+)
 class SAM3DMeshDecode:
     """
     Mesh Decoding.
@@ -65,8 +71,10 @@ class SAM3DMeshDecode:
         """
         Decode SLAT to mesh.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Args:
-            slat_decoder_mesh: SAM3D model (provides config_path)
+            slat_decoder_mesh: SAM3DModelConfig (provides config_path)
             slat: Path to SLAT from SAM3DGenerateSLAT
             with_postprocess: Apply mesh simplification + hole filling
             simplify: Fraction of faces to remove (0.5-0.98)
@@ -74,54 +82,55 @@ class SAM3DMeshDecode:
         Returns:
             glb_filepath
         """
+        # These imports happen in the isolated subprocess
+        import os
+        import torch
+        from pathlib import Path
+
+        from worker.lazy_manager import get_model_manager
+        from worker.stages import run_decode_lazy
+
         print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:
             print(f"[SAM3DObjects] MeshDecode: Will apply postprocessing (simplify={simplify})")
 
-        # Ensure Mesh decoder files are downloaded
-        # (LoadSAM3DModel might have been cached without downloading these)
-        LoadSAM3DModel._get_or_download_checkpoint({"slat_decoder_mesh"})
-
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
 
-        # Get config path from model and bridge
+        # Get config path from model
         config_path = slat_decoder_mesh.config_path
-        bridge = get_bridge()
+        config_dir = str(Path(config_path).parent)
 
-        # Run Mesh decoding via dedicated decode command
-        try:
-            result = run_decode(
-                bridge=bridge,
-                config_path=config_path,
-                slat_path=slat,
-                output_dir=output_dir,
-                decode_format="mesh",
-                with_postprocess=with_postprocess,
-                simplify=simplify,
-                up_axis=up_axis,
-            )
-        except Exception as e:
-            raise RuntimeError(f"SAM3D Mesh decode failed: {e}") from e
+        # Load SLAT
+        slat_data = torch.load(slat, weights_only=False)
 
-        # Extract GLB path from nested result structure
-        glb_path = result.get("glb_path", None)
+        # Get lazy manager
+        lazy_manager = get_model_manager(config_dir, compile=slat_decoder_mesh.compile)
 
-        # Check nested output.files structure (from run_decode_lazy)
-        if not glb_path and "output" in result:
-            output = result["output"]
-            if isinstance(output, dict) and "files" in output:
-                glb_path = output["files"].get("glb")
+        # Run Mesh decoding
+        result = run_decode_lazy(
+            lazy_manager,
+            slat_data={"slat": slat_data},
+            decode_format="mesh",
+            unload_after=True,
+            output_dir=output_dir,
+            with_postprocess=with_postprocess,
+            simplify=simplify,
+            up_axis=up_axis,
+        )
 
-        # Check file_output.files structure (alternative key)
-        if not glb_path and "file_output" in result:
+        # Extract GLB path from result
+        glb_path = None
+
+        # Check file_output structure (from run_decode_lazy)
+        if "file_output" in result:
             file_output = result["file_output"]
             if isinstance(file_output, dict) and "files" in file_output:
                 glb_path = file_output["files"].get("glb")
 
         # Fallback: check direct files dict
-        if not glb_path and "files" in result and "glb" in result["files"]:
-            glb_path = result["files"]["glb"]
+        if not glb_path and "files" in result:
+            glb_path = result["files"].get("glb")
 
         if not glb_path:
             raise RuntimeError("GLB file was not generated")

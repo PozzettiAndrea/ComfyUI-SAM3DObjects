@@ -1,15 +1,17 @@
 """SAM3D_DepthEstimate node for running MoGe depth estimation separately."""
 
-import torch
-import numpy as np
 import os
 from typing import Any
 
-import folder_paths
-
-from .utils import comfy_image_to_pil
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=600.0,  # 10 minutes for depth estimation
+)
 class SAM3D_DepthEstimate:
     """
     Depth Estimation using MoGe model.
@@ -46,6 +48,97 @@ class SAM3D_DepthEstimate:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Run MoGe depth estimation to get camera intrinsics and point cloud PLY."
 
+    # Include helper methods so they're available in subprocess
+    ISOLATED_METHODS = ["estimate_depth", "_get_next_inference_dir", "_save_pointcloud_ply"]
+
+    def estimate_depth(
+        self,
+        depth_model: Any,
+        image,  # torch.Tensor [B, H, W, C] - arrives deserialized
+    ):
+        """
+        Run depth estimation.
+
+        This method runs in an isolated subprocess with its own Python environment.
+        All imports happen inside the method body.
+
+        Args:
+            depth_model: SAM3DModelConfig with config_path, depth_backend, etc.
+            image: Input image tensor [B, H, W, C]
+
+        Returns:
+            Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
+        """
+        # These imports happen in the isolated subprocess
+        import torch
+        import numpy as np
+        from pathlib import Path
+        from PIL import Image
+        import folder_paths
+
+        from worker.depth import run_depth_only
+        from worker.lazy_manager import get_model_manager
+
+        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_model.depth_backend}...")
+
+        # Convert ComfyUI tensor to PIL Image
+        # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
+        if image.dim() == 4:
+            image_np = (image[0].cpu().numpy() * 255).astype(np.uint8)
+        else:
+            image_np = (image.cpu().numpy() * 255).astype(np.uint8)
+        image_pil = Image.fromarray(image_np)
+
+        # Get model manager and run depth estimation
+        config_dir = str(Path(depth_model.config_path).parent)
+        model_manager = get_model_manager(config_dir, compile=depth_model.compile)
+
+        result = run_depth_only(
+            model_manager,
+            image_pil,
+            unload_after=True,
+            depth_backend=depth_model.depth_backend,
+        )
+
+        # Decode the base64-encoded results
+        import base64
+        import pickle
+
+        pointmap_np = pickle.loads(base64.b64decode(result["pointmap"]))
+        intrinsics_np = pickle.loads(base64.b64decode(result["intrinsics"])) if result.get("intrinsics") else None
+
+        # Create output directory
+        base_output_dir = folder_paths.get_output_directory()
+        inference_dir = self._get_next_inference_dir(base_output_dir)
+
+        # Save pointmap tensor for SparseGen (preserves H×W structure)
+        pointmap_path = os.path.join(inference_dir, "pointmap.pt")
+        torch.save(torch.from_numpy(pointmap_np), pointmap_path)
+
+        # Save PLY file for visualization
+        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
+
+        # Create depth visualization
+        # Pointmap is in HWC format (H, W, 3) where channel 2 is Z (depth)
+        depth_np = pointmap_np[..., 2]
+
+        # Normalize depth for visualization
+        depth_min = np.nanmin(depth_np)
+        depth_max = np.nanmax(depth_np)
+        if depth_max - depth_min > 0:
+            depth_normalized = (depth_np - depth_min) / (depth_max - depth_min)
+        else:
+            depth_normalized = np.zeros_like(depth_np)
+
+        # Handle NaN values
+        depth_normalized = np.nan_to_num(depth_normalized, nan=0.0)
+
+        # Convert to ComfyUI MASK format [B, H, W]
+        depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
+
+        print(f"[SAM3DObjects] Depth estimation completed: {pointcloud_ply}")
+        return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)
+
     def _get_next_inference_dir(self, base_output_dir: str) -> str:
         """
         Find the next available sam3d_inference_N directory.
@@ -56,6 +149,8 @@ class SAM3D_DepthEstimate:
         Returns:
             Path to the new sam3d_inference_N directory (created)
         """
+        import os
+
         # Find existing sam3d_inference_N directories
         existing = []
         if os.path.exists(base_output_dir):
@@ -74,7 +169,7 @@ class SAM3D_DepthEstimate:
 
         return inference_dir
 
-    def _save_pointcloud_ply(self, pointmap: np.ndarray, image_pil, output_dir: str) -> str:
+    def _save_pointcloud_ply(self, pointmap, image_pil, output_dir: str) -> str:
         """
         Save pointmap as a PLY file with vertex colors from the image.
 
@@ -86,6 +181,8 @@ class SAM3D_DepthEstimate:
         Returns:
             Path to the saved PLY file
         """
+        import numpy as np
+
         # Get image as numpy for colors
         image_np = np.array(image_pil)
         if image_np.shape[-1] == 4:
@@ -113,7 +210,6 @@ class SAM3D_DepthEstimate:
         valid_points = points[valid_mask]
         valid_colors = colors[valid_mask]
 
-
         if len(valid_points) == 0:
             raise RuntimeError("No valid points in pointmap")
 
@@ -138,83 +234,4 @@ class SAM3D_DepthEstimate:
                 r, g, b = valid_colors[i]
                 f.write(f"{x} {y} {z} {r} {g} {b}\n")
 
-
         return filepath
-
-    def estimate_depth(
-        self,
-        depth_model: Any,
-        image: torch.Tensor,
-    ):
-        """
-        Run depth estimation.
-
-        Args:
-            depth_model: SAM3D model wrapper (IsolatedSAM3DModel)
-            image: Input image tensor [B, H, W, C]
-
-        Returns:
-            Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
-        """
-        # Get depth_backend from model config
-        depth_backend = getattr(depth_model, 'depth_backend', 'moge2')
-        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_backend}...")
-
-        # Convert ComfyUI tensor to PIL
-        image_pil = comfy_image_to_pil(image)
-
-        # Run depth-only inference (depth_backend comes from model config)
-        try:
-            result = depth_model(
-                image_pil,
-                None,  # No mask needed for depth
-                depth_only=True,  # depth-only mode
-            )
-        except Exception as e:
-            raise RuntimeError(f"Depth estimation failed: {e}") from e
-
-        # Extract results
-        pointmap = result.get("pointmap")
-        intrinsics = result.get("intrinsics")
-
-        if pointmap is None:
-            raise RuntimeError("Depth estimation did not return pointmap")
-
-        # Convert pointmap to numpy for PLY export
-        if isinstance(pointmap, torch.Tensor):
-            pointmap_np = pointmap.cpu().numpy() if pointmap.is_cuda else pointmap.numpy()
-        else:
-            pointmap_np = pointmap
-
-        # Create sam3d_inference_N directory
-        base_output_dir = folder_paths.get_output_directory()
-        inference_dir = self._get_next_inference_dir(base_output_dir)
-
-        # Save pointmap tensor for SparseGen (preserves H×W structure)
-        pointmap_path = os.path.join(inference_dir, "pointmap.pt")
-        torch.save(torch.from_numpy(pointmap_np), pointmap_path)
-
-        # Save PLY file for visualization
-        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
-
-        # Create depth visualization
-        # Pointmap is in HWC format (H, W, 3) where channel 2 is Z (depth)
-        # Normalize Z channel to 0-1 for visualization
-        depth_np = pointmap_np[..., 2]
-
-        # Normalize depth for visualization
-        depth_min = np.nanmin(depth_np)
-        depth_max = np.nanmax(depth_np)
-        if depth_max - depth_min > 0:
-            depth_normalized = (depth_np - depth_min) / (depth_max - depth_min)
-        else:
-            depth_normalized = np.zeros_like(depth_np)
-
-        # Handle NaN values
-        depth_normalized = np.nan_to_num(depth_normalized, nan=0.0)
-
-        # Convert to ComfyUI MASK format [B, H, W]
-        depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
-
-        print(f"[SAM3DObjects] Depth estimation completed: {pointcloud_ply}")
-        return (intrinsics, pointmap_path, pointcloud_ply, depth_mask)

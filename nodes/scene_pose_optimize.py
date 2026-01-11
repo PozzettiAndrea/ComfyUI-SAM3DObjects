@@ -3,14 +3,17 @@
 import os
 import re
 import json
-import torch
-import numpy as np
-from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from .subprocess_bridge import get_bridge
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=1800.0,  # 30 minutes for batch pose optimization
+)
 class SAM3D_ScenePoseOptimize:
     """
     Scene Pose Optimization - Refine poses for all objects in a scene folder.
@@ -52,8 +55,14 @@ class SAM3D_ScenePoseOptimize:
     CATEGORY = "SAM3DObjects"
     DESCRIPTION = "Optimize poses for all objects in a scene folder using alignment algorithms."
 
+    # Include helper methods so they're available in subprocess
+    ISOLATED_METHODS = ["optimize_poses", "_discover_objects", "_check_cache", "_save_cache_metadata"]
+
     def _discover_objects(self, output_folder: str) -> List[str]:
         """Discover all object_N/ folders in sorted order."""
+        import os
+        import re
+
         object_dirs = []
         pattern = re.compile(r'^object_(\d+)$')
 
@@ -74,6 +83,9 @@ class SAM3D_ScenePoseOptimize:
 
     def _check_cache(self, pose_opt_folder: str, optimization_mode: str, num_objects: int) -> Tuple[bool, List[float]]:
         """Check if cached results exist with matching params."""
+        import os
+        import json
+
         metadata_path = os.path.join(pose_opt_folder, "pose_opt_metadata.json")
 
         if not os.path.exists(pose_opt_folder):
@@ -97,6 +109,8 @@ class SAM3D_ScenePoseOptimize:
 
     def _save_cache_metadata(self, pose_opt_folder: str, optimization_mode: str, num_objects: int, iou_scores: List[float]):
         """Save metadata for cache validation."""
+        import json
+
         metadata_path = os.path.join(pose_opt_folder, "pose_opt_metadata.json")
         with open(metadata_path, 'w') as f:
             json.dump({
@@ -113,6 +127,8 @@ class SAM3D_ScenePoseOptimize:
         """
         Optimize poses for all objects in the scene folder.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Args:
             output_folder: Path to folder containing object_N/ subdirectories
             optimization_mode: One of "manual_only", "manual_icp", "manual_icp_render"
@@ -120,6 +136,16 @@ class SAM3D_ScenePoseOptimize:
         Returns:
             Tuple of (path to output folder, list of IOU scores)
         """
+        # These imports happen in the isolated subprocess
+        import os
+        import pickle
+        import base64
+        import torch
+        import numpy as np
+        from pathlib import Path
+
+        from worker.pose_optimization import run_pose_optimization_batch
+
         print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")
         print(f"[SAM3DObjects] ScenePoseOptimize: Mode = {optimization_mode}")
         print(f"[SAM3DObjects] ScenePoseOptimize: Folder = {output_folder}")
@@ -164,8 +190,32 @@ class SAM3D_ScenePoseOptimize:
         os.makedirs(pose_opt_folder, exist_ok=True)
         print(f"[SAM3DObjects] ScenePoseOptimize: Output folder = {pose_opt_folder}")
 
-        # Get bridge for worker communication
-        bridge = get_bridge()
+        # Serialize helper
+        def serialize_tensor(tensor):
+            if tensor is None:
+                return None
+            if isinstance(tensor, torch.Tensor):
+                arr = tensor.cpu().numpy()
+            elif isinstance(tensor, np.ndarray):
+                arr = tensor
+            elif isinstance(tensor, list):
+                arr = np.array(tensor)
+            else:
+                arr = np.array(tensor)
+            return base64.b64encode(pickle.dumps(arr)).decode('utf-8')
+
+        def serialize_pose(rotation, translation, scale):
+            return {
+                "rotation": serialize_tensor(rotation),
+                "translation": serialize_tensor(translation),
+                "scale": serialize_tensor(scale),
+            }
+
+        # Serialize intrinsics
+        if isinstance(intrinsics, torch.Tensor):
+            intrinsics_np = intrinsics.cpu().numpy()
+        else:
+            intrinsics_np = np.array(intrinsics)
 
         iou_scores = []
 
@@ -197,7 +247,6 @@ class SAM3D_ScenePoseOptimize:
                 continue
 
             # Use identity pose - meshes are already in world coordinates
-            # Pose optimization refines from this starting point
             rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
             translation = [[0, 0, 0]]
             scale = [[1, 1, 1]]
@@ -206,36 +255,6 @@ class SAM3D_ScenePoseOptimize:
             # Load mask
             mask = np.load(mask_path)
             print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded mask {mask.shape}")
-
-            # Build request for worker
-            import pickle
-            import base64
-
-            def serialize_tensor(tensor):
-                if tensor is None:
-                    return None
-                if isinstance(tensor, torch.Tensor):
-                    arr = tensor.cpu().numpy()
-                elif isinstance(tensor, np.ndarray):
-                    arr = tensor
-                elif isinstance(tensor, list):
-                    arr = np.array(tensor)
-                else:
-                    arr = np.array(tensor)
-                return base64.b64encode(pickle.dumps(arr)).decode('utf-8')
-
-            def serialize_pose(rotation, translation, scale):
-                return {
-                    "rotation": serialize_tensor(rotation),
-                    "translation": serialize_tensor(translation),
-                    "scale": serialize_tensor(scale),
-                }
-
-            # Serialize intrinsics
-            if isinstance(intrinsics, torch.Tensor):
-                intrinsics_np = intrinsics.cpu().numpy()
-            else:
-                intrinsics_np = np.array(intrinsics)
 
             # Output path in the pose-optimized folder
             output_glb_path = os.path.join(pose_opt_folder, f"object_{idx}.glb")
@@ -255,7 +274,7 @@ class SAM3D_ScenePoseOptimize:
 
             try:
                 print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Running optimization...")
-                response = bridge.call("pose_optimization_batch", timeout=180.0, **request)
+                response = run_pose_optimization_batch(request)
 
                 if response.get("status") == "error":
                     print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Worker error: {response.get('error')}")

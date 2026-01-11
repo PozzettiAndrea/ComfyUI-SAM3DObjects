@@ -1,12 +1,17 @@
 """SAM3DTextureBake node for texture baking."""
 
 import os
-import torch
 from typing import Any
 
-from .subprocess_bridge import run_texture_bake_direct
+from comfyui_isolation import isolated
 
 
+@isolated(
+    env="sam3dobjects",
+    config="comfyui_isolation_reqs.toml",
+    import_paths=[".", "../vendor"],
+    timeout=600.0,  # 10 minutes for texture baking
+)
 class SAM3DTextureBake:
     """
     Texture Baking.
@@ -78,6 +83,8 @@ class SAM3DTextureBake:
         """
         Bake Gaussian appearance into mesh UV textures.
 
+        This method runs in an isolated subprocess with its own Python environment.
+
         Args:
             glb_path: Path to input GLB mesh file
             ply_path: Path to input PLY Gaussian file
@@ -88,6 +95,11 @@ class SAM3DTextureBake:
         Returns:
             Tuple of (glb_filepath,)
         """
+        # These imports happen in the isolated subprocess
+        import os
+
+        from worker.texture_baking import run_texture_bake_direct
+
         print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
 
         # Validate file paths
@@ -102,19 +114,15 @@ class SAM3DTextureBake:
         # Derive output_dir from glb_path (same directory)
         output_dir = os.path.dirname(glb_path)
 
-        # Run texture baking directly (no models needed!)
-        try:
-            output = run_texture_bake_direct(
-                ply_path=ply_path,
-                glb_path=glb_path,
-                output_dir=output_dir,
-                texture_mode=texture_mode,
-                texture_size=texture_size,
-                rendering_engine=rendering_engine,
-            )
-
-        except Exception as e:
-            raise RuntimeError(f"SAM3D texture baking failed: {e}") from e
+        # Run texture baking (no models needed!)
+        output = run_texture_bake_direct({
+            "ply_path": ply_path,
+            "glb_path": glb_path,
+            "output_dir": output_dir,
+            "texture_mode": texture_mode,
+            "texture_size": texture_size,
+            "rendering_engine": rendering_engine,
+        })
 
         # Extract outputs
         output_glb_path = output.get("glb_path")
