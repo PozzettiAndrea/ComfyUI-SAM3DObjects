@@ -62,6 +62,7 @@ class SAM3D_DepthEstimate:
             Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
         """
         # These imports happen in the isolated subprocess
+        import time
         import torch
         import numpy as np
         from pathlib import Path
@@ -71,6 +72,7 @@ class SAM3D_DepthEstimate:
         from utils.stages import run_depth_only
         from utils.lazy_manager import get_model_manager
 
+        start_time = time.time()
         print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_model.depth_backend}...")
 
         # Convert ComfyUI tensor to PIL Image
@@ -127,7 +129,8 @@ class SAM3D_DepthEstimate:
         # Convert to ComfyUI MASK format [B, H, W]
         depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
 
-        print(f"[SAM3DObjects] Depth estimation completed: {pointcloud_ply}")
+        elapsed = time.time() - start_time
+        print(f"[SAM3DObjects] ✓ Depth estimation done: {elapsed:.0f}s")
         return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)
 
     def _get_next_inference_dir(self, base_output_dir: str) -> str:

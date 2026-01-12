@@ -262,8 +262,7 @@ def run_stage1_lazy(
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # Load models
-    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
+    # Load models (cached after first object)
     ss_generator = lazy_manager.load_model('ss_generator')
     ss_decoder = lazy_manager.load_model('ss_decoder')
     ss_embedder = lazy_manager.load_condition_embedder('ss')
@@ -490,8 +489,7 @@ def run_stage2_lazy(
         coords = torch.from_numpy(coords).int()
     coords = coords.cuda()
 
-    # Load models
-    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
+    # Load models (cached after first object)
     slat_generator = lazy_manager.load_model('slat_generator')
     slat_embedder = lazy_manager.load_condition_embedder('slat')
 
@@ -659,7 +657,7 @@ def run_decode_lazy(
     else:
         decoder_name = 'slat_decoder_mesh'
 
-    print(f"[Worker] Loading decoder: {decoder_name}...", file=sys.stderr)
+    # Load decoder (cached after first object)
     decoder = lazy_manager.load_model(decoder_name)
 
     print(f"[Worker] Running decoder...", file=sys.stderr)
