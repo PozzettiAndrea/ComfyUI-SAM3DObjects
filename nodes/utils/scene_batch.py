@@ -16,6 +16,7 @@ import base64
 import io
 import json
 import pickle
+import time
 import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -135,6 +136,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # PHASE 1: Stage 1 (Sparse Structure) for ALL masks
         # ============================================================
         print(f"\n[Worker] ========== PHASE 1: Stage 1 (Sparse Gen) ==========", file=sys.stderr)
+        phase1_start = time.time()
 
         # NOTE: We don't accumulate sparse_structures in memory!
         # Each one is saved to disk and loaded on-demand in Stage 2.
@@ -210,11 +212,13 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         lazy_manager.unload_model('ss_decoder')
         lazy_manager.unload_condition_embedder('ss')
         torch.cuda.empty_cache()
+        print(f"[Worker] ✓ Phase 1 complete: {time.time() - phase1_start:.0f}s", file=sys.stderr)
 
         # ============================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
         # ============================================================
         print(f"\n[Worker] ========== PHASE 2: Stage 2 (SLAT Gen) ==========", file=sys.stderr)
+        phase2_start = time.time()
 
         slat_paths = []
 
@@ -277,11 +281,13 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         lazy_manager.unload_model('slat_generator')
         lazy_manager.unload_condition_embedder('slat')
         torch.cuda.empty_cache()
+        print(f"[Worker] ✓ Phase 2 complete: {time.time() - phase2_start:.0f}s", file=sys.stderr)
 
         # ============================================================
         # PHASE 3: Mesh Decode for ALL SLATs
         # ============================================================
         print(f"\n[Worker] ========== PHASE 3: Mesh Decode ==========", file=sys.stderr)
+        phase3_start = time.time()
 
         # Get mesh decoder lazy manager (may use different config)
         mesh_lazy_manager = get_lazy_manager(str(mesh_config_path), compile=False)
@@ -324,12 +330,14 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         print(f"[Worker] Unloading mesh decoder...", file=sys.stderr)
         mesh_lazy_manager.unload_model('slat_decoder_mesh')
         torch.cuda.empty_cache()
+        print(f"[Worker] ✓ Phase 3 complete: {time.time() - phase3_start:.0f}s", file=sys.stderr)
 
         # ============================================================
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake for ALL
         # ============================================================
         if add_textures and gs_config_path:
             print(f"\n[Worker] ========== PHASE 4: Gaussian + Texture Bake ==========", file=sys.stderr)
+            phase4_start = time.time()
 
             # Get gaussian decoder lazy manager
             gs_lazy_manager = get_lazy_manager(str(gs_config_path), compile=False)
@@ -394,6 +402,8 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                 except Exception as e:
                     print(f"[Worker] Warning: Texture bake failed for object {idx}: {e}", file=sys.stderr)
                     # Continue with other objects
+
+            print(f"[Worker] ✓ Phase 4 complete: {time.time() - phase4_start:.0f}s", file=sys.stderr)
 
         print(f"\n[Worker] Scene batch complete: {num_objects} object(s)", file=sys.stderr)
 

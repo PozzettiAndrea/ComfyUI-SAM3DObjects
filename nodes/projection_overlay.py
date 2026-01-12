@@ -2,6 +2,7 @@
 
 import os
 import re
+import time
 from typing import Tuple
 
 from comfyui_isolation import isolated
@@ -26,18 +27,22 @@ class SAM3D_ProjectionOverlay:
                     "default": "",
                     "tooltip": "Path to pose-optimized folder (output from SAM3D_ScenePoseOptimize)"
                 }),
+                "render_mode": (["mask_colors", "3d_mesh", "3d_mesh_textured"], {
+                    "default": "mask_colors",
+                    "tooltip": "Rendering mode: mask_colors (colored points), 3d_mesh (solid mesh), 3d_mesh_textured (mesh with textures)"
+                }),
                 "point_size": ("INT", {
                     "default": 2,
                     "min": 1,
                     "max": 10,
-                    "tooltip": "Size of projected points in pixels"
+                    "tooltip": "Size of projected points in pixels (only for mask_colors mode)"
                 }),
                 "alpha": ("FLOAT", {
                     "default": 0.6,
                     "min": 0.1,
                     "max": 1.0,
                     "step": 0.1,
-                    "tooltip": "Opacity of projected mesh points"
+                    "tooltip": "Opacity of projected mesh"
                 }),
             },
         }
@@ -52,6 +57,7 @@ class SAM3D_ProjectionOverlay:
     def create_overlay(
         self,
         pose_opt_folder: str,
+        render_mode: str = "mask_colors",
         point_size: int = 2,
         alpha: float = 0.6,
     ) -> Tuple:
@@ -60,20 +66,23 @@ class SAM3D_ProjectionOverlay:
 
         Args:
             pose_opt_folder: Path to pose-optimized folder
-            point_size: Size of projected points
-            alpha: Opacity of mesh points
+            render_mode: Rendering mode (mask_colors, 3d_mesh, 3d_mesh_textured)
+            point_size: Size of projected points (only for mask_colors)
+            alpha: Opacity of mesh overlay
 
         Returns:
             Tuple containing ComfyUI IMAGE tensor
         """
         import os
         import re
+        import time
         import torch
         import numpy as np
         import trimesh
         from PIL import Image
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Creating overlay from {pose_opt_folder}")
+        start_time = time.time()
+        print(f"[SAM3DObjects] ProjectionOverlay: Creating overlay (mode={render_mode})")
 
         # Validate folder exists
         if not os.path.exists(pose_opt_folder):
@@ -144,59 +153,207 @@ class SAM3D_ProjectionOverlay:
             [0.5, 0.5, 0.5],  # Gray
         ]
 
-        # Create overlay
-        overlay = img_array.copy()
-
+        # Load all meshes first
+        loaded_meshes = []
         for idx, mesh_path in mesh_files:
             try:
                 mesh = trimesh.load(mesh_path)
                 if isinstance(mesh, trimesh.Scene):
-                    meshes = [g for g in mesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
-                    if not meshes:
+                    mesh_list = [g for g in mesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
+                    if not mesh_list:
                         continue
-                    mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
-
-                verts = mesh.vertices
-
-                # Filter vertices in front of camera (Z > 0)
-                mask = verts[:, 2] > 0.1
-                v = verts[mask]
-
-                if len(v) == 0:
-                    continue
-
-                # Project vertices
-                X, Y, Z = v[:, 0], v[:, 1], v[:, 2]
-                x = (K[0, 0] * X / Z + K[0, 2]).astype(int)
-                y = (K[1, 1] * Y / Z + K[1, 2]).astype(int)
-
-                # Filter points within image bounds
-                valid = (x >= 0) & (x < W) & (y >= 0) & (y < H)
-                x, y = x[valid], y[valid]
-
-                # Get color for this object
-                color = np.array(colors[idx % len(colors)])
-
-                # Draw points with size
-                for px, py in zip(x, y):
-                    for dx in range(-point_size, point_size + 1):
-                        for dy in range(-point_size, point_size + 1):
-                            nx, ny = px + dx, py + dy
-                            if 0 <= nx < W and 0 <= ny < H:
-                                overlay[ny, nx] = overlay[ny, nx] * (1 - alpha) + color * alpha
-
-                print(f"[SAM3DObjects] ProjectionOverlay: Object {idx}: {len(x)} points projected")
-
+                    mesh = mesh_list[0] if len(mesh_list) == 1 else trimesh.util.concatenate(mesh_list)
+                loaded_meshes.append((idx, mesh))
             except Exception as e:
                 print(f"[SAM3DObjects] ProjectionOverlay: Error loading object {idx}: {e}")
                 continue
+
+        print(f"[SAM3DObjects] ProjectionOverlay: Loaded {len(loaded_meshes)} meshes")
+
+        # Render based on mode
+        if render_mode == "mask_colors":
+            overlay = self._render_mask_colors(loaded_meshes, img_array, K, colors, point_size, alpha)
+        elif render_mode == "3d_mesh":
+            overlay = self._render_3d_mesh(loaded_meshes, img_array, K, colors, alpha, H, W)
+        elif render_mode == "3d_mesh_textured":
+            overlay = self._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)
+        else:
+            raise ValueError(f"Unknown render_mode: {render_mode}")
 
         # Convert to ComfyUI IMAGE format (B, H, W, C)
         overlay = np.clip(overlay, 0, 1)
         img_tensor = torch.from_numpy(overlay).float().unsqueeze(0)
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Done, output shape {img_tensor.shape}")
+        elapsed = time.time() - start_time
+        print(f"[SAM3DObjects] ProjectionOverlay: ✓ Done in {elapsed:.1f}s, output shape {img_tensor.shape}")
         return (img_tensor,)
+
+    def _render_mask_colors(self, loaded_meshes, img_array, K, colors, point_size, alpha):
+        """Render colored points based on mask index (original behavior)."""
+        import numpy as np
+
+        H, W = img_array.shape[:2]
+        overlay = img_array.copy()
+
+        for idx, mesh in loaded_meshes:
+            verts = mesh.vertices
+
+            # Filter vertices in front of camera (Z > 0)
+            mask = verts[:, 2] > 0.1
+            v = verts[mask]
+
+            if len(v) == 0:
+                continue
+
+            # Project vertices
+            X, Y, Z = v[:, 0], v[:, 1], v[:, 2]
+            x = (K[0, 0] * X / Z + K[0, 2]).astype(int)
+            y = (K[1, 1] * Y / Z + K[1, 2]).astype(int)
+
+            # Filter points within image bounds
+            valid = (x >= 0) & (x < W) & (y >= 0) & (y < H)
+            x, y = x[valid], y[valid]
+
+            # Get color for this object
+            color = np.array(colors[idx % len(colors)])
+
+            # Vectorized point drawing with size
+            offsets = np.arange(-point_size, point_size + 1)
+            dx, dy = np.meshgrid(offsets, offsets)
+            dx, dy = dx.flatten(), dy.flatten()
+
+            all_x = (x[:, None] + dx[None, :]).flatten()
+            all_y = (y[:, None] + dy[None, :]).flatten()
+
+            valid = (all_x >= 0) & (all_x < W) & (all_y >= 0) & (all_y < H)
+            all_x, all_y = all_x[valid], all_y[valid]
+
+            overlay[all_y, all_x] = overlay[all_y, all_x] * (1 - alpha) + color * alpha
+            print(f"[SAM3DObjects] ProjectionOverlay: Object {idx}: {len(x)} points projected")
+
+        return overlay
+
+    def _render_3d_mesh(self, loaded_meshes, img_array, K, colors, alpha, H, W):
+        """Render solid colored meshes with proper depth buffering using pyrender."""
+        import numpy as np
+        import pyrender
+        import os
+
+        # Set offscreen rendering backend
+        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+
+        overlay = img_array.copy()
+
+        # Create scene
+        scene = pyrender.Scene(bg_color=[0, 0, 0, 0], ambient_light=[0.5, 0.5, 0.5])
+
+        # Add camera with intrinsics
+        camera = pyrender.IntrinsicsCamera(
+            fx=K[0, 0], fy=K[1, 1],
+            cx=K[0, 2], cy=K[1, 2],
+            znear=0.01, zfar=100.0
+        )
+        # Camera at origin looking down +Z (pyrender handles CV intrinsics internally)
+        camera_pose = np.eye(4, dtype=np.float32)
+        scene.add(camera, pose=camera_pose)
+
+        # Add a light
+        light = pyrender.DirectionalLight(color=[1.0, 1.0, 1.0], intensity=2.0)
+        scene.add(light, pose=camera_pose)
+
+        # Add meshes with solid colors
+        for idx, mesh in loaded_meshes:
+            color = colors[idx % len(colors)]
+            material = pyrender.MetallicRoughnessMaterial(
+                baseColorFactor=[*color, 1.0],
+                metallicFactor=0.0,
+                roughnessFactor=0.8
+            )
+
+            # Transform mesh coordinates for pyrender (OpenGL conventions)
+            # Our pose-optimized mesh: X+ = right, Y+ = down, Z+ = forward (CV convention)
+            # pyrender/OpenGL expects: X+ = right, Y+ = up, Z+ = backward (camera looks along -Z)
+            # Transform: keep X, negate Y, negate Z
+            import trimesh as tr
+            mesh_gl = tr.Trimesh(
+                vertices=mesh.vertices.copy(),
+                faces=mesh.faces.copy(),
+                vertex_colors=mesh.visual.vertex_colors if hasattr(mesh.visual, 'vertex_colors') else None,
+            )
+            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down → OpenGL up
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward → OpenGL backward
+
+            pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, material=material)
+            scene.add(pyrender_mesh)
+
+        # Render
+        renderer = pyrender.OffscreenRenderer(W, H)
+        color_img, depth = renderer.render(scene)
+        renderer.delete()
+
+        # Replace pixels where meshes are rendered (solid, no transparency)
+        mask = depth > 0
+        color_normalized = color_img.astype(np.float32) / 255.0
+        overlay[mask] = color_normalized[mask]
+
+        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} meshes (3d_mesh)")
+        return overlay
+
+    def _render_3d_mesh_textured(self, loaded_meshes, img_array, K, alpha, H, W):
+        """Render textured meshes using pyrender."""
+        import numpy as np
+        import pyrender
+        import os
+
+        # Set offscreen rendering backend
+        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+
+        overlay = img_array.copy()
+
+        # Create scene
+        scene = pyrender.Scene(bg_color=[0, 0, 0, 0], ambient_light=[0.5, 0.5, 0.5])
+
+        # Add camera with intrinsics
+        camera = pyrender.IntrinsicsCamera(
+            fx=K[0, 0], fy=K[1, 1],
+            cx=K[0, 2], cy=K[1, 2],
+            znear=0.01, zfar=100.0
+        )
+        camera_pose = np.eye(4)
+        scene.add(camera, pose=camera_pose)
+
+        # Add a light
+        light = pyrender.DirectionalLight(color=[1.0, 1.0, 1.0], intensity=2.0)
+        scene.add(light, pose=camera_pose)
+
+        # Add meshes (pyrender will use vertex colors or textures if available)
+        for idx, mesh in loaded_meshes:
+            # Transform mesh coordinates for pyrender (OpenGL conventions)
+            # Same as 3d_mesh mode: keep X, negate Y, negate Z
+            import trimesh as tr
+            mesh_gl = tr.Trimesh(
+                vertices=mesh.vertices.copy(),
+                faces=mesh.faces.copy(),
+                visual=mesh.visual,  # Preserve textures/vertex colors
+            )
+            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down → OpenGL up
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward → OpenGL backward
+
+            pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, smooth=True)
+            scene.add(pyrender_mesh)
+
+        # Render
+        renderer = pyrender.OffscreenRenderer(W, H)
+        color_img, depth = renderer.render(scene)
+        renderer.delete()
+
+        # Blend with original image where depth > 0
+        mask = depth > 0
+        color_normalized = color_img.astype(np.float32) / 255.0
+        overlay[mask] = color_normalized[mask]
+
+        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} textured meshes")
+        return overlay
 
 
 # Node mappings

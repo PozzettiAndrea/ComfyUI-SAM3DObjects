@@ -130,6 +130,7 @@ class SAM3D_ScenePoseOptimize:
         """
         # These imports happen in the isolated subprocess
         import os
+        import time
         import pickle
         import base64
         import torch
@@ -139,6 +140,7 @@ class SAM3D_ScenePoseOptimize:
 
         from utils.pose_optimization import run_pose_optimization_batch
 
+        start_time = time.time()
         print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")
         print(f"[SAM3DObjects] ScenePoseOptimize: Mode = {optimization_mode}")
         print(f"[SAM3DObjects] ScenePoseOptimize: Folder = {output_folder}")
@@ -388,8 +390,8 @@ class SAM3D_ScenePoseOptimize:
                 traceback.print_exc()
                 iou_scores.append(-1.0)
 
-        print(f"\n[SAM3DObjects] ScenePoseOptimize: Completed {len(object_dirs)} object(s)")
-        print(f"[SAM3DObjects] ScenePoseOptimize: Output folder: {pose_opt_folder}")
+        elapsed = time.time() - start_time
+        print(f"\n[SAM3DObjects] ✓ Pose optimization done: {elapsed:.0f}s ({len(object_dirs)} objects)")
 
         # Save cache metadata for future runs
         self._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)
