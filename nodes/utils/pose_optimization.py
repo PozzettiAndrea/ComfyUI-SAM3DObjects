@@ -1,7 +1,8 @@
 """
 Pose optimization for SAM3D scene generation.
 
-This module contains pose optimization using layout_post_optimization.
+This module contains pose optimization that can skip manual (height-based) alignment.
+Supports: icp_only, render_only modes (no manual alignment).
 """
 
 import sys
@@ -12,6 +13,36 @@ import traceback
 from typing import Any, Dict
 import numpy as np
 import torch
+
+
+def depth_edge(depth: np.ndarray, rtol: float = 0.03, mask: np.ndarray = None) -> np.ndarray:
+    """
+    Detect edges in depth map based on relative depth discontinuities.
+
+    Args:
+        depth: 2D depth map
+        rtol: Relative tolerance for edge detection
+        mask: Optional mask to apply
+
+    Returns:
+        Boolean mask where True indicates an edge pixel
+    """
+    # Compute gradients in x and y directions
+    grad_x = np.abs(np.diff(depth, axis=1, prepend=depth[:, :1]))
+    grad_y = np.abs(np.diff(depth, axis=0, prepend=depth[:1, :]))
+
+    # Compute relative gradients
+    depth_safe = np.maximum(np.abs(depth), 1e-6)
+    rel_grad_x = grad_x / depth_safe
+    rel_grad_y = grad_y / depth_safe
+
+    # Edge where relative gradient exceeds threshold
+    edge_mask = (rel_grad_x > rtol) | (rel_grad_y > rtol)
+
+    if mask is not None:
+        edge_mask = edge_mask & mask
+
+    return edge_mask
 
 
 def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -126,19 +157,29 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
 
         # Apply transformation to mesh
-        # GLB files are Y-up, but layout_post_optimization works in Z-up internally.
-        # get_mesh() converts Y-up→Z-up before computing transforms.
-        # We must do the same conversion before applying the refined transform.
-        y_to_z_rotation = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Y-up to Z-up
+        # SAM3D decoder outputs Z-up meshes. The GLB files contain Z-up coordinates.
+        # layout_post_optimization works in Y-up (pytorch3d convention).
+        # We must convert Z-up → Y-up before applying the refined transform.
+        z_up_to_y_up_matrix = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Z-up to Y-up
 
-        scale_val = scale_np_out.mean() if scale_np_out.ndim > 0 else float(scale_np_out)
+        # Ensure scale is per-axis (3 values)
+        if scale_np_out.ndim == 0:
+            scale_vec = np.array([float(scale_np_out)] * 3)
+        elif scale_np_out.size == 1:
+            scale_vec = np.array([float(scale_np_out.flat[0])] * 3)
+        else:
+            scale_vec = scale_np_out.flatten()[:3]
+
         vertices = mesh.vertices.copy()
 
-        # 1. Convert Y-up (GLB) to Z-up (internal coordinate system)
-        vertices_z_up = vertices @ y_to_z_rotation
+        # 1. Convert Z-up (SAM3D decoder) to Y-up (pytorch3d convention)
+        vertices_y_up = vertices @ z_up_to_y_up_matrix
 
-        # 2. Apply refined transform (computed in Z-up space, outputs Y-up world coords)
-        vertices_transformed = (vertices_z_up @ (rot_matrix.T * scale_val)) + trans_np
+        # 2. Apply refined transform (correct order: scale → rotate → translate)
+        # This matches the original apply_transform() in layout_post_optimization_utils.py
+        vertices_scaled = vertices_y_up * scale_vec  # Per-axis scale
+        vertices_rotated = vertices_scaled @ rot_matrix.T  # Rotate
+        vertices_transformed = vertices_rotated + trans_np  # Translate
 
         mesh.vertices = vertices_transformed
 
@@ -180,8 +221,8 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
     """
     Run pose optimization for batch scene generation.
 
-    This function handles the pose_optimization_batch command from SAM3D_ScenePoseOptimize.
-    It's similar to run_pose_optimization but saves output as aligned_mesh.glb in the object dir.
+    This function handles optimization without manual (height-based) alignment.
+    Supports: icp_only, render_only modes.
     """
     try:
         from pathlib import Path
@@ -192,17 +233,34 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             sys.path.insert(0, str(vendor_path))
 
         import trimesh
-        from pytorch3d.transforms import quaternion_to_matrix
-        from sam3d_objects.pipeline.inference_utils import layout_post_optimization
+        from pytorch3d.structures import Meshes
+        from pytorch3d.transforms import quaternion_to_matrix, Transform3d, matrix_to_quaternion
+        from pytorch3d.renderer import TexturesVertex
+        from sam3d_objects.data.dataset.tdfy.transforms_3d import compose_transform
+        from sam3d_objects.pipeline.layout_post_optimization_utils import (
+            get_mesh,
+            get_mask_renderer,
+            compute_iou,
+            run_ICP,
+            run_render_compare,
+            apply_transform,
+            check_occlusion,
+            set_seed,
+        )
 
-        print("[Worker] Running batch pose optimization", file=sys.stderr)
+        print("[Worker] Running batch pose optimization (no manual alignment)", file=sys.stderr)
 
         # Extract parameters
         object_dir = request.get("object_dir", "")
         glb_path = request["glb_path"]
         pointmap_path = request["pointmap_path"]
-        enable_icp = request.get("enable_icp", True)
-        enable_render_opt = request.get("enable_render_opt", True)
+        enable_manual_alignment = request.get("enable_manual_alignment", False)
+        enable_icp = request.get("enable_icp", False)
+        enable_render_opt = request.get("enable_render_opt", False)
+
+        print(f"[Worker] - enable_manual_alignment: {enable_manual_alignment}", file=sys.stderr)
+        print(f"[Worker] - enable_icp: {enable_icp}", file=sys.stderr)
+        print(f"[Worker] - enable_render_opt: {enable_render_opt}", file=sys.stderr)
 
         # Deserialize intrinsics
         intrinsics_np = pickle.loads(base64.b64decode(request["intrinsics_b64"]))
@@ -227,7 +285,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         mask_tensor = torch.from_numpy(mask_np).float().to(device)
         intrinsics = intrinsics.to(device)
 
-        # Ensure correct shapes
+        # Ensure correct shapes for pose tensors
         if rotation.dim() == 1:
             rotation = rotation.unsqueeze(0)
         if translation.dim() == 1:
@@ -239,12 +297,12 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         # Load mesh
         print(f"[Worker] Loading mesh: {glb_path}", file=sys.stderr)
-        mesh = trimesh.load(glb_path)
-        if isinstance(mesh, trimesh.Scene):
-            meshes = [g for g in mesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
+        mesh_trimesh = trimesh.load(glb_path)
+        if isinstance(mesh_trimesh, trimesh.Scene):
+            meshes = [g for g in mesh_trimesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
             if not meshes:
                 raise ValueError("No mesh found in GLB file")
-            mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
+            mesh_trimesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
         # Load pointmap
         print(f"[Worker] Loading pointmap: {pointmap_path}", file=sys.stderr)
@@ -255,87 +313,145 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             pointmap_tensor = pointmap_data
         pointmap_tensor = pointmap_tensor.float().to(device)
 
-        print(f"[Worker] Running layout_post_optimization...", file=sys.stderr)
-        print(f"[Worker] - enable_icp: {enable_icp}", file=sys.stderr)
-        print(f"[Worker] - enable_render_opt: {enable_render_opt}", file=sys.stderr)
+        set_seed(100)
 
-        # Run optimization
-        (
-            refined_quat,
-            refined_trans,
-            refined_scale,
-            final_iou,
-            used_icp,
-            used_render_opt,
-        ) = layout_post_optimization(
-            Mesh=mesh,
-            Quaternion=rotation,
-            Translation=translation,
-            Scale=scale,
-            Mask=mask_tensor,
-            Point_Map=pointmap_tensor,
-            Intrinsics=intrinsics,
-            Enable_shape_ICP=enable_icp,
-            Enable_rendering_optimization=enable_render_opt,
-            device=device,
-        )
+        # Initialize transformation and process mesh
+        Rotation = quaternion_to_matrix(rotation.squeeze(1) if rotation.dim() > 2 else rotation)
+        center = translation[0].clone()
+        tfm_ori = compose_transform(scale=scale, rotation=Rotation, translation=translation)
+        mesh, faces_idx, textures = get_mesh(mesh_trimesh, tfm_ori, device)
 
-        print(f"[Worker] Optimization complete: IoU={final_iou:.3f}", file=sys.stderr)
-        print(f"[Worker] - used_icp: {used_icp}, used_render_opt: {used_render_opt}", file=sys.stderr)
+        # Setup renderer (resizes mask to 512 internally)
+        mask_processed, renderer = get_mask_renderer(mask_tensor, 512, intrinsics, device)
 
-        # Convert results to numpy
-        quat_np = refined_quat.cpu().numpy() if hasattr(refined_quat, 'cpu') else np.array(refined_quat)
-        trans_np = refined_trans.cpu().numpy() if hasattr(refined_trans, 'cpu') else np.array(refined_trans)
-        scale_np_out = refined_scale.cpu().numpy() if hasattr(refined_scale, 'cpu') else np.array(refined_scale)
+        # Check occlusion using original full-resolution mask and pointmap
+        # (mask_tensor is already at same size as pointmap: 4480x6720)
+        if check_occlusion(mask_tensor.cpu().numpy(), pointmap_tensor.cpu().numpy()):
+            print("[Worker] Occluded, skipping optimization", file=sys.stderr)
+            # Return original pose
+            return _apply_and_save_pose(
+                mesh_trimesh, rotation_np, translation_np, scale_np,
+                request.get("output_glb_path"), object_dir, glb_path,
+                iou=-1.0, used_icp=False, used_render_opt=False
+            )
 
-        # Ensure correct shapes
-        if quat_np.ndim > 1:
-            quat_np = quat_np.squeeze()
-        if trans_np.ndim > 1:
-            trans_np = trans_np.squeeze()
-        if scale_np_out.ndim > 1:
-            scale_np_out = scale_np_out.squeeze()
+        # Compute initial IoU
+        rendered = renderer(mesh)
+        initial_iou = compute_iou(rendered[..., 3][0][None, None], mask_processed, threshold=0.5)
+        final_iou = initial_iou.cpu().item()
+        print(f"[Worker] Initial IoU: {final_iou:.3f}", file=sys.stderr)
 
-        # Convert quaternion to rotation matrix using pytorch3d (already in wxyz format)
-        quat_tensor = torch.from_numpy(quat_np).float().unsqueeze(0)
-        rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
+        # Track transforms
+        tfm = tfm_ori
+        used_icp = False
+        used_render_opt = False
 
-        # Apply transformation to mesh
-        # GLB files are Y-up, but layout_post_optimization works in Z-up internally.
-        # get_mesh() converts Y-up→Z-up before computing transforms.
-        # We must do the same conversion before applying the refined transform.
-        y_to_z_rotation = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Y-up to Z-up
+        # Get target points from pointmap (for ICP)
+        if enable_icp:
+            # Get target points from full-resolution pointmap using original mask
+            mask_2d = mask_tensor.bool().cpu().numpy()
+            depth = pointmap_tensor[..., 2].cpu().numpy()
+            depth_edge_mask = depth_edge(depth, rtol=0.03, mask=mask_2d)
+            cleaned_mask = mask_2d & ~depth_edge_mask
+            cleaned_mask_tensor = torch.from_numpy(cleaned_mask).to(device)
+            target_points = pointmap_tensor[cleaned_mask_tensor]
+            finite_mask = torch.isfinite(target_points).all(dim=1)
+            target_points = target_points[finite_mask]
 
-        scale_val = scale_np_out.mean() if scale_np_out.ndim > 0 else float(scale_np_out)
-        vertices = mesh.vertices.copy()
+            if target_points.shape[0] > 0:
+                source_points = mesh.verts_packed()
 
-        # 1. Convert Y-up (GLB) to Z-up (internal coordinate system)
-        vertices_z_up = vertices @ y_to_z_rotation
+                # Run ICP
+                print("[Worker] Running ICP...", file=sys.stderr)
+                points_aligned_icp, transformation = run_ICP(
+                    mesh, source_points, target_points, threshold=0.05
+                )
+                mesh_ICP = Meshes(
+                    verts=[points_aligned_icp], faces=[faces_idx], textures=textures
+                )
+                rendered_icp = renderer(mesh_ICP)
+                icp_iou = compute_iou(
+                    rendered_icp[..., 3][0][None, None], mask_processed, threshold=0.5
+                )
 
-        # 2. Apply refined transform (computed in Z-up space, outputs Y-up world coords)
-        vertices_transformed = (vertices_z_up @ (rot_matrix.T * scale_val)) + trans_np
+                # Accept ICP if it improves IoU
+                if icp_iou > initial_iou:
+                    mesh = mesh_ICP
+                    final_iou = icp_iou.cpu().item()
+                    used_icp = True
+                    print(f"[Worker] ICP improved IoU: {final_iou:.3f}", file=sys.stderr)
 
-        mesh.vertices = vertices_transformed
+                    # Update center and transform
+                    T_o3d = torch.tensor(transformation, dtype=torch.float32, device=device)
+                    T_o3d = T_o3d.T
+                    A = T_o3d[:3, :3]
+                    t = T_o3d[3, :3]
+                    icp_scale = A.norm(dim=1)
+                    R = A / icp_scale[:, None]
+                    center = ((center[None] * icp_scale) @ R + t)[0]
+                    tfm2 = (
+                        Transform3d(device=device)
+                        .scale(icp_scale[None])
+                        .rotate(R[None])
+                        .translate(t[None])
+                    )
+                    tfm = tfm.compose(tfm2)
+                else:
+                    print(f"[Worker] ICP rejected (IoU: {icp_iou.cpu().item():.3f})", file=sys.stderr)
 
-        # Save aligned GLB - use provided path, or fallback to object_dir/input_dir
-        output_glb_path = request.get("output_glb_path")
-        if not output_glb_path:
-            if object_dir:
-                output_glb_path = os.path.join(object_dir, "aligned_mesh.glb")
+        # Run render-and-compare optimization
+        if enable_render_opt:
+            print("[Worker] Running render optimization...", file=sys.stderr)
+            ori_iou = final_iou
+
+            quat, trans_opt, scale_opt, R = run_render_compare(
+                mesh, center, renderer, mask_processed, device
+            )
+            with torch.no_grad():
+                transformed = apply_transform(mesh, center, quat, trans_opt, scale_opt)
+                rendered_opt = renderer(transformed)
+            optimized_iou = compute_iou(
+                rendered_opt[..., 3][0][None, None], mask_processed, threshold=0.5
+            )
+
+            # Accept if IoU > 0.5 and improves
+            if optimized_iou > 0.5 and optimized_iou > ori_iou:
+                used_render_opt = True
+                final_iou = optimized_iou.detach().cpu().item()
+                print(f"[Worker] Render optimization improved IoU: {final_iou:.3f}", file=sys.stderr)
+
+                tfm3 = (
+                    Transform3d(device=device)
+                    .translate(-center[None])
+                    .scale(scale_opt.expand(3)[None])
+                    .rotate(R.T[None])
+                    .translate(center[None])
+                    .translate(trans_opt[None])
+                )
+                tfm = tfm.compose(tfm3)
             else:
-                input_dir = os.path.dirname(glb_path)
-                output_glb_path = os.path.join(input_dir, "aligned_mesh.glb")
+                print(f"[Worker] Render optimization rejected (IoU: {optimized_iou.cpu().item():.3f})", file=sys.stderr)
 
-        mesh.export(output_glb_path)
-        print(f"[Worker] Saved aligned GLB: {output_glb_path}", file=sys.stderr)
+        # Extract final pose from transform
+        M = tfm.get_matrix()[0]
+        T_final = M[3, :3]
+        A = M[:3, :3]
+        scale_final = A.norm(dim=1)
+        R_final = A / scale_final[:, None]
+        quat_final = matrix_to_quaternion(R_final)
 
-        return {
-            "status": "success",
-            "output_glb_path": output_glb_path,
-            "iou": float(final_iou),
-            "used_icp": bool(used_icp),
-            "used_render_opt": bool(used_render_opt),
-        }
+        # Convert to numpy
+        quat_np = quat_final.cpu().numpy()
+        trans_np = T_final.cpu().numpy()
+        scale_np_out = scale_final.cpu().numpy()
+
+        print(f"[Worker] Final IoU: {final_iou:.3f}", file=sys.stderr)
+
+        return _apply_and_save_pose(
+            mesh_trimesh, quat_np, trans_np, scale_np_out,
+            request.get("output_glb_path"), object_dir, glb_path,
+            iou=final_iou, used_icp=used_icp, used_render_opt=used_render_opt
+        )
 
     except Exception as e:
         print(f"[Worker] Batch pose optimization error: {e}", file=sys.stderr)
@@ -345,3 +461,66 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             "error": str(e),
             "traceback": traceback.format_exc(),
         }
+
+
+def _apply_and_save_pose(
+    mesh_trimesh, quat_np, trans_np, scale_np_out,
+    output_glb_path, object_dir, glb_path,
+    iou, used_icp, used_render_opt
+) -> Dict[str, Any]:
+    """Apply final pose to trimesh and save GLB."""
+    from pytorch3d.transforms import quaternion_to_matrix
+
+    # Ensure correct shapes
+    if quat_np.ndim > 1:
+        quat_np = quat_np.squeeze()
+    if trans_np.ndim > 1:
+        trans_np = trans_np.squeeze()
+    if scale_np_out.ndim > 1:
+        scale_np_out = scale_np_out.squeeze()
+
+    # Convert quaternion to rotation matrix
+    quat_tensor = torch.from_numpy(quat_np).float().unsqueeze(0)
+    rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
+
+    # Z-up to Y-up conversion
+    z_up_to_y_up_matrix = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
+
+    # Ensure scale is per-axis
+    if scale_np_out.ndim == 0:
+        scale_vec = np.array([float(scale_np_out)] * 3)
+    elif scale_np_out.size == 1:
+        scale_vec = np.array([float(scale_np_out.flat[0])] * 3)
+    else:
+        scale_vec = scale_np_out.flatten()[:3]
+
+    vertices = mesh_trimesh.vertices.copy()
+
+    # 1. Convert Z-up to Y-up
+    vertices_y_up = vertices @ z_up_to_y_up_matrix
+
+    # 2. Apply transform: scale → rotate → translate
+    vertices_scaled = vertices_y_up * scale_vec
+    vertices_rotated = vertices_scaled @ rot_matrix.T
+    vertices_transformed = vertices_rotated + trans_np
+
+    mesh_trimesh.vertices = vertices_transformed
+
+    # Determine output path
+    if not output_glb_path:
+        if object_dir:
+            output_glb_path = os.path.join(object_dir, "aligned_mesh.glb")
+        else:
+            input_dir = os.path.dirname(glb_path)
+            output_glb_path = os.path.join(input_dir, "aligned_mesh.glb")
+
+    mesh_trimesh.export(output_glb_path)
+    print(f"[Worker] Saved aligned GLB: {output_glb_path}", file=sys.stderr)
+
+    return {
+        "status": "success",
+        "output_glb_path": output_glb_path,
+        "iou": float(iou),
+        "used_icp": bool(used_icp),
+        "used_render_opt": bool(used_render_opt),
+    }

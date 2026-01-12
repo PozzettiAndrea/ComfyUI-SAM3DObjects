@@ -11,15 +11,15 @@ from comfyui_isolation import isolated
 @isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
 class SAM3D_ScenePoseOptimize:
     """
-    Scene Pose Optimization - Refine poses for all objects in a scene folder.
+    Scene Pose Optimization - Apply/refine poses for all objects in a scene folder.
 
-    Takes the output_folder from SAM3DSceneGenerate and runs pose alignment
-    on each object using the saved data (intrinsics, masks, poses, pointmaps).
+    Takes the output_folder from SAM3DSceneGenerate and applies pose transforms
+    to each object using the saved data (intrinsics, masks, poses, pointmaps).
 
     Supports three optimization modes:
-    - manual_only: Height-based alignment only (fastest)
-    - manual_icp: Manual alignment + ICP refinement
-    - manual_icp_render: Full pipeline with render-and-compare optimization (best quality)
+    - pose_only: Just apply the predicted pose (fastest, no optimization)
+    - icp_only: Pose + ICP point cloud alignment refinement
+    - render_only: Pose + render-and-compare optimization (best quality, slowest)
 
     Outputs list of paths to aligned GLB files and quality scores.
     """
@@ -32,9 +32,9 @@ class SAM3D_ScenePoseOptimize:
                     "default": "",
                     "tooltip": "Output folder containing object_N/ subdirectories (from SAM3DSceneGenerate or manual path)"
                 }),
-                "optimization_mode": (["manual_only", "manual_icp", "manual_icp_render"], {
-                    "default": "manual_icp_render",
-                    "tooltip": "Optimization mode: manual_only (fast), manual_icp (balanced), manual_icp_render (best quality)"
+                "optimization_mode": (["pose_only", "icp_only", "render_only"], {
+                    "default": "pose_only",
+                    "tooltip": "Optimization mode: pose_only (just apply predicted pose), icp_only (+ ICP refinement), render_only (+ render-and-compare optimization)"
                 }),
             },
         }
@@ -123,7 +123,7 @@ class SAM3D_ScenePoseOptimize:
 
         Args:
             output_folder: Path to folder containing object_N/ subdirectories
-            optimization_mode: One of "manual_only", "manual_icp", "manual_icp_render"
+            optimization_mode: One of "pose_only", "manual_only", "manual_icp", "manual_icp_render"
 
         Returns:
             Tuple of (path to output folder, list of IOU scores)
@@ -134,6 +134,7 @@ class SAM3D_ScenePoseOptimize:
         import base64
         import torch
         import numpy as np
+        import trimesh
         from pathlib import Path
 
         from utils.pose_optimization import run_pose_optimization_batch
@@ -174,9 +175,9 @@ class SAM3D_ScenePoseOptimize:
             print(f"[SAM3DObjects] ScenePoseOptimize: Using cached results from {pose_opt_folder}")
             return (pose_opt_folder, cached_scores)
 
-        # Determine optimization flags
-        enable_icp = optimization_mode in ["manual_icp", "manual_icp_render"]
-        enable_render = optimization_mode == "manual_icp_render"
+        # Determine optimization flags (no manual alignment in any mode)
+        enable_icp = optimization_mode == "icp_only"
+        enable_render = optimization_mode == "render_only"
 
         # Create output folder
         os.makedirs(pose_opt_folder, exist_ok=True)
@@ -238,18 +239,116 @@ class SAM3D_ScenePoseOptimize:
                 iou_scores.append(-1.0)
                 continue
 
-            # Use identity pose - meshes are already in world coordinates
-            rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
-            translation = [[0, 0, 0]]
-            scale = [[1, 1, 1]]
-            print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Using identity pose (mesh already in world coords)")
+            # Load initial pose from sparse_structure.pt (computed in Stage 1)
+            sparse_path = os.path.join(object_dir, "sparse_structure.pt")
+            if os.path.exists(sparse_path):
+                sparse_data = torch.load(sparse_path, weights_only=False)
+                rotation = sparse_data.get("rotation")
+                translation = sparse_data.get("translation")
+                scale = sparse_data.get("scale")
 
-            # Load mask
-            mask = np.load(mask_path)
-            print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded mask {mask.shape}")
+                # Convert tensors to lists for serialization
+                if rotation is not None and hasattr(rotation, 'tolist'):
+                    rotation = rotation.cpu().tolist() if hasattr(rotation, 'cpu') else rotation.tolist()
+                if translation is not None and hasattr(translation, 'tolist'):
+                    translation = translation.cpu().tolist() if hasattr(translation, 'cpu') else translation.tolist()
+                if scale is not None and hasattr(scale, 'tolist'):
+                    scale = scale.cpu().tolist() if hasattr(scale, 'cpu') else scale.tolist()
+
+                # Ensure list-of-list format for serialize_pose (expects [[...]])
+                if rotation is not None:
+                    if not isinstance(rotation, list):
+                        rotation = [rotation]
+                    if not isinstance(rotation[0], list):
+                        rotation = [rotation]
+                if translation is not None:
+                    if not isinstance(translation, list):
+                        translation = [translation]
+                    if not isinstance(translation[0], list):
+                        translation = [translation]
+                if scale is not None:
+                    if not isinstance(scale, list):
+                        scale = [scale]
+                    if not isinstance(scale[0], list):
+                        scale = [scale]
+
+                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded pose from sparse_structure.pt")
+            else:
+                # Fallback to identity pose if no sparse_structure.pt
+                rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
+                translation = [[0, 0, 0]]
+                scale = [[1, 1, 1]]
+                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: No sparse_structure.pt, using identity pose")
 
             # Output path in the pose-optimized folder
             output_glb_path = os.path.join(pose_opt_folder, f"object_{idx}.glb")
+
+            # Handle pose_only mode - just apply the pose without optimization
+            if optimization_mode == "pose_only":
+                try:
+                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Applying pose directly (no optimization)")
+
+                    # Load mesh
+                    mesh = trimesh.load(mesh_path)
+                    if isinstance(mesh, trimesh.Scene):
+                        meshes = [g for g in mesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
+                        if not meshes:
+                            raise ValueError("No mesh found in GLB file")
+                        mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
+
+                    # Convert pose to tensors
+                    from pytorch3d.transforms import quaternion_to_matrix
+
+                    rot_np = np.array(rotation).squeeze()
+                    trans_np = np.array(translation).squeeze()
+                    scale_np = np.array(scale).squeeze()
+
+                    # Ensure scale is 3D
+                    if scale_np.ndim == 0:
+                        scale_np = np.array([float(scale_np)] * 3)
+                    elif scale_np.size == 1:
+                        scale_np = np.array([float(scale_np.flat[0])] * 3)
+                    else:
+                        scale_np = scale_np.flatten()[:3]
+
+                    # Convert quaternion to rotation matrix
+                    quat_tensor = torch.from_numpy(rot_np).float().unsqueeze(0)
+                    rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
+
+                    # Z-up to Y-up conversion matrix (SAM3D decoder outputs Z-up)
+                    z_up_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
+
+                    # Apply transformation: Z-up → Y-up, then scale, rotate, translate
+                    # Note: PyTorch3D quaternion_to_matrix returns row-vector convention (v @ R)
+                    # Do NOT transpose - that would apply inverse rotation
+                    vertices = mesh.vertices.copy()
+                    vertices_y_up = vertices @ z_up_to_y_up
+                    vertices_scaled = vertices_y_up * scale_np
+                    vertices_rotated = vertices_scaled @ rot_matrix
+                    vertices_transformed = vertices_rotated + trans_np
+
+                    # Flip X and Y axes to match image coordinate convention
+                    # PyTorch3D: X-left, Y-up, Z-inward
+                    # Image coords: X-right, Y-down
+                    vertices_transformed[:, 0] = -vertices_transformed[:, 0]
+                    vertices_transformed[:, 1] = -vertices_transformed[:, 1]
+
+                    mesh.vertices = vertices_transformed
+                    mesh.export(output_glb_path)
+
+                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Saved: {output_glb_path}")
+                    iou_scores.append(1.0)  # No IoU computed in pose_only mode
+
+                except Exception as e:
+                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    iou_scores.append(-1.0)
+                continue
+
+            # Load mask for optimization modes
+            mask = np.load(mask_path)
+            print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded mask {mask.shape}")
 
             request = {
                 "object_dir": object_dir,
@@ -258,6 +357,7 @@ class SAM3D_ScenePoseOptimize:
                 "intrinsics_b64": serialize_tensor(intrinsics_np),
                 "pose_b64": serialize_pose(rotation, translation, scale),
                 "mask_b64": base64.b64encode(pickle.dumps(mask.astype(np.float32))).decode('utf-8'),
+                "enable_manual_alignment": False,  # Never use height-based manual alignment
                 "enable_icp": enable_icp,
                 "enable_render_opt": enable_render,
                 "image_path": image_path if os.path.exists(image_path) else None,
