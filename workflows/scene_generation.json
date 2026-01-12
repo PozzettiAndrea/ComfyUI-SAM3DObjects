@@ -1,8 +1,8 @@
 {
   "id": "75f35396-f717-4e89-8313-13aac9a4acdc",
   "revision": 0,
-  "last_node_id": 87,
-  "last_link_id": 245,
+  "last_node_id": 94,
+  "last_link_id": 252,
   "nodes": [
     {
       "id": 75,
@@ -251,6 +251,366 @@
       "widgets_values": []
     },
     {
+      "id": 89,
+      "type": "GeomPackLoadMeshBatch",
+      "pos": [
+        22.795011837878942,
+        -142.18128835593632
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "folder_path",
+          "type": "STRING",
+          "widget": {
+            "name": "folder_path"
+          },
+          "link": 246
+        }
+      ],
+      "outputs": [
+        {
+          "name": "meshes",
+          "shape": 6,
+          "type": "TRIMESH",
+          "links": [
+            247
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "31e7faaec3e201e1ad875ea7b7af00f6e0ff413e",
+        "Node name for S&R": "GeomPackLoadMeshBatch"
+      },
+      "widgets_values": [
+        "3d",
+        0,
+        -1
+      ]
+    },
+    {
+      "id": 82,
+      "type": "SAM3D_ScenePoseOptimize",
+      "pos": [
+        20.222196054090702,
+        -323.72947172175003
+      ],
+      "size": [
+        294.7310546875,
+        102
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "widget": {
+            "name": "output_folder"
+          },
+          "link": 241
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "links": [
+            246
+          ]
+        },
+        {
+          "name": "iou_scores",
+          "shape": 6,
+          "type": "FLOAT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "9600a3d870edad02f9b97286037dae3f121e49ed",
+        "Node name for S&R": "SAM3D_ScenePoseOptimize",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "manual_icp_render",
+        "manual_only"
+      ]
+    },
+    {
+      "id": 90,
+      "type": "StringConcatenate",
+      "pos": [
+        -245.38143453244297,
+        -609.7678719144791
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string_a",
+          "type": "STRING",
+          "widget": {
+            "name": "string_a"
+          },
+          "link": 248
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            249
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.8.2",
+        "Node name for S&R": "StringConcatenate"
+      },
+      "widgets_values": [
+        "",
+        "/*/*.glb",
+        ""
+      ]
+    },
+    {
+      "id": 85,
+      "type": "GeomPackPreviewMeshVTK",
+      "pos": [
+        364.9102115079787,
+        -33.62511045130474
+      ],
+      "size": [
+        512,
+        722
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "trimesh",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 245
+        },
+        {
+          "name": "voxelgrid",
+          "shape": 7,
+          "type": "VOXELGRID",
+          "link": null
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
+        "Node name for S&R": "GeomPackPreviewMeshVTK",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "fields",
+        ""
+      ]
+    },
+    {
+      "id": 87,
+      "type": "GeomPackCombineMeshesBatch",
+      "pos": [
+        28.66344022955498,
+        88.33634496517189
+      ],
+      "size": [
+        207.038671875,
+        46
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meshes",
+          "type": "TRIMESH",
+          "link": 247
+        }
+      ],
+      "outputs": [
+        {
+          "name": "combined_mesh",
+          "type": "TRIMESH",
+          "links": [
+            245
+          ]
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
+        "Node name for S&R": "GeomPackCombineMeshesBatch",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 91,
+      "type": "GeomPackLoadMeshGlob",
+      "pos": [
+        191.13778015390903,
+        -684.0386659923452
+      ],
+      "size": [
+        270,
+        122
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "glob_pattern",
+          "type": "STRING",
+          "widget": {
+            "name": "glob_pattern"
+          },
+          "link": 249
+        }
+      ],
+      "outputs": [
+        {
+          "name": "meshes",
+          "shape": 6,
+          "type": "TRIMESH",
+          "links": [
+            251
+          ]
+        },
+        {
+          "name": "textures",
+          "shape": 6,
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "file_paths",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "31e7faaec3e201e1ad875ea7b7af00f6e0ff413e",
+        "Node name for S&R": "GeomPackLoadMeshGlob"
+      },
+      "widgets_values": [
+        "",
+        "name"
+      ]
+    },
+    {
+      "id": 94,
+      "type": "GeomPackCombineMeshesBatch",
+      "pos": [
+        241.54333512974438,
+        -508.11027787943226
+      ],
+      "size": [
+        207.038671875,
+        46
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meshes",
+          "type": "TRIMESH",
+          "link": 251
+        }
+      ],
+      "outputs": [
+        {
+          "name": "combined_mesh",
+          "type": "TRIMESH",
+          "links": [
+            252
+          ]
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
+        "Node name for S&R": "GeomPackCombineMeshesBatch",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      }
+    },
+    {
+      "id": 92,
+      "type": "GeomPackPreviewMeshVTK",
+      "pos": [
+        497.84562079458794,
+        -818.7512296478411
+      ],
+      "size": [
+        512,
+        722
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "trimesh",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 252
+        },
+        {
+          "name": "voxelgrid",
+          "shape": 7,
+          "type": "VOXELGRID",
+          "link": null
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
+        "Node name for S&R": "GeomPackPreviewMeshVTK",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "fields",
+        ""
+      ]
+    },
+    {
       "id": 80,
       "type": "SAM3DSceneGenerate",
       "pos": [
@@ -306,14 +666,16 @@
           "name": "output_folder",
           "type": "STRING",
           "links": [
-            241
+            241,
+            248
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
         "ver": "099dc45910274d42967ae846504aa57b228a8875",
-        "Node name for S&R": "SAM3DSceneGenerate"
+        "Node name for S&R": "SAM3DSceneGenerate",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
         42,
@@ -328,182 +690,7 @@
         false,
         "fast",
         1024,
-        false
-      ]
-    },
-    {
-      "id": 82,
-      "type": "SAM3D_ScenePoseOptimize",
-      "pos": [
-        11.992475558823225,
-        -291.64555846731366
-      ],
-      "size": [
-        294.7310546875,
-        78
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "output_folder",
-          "type": "STRING",
-          "link": 241
-        }
-      ],
-      "outputs": [
-        {
-          "name": "glb_paths",
-          "shape": 6,
-          "type": "STRING",
-          "links": [
-            242
-          ]
-        },
-        {
-          "name": "iou_scores",
-          "shape": 6,
-          "type": "FLOAT",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3dobjects",
-        "ver": "9600a3d870edad02f9b97286037dae3f121e49ed",
-        "Node name for S&R": "SAM3D_ScenePoseOptimize"
-      },
-      "widgets_values": [
-        "manual_icp_render"
-      ]
-    },
-    {
-      "id": 84,
-      "type": "GeomPackLoadMeshPath",
-      "pos": [
-        20.396458830335614,
-        -161.70288790880866
-      ],
-      "size": [
-        400,
-        200
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "file_path",
-          "type": "STRING",
-          "widget": {
-            "name": "file_path"
-          },
-          "link": 242
-        }
-      ],
-      "outputs": [
-        {
-          "name": "mesh",
-          "shape": 6,
-          "type": "TRIMESH",
-          "links": [
-            244
-          ]
-        },
-        {
-          "name": "texture",
-          "shape": 6,
-          "type": "IMAGE",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-geometrypack",
-        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
-        "Node name for S&R": "GeomPackLoadMeshPath"
-      },
-      "widgets_values": [
-        ""
-      ]
-    },
-    {
-      "id": 87,
-      "type": "GeomPackCombineMeshesBatch",
-      "pos": [
-        28.66344022955498,
-        88.33634496517189
-      ],
-      "size": [
-        207.038671875,
-        46
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "meshes",
-          "type": "TRIMESH",
-          "link": 244
-        }
-      ],
-      "outputs": [
-        {
-          "name": "combined_mesh",
-          "type": "TRIMESH",
-          "links": [
-            245
-          ]
-        },
-        {
-          "name": "info",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-geometrypack",
-        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
-        "Node name for S&R": "GeomPackCombineMeshesBatch"
-      }
-    },
-    {
-      "id": 85,
-      "type": "GeomPackPreviewMeshVTK",
-      "pos": [
-        461.5496982421284,
-        -314.1246814608294
-      ],
-      "size": [
-        512,
-        714
-      ],
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "trimesh",
-          "shape": 7,
-          "type": "TRIMESH",
-          "link": 245
-        },
-        {
-          "name": "voxelgrid",
-          "shape": 7,
-          "type": "VOXELGRID",
-          "link": null
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfyui-geometrypack",
-        "ver": "b8104f2c23cf70218ef7f94a920345e66551d4ec",
-        "Node name for S&R": "GeomPackPreviewMeshVTK"
-      },
-      "widgets_values": [
-        "fields",
-        ""
+        true
       ]
     }
   ],
@@ -605,26 +792,58 @@
       "STRING"
     ],
     [
-      242,
+      245,
+      87,
+      0,
+      85,
+      0,
+      "TRIMESH"
+    ],
+    [
+      246,
       82,
       0,
-      84,
+      89,
       0,
       "STRING"
     ],
     [
-      244,
-      84,
+      247,
+      89,
       0,
       87,
       0,
       "TRIMESH"
     ],
     [
-      245,
-      87,
+      248,
+      80,
       0,
-      85,
+      90,
+      0,
+      "STRING"
+    ],
+    [
+      249,
+      90,
+      0,
+      91,
+      0,
+      "STRING"
+    ],
+    [
+      251,
+      91,
+      0,
+      94,
+      0,
+      "TRIMESH"
+    ],
+    [
+      252,
+      94,
+      0,
+      92,
       0,
       "TRIMESH"
     ]
@@ -633,10 +852,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.814027493868401,
+      "scale": 0.7593240019998094,
       "offset": [
-        748.8176567669334,
-        822.6056595128331
+        1051.5017708767127,
+        922.9263982946621
       ]
     },
     "frontendVersion": "1.36.13",
