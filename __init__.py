@@ -41,6 +41,7 @@ from .nodes.preview_nodes import SAM3D_PreviewPointCloud
 from .nodes.pose_optimization import SAM3D_PoseOptimization
 from .nodes.scene_generate import SAM3DSceneGenerate
 from .nodes.scene_pose_optimize import SAM3D_ScenePoseOptimize
+from .nodes.projection_overlay import SAM3D_ProjectionOverlay
 
 
 __version__ = "1.0.0"
@@ -61,6 +62,7 @@ NODE_CLASS_MAPPINGS = {
     "SAM3D_PoseOptimization": SAM3D_PoseOptimization,
     "SAM3DSceneGenerate": SAM3DSceneGenerate,
     "SAM3D_ScenePoseOptimize": SAM3D_ScenePoseOptimize,
+    "SAM3D_ProjectionOverlay": SAM3D_ProjectionOverlay,
 }
 
 # Optional: Human-readable names for nodes
@@ -77,6 +79,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SAM3D_PoseOptimization": "SAM3D Pose Optimization",
     "SAM3DSceneGenerate": "SAM3D Scene Generate",
     "SAM3D_ScenePoseOptimize": "SAM3D Scene Pose Optimize",
+    "SAM3D_ProjectionOverlay": "SAM3D Projection Overlay",
 }
 
 # Print info when loaded
@@ -96,6 +99,7 @@ print("[SAM3DObjects]   - SAM3DSceneGenerate: Process batch of masks -> multiple
 print("[SAM3DObjects] ")
 print("[SAM3DObjects] Utility nodes:")
 print("[SAM3DObjects]   - SAM3D_PoseOptimization (ICP + render optimization)")
+print("[SAM3DObjects]   - SAM3D_ProjectionOverlay (visualize projected meshes)")
 print("[SAM3DObjects]   - SAM3DExportPLY / SAM3DExportPLYBatch")
 print("[SAM3DObjects]   - SAM3D_PreviewPointCloud")
 print("[SAM3DObjects] ")
