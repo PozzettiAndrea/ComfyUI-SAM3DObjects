@@ -1,8 +1,8 @@
 {
   "id": "75f35396-f717-4e89-8313-13aac9a4acdc",
   "revision": 0,
-  "last_node_id": 99,
-  "last_link_id": 260,
+  "last_node_id": 100,
+  "last_link_id": 262,
   "nodes": [
     {
       "id": 75,
@@ -421,57 +421,6 @@
       ]
     },
     {
-      "id": 82,
-      "type": "SAM3D_ScenePoseOptimize",
-      "pos": [
-        20.222196054090702,
-        -323.72947172175003
-      ],
-      "size": [
-        294.7310546875,
-        102
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "output_folder",
-          "type": "STRING",
-          "widget": {
-            "name": "output_folder"
-          },
-          "link": 256
-        }
-      ],
-      "outputs": [
-        {
-          "name": "output_folder",
-          "type": "STRING",
-          "links": [
-            246,
-            258
-          ]
-        },
-        {
-          "name": "iou_scores",
-          "shape": 6,
-          "type": "FLOAT",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-sam3dobjects",
-        "ver": "9600a3d870edad02f9b97286037dae3f121e49ed",
-        "Node name for S&R": "SAM3D_ScenePoseOptimize",
-        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
-      },
-      "widgets_values": [
-        "manual_icp_render",
-        "pose_only"
-      ]
-    },
-    {
       "id": 98,
       "type": "PreviewImage",
       "pos": [
@@ -489,7 +438,7 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 259
+          "link": 262
         }
       ],
       "outputs": [],
@@ -572,15 +521,66 @@
       "widgets_values": []
     },
     {
-      "id": 97,
+      "id": 82,
+      "type": "SAM3D_ScenePoseOptimize",
+      "pos": [
+        20.222196054090702,
+        -323.72947172175003
+      ],
+      "size": [
+        294.7310546875,
+        102
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "widget": {
+            "name": "output_folder"
+          },
+          "link": 256
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "links": [
+            246,
+            261
+          ]
+        },
+        {
+          "name": "iou_scores",
+          "shape": 6,
+          "type": "FLOAT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-sam3dobjects",
+        "ver": "9600a3d870edad02f9b97286037dae3f121e49ed",
+        "Node name for S&R": "SAM3D_ScenePoseOptimize",
+        "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
+      },
+      "widgets_values": [
+        "manual_icp_render",
+        "pose_only"
+      ]
+    },
+    {
+      "id": 100,
       "type": "SAM3D_ProjectionOverlay",
       "pos": [
-        341.4958487779211,
-        -333.44358298706413
+        333.8325908653237,
+        -322.78142963838377
       ],
       "size": [
         275.241796875,
-        106
+        130
       ],
       "flags": {},
       "order": 9,
@@ -592,7 +592,7 @@
           "widget": {
             "name": "pose_opt_folder"
           },
-          "link": 258
+          "link": 261
         }
       ],
       "outputs": [
@@ -600,17 +600,18 @@
           "name": "overlay_image",
           "type": "IMAGE",
           "links": [
-            259
+            262
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
-        "ver": "53e5a445e9c862c54301e60b6611e46b18d033cf",
+        "ver": "2c45f3f849641bb14b3b6825247b36eb7c850014",
         "Node name for S&R": "SAM3D_ProjectionOverlay"
       },
       "widgets_values": [
         "",
+        "mask_colors",
         2,
         0.6
       ]
@@ -738,26 +739,26 @@
       "STRING"
     ],
     [
-      258,
-      82,
-      0,
-      97,
-      0,
-      "STRING"
-    ],
-    [
-      259,
-      97,
-      0,
-      98,
-      0,
-      "IMAGE"
-    ],
-    [
       260,
       77,
       0,
       99,
+      0,
+      "IMAGE"
+    ],
+    [
+      261,
+      82,
+      0,
+      100,
+      0,
+      "STRING"
+    ],
+    [
+      262,
+      100,
+      0,
+      98,
       0,
       "IMAGE"
     ]
@@ -766,13 +767,13 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.5131581182307068,
+      "scale": 0.3072466480391616,
       "offset": [
-        1902.767065734676,
-        757.6790449373839
+        1642.8498851864463,
+        593.5432390872147
       ]
     },
-    "frontendVersion": "1.36.13",
+    "frontendVersion": "1.36.14",
     "workflowRendererVersion": "LG"
   },
   "version": 0.4
