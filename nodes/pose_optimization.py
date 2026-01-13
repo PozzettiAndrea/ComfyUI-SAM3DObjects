@@ -3,7 +3,7 @@
 import os
 from typing import Any, Dict
 
-from comfyui_isolation import isolated
+from comfy_env import isolated
 
 
 @isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
