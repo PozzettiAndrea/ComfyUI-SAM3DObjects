@@ -4,7 +4,7 @@ import os
 import json
 from typing import Any
 
-from comfyui_isolation import isolated
+from comfy_env import isolated
 
 
 @isolated(env="sam3dobjects", import_paths=[".", "../vendor"])

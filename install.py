@@ -151,10 +151,10 @@ def ensure_vcredist():
 # Main Installation
 # =============================================================================
 
-def ensure_comfyui_isolation():
+def ensure_comfy_env():
     """Install comfyui-isolation package if not already installed."""
     try:
-        import comfyui_isolation
+        import comfy_env
         return True
     except ImportError:
         print("[SAM3DObjects] Installing comfyui-isolation package...")
@@ -177,18 +177,18 @@ def main():
         print("[SAM3DObjects] Some features may not work. Continuing anyway...")
 
     # Ensure comfyui-isolation is installed
-    if not ensure_comfyui_isolation():
+    if not ensure_comfy_env():
         print("[SAM3DObjects] Cannot continue without comfyui-isolation package.")
         return 1
 
-    from comfyui_isolation import IsolatedEnvManager, discover_env_config
+    from comfy_env import IsolatedEnvManager, discover_env_config
 
     node_root = Path(__file__).parent.absolute()
 
-    # Load environment config from comfyui_isolation_reqs.toml
+    # Load environment config from comfy_env_reqs.toml
     env_config = discover_env_config(node_root)
     if env_config is None:
-        print("[SAM3DObjects] ERROR: Could not find comfyui_isolation_reqs.toml")
+        print("[SAM3DObjects] ERROR: Could not find comfy_env_reqs.toml")
         return 1
 
     print(f"[SAM3DObjects] Loaded config: {env_config.name}")
