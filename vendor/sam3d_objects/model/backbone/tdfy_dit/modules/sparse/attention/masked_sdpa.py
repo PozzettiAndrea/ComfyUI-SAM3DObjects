@@ -37,14 +37,14 @@ def masked_sdpa(q, k, v, q_seqlen, kv_seqlen):
         q_seqlen, kv_seqlen, device=q.device, dtype=q.dtype
     )
 
-    # PyTorch’s scaled_dot_product_attention expects a mask broadcastable to
+    # PyTorch's scaled_dot_product_attention expects a mask broadcastable to
     # [batch_size, n_heads, q_len, kv_len]. For a single batch, single head:
     attn_mask_4d = attn_mask_2d.unsqueeze(0).unsqueeze(0)
     q = q.permute(0, 2, 1, 3)  # [N, H, L, C]
     k = k.permute(0, 2, 1, 3)  # [N, H, L, C]
     v = v.permute(0, 2, 1, 3)  # [N, H, L, C]
 
-    # Now call PyTorch 2.0’s built-in SDPA
+    # Now call PyTorch 2.0's built-in SDPA
     # By default, it will automatically apply the "1/sqrt(dim)" scaling internally.
     out = F.scaled_dot_product_attention(
         query=q,
