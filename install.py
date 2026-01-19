@@ -6,7 +6,7 @@ This script sets up an isolated Python virtual environment with all dependencies
 required for SAM 3D Objects. The environment is completely isolated from
 ComfyUI's main environment, preventing any dependency conflicts.
 
-Uses comfyui-isolation package for environment management.
+Uses comfy-env package for environment management.
 """
 
 import sys
@@ -152,20 +152,20 @@ def ensure_vcredist():
 # =============================================================================
 
 def ensure_comfy_env():
-    """Install comfyui-isolation package if not already installed."""
+    """Install comfy-env package if not already installed."""
     try:
         import comfy_env
         return True
     except ImportError:
-        print("[SAM3DObjects] Installing comfyui-isolation package...")
+        print("[SAM3DObjects] Installing comfy-env package...")
         try:
             subprocess.check_call([
                 sys.executable, "-m", "pip", "install",
-                "git+https://github.com/PozzettiAndrea/comfyui-isolation"
+                "comfy-env"
             ])
             return True
         except subprocess.CalledProcessError as e:
-            print(f"[SAM3DObjects] Failed to install comfyui-isolation: {e}")
+            print(f"[SAM3DObjects] Failed to install comfy-env: {e}")
             return False
 
 
@@ -176,9 +176,9 @@ def main():
         print("[SAM3DObjects] WARNING: VC++ Redistributable installation failed.")
         print("[SAM3DObjects] Some features may not work. Continuing anyway...")
 
-    # Ensure comfyui-isolation is installed
+    # Ensure comfy-env is installed
     if not ensure_comfy_env():
-        print("[SAM3DObjects] Cannot continue without comfyui-isolation package.")
+        print("[SAM3DObjects] Cannot continue without comfy-env package.")
         return 1
 
     from comfy_env import IsolatedEnvManager, discover_env_config
