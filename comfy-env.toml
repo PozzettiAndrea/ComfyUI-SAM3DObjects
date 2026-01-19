@@ -1,91 +1,84 @@
-# SAM3D Objects - Isolated Environment Configuration
-#
-# This file defines the isolated Python environment for SAM3D inference.
-# The comfy-env library auto-discovers and loads this file.
+# SAM3D Objects - Environment Configuration
+# Run: comfy-env install
 
-[env]
-name = "sam3dobjects"
+# ═══════════════════════════════════════════════════════════════════════════════
+# ISOLATED ENVIRONMENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[sam3dobjects]
 python = "3.10"
-cuda = "auto"  # 12.8 for Blackwell, 12.4 for others
-pytorch_version = "auto"  # 2.8.0 for cu128, 2.4.1 for cu124
+cuda_version = "auto"      # 12.8 for Blackwell, 12.4 for others
+pytorch_version = "auto"   # 2.8.0 for cu128, 2.4.1 for cu124
 
-[worker]
-package = "worker"  # worker/__main__.py
+    [sam3dobjects.cuda]
+    # CUDA extensions - resolved automatically by comfy-env
+    pytorch3d = "*"
+    gsplat = "*"
+    nvdiffrast = "*"
+    spconv = "*"
 
+    [sam3dobjects.packages]
+    requirements = [
+        # PyTorch ecosystem
+        "fvcore",
+        "iopath",
+        "torchsde",
 
-[packages]
-# Variables: {cuda_version}, {cuda_short}, {pytorch_version}
-requirements = [
-    # PyTorch + specialized 3D packages (from custom wheel indexes)
-    "torch=={pytorch_version}",
-    "pytorch3d==0.7.8+5043d15pt{pytorch_version}cu{cuda_short}",
-    "gsplat==1.5.3+cu{cuda_short}",
-    "nvdiffrast==0.4.0+cu{cuda_short}",
+        # Scientific computing
+        "numpy>=1.24.0,<2.0",
+        "scipy>=1.11.0",
 
-    # PyTorch ecosystem
-    "fvcore",
-    "iopath",
-    "torchsde",
+        # ML frameworks
+        "timm>=0.9.16",
+        "transformers",
+        "diffusers",
+        "lightning>=2.0.0",
 
-    # Scientific computing
-    "numpy>=1.24.0,<2.0",
-    "scipy>=1.11.0",
+        # Image processing
+        "scikit-image>=0.23.1",
+        "imageio>=2.36.0",
+        "Pillow>=10.0.0",
 
-    # ML frameworks
-    "timm>=0.9.16",
-    "transformers",
-    "diffusers",
-    "lightning>=2.0.0",
+        # 3D processing
+        "trimesh",
+        "point-cloud-utils>=0.29.5",
+        "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8",
+        "plyfile",
+        "pyrender>=0.1.45",
+        "PyOpenGL>=3.1.0",
 
-    # Image processing
-    "scikit-image>=0.23.1",
-    "imageio>=2.36.0",
-    "Pillow>=10.0.0",
+        # Visualization
+        "matplotlib>=3.9.0",
+        "seaborn>=0.13.0",
+        "plotly>=5.24.0",
 
-    # 3D processing
-    "trimesh",
-    "point-cloud-utils>=0.29.5",
-    "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8",
-    "plyfile",
-    "pyrender>=0.1.45",
-    "PyOpenGL>=3.1.0",
+        # Utilities
+        "hydra-core>=1.3.2",
+        "easydict>=1.13",
+        "loguru>=0.7.2",
+        "huggingface-hub",
+        "python-igraph>=1.0.0",
+        "tqdm>=4.67.0",
+        "optree>=0.11.0",
+        "astor>=0.8.0",
 
-    # Visualization
-    "matplotlib>=3.9.0",
-    "seaborn>=0.13.0",
-    "plotly>=5.24.0",
+        # Pip-only packages
+        "einops-exts>=0.0.4",
+        "roma>=1.5.1",
+        "xatlas>=0.0.9",
+        "pymeshfix>=0.16.0",
+        "fast-simplification>=0.1.0",
 
-    # Utilities
-    "hydra-core>=1.3.2",
-    "easydict>=1.13",
-    "loguru>=0.7.2",
-    "huggingface-hub",
-    "python-igraph>=1.0.0",
-    "tqdm>=4.67.0",
-    "optree>=0.11.0",
-    "astor>=0.8.0",
+        # Build tools
+        "gdown>=5.2.0",
+        "zstandard>=0.22.0",
+        "ninja>=1.10.0",
+        "jaxtyping",
+    ]
 
-    # Pip-only packages
-    "einops-exts>=0.0.4",
-    "roma>=1.5.1",
-    "xatlas>=0.0.9",
-    "pymeshfix>=0.16.0",
-    "fast-simplification>=0.1.0",
+# ═══════════════════════════════════════════════════════════════════════════════
+# NODE DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════════
+# Other ComfyUI custom nodes required by workflows
 
-    # CUDA packages
-    "spconv-cu124>=2.3.8",
-
-    # Build tools
-    "gdown>=5.2.0",
-    "zstandard>=0.22.0",
-    "ninja>=1.10.0",
-    "jaxtyping",
-]
-
-
-[sources]
-wheel_sources = []
-index_urls = [
-    "https://pozzettiandrea.github.io/sam3dobjects-wheels/",
-    "https://miropsota.github.io/torch_packages_builder",
-]
+[node_reqs]
