@@ -181,20 +181,28 @@ def main():
         print("[SAM3DObjects] Cannot continue without comfy-env package.")
         return 1
 
-    from comfy_env import IsolatedEnvManager, discover_env_config
+    from comfy_env import IsolatedEnvManager, discover_config
 
     node_root = Path(__file__).parent.absolute()
 
-    # Load environment config from comfy_env_reqs.toml
-    env_config = discover_env_config(node_root)
-    if env_config is None:
-        print("[SAM3DObjects] ERROR: Could not find comfy_env_reqs.toml")
+    # Load environment config from comfy-env.toml (v2 schema)
+    config = discover_config(node_root)
+    if config is None:
+        print("[SAM3DObjects] ERROR: Could not find comfy-env.toml")
         return 1
+
+    # Get the sam3dobjects isolated environment
+    if "sam3dobjects" not in config.envs:
+        print("[SAM3DObjects] ERROR: No 'sam3dobjects' environment defined in config")
+        return 1
+
+    env_config = config.envs["sam3dobjects"]
 
     print(f"[SAM3DObjects] Loaded config: {env_config.name}")
     print(f"[SAM3DObjects]   CUDA: {env_config.cuda}")
     print(f"[SAM3DObjects]   PyTorch: {env_config.pytorch_version}")
     print(f"[SAM3DObjects]   Requirements: {len(env_config.requirements)} packages")
+    print(f"[SAM3DObjects]   CUDA packages: {len(env_config.no_deps_requirements)} packages")
 
     # Create environment manager
     def log(msg):
