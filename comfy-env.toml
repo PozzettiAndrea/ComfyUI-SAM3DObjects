@@ -74,6 +74,11 @@ pytorch_version = "auto"   # 2.8.0 for cu128, 2.4.1 for cu124
         "zstandard>=0.22.0",
         "ninja>=1.10.0",
         "jaxtyping",
+
+        # spconv runtime dependencies
+        "pccm>=0.4.16",
+        "ccimport>=0.4.4",
+        "cumm",
     ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -82,3 +87,5 @@ pytorch_version = "auto"   # 2.8.0 for cu128, 2.4.1 for cu124
 # Other ComfyUI custom nodes required by workflows
 
 [node_reqs]
+ComfyUI-Multiband = "PozzettiAndrea/ComfyUI-Multiband"
+ComfyUI-GeometryPack = "PozzettiAndrea/ComfyUI-GeometryPack"
