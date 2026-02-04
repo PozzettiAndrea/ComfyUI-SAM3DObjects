@@ -130,6 +130,7 @@ def _load_decoder(config_path: str, decoder_type: str):
         device="cpu",
         freeze=True,
         eval=True,
+        state_dict_key=None,  # Decoder checkpoints have weights at root level
         state_dict_fn=remove_prefix_state_dict_fn("module."),
     )
 

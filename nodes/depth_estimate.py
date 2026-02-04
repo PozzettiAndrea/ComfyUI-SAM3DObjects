@@ -51,7 +51,7 @@ class SAM3D_DepthEstimate:
         All imports happen inside the method body.
 
         Args:
-            depth_model: SAM3DModelConfig with config_path, depth_backend, etc.
+            depth_model: SAM3DModelConfig with config_path, etc.
             image: Input image tensor [B, H, W, C]
 
         Returns:
@@ -75,8 +75,7 @@ class SAM3D_DepthEstimate:
             sys.path.insert(0, _VENDOR_PATH)
 
         start_time = time.time()
-        depth_backend = depth_model.get("depth_backend", "moge2")
-        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_backend}...")
+        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with MoGe...")
 
         # Convert ComfyUI tensor to PIL Image
         # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
@@ -86,16 +85,15 @@ class SAM3D_DepthEstimate:
             image_np = (image.cpu().numpy() * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_np)
 
-        # Load MoGe depth model using the wrapper class (handles infer() + pointmaps key)
+        # Load MoGe depth model from ComfyUI models folder (v1 - SAM-3D was trained on this)
         from sam3d_objects.pipeline.depth_models.moge import MoGe
+        from moge.model.v1 import MoGeModel
+        import folder_paths
 
-        print(f"[SAM3DObjects] Loading MoGe model ({depth_backend})...")
-        if depth_backend == "moge2":
-            from moge.model.v2 import MoGeModel
-            raw_model = MoGeModel.from_pretrained("Ruicheng/moge-2-vitl")
-        else:
-            from moge.model.v1 import MoGeModel
-            raw_model = MoGeModel.from_pretrained("Ruicheng/moge-vitl")
+        # Load from ComfyUI/models/sam3d/sam-3d-objects/moge-vitl/model.pt
+        moge_path = Path(folder_paths.models_dir) / "sam3d" / "sam-3d-objects" / "moge-vitl" / "model.pt"
+        print(f"[SAM3DObjects] Loading MoGe model from {moge_path}...")
+        raw_model = MoGeModel.from_pretrained(str(moge_path))
 
         model = MoGe(raw_model, device="cuda")  # Wrapper handles .cuda().eval()
 

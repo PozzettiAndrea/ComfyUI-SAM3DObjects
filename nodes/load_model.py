@@ -17,7 +17,7 @@ OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mes
 
 # Map outputs to required checkpoint files
 REQUIRED_FILES = {
-    "depth_model": [],  # Depth uses separate moge2 model from HuggingFace
+    "depth_model": [],  # Depth uses MoGe v1 (Ruicheng/moge-vitl) from HuggingFace
     "generator": [
         "ss_generator.ckpt",
         "ss_generator.yaml",
@@ -73,12 +73,6 @@ class LoadSAM3DModel:
                     "tooltip": "Keep models on GPU between stages for faster inference"
                 }),
             },
-            "optional": {
-                "depth_backend": (["moge2", "moge"], {
-                    "default": "moge2",
-                    "tooltip": "Depth model: moge2 (newer, metric scale) or moge (original)"
-                }),
-            },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
                 "prompt": "PROMPT",
@@ -101,7 +95,6 @@ class LoadSAM3DModel:
         self,
         compile: bool,
         use_gpu_cache: bool,
-        depth_backend: str = "moge2",
         unique_id: str = None,
         prompt: dict = None,
     ):
@@ -119,12 +112,18 @@ class LoadSAM3DModel:
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
+        # Download models to ComfyUI/models/sam3d/ (subprocesses may have SSL issues)
+        if "generator" in used_outputs or not used_outputs:
+            self._ensure_dinov2_downloaded()
+
+        if "depth_model" in used_outputs or not used_outputs:
+            self._ensure_moge_downloaded()
+
         print(f"[SAM3DObjects] Model loaded successfully")
 
         # Return simple config dict
         model = {
             "config_path": config_path,
-            "depth_backend": depth_backend,
             "compile": compile,
             "use_gpu_cache": use_gpu_cache,
         }
@@ -217,3 +216,88 @@ class LoadSAM3DModel:
             )
 
         print(f"[SAM3DObjects] Download complete")
+
+    @classmethod
+    def _ensure_dinov2_downloaded(cls):
+        """Download DINOv2 repo and weights to ComfyUI models folder.
+
+        Downloads both the code repo and the pretrained weights.
+        This avoids SSL issues in isolated subprocesses.
+        """
+        import subprocess
+
+        models_dir = get_sam3d_models_path()
+        dinov2_dir = models_dir / "sam-3d-objects" / "dinov2"
+        weights_file = dinov2_dir / "dinov2_vitl14_reg4_pretrain.pth"
+
+        # Download repo if not present
+        if not (dinov2_dir / "hubconf.py").exists():
+            print(f"[SAM3DObjects] Downloading DINOv2 repo to {dinov2_dir}...")
+            try:
+                dinov2_dir.mkdir(parents=True, exist_ok=True)
+                result = subprocess.run(
+                    ["git", "clone", "--depth", "1", "https://github.com/facebookresearch/dinov2.git", str(dinov2_dir)],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    raise RuntimeError(f"git clone failed: {result.stderr}")
+                print(f"[SAM3DObjects] DINOv2 repo downloaded")
+            except Exception as e:
+                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 repo: {e}")
+                return
+        else:
+            print(f"[SAM3DObjects] DINOv2 repo already present")
+
+        # Download weights if not present (use wget to avoid SSL issues in isolated subprocess)
+        if not weights_file.exists():
+            print(f"[SAM3DObjects] Downloading DINOv2 weights...")
+            try:
+                weights_url = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth"
+                # Use wget/curl to bypass Python SSL certificate issues in isolated subprocess
+                result = subprocess.run(
+                    ["wget", "-q", "-O", str(weights_file), weights_url],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    # Try curl as fallback
+                    result = subprocess.run(
+                        ["curl", "-sL", "-o", str(weights_file), weights_url],
+                        capture_output=True,
+                        text=True,
+                    )
+                    if result.returncode != 0:
+                        raise RuntimeError(f"wget/curl failed: {result.stderr}")
+                print(f"[SAM3DObjects] DINOv2 weights downloaded")
+            except Exception as e:
+                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 weights: {e}")
+        else:
+            print(f"[SAM3DObjects] DINOv2 weights already present")
+
+    @classmethod
+    def _ensure_moge_downloaded(cls):
+        """Download MoGe to ComfyUI models folder.
+
+        SAM-3D was trained on MoGe v1 (Ruicheng/moge-vitl), so we use that.
+        """
+        from huggingface_hub import snapshot_download
+
+        models_dir = get_sam3d_models_path()
+        moge_dir = models_dir / "sam-3d-objects" / "moge-vitl"
+
+        # Check if already downloaded
+        if (moge_dir / "model.pt").exists():
+            print(f"[SAM3DObjects] MoGe already downloaded")
+            return
+
+        print(f"[SAM3DObjects] Downloading MoGe to {moge_dir}...")
+        try:
+            snapshot_download(
+                "Ruicheng/moge-vitl",
+                local_dir=str(moge_dir),
+                local_dir_use_symlinks=False,
+            )
+            print(f"[SAM3DObjects] MoGe downloaded successfully")
+        except Exception as e:
+            print(f"[SAM3DObjects] Warning: Failed to download MoGe: {e}")
