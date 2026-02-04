@@ -5,10 +5,6 @@ import json
 import shutil
 from typing import Any
 
-from comfy_env import isolated
-
-
-@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3DSceneGenerate:
     """
     Scene Generation - Batch process multiple masks to 3D objects.

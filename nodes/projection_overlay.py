@@ -5,10 +5,6 @@ import re
 import time
 from typing import Tuple
 
-from comfy_env import isolated
-
-
-@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3D_ProjectionOverlay:
     """
     Projection Overlay - Visualize pose-optimized meshes projected onto the original image.
