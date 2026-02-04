@@ -1,24 +1,8 @@
 [project]
-name = "comfyui-sam3dobjects"
+name = "ComfyUI-SAM3DObjects"
 description = "ComfyUI wrapper for SAM3DObjects: extract 3D meshes/gaussians from pictures. This node is a very first draft, putting it out there in the hope people help me with the development. I hate shipping broken code but I have some hope at least some linux people will manage to use it."
 version = "0.1.0"
 license = {file = "LICENSE"}
-requires-python = ">=3.10"
-
-dynamic = ["dependencies"]
-
-[project.urls]
-Repository = "https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects"
-Documentation = "https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects#readme"
-"Bug Tracker" = "https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects/issues"
-
-# ComfyUI Registry configuration
-[build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
 
 [tool.comfy]
 PublisherId = "pznodes"
