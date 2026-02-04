@@ -58,18 +58,25 @@ class SAM3D_DepthEstimate:
             Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
         """
         # These imports happen in the isolated subprocess
+        import gc
+        import sys
         import time
         import torch
         import numpy as np
         from pathlib import Path
         from PIL import Image
         import folder_paths
+        from pytorch3d.renderer import look_at_view_transform
+        from pytorch3d.transforms import Transform3d
 
-        from utils.stages import run_depth_only
-        from utils.lazy_manager import get_model_manager
+        # Add vendor/ to sys.path for consistent imports
+        _VENDOR_PATH = str(Path(__file__).parent / "vendor")
+        if _VENDOR_PATH not in sys.path:
+            sys.path.insert(0, _VENDOR_PATH)
 
         start_time = time.time()
-        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_model.depth_backend}...")
+        depth_backend = depth_model.get("depth_backend", "moge2")
+        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with {depth_backend}...")
 
         # Convert ComfyUI tensor to PIL Image
         # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
@@ -79,22 +86,64 @@ class SAM3D_DepthEstimate:
             image_np = (image.cpu().numpy() * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_np)
 
-        # Get model manager and run depth estimation
-        model_manager = get_model_manager(depth_model.config_path, compile=depth_model.compile)
+        # Load MoGe depth model using the wrapper class (handles infer() + pointmaps key)
+        from sam3d_objects.pipeline.depth_models.moge import MoGe
 
-        result = run_depth_only(
-            model_manager,
-            image_pil,
-            unload_after=True,
-            depth_backend=depth_model.depth_backend,
+        print(f"[SAM3DObjects] Loading MoGe model ({depth_backend})...")
+        if depth_backend == "moge2":
+            from moge.model.v2 import MoGeModel
+            raw_model = MoGeModel.from_pretrained("Ruicheng/moge-2-vitl")
+        else:
+            from moge.model.v1 import MoGeModel
+            raw_model = MoGeModel.from_pretrained("Ruicheng/moge-vitl")
+
+        model = MoGe(raw_model, device="cuda")  # Wrapper handles .cuda().eval()
+
+        # Prepare image tensor
+        loaded_image = image_np.astype(np.float32) / 255.0
+        loaded_image = torch.from_numpy(loaded_image).permute(2, 0, 1).contiguous()[:3]  # CHW, RGB
+
+        # Run depth model
+        with torch.no_grad():
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                output = model(loaded_image)
+
+        pointmaps = output["pointmaps"]
+
+        # Apply camera convention transform (R3 -> PyTorch3D camera space)
+        device = pointmaps.device
+        r3_to_p3d_R, r3_to_p3d_T = look_at_view_transform(
+            eye=np.array([[0, 0, -1]]),
+            at=np.array([[0, 0, 0]]),
+            up=np.array([[0, -1, 0]]),
+            device=device,
         )
+        camera_transform = Transform3d().rotate(r3_to_p3d_R).to(device)
+        points_tensor = camera_transform.transform_points(pointmaps)
 
-        # Decode the base64-encoded results
-        import base64
-        import pickle
+        intrinsics = output.get("intrinsics", None)
 
-        pointmap_np = pickle.loads(base64.b64decode(result["pointmap"]))
-        intrinsics_np = pickle.loads(base64.b64decode(result["intrinsics"])) if result.get("intrinsics") else None
+        # Convert to CHW then HWC for output
+        points_tensor = points_tensor.permute(2, 0, 1)
+
+        # Infer intrinsics if not provided
+        if intrinsics is None:
+            from sam3d_objects.pipeline.utils.pointmap import infer_intrinsics_from_pointmap
+            intrinsics_result = infer_intrinsics_from_pointmap(
+                points_tensor.permute(1, 2, 0), device=device
+            )
+            intrinsics = intrinsics_result["intrinsics"]
+
+        # Convert to numpy
+        pointmap_np = points_tensor.permute(1, 2, 0).cpu().numpy()  # HWC
+        intrinsics_np = intrinsics.cpu().numpy() if intrinsics is not None else None
+
+        # Unload depth model
+        del model
+        del raw_model
+        gc.collect()
+        torch.cuda.empty_cache()
+        print(f"[SAM3DObjects] Depth model unloaded")
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()

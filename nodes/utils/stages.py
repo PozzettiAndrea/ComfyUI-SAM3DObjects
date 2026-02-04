@@ -1,41 +1,211 @@
 """
-Pipeline stages for SAM3D inference with lazy loading.
+Pipeline stages for SAM3D inference.
 
 This module contains all pipeline stages:
-- Depth estimation (MoGe)
 - Stage 1: Sparse structure generation
 - Stage 2: SLAT generation
 - Stage 3: Gaussian/Mesh decoding
 - Texture baking
+
+Each function loads its own models directly - no shared state.
 """
 
+import gc
 import sys
 import base64
 import pickle
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+# Add vendor/ to sys.path BEFORE any sam3d_objects imports
+# This ensures all imports resolve through the same path
+_VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
+if _VENDOR_PATH not in sys.path:
+    sys.path.insert(0, _VENDOR_PATH)
+
+# Pre-import spconv and modules that use it BEFORE hydra runs
+# This prevents double-import crashes (pybind11 can only init once)
+import spconv  # noqa: E402
+import sam3d_objects.model.backbone.tdfy_dit.modules.sparse  # noqa: E402
+import sam3d_objects.model.backbone.tdfy_dit.models  # noqa: E402
+
 import numpy as np
 import torch
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
 
 
+# =============================================================================
+# Config / Model Loading Helpers
+# =============================================================================
+
+def _load_config(config_path: str):
+    """Load pipeline.yaml and return config + checkpoint_dir."""
+    from omegaconf import OmegaConf
+    config = OmegaConf.load(config_path)
+    checkpoint_dir = Path(config_path).parent
+    return config, checkpoint_dir
+
+
+def _get_dtype(config):
+    """Get torch dtype from config."""
+    dtype_str = getattr(config, 'dtype', 'float16')
+    if dtype_str == 'bfloat16':
+        return torch.bfloat16
+    elif dtype_str == 'float16':
+        return torch.float16
+    return torch.float32
+
+
+def _load_generator(config_path: str, generator_type: str):
+    """
+    Load a generator model (ss_generator or slat_generator).
+
+    Args:
+        config_path: Path to pipeline.yaml
+        generator_type: 'ss' or 'slat'
+
+    Returns:
+        Loaded generator model on GPU
+    """
+    from omegaconf import OmegaConf
+    from hydra.utils import instantiate
+    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+
+    config, checkpoint_dir = _load_config(config_path)
+
+    gen_config_path = checkpoint_dir / config[f"{generator_type}_generator_config_path"]
+    gen_ckpt_path = checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"]
+
+    gen_config = OmegaConf.load(gen_config_path)
+    model_config = gen_config["module"]["generator"]["backbone"]
+
+    model = instantiate(model_config)
+    model = load_model_from_checkpoint(
+        model,
+        str(gen_ckpt_path),
+        strict=False,
+        device="cpu",
+        freeze=True,
+        eval=True,
+        state_dict_key="state_dict",
+        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
+    )
+
+    model = model.cuda().to(_get_dtype(config))
+    return model
+
+
+def _load_decoder(config_path: str, decoder_type: str):
+    """
+    Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh).
+
+    Args:
+        config_path: Path to pipeline.yaml
+        decoder_type: 'ss', 'slat_decoder_gs', 'slat_decoder_mesh'
+
+    Returns:
+        Loaded decoder model on GPU
+    """
+    from omegaconf import OmegaConf
+    from hydra.utils import instantiate
+    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
+
+    config, checkpoint_dir = _load_config(config_path)
+
+    if decoder_type == 'ss':
+        dec_config_path = checkpoint_dir / config.ss_decoder_config_path
+        dec_ckpt_path = checkpoint_dir / config.ss_decoder_ckpt_path
+    else:
+        dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
+        dec_ckpt_path = checkpoint_dir / config[f"{decoder_type}_ckpt_path"]
+
+    dec_config = OmegaConf.load(dec_config_path)
+
+    model = instantiate(dec_config)
+    model = load_model_from_checkpoint(
+        model,
+        str(dec_ckpt_path),
+        strict=False,
+        device="cpu",
+        freeze=True,
+        eval=True,
+        state_dict_fn=remove_prefix_state_dict_fn("module."),
+    )
+
+    model = model.cuda()
+    return model
+
+
+def _load_condition_embedder(config_path: str, embedder_type: str):
+    """
+    Load a condition embedder (ss or slat).
+
+    Args:
+        config_path: Path to pipeline.yaml
+        embedder_type: 'ss' or 'slat'
+
+    Returns:
+        Loaded embedder on GPU
+    """
+    from omegaconf import OmegaConf
+    from hydra.utils import instantiate
+    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+
+    config, checkpoint_dir = _load_config(config_path)
+
+    gen_config_path = checkpoint_dir / config[f"{embedder_type}_generator_config_path"]
+    gen_ckpt_path = checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"]
+
+    gen_config = OmegaConf.load(gen_config_path)
+    embedder_config = gen_config.module.condition_embedder.backbone
+
+    embedder = instantiate(embedder_config)
+    embedder = load_model_from_checkpoint(
+        embedder,
+        str(gen_ckpt_path),
+        strict=False,
+        device="cpu",
+        freeze=True,
+        eval=True,
+        state_dict_key="state_dict",
+        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
+    )
+
+    embedder = embedder.cuda().to(_get_dtype(config))
+    return embedder
+
+
+def _get_preprocessor(config_path: str, preprocessor_type: str):
+    """Get preprocessor from config."""
+    from hydra.utils import instantiate
+
+    config, _ = _load_config(config_path)
+    preprocessor_config = config.get(f'{preprocessor_type}_preprocessor')
+
+    if preprocessor_config:
+        return instantiate(preprocessor_config)
+    else:
+        from sam3d_objects.pipeline import preprocess_utils
+        return preprocess_utils.get_default_preprocessor()
+
+
+def _unload(*models):
+    """Delete models and free VRAM."""
+    for m in models:
+        if m is not None:
+            del m
+    gc.collect()
+    torch.cuda.empty_cache()
+
+
+# =============================================================================
+# Pose Transformation Helpers
+# =============================================================================
+
 def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
     """
     Apply pose transformation (rotation, translation, scale) to a Gaussian object.
-
-    Transforms the Gaussian's internal tensors (positions, rotations, scales)
-    to world coordinates using the pose computed during Stage 1.
-
-    Based on get_gs_transformed() from original SAM3D code.
-
-    Args:
-        gaussian: Gaussian object from decoder
-        pose_data: Dict with 'rotation' (wxyz quaternion), 'translation', 'scale'
-        device: Device for tensor operations
-
-    Returns:
-        Transformed Gaussian object (modified in place)
     """
     from pytorch3d.transforms import quaternion_to_matrix, matrix_to_quaternion, quaternion_multiply, Transform3d
 
@@ -62,17 +232,17 @@ def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
 
     # Ensure correct shapes
     if rotation.dim() == 1:
-        rotation = rotation.unsqueeze(0)  # (1, 4)
+        rotation = rotation.unsqueeze(0)
     if translation.dim() == 1:
-        translation = translation.unsqueeze(0)  # (1, 3)
+        translation = translation.unsqueeze(0)
     if scale.dim() == 0:
-        scale = scale.unsqueeze(0).expand(3)  # (3,)
+        scale = scale.unsqueeze(0).expand(3)
     elif scale.dim() == 1 and scale.shape[0] == 1:
         scale = scale.expand(3)
     scale_val = scale.mean()
 
     # Build Transform3d: scale -> rotate -> translate
-    rot_matrix = quaternion_to_matrix(rotation)  # (1, 3, 3)
+    rot_matrix = quaternion_to_matrix(rotation)
     tfm = (
         Transform3d(device=device)
         .scale(scale_val.expand(3)[None])
@@ -81,45 +251,32 @@ def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
     )
 
     # 1. Transform positions
-    positions = gaussian.get_xyz  # (N, 3)
+    positions = gaussian.get_xyz
     positions_world = tfm.transform_points(positions.unsqueeze(0)).squeeze(0)
     gaussian.from_xyz(positions_world)
 
     # 2. Apply scale to Gaussian scaling (in log-space)
-    # _scaling stores log(scale), so we add log(scale_factor)
     log_scale = torch.log(scale_val).expand_as(gaussian._scaling)
     gaussian._scaling = gaussian._scaling + log_scale
 
-    # 3. Compose rotations: new_rotation = pose_rotation * current_rotation
-    # Extract pure rotation from transform matrix (remove scale)
-    tfm_matrix = tfm.get_matrix()[0]  # (4, 4)
+    # 3. Compose rotations
+    tfm_matrix = tfm.get_matrix()[0]
     rotation_matrix = tfm_matrix[:3, :3]
     scale_factors = rotation_matrix.norm(dim=0)
     pure_rotation_matrix = rotation_matrix / scale_factors[None, :]
-    pose_rotation_quat = matrix_to_quaternion(pure_rotation_matrix[None])  # (1, 4)
+    pose_rotation_quat = matrix_to_quaternion(pure_rotation_matrix[None])
 
-    current_rotations = gaussian.get_rotation  # (N, 4)
+    current_rotations = gaussian.get_rotation
     new_rotations = quaternion_multiply(pose_rotation_quat, current_rotations)
     gaussian.from_rotation(new_rotations)
 
     print(f"[Worker] Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}", file=sys.stderr)
-
     return gaussian
 
 
 def _apply_pose_to_vertices(vertices: np.ndarray, pose_data: Dict) -> np.ndarray:
     """
     Apply pose transformation (rotation, translation, scale) to vertices.
-
-    Transforms normalized mesh vertices to world coordinates using the pose
-    computed during Stage 1 (sparse structure generation).
-
-    Args:
-        vertices: Mesh vertices in normalized Z-up space, shape (N, 3)
-        pose_data: Dict with 'rotation' (wxyz quaternion), 'translation', 'scale'
-
-    Returns:
-        Transformed vertices in world coordinates (still Z-up)
     """
     from pytorch3d.transforms import quaternion_to_matrix
 
@@ -152,14 +309,16 @@ def _apply_pose_to_vertices(vertices: np.ndarray, pose_data: Dict) -> np.ndarray
     scale_val = scale.mean() if scale.ndim > 0 else float(scale)
 
     # Apply transformation: (R * S * v) + t
-    # vertices @ rot_matrix.T applies rotation (equivalent to R @ v for each vertex)
     vertices_transformed = (vertices @ (rot_matrix.T * scale_val)) + translation
-
     return vertices_transformed
 
 
-def run_stage1_lazy(
-    lazy_manager,
+# =============================================================================
+# Stage 1: Sparse Structure Generation
+# =============================================================================
+
+def run_stage1(
+    config_path: str,
     image,
     mask,
     pointmap,
@@ -167,36 +326,24 @@ def run_stage1_lazy(
     inference_steps: int = 25,
     cfg_strength: float = 7.0,
     cfg_strength_pm: float = 0.0,
-    unload_after: bool = True,
     output_dir: str = None
 ) -> Dict[str, Any]:
     """
-    Run Stage 1 (sparse structure generation) using lazy loading.
+    Run Stage 1 (sparse structure generation).
 
     Models loaded: ss_generator (~6.7 GB), ss_condition_embedder (~1.2 GB), ss_decoder (~150 MB)
     Peak VRAM: ~8-9 GB
-
-    Args:
-        lazy_manager: LazyModelManager instance
-        image: PIL Image
-        mask: PIL Image (mask)
-        pointmap: numpy array (H, W, 3) from depth estimation
-        seed: Random seed
-        inference_steps: Number of inference steps
-        cfg_strength: CFG strength
-        cfg_strength_pm: Pointmap guidance strength (how much depth influences structure)
-        unload_after: Whether to unload models after use
-        output_dir: Directory to save output files
-
-    Returns:
-        Dict with stage1 output file paths and pose data
     """
     from sam3d_objects.pipeline.inference_utils import (
         downsample_sparse_structure,
         prune_sparse_structure,
+        get_pose_decoder,
     )
 
-    print(f"[Worker] Running Stage 1 (sparse gen) with lazy loading", file=sys.stderr)
+    print(f"[Worker] Running Stage 1 (sparse gen)", file=sys.stderr)
+
+    config, checkpoint_dir = _load_config(config_path)
+    dtype = _get_dtype(config)
 
     # Set seed
     torch.manual_seed(seed)
@@ -210,7 +357,6 @@ def run_stage1_lazy(
         image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
     elif image_np.shape[-1] == 3:
         if mask_np is not None:
-            # Use mask as alpha channel - this enables proper bbox cropping
             if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
                 alpha = (mask_np * 255).astype(np.uint8)
             else:
@@ -223,7 +369,7 @@ def run_stage1_lazy(
 
     # Get preprocessor and preprocess image
     print(f"[Worker] Preprocessing image...", file=sys.stderr)
-    ss_preprocessor = lazy_manager.get_preprocessor('ss')
+    ss_preprocessor = _get_preprocessor(config_path, 'ss')
 
     # Convert pointmap to tensor for preprocessing
     if isinstance(pointmap, np.ndarray):
@@ -234,27 +380,21 @@ def run_stage1_lazy(
     # Preprocess
     ss_input_dict = preprocess_image_lazy(image_np, mask_np, ss_preprocessor, pointmap=pointmap_tensor)
 
-    # Save debug image showing what was actually passed to the model
+    # Save debug image
     debug_image_path = None
     if output_dir:
         try:
             from PIL import Image as PILImage
-            # Get the CROPPED preprocessed image (CHW format) - this is what DINO sees
-            # "image" = cropped + transformed to 518x518 (what model receives)
-            # "rgb_image" = full image just resized (NOT what model receives)
-            debug_img = ss_input_dict.get("image")  # Must be "image", not "rgb_image"
+            debug_img = ss_input_dict.get("image")
             if debug_img is not None:
-                # Remove batch dim if present, convert CHW->HWC
                 if debug_img.dim() == 4:
                     debug_img = debug_img[0]
                 debug_img_np = debug_img.cpu().permute(1, 2, 0).numpy()
-                print(f"[Worker] Debug image (what DINO sees): {debug_img_np.shape}", file=sys.stderr)
-                # Denormalize and convert to uint8
                 debug_img_np = (debug_img_np * 255).clip(0, 255).astype(np.uint8)
                 debug_pil = PILImage.fromarray(debug_img_np)
                 debug_image_path = str(Path(output_dir) / "debug_preprocessed_stage1.png")
                 debug_pil.save(debug_image_path)
-                print(f"[Worker] Saved debug image: {debug_image_path} (size: {debug_pil.size})", file=sys.stderr)
+                print(f"[Worker] Saved debug image: {debug_image_path}", file=sys.stderr)
         except Exception as e:
             print(f"[Worker] Failed to save debug image: {e}", file=sys.stderr)
 
@@ -262,10 +402,11 @@ def run_stage1_lazy(
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # Load models (cached after first object)
-    ss_generator = lazy_manager.load_model('ss_generator')
-    ss_decoder = lazy_manager.load_model('ss_decoder')
-    ss_embedder = lazy_manager.load_condition_embedder('ss')
+    # Load models
+    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
+    ss_generator = _load_generator(config_path, 'ss')
+    ss_decoder = _load_decoder(config_path, 'ss')
+    ss_embedder = _load_condition_embedder(config_path, 'ss')
 
     # Configure generator
     ss_generator.no_shortcut = True
@@ -275,12 +416,10 @@ def run_stage1_lazy(
 
     print(f"[Worker] Running sparse structure generation...", file=sys.stderr)
 
-    dtype = lazy_manager._get_dtype()
-    downsample_ss_dist = lazy_manager.get_config_value('downsample_ss_dist', 0)
+    downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
 
     with torch.no_grad():
         with torch.autocast(device_type="cuda", dtype=dtype):
-            # Get condition embeddings
             image_tensor = ss_input_dict["image"]
             bs = image_tensor.shape[0]
 
@@ -296,7 +435,7 @@ def run_stage1_lazy(
                 latent_shape_dict = (bs,) + (4096, 8)
 
             # Get condition input mapping from config
-            ss_condition_input_mapping = lazy_manager.get_config_value('ss_condition_input_mapping', ['image'])
+            ss_condition_input_mapping = getattr(config, 'ss_condition_input_mapping', ['image'])
 
             # Get condition embeddings
             condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
@@ -351,7 +490,8 @@ def run_stage1_lazy(
 
     # Apply pose decoding
     print(f"[Worker] Decoding pose...", file=sys.stderr)
-    pose_decoder = lazy_manager.get_pose_decoder()
+    pose_decoder_name = getattr(config, 'pose_decoder_name', 'default')
+    pose_decoder = get_pose_decoder(pose_decoder_name)
     pose_result = pose_decoder(
         return_dict,
         scene_scale=pointmap_scale,
@@ -365,16 +505,13 @@ def run_stage1_lazy(
     # Add voxel coordinates
     return_dict["voxel"] = return_dict["coords"][:, 1:] / 64 - 0.5
 
-    # Unload models if requested
-    if unload_after:
-        print(f"[Worker] Unloading Stage 1 models...", file=sys.stderr)
-        lazy_manager.unload_model('ss_generator')
-        lazy_manager.unload_model('ss_decoder')
-        lazy_manager.unload_condition_embedder('ss')
+    # Unload models
+    print(f"[Worker] Unloading Stage 1 models...", file=sys.stderr)
+    _unload(ss_generator, ss_decoder, ss_embedder)
 
     print(f"[Worker] Stage 1 complete", file=sys.stderr)
 
-    # Save sparse structure directly (don't use save_output_to_disk which has detection logic)
+    # Save sparse structure
     if output_dir:
         save_dir = Path(output_dir)
     else:
@@ -418,40 +555,32 @@ def run_stage1_lazy(
     }
 
 
-def run_stage2_lazy(
-    lazy_manager,
+# =============================================================================
+# Stage 2: SLAT Generation
+# =============================================================================
+
+def run_stage2(
+    config_path: str,
     image,
     mask,
     stage1_output: Dict,
     seed: int = 42,
     inference_steps: int = 25,
     cfg_strength: float = 5.0,
-    unload_after: bool = True,
     output_dir: str = None
 ) -> Dict[str, Any]:
     """
-    Run Stage 2 (SLAT generation) using lazy loading.
+    Run Stage 2 (SLAT generation).
 
     Models loaded: slat_generator (~4.9 GB), slat_condition_embedder (~1.2 GB)
     Peak VRAM: ~6-7 GB
-
-    Args:
-        lazy_manager: LazyModelManager instance
-        image: PIL Image
-        mask: PIL Image (mask)
-        stage1_output: Dict with coords from Stage 1
-        seed: Random seed
-        inference_steps: Number of inference steps
-        cfg_strength: CFG strength
-        unload_after: Whether to unload models after use
-        output_dir: Directory to save output files
-
-    Returns:
-        Dict with SLAT file path
     """
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    print(f"[Worker] Running Stage 2 (SLAT gen) with lazy loading", file=sys.stderr)
+    print(f"[Worker] Running Stage 2 (SLAT gen)", file=sys.stderr)
+
+    config, checkpoint_dir = _load_config(config_path)
+    dtype = _get_dtype(config)
 
     # Set seed
     torch.manual_seed(seed)
@@ -460,12 +589,11 @@ def run_stage2_lazy(
     image_np = np.array(image)
     mask_np = np.array(mask) if mask is not None else None
 
-    # Ensure RGBA format - USE MASK AS ALPHA CHANNEL for proper cropping
+    # Ensure RGBA format
     if image_np.ndim == 2:
         image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
     elif image_np.shape[-1] == 3:
         if mask_np is not None:
-            # Use mask as alpha channel - this enables proper bbox cropping
             if mask_np.dtype == np.float32 or mask_np.dtype == np.float64:
                 alpha = (mask_np * 255).astype(np.uint8)
             else:
@@ -478,10 +606,10 @@ def run_stage2_lazy(
 
     # Get preprocessor and preprocess image
     print(f"[Worker] Preprocessing image for SLAT...", file=sys.stderr)
-    slat_preprocessor = lazy_manager.get_preprocessor('slat')
+    slat_preprocessor = _get_preprocessor(config_path, 'slat')
     slat_input_dict = preprocess_image_lazy(image_np, mask_np, slat_preprocessor)
 
-    # Get coords from stage1_output (may be base64-encoded from lazy stage1)
+    # Get coords from stage1_output
     coords = stage1_output.get("coords")
     if isinstance(coords, str):
         coords = pickle.loads(base64.b64decode(coords))
@@ -489,9 +617,10 @@ def run_stage2_lazy(
         coords = torch.from_numpy(coords).int()
     coords = coords.cuda()
 
-    # Load models (cached after first object)
-    slat_generator = lazy_manager.load_model('slat_generator')
-    slat_embedder = lazy_manager.load_condition_embedder('slat')
+    # Load models
+    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
+    slat_generator = _load_generator(config_path, 'slat')
+    slat_embedder = _load_condition_embedder(config_path, 'slat')
 
     # Configure generator
     slat_generator.no_shortcut = True
@@ -500,10 +629,9 @@ def run_stage2_lazy(
 
     print(f"[Worker] Running SLAT generation...", file=sys.stderr)
 
-    dtype = lazy_manager._get_dtype()
-    slat_mean, slat_std = lazy_manager.get_slat_stats()
-    slat_mean = slat_mean.cuda()
-    slat_std = slat_std.cuda()
+    # Get SLAT normalization stats
+    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8)).cuda()
+    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8)).cuda()
 
     with torch.no_grad():
         with torch.autocast(device_type="cuda", dtype=dtype):
@@ -512,7 +640,7 @@ def run_stage2_lazy(
             latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
 
             # Get condition input mapping from config
-            slat_condition_input_mapping = lazy_manager.get_config_value('slat_condition_input_mapping', ['image'])
+            slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
 
             # Get condition embeddings
             condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
@@ -545,11 +673,9 @@ def run_stage2_lazy(
             # Apply mean/std normalization
             slat = slat * slat_std + slat_mean
 
-    # Unload models if requested
-    if unload_after:
-        print(f"[Worker] Unloading Stage 2 models...", file=sys.stderr)
-        lazy_manager.unload_model('slat_generator')
-        lazy_manager.unload_condition_embedder('slat')
+    # Unload models
+    print(f"[Worker] Unloading Stage 2 models...", file=sys.stderr)
+    _unload(slat_generator, slat_embedder)
 
     print(f"[Worker] Stage 2 complete", file=sys.stderr)
 
@@ -559,11 +685,10 @@ def run_stage2_lazy(
         "stage1_data": stage1_output,
     }
 
-    # Save output to disk (consistent with non-lazy path)
+    # Save output to disk
     if output_dir:
         saved_output = save_output_to_disk(output_dict, Path(output_dir))
     else:
-        # Fallback to temp directory
         import tempfile
         temp_dir = Path(tempfile.mkdtemp())
         slat_path = temp_dir / "slat.pt"
@@ -581,11 +706,14 @@ def run_stage2_lazy(
     }
 
 
-def run_decode_lazy(
-    lazy_manager,
+# =============================================================================
+# Stage 3: Gaussian/Mesh Decoding
+# =============================================================================
+
+def run_decode(
+    config_path: str,
     slat_data: Dict,
     decode_format: str = "gaussian",
-    unload_after: bool = True,
     output_dir: str = None,
     with_postprocess: bool = False,
     simplify: float = 0.95,
@@ -593,27 +721,15 @@ def run_decode_lazy(
     world_coordinates: bool = False,
 ) -> Dict[str, Any]:
     """
-    Run Stage 3 (Gaussian or Mesh decoding) using lazy loading.
+    Run Stage 3 (Gaussian or Mesh decoding).
 
     Models loaded: slat_decoder_gs (~170 MB) or slat_decoder_mesh (~364 MB)
     Peak VRAM: ~1-2 GB
-
-    Args:
-        lazy_manager: LazyModelManager instance
-        slat_data: Dict with slat from Stage 2 (may be base64-encoded)
-        decode_format: "gaussian" or "mesh"
-        unload_after: Whether to unload models after use
-        output_dir: Directory to save output files
-        with_postprocess: Apply mesh simplification + hole filling (mesh only)
-        simplify: Mesh simplification ratio (only used when with_postprocess=True)
-
-    Returns:
-        Dict with file paths (ply_path for gaussian, glb_path for mesh)
     """
     import trimesh
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    print(f"[Worker] Running decode ({decode_format}) with lazy loading", file=sys.stderr)
+    print(f"[Worker] Running decode ({decode_format})", file=sys.stderr)
 
     # Extract slat - handle different input formats
     slat = None
@@ -657,18 +773,17 @@ def run_decode_lazy(
     else:
         decoder_name = 'slat_decoder_mesh'
 
-    # Load decoder (cached after first object)
-    decoder = lazy_manager.load_model(decoder_name)
+    print(f"[Worker] Loading decoder ({decoder_name})...", file=sys.stderr)
+    decoder = _load_decoder(config_path, decoder_name)
 
     print(f"[Worker] Running decoder...", file=sys.stderr)
 
     with torch.no_grad():
         output = decoder(slat)
 
-    # Unload decoder if requested
-    if unload_after:
-        print(f"[Worker] Unloading decoder...", file=sys.stderr)
-        lazy_manager.unload_model(decoder_name)
+    # Unload decoder
+    print(f"[Worker] Unloading decoder...", file=sys.stderr)
+    _unload(decoder)
 
     print(f"[Worker] Decode complete", file=sys.stderr)
 
@@ -685,8 +800,7 @@ def run_decode_lazy(
     if decode_format == "gaussian":
         gaussian = output[0] if isinstance(output, (list, tuple)) else output
 
-        # Apply pose transformation to get world coordinates (still in Z-up space)
-        # Pose data comes from Stage 1 (sparse structure generation)
+        # Apply pose transformation
         pose_data = None
         if isinstance(slat_data, dict) and "stage1_data" in slat_data:
             stage1 = slat_data["stage1_data"]
@@ -701,12 +815,10 @@ def run_decode_lazy(
             print(f"[Worker] Applying pose transformation to Gaussian...", file=sys.stderr)
             gaussian = _apply_pose_to_gaussian(gaussian, pose_data)
         elif not world_coordinates:
-            print(f"[Worker] Skipping pose (world_coordinates=False, mesh centered at origin)", file=sys.stderr)
+            print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
 
         ply_path = save_dir / "gaussian.ply"
         try:
-            # Compute transform matrix if Y-up is requested
-            # This is applied AFTER pose (pose is in Z-up space, then convert to Y-up for output)
             transform = None
             if up_axis == "Y-up (standard)":
                 transform = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
@@ -731,12 +843,10 @@ def run_decode_lazy(
             faces = mesh.faces.cpu().numpy() if hasattr(mesh.faces, 'cpu') else mesh.faces
 
             # Get vertex colors BEFORE postprocessing
-            # vertex_attrs has 6 channels: RGB (0:3) + normals (3:6), we only need RGB
             original_vertex_colors = None
             if hasattr(mesh, 'vertex_attrs') and mesh.vertex_attrs is not None:
                 if isinstance(mesh.vertex_attrs, torch.Tensor):
                     attrs = mesh.vertex_attrs.cpu().numpy()
-                    # Extract only RGB (first 3 channels), ignore normals (last 3)
                     original_vertex_colors = attrs[:, :3] if attrs.shape[-1] >= 3 else attrs
                 elif isinstance(mesh.vertex_attrs, dict) and 'color' in mesh.vertex_attrs:
                     vc = mesh.vertex_attrs['color']
@@ -748,7 +858,6 @@ def run_decode_lazy(
             # Apply postprocessing if requested
             if with_postprocess:
                 print(f"[Worker] Applying mesh postprocessing (simplify={simplify})...", file=sys.stderr)
-                print(f"[Worker] Note: Vertex colors will be interpolated after simplification", file=sys.stderr)
                 from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
                 vertices, faces = postprocess_mesh(
                     vertices,
@@ -772,8 +881,7 @@ def run_decode_lazy(
                     vc = np.concatenate([vc, alpha], axis=-1)
                 vertex_colors = vc
 
-            # Apply pose transformation to get world coordinates (still in Z-up space)
-            # Pose data comes from Stage 1 (sparse structure generation)
+            # Apply pose transformation
             pose_data = None
             if isinstance(slat_data, dict) and "stage1_data" in slat_data:
                 stage1 = slat_data["stage1_data"]
@@ -788,11 +896,11 @@ def run_decode_lazy(
                 print(f"[Worker] Applying pose transformation to world coordinates...", file=sys.stderr)
                 vertices = _apply_pose_to_vertices(vertices, pose_data)
             elif not world_coordinates:
-                print(f"[Worker] Skipping pose (world_coordinates=False, mesh centered at origin)", file=sys.stderr)
+                print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
             else:
                 print(f"[Worker] No pose data found, mesh will be in normalized coordinates", file=sys.stderr)
 
-            # Transform from Z-up to Y-up if requested (GLB standard)
+            # Transform from Z-up to Y-up if requested
             if up_axis == "Y-up (standard)":
                 z_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
                 vertices = vertices @ z_to_y_up
@@ -834,107 +942,6 @@ def run_decode_lazy(
 
 
 # =============================================================================
-# Depth Estimation
-# =============================================================================
-
-def run_depth_only(model_manager, image, unload_after: bool = True, depth_backend: str = "moge2") -> Dict[str, Any]:
-    """
-    Run depth estimation (loads only MoGe model, ~2GB VRAM).
-
-    Args:
-        model_manager: ModelManager instance
-        image: PIL Image
-        unload_after: Whether to unload depth model after use (frees VRAM)
-        depth_backend: "moge2" (newer, metric scale) or "moge" (original)
-
-    Returns:
-        Dict with pointmap, intrinsics, depth
-    """
-    from pytorch3d.renderer import look_at_view_transform
-    from pytorch3d.transforms import Transform3d
-
-    print(f"[Worker] Running depth estimation (backend={depth_backend})", file=sys.stderr)
-
-    # Load only the depth model
-    depth_model = model_manager.load_depth_model(backend=depth_backend)
-
-    # Convert image to tensor format expected by depth model
-    image_np = np.array(image)
-    if image_np.ndim == 2:
-        image_np = np.stack([image_np] * 3 + [np.full_like(image_np, 255)], axis=-1)
-    elif image_np.shape[-1] == 3:
-        alpha = np.full((image_np.shape[0], image_np.shape[1], 1), 255, dtype=np.uint8)
-        image_np = np.concatenate([image_np, alpha], axis=-1)
-
-    print(f"[Worker] Image shape: {image_np.shape}", file=sys.stderr)
-
-    # Convert to float and tensor
-    loaded_image = image_np.astype(np.float32) / 255.0
-    loaded_image = torch.from_numpy(loaded_image)
-    loaded_image = loaded_image.permute(2, 0, 1).contiguous()[:3]  # CHW, RGB only
-
-    # Run depth model
-    with torch.no_grad():
-        with torch.autocast(device_type="cuda", dtype=model_manager._get_dtype()):
-            output = depth_model(loaded_image)
-
-    pointmaps = output["pointmaps"]
-
-    # Apply camera convention transform (R3 -> PyTorch3D camera space)
-    device = pointmaps.device
-    r3_to_p3d_R, r3_to_p3d_T = look_at_view_transform(
-        eye=np.array([[0, 0, -1]]),
-        at=np.array([[0, 0, 0]]),
-        up=np.array([[0, -1, 0]]),
-        device=device,
-    )
-    camera_transform = Transform3d().rotate(r3_to_p3d_R).to(device)
-    points_tensor = camera_transform.transform_points(pointmaps)
-
-    intrinsics = output.get("intrinsics", None)
-
-    # Convert to CHW format
-    points_tensor = points_tensor.permute(2, 0, 1)
-
-    # Infer intrinsics if not provided
-    if intrinsics is None:
-        from sam3d_objects.pipeline.utils.pointmap import infer_intrinsics_from_pointmap
-        intrinsics_result = infer_intrinsics_from_pointmap(
-            points_tensor.permute(1, 2, 0), device=device
-        )
-        intrinsics = intrinsics_result["intrinsics"]
-
-    print(f"[Worker] Pointmap computed: shape={points_tensor.shape}", file=sys.stderr)
-    print(f"[Worker] Intrinsics available: {intrinsics is not None}", file=sys.stderr)
-
-    # Unload depth model if requested (frees ~2GB VRAM)
-    if unload_after:
-        model_manager.unload_depth_model()
-        print(f"[Worker] Depth model unloaded", file=sys.stderr)
-
-    # Serialize for transfer
-    # Transpose from CHW (3, H, W) to HWC (H, W, 3)
-    pointmap_hwc = points_tensor.permute(1, 2, 0).contiguous()
-    pointmap_np = pointmap_hwc.cpu().numpy()
-    print(f"[Worker] Pointmap transposed to HWC: {pointmap_np.shape}", file=sys.stderr)
-
-    if intrinsics is not None and hasattr(intrinsics, 'cpu'):
-        intrinsics_np = intrinsics.cpu().numpy()
-    else:
-        intrinsics_np = intrinsics
-
-    pointmap_b64 = base64.b64encode(pickle.dumps(pointmap_np)).decode('utf-8')
-    intrinsics_b64 = base64.b64encode(pickle.dumps(intrinsics_np)).decode('utf-8') if intrinsics_np is not None else None
-
-    return {
-        "status": "success",
-        "depth_only": True,
-        "pointmap": pointmap_b64,
-        "intrinsics": intrinsics_b64,
-    }
-
-
-# =============================================================================
 # Texture Baking
 # =============================================================================
 
@@ -943,17 +950,10 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     Run texture baking directly without loading any models.
 
     Loads Gaussian from PLY and Mesh from GLB, then calls to_glb() for texture baking.
-    No embedders, generators, or other models are needed.
-
-    Args:
-        request: Dict with ply_path, glb_path, output_dir, texture_mode, etc.
-
-    Returns:
-        Dict with status and output (glb_path)
     """
     import trimesh
 
-    print("[Worker] Running direct texture baking (no models)", file=sys.stderr)
+    print("[Worker] Running direct texture baking", file=sys.stderr)
 
     # Extract parameters
     ply_path = request["ply_path"]
@@ -967,7 +967,6 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     print(f"[Worker] GLB: {glb_path}", file=sys.stderr)
     print(f"[Worker] Mode: {texture_mode}, Size: {texture_size}", file=sys.stderr)
 
-    # Import required modules
     from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
     from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
     from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
@@ -988,7 +987,6 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     print(f"[Worker] Loading Mesh from GLB...", file=sys.stderr)
     loaded = trimesh.load(glb_path)
 
-    # Handle Scene vs Mesh
     if isinstance(loaded, trimesh.Scene):
         meshes = [g for g in loaded.geometry.values() if isinstance(g, trimesh.Trimesh)]
         if not meshes:
@@ -999,12 +997,11 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
 
     print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
 
-    # Convert to MeshExtractResult format expected by to_glb
+    # Convert to MeshExtractResult format
     vertices_np = np.array(trimesh_mesh.vertices)
     vertices_tensor = torch.tensor(vertices_np, dtype=torch.float32, device=device)
     faces_tensor = torch.tensor(np.array(trimesh_mesh.faces), dtype=torch.long, device=device)
 
-    # Get vertex colors if available
     if trimesh_mesh.visual is not None and hasattr(trimesh_mesh.visual, 'vertex_colors') and trimesh_mesh.visual.vertex_colors is not None:
         vertex_colors = np.array(trimesh_mesh.visual.vertex_colors)[:, :3] / 255.0
     else:
@@ -1019,7 +1016,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
         res=64
     )
 
-    # Run texture baking using to_glb
+    # Run texture baking
     print(f"[Worker] Running texture baking...", file=sys.stderr)
     result_mesh = to_glb(
         gaussian,
@@ -1034,7 +1031,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
         texture_mode=texture_mode,
     )
 
-    # Undo to_glb's Z→Y transform to preserve input orientation
+    # Undo to_glb's Z→Y transform
     undo_transform = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
     result_mesh.vertices = result_mesh.vertices @ undo_transform
 
@@ -1046,9 +1043,8 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
 
     print(f"[Worker] Saved textured GLB: {output_path}", file=sys.stderr)
 
-    # Cleanup GPU memory
-    del gaussian, mesh
-    torch.cuda.empty_cache()
+    # Cleanup
+    _unload(gaussian, mesh)
 
     return {
         "status": "success",
@@ -1056,3 +1052,24 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
             "glb_path": str(output_path),
         }
     }
+
+
+# =============================================================================
+# Legacy Aliases (for backward compatibility during transition)
+# =============================================================================
+
+def run_stage1_lazy(lazy_manager, *args, **kwargs):
+    """Legacy wrapper - extracts config_path from lazy_manager."""
+    return run_stage1(lazy_manager.config_path, *args, **kwargs)
+
+def run_stage2_lazy(lazy_manager, *args, **kwargs):
+    """Legacy wrapper - extracts config_path from lazy_manager."""
+    return run_stage2(lazy_manager.config_path, *args, **kwargs)
+
+def run_decode_lazy(lazy_manager, *args, **kwargs):
+    """Legacy wrapper - extracts config_path from lazy_manager."""
+    return run_decode(lazy_manager.config_path, *args, **kwargs)
+
+def run_depth_only(model_manager, image, unload_after=True, depth_backend="moge2"):
+    """Legacy wrapper - depth is now handled directly in the node."""
+    raise NotImplementedError("run_depth_only is deprecated. Load MoGe directly in the node.")

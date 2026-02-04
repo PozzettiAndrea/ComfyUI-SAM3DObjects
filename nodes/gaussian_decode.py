@@ -65,8 +65,7 @@ class SAM3DGaussianDecode:
         import torch
         from pathlib import Path
 
-        from utils.lazy_manager import get_model_manager
-        from utils.stages import run_decode_lazy
+        from utils.stages import run_decode
         from utils.helpers import ensure_decoder_files
 
         print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
@@ -75,7 +74,7 @@ class SAM3DGaussianDecode:
         output_dir = os.path.dirname(slat)
 
         # Get config path from model
-        config_path = slat_decoder_gs.config_path
+        config_path = slat_decoder_gs["config_path"]
 
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "gaussian")
@@ -83,15 +82,11 @@ class SAM3DGaussianDecode:
         # Load SLAT
         slat_data = torch.load(slat, weights_only=False)
 
-        # Get lazy manager
-        lazy_manager = get_model_manager(config_path, compile=slat_decoder_gs.compile)
-
         # Run Gaussian decoding
-        result = run_decode_lazy(
-            lazy_manager,
+        result = run_decode(
+            config_path,
             slat_data=slat_data,
             decode_format="gaussian",
-            unload_after=True,
             output_dir=output_dir,
             up_axis=up_axis,
             world_coordinates=world_coordinates,

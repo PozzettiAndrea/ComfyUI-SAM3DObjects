@@ -193,9 +193,9 @@ class SAM3DSceneGenerate:
         print(f"[SAM3DObjects] SceneGenerate: Saved image to {image_path}")
 
         # Get config paths from models
-        generator_config = generator.config_path
-        mesh_config = slat_decoder_mesh.config_path
-        gs_config = slat_decoder_gs.config_path if add_textures else None
+        generator_config = generator["config_path"]
+        mesh_config = slat_decoder_mesh["config_path"]
+        gs_config = slat_decoder_gs["config_path"] if add_textures else None
 
         # Serialize image to base64
         img_buffer = io.BytesIO()
