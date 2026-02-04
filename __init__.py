@@ -34,7 +34,7 @@ if 'PYTEST_CURRENT_TEST' not in os.environ:
 
     # Add vendor directory to path FIRST, before any other imports
     # This ensures our cv2 shim is found before the pip cv2 (which may have DLL issues on Windows)
-    _VENDOR_PATH = str(_node_dir / "vendor")
+    _VENDOR_PATH = str(_node_dir / "nodes" / "vendor")
     if _VENDOR_PATH not in sys.path:
         sys.path.insert(0, _VENDOR_PATH)
 
