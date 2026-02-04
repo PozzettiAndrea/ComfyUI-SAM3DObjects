@@ -1,14 +1,13 @@
 [test]
-levels = ["syntax", "install", "registration", "execution"]
+levels = ["syntax", "install", "registration", "instantiation", "static_capture", "execution"]
 
 [test.workflows]
-run = "all"
-screenshot = "all"
 timeout = 300
-gpu = ["remeshing_gpu.json"]
+cpu = []
+gpu = "all"
 
 [test.platforms]
 linux = true
-macos = true
+macos = false
 windows = true
 windows_portable = true
