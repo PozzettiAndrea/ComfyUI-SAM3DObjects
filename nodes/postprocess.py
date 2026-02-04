@@ -3,10 +3,6 @@
 import os
 from typing import Any
 
-from comfy_env import isolated
-
-
-@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3DTextureBake:
     """
     Texture Baking.
