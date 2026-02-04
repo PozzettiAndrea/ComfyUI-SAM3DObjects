@@ -3,9 +3,23 @@ import torch
 from typing import Optional, Dict, Any
 import warnings
 import time
+import os
+from pathlib import Path
 from torchvision.transforms import Normalize
 import torch.nn.functional as F
 from loguru import logger
+
+
+def _get_comfyui_dinov2_path() -> Optional[Path]:
+    """Check if DINOv2 is downloaded to ComfyUI models folder."""
+    try:
+        import folder_paths
+        dinov2_path = Path(folder_paths.models_dir) / "sam3d" / "sam-3d-objects" / "dinov2"
+        if (dinov2_path / "hubconf.py").exists():
+            return dinov2_path
+    except ImportError:
+        pass
+    return None
 
 
 class Dino(torch.nn.Module):
@@ -29,7 +43,15 @@ class Dino(torch.nn.Module):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            logger.info(f"Loading DINO model: {dino_model} from {repo_or_dir} (source: {source})")
+            # Check for local ComfyUI copy first (avoids network issues in subprocesses)
+            local_path = _get_comfyui_dinov2_path()
+            if local_path is not None:
+                repo_or_dir = str(local_path)
+                source = "local"
+                logger.info(f"Loading DINO model: {dino_model} from local path {local_path}")
+            else:
+                logger.info(f"Loading DINO model: {dino_model} from {repo_or_dir} (source: {source})")
+
             if backbone_kwargs:
                 logger.info(f"DINO backbone kwargs: {backbone_kwargs}")
 
