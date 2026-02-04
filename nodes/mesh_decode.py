@@ -81,8 +81,8 @@ class SAM3DMeshDecode:
         import torch
         from pathlib import Path
 
-        from utils.stages import run_decode
-        from utils.helpers import ensure_decoder_files
+        from .utils.stages import run_decode
+        from .utils.helpers import ensure_decoder_files
 
         print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:

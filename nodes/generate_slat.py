@@ -155,8 +155,8 @@ class SAM3DGenerateSLAT:
         from pathlib import Path
         from PIL import Image
 
-        from utils.stages import run_stage1, run_stage2
-        from utils.helpers import load_pointmap_from_file
+        from .utils.stages import run_stage1, run_stage2
+        from .utils.helpers import load_pointmap_from_file
 
         print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
 

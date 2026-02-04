@@ -84,7 +84,7 @@ class SAM3D_PoseOptimization:
         import torch
         import numpy as np
 
-        from utils.pose_optimization import run_pose_optimization
+        from .utils.pose_optimization import run_pose_optimization
 
         print(f"[SAM3DObjects] PoseOptimization: Starting pose refinement")
 

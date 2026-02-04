@@ -159,7 +159,7 @@ class SAM3DSceneGenerate:
         from pathlib import Path
         from PIL import Image
 
-        from utils.scene_batch import run_scene_generate_batch
+        from .utils.scene_batch import run_scene_generate_batch
 
         # Get batch size from mask tensor [N, H, W]
         if len(masks.shape) == 3:

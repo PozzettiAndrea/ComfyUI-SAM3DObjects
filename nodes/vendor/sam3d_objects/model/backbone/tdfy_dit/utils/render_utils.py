@@ -5,7 +5,9 @@ from tqdm import tqdm
 import utils3d
 from PIL import Image
 
-from ..renderers import OctreeRenderer, GaussianRenderer, MeshRenderer
+from ..renderers.octree_renderer import OctreeRenderer
+from ..renderers.gaussian_render import GaussianRenderer
+from ..renderers.mesh_renderer import MeshRenderer
 from ..representations import Octree, Gaussian, MeshExtractResult
 from ..modules import sparse as sp
 from .random_utils import sphere_hammersley_sequence
