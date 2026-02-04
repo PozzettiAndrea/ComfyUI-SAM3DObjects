@@ -49,6 +49,14 @@ class Dino(torch.nn.Module):
                 repo_or_dir = str(local_path)
                 source = "local"
                 logger.info(f"Loading DINO model: {dino_model} from local path {local_path}")
+
+                # Pass local weights path to avoid network download (SSL issues in isolated envs)
+                # dino_model is like "dinov2_vitl14_reg", weights file is "dinov2_vitl14_reg4_pretrain.pth"
+                weights_filename = dino_model.replace("_reg", "_reg4") + "_pretrain.pth"
+                local_weights = local_path / weights_filename
+                if local_weights.exists():
+                    backbone_kwargs['weights'] = str(local_weights)
+                    logger.info(f"Using local weights: {local_weights}")
             else:
                 logger.info(f"Loading DINO model: {dino_model} from {repo_or_dir} (source: {source})")
 
