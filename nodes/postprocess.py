@@ -89,7 +89,7 @@ class SAM3DTextureBake:
         # These imports happen in the isolated subprocess
         import os
 
-        from utils.stages import run_texture_bake_direct
+        from .utils.stages import run_texture_bake_direct
 
         print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
 

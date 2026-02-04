@@ -15,7 +15,7 @@ from sam3d_objects.pipeline.image_operations import inpaint
 from PIL import Image
 from .random_utils import sphere_hammersley_sequence
 from .render_utils import render_multiview
-from ..renderers import GaussianRenderer
+from ..renderers.gaussian_render import GaussianRenderer
 from ..representations import Strivec, Gaussian, MeshExtractResult
 from loguru import logger
 

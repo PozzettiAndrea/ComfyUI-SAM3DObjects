@@ -134,7 +134,7 @@ class SAM3D_ScenePoseOptimize:
         import trimesh
         from pathlib import Path
 
-        from utils.pose_optimization import run_pose_optimization_batch
+        from .utils.pose_optimization import run_pose_optimization_batch
 
         start_time = time.time()
         print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")

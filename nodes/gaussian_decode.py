@@ -65,8 +65,8 @@ class SAM3DGaussianDecode:
         import torch
         from pathlib import Path
 
-        from utils.stages import run_decode
-        from utils.helpers import ensure_decoder_files
+        from .utils.stages import run_decode
+        from .utils.helpers import ensure_decoder_files
 
         print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
 
