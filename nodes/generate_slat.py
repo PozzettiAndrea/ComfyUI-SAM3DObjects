@@ -4,10 +4,6 @@ import os
 import json
 from typing import Any
 
-from comfy_env import isolated
-
-
-@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3DGenerateSLAT:
     """
     Generate SLAT (Structured Latent).
