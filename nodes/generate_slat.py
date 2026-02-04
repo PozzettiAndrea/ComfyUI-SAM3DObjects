@@ -35,10 +35,10 @@ class SAM3DGenerateSLAT:
             },
             "optional": {
                 "stage1_steps": ("INT", {
-                    "default": 12,
+                    "default": 25,
                     "min": 1,
                     "max": 50,
-                    "tooltip": "Inference steps for Stage 1 (sparse structure). 12 = fast, 25 = quality"
+                    "tooltip": "Inference steps for Stage 1 (sparse structure). 25 = quality (original default)"
                 }),
                 "stage1_cfg": ("FLOAT", {
                     "default": 7.5,
@@ -55,10 +55,10 @@ class SAM3DGenerateSLAT:
                     "tooltip": "Pointmap guidance strength for Stage 1. Higher = more depth influence on structure"
                 }),
                 "stage2_steps": ("INT", {
-                    "default": 12,
+                    "default": 25,
                     "min": 1,
                     "max": 50,
-                    "tooltip": "Inference steps for Stage 2 (SLAT). 12 = fast, 25 = quality"
+                    "tooltip": "Inference steps for Stage 2 (SLAT). 25 = quality (original default)"
                 }),
                 "stage2_cfg": ("FLOAT", {
                     "default": 5.0,
@@ -133,10 +133,10 @@ class SAM3DGenerateSLAT:
         mask,   # torch.Tensor [B, H, W] or [H, W]
         pointmap_path: str,
         seed: int,
-        stage1_steps: int = 12,
+        stage1_steps: int = 25,
         stage1_cfg: float = 7.5,
         stage1_cfg_pm: float = 0.0,
-        stage2_steps: int = 12,
+        stage2_steps: int = 25,
         stage2_cfg: float = 5.0,
         use_distillation: bool = False,
     ):

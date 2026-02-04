@@ -409,11 +409,16 @@ def run_stage1(
     ss_decoder = _load_decoder(config_path, 'ss')
     ss_embedder = _load_condition_embedder(config_path, 'ss')
 
-    # Configure generator
+    # Configure generator (match original override_ss_generator_cfg_config)
     ss_generator.no_shortcut = True
     ss_generator.reverse_fn.strength = cfg_strength
     ss_generator.reverse_fn.strength_pm = cfg_strength_pm
     ss_generator.inference_steps = inference_steps
+    # Critical settings from original that were missing:
+    ss_generator.reverse_fn.interval = getattr(config, 'ss_cfg_interval', [0, 500])
+    ss_generator.rescale_t = getattr(config, 'ss_rescale_t', 3)
+    ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
+    ss_generator.reverse_fn.unconditional_handling = "add_flag"
 
     print(f"[Worker] Running sparse structure generation...", file=sys.stderr)
 
@@ -623,10 +628,15 @@ def run_stage2(
     slat_generator = _load_generator(config_path, 'slat')
     slat_embedder = _load_condition_embedder(config_path, 'slat')
 
-    # Configure generator
+    # Configure generator (match original override_slat_generator_cfg_config)
     slat_generator.no_shortcut = True
-    slat_generator.reverse_fn.strength = cfg_strength
+    # Read cfg_strength from config if available (config may override the default)
+    slat_cfg = getattr(config, 'slat_cfg_strength', cfg_strength)
+    slat_generator.reverse_fn.strength = slat_cfg
     slat_generator.inference_steps = inference_steps
+    # Critical settings from original that were missing:
+    slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
+    slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
 
     print(f"[Worker] Running SLAT generation...", file=sys.stderr)
 
