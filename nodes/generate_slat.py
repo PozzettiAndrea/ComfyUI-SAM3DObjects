@@ -155,8 +155,7 @@ class SAM3DGenerateSLAT:
         from pathlib import Path
         from PIL import Image
 
-        from utils.lazy_manager import get_model_manager
-        from utils.stages import run_stage1_lazy, run_stage2_lazy
+        from utils.stages import run_stage1, run_stage2
         from utils.helpers import load_pointmap_from_file
 
         print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
@@ -171,11 +170,10 @@ class SAM3DGenerateSLAT:
             image_np = (image.cpu().numpy() * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_np)
 
-        # Convert ComfyUI MASK to PIL
-        if mask.dim() == 3:
-            mask_np = mask[0].cpu().numpy()
-        else:
-            mask_np = mask.cpu().numpy()
+        # Convert ComfyUI MASK to PIL (ensure 2D)
+        mask_np = mask.squeeze().cpu().numpy()
+        if mask_np.ndim == 3:
+            mask_np = mask_np[..., 0]  # Take first channel if RGB
         mask_np = (mask_np * 255).astype(np.uint8)
         mask_pil = Image.fromarray(mask_np)
 
@@ -185,10 +183,7 @@ class SAM3DGenerateSLAT:
         print(f"[SAM3DObjects] Pointmap shape: {pointmap.shape}")
 
         # Get config path from generator model
-        config_path = generator.config_path
-
-        # Get lazy manager
-        lazy_manager = get_model_manager(config_path, compile=generator.compile)
+        config_path = generator["config_path"]
 
         # Check Stage 1 cache
         use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
@@ -205,8 +200,8 @@ class SAM3DGenerateSLAT:
                 debug_image_path = cached_debug
         else:
             print(f"[SAM3DObjects] Running Stage 1 (sparse structure)...")
-            result = run_stage1_lazy(
-                lazy_manager,
+            result = run_stage1(
+                config_path,
                 image_pil,
                 mask_pil,
                 pointmap,
@@ -229,8 +224,8 @@ class SAM3DGenerateSLAT:
 
         # Stage 2: SLAT generation
         print(f"[SAM3DObjects] Running Stage 2 (SLAT generation)...")
-        stage2_result = run_stage2_lazy(
-            lazy_manager,
+        stage2_result = run_stage2(
+            config_path,
             image_pil,
             mask_pil,
             stage1_output,

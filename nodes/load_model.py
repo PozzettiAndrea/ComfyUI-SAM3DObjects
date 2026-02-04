@@ -5,11 +5,11 @@ import torch
 from pathlib import Path
 from typing import Any
 
-from .comfy_utils import (
-    _MODEL_CACHE,
-    get_sam3d_models_path,
-    get_device,
-)
+# Support both relative imports (ComfyUI) and absolute imports (isolation)
+try:
+    from .comfy_utils import _MODEL_CACHE, get_sam3d_models_path, get_device
+except ImportError:
+    from comfy_utils import _MODEL_CACHE, get_sam3d_models_path, get_device
 
 
 # HuggingFace repo for SAM3D checkpoints
@@ -177,12 +177,8 @@ class LoadSAM3DModel:
         # Import isolated model wrapper
         try:
             from .isolated_model import IsolatedSAM3DModel
-        except ImportError as e:
-            raise ImportError(
-                f"Failed to import IsolatedSAM3DModel: {e}\n"
-                "Please ensure the isolated environment is set up:\n"
-                "  python install.py"
-            ) from e
+        except ImportError:
+            from isolated_model import IsolatedSAM3DModel
 
         # Create isolated model wrapper
         # This doesn't actually load the model yet - that happens in the subprocess
