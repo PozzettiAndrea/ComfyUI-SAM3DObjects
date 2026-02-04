@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Tuple
 from comfy_env import isolated
 
 
-@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
+@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3D_ScenePoseOptimize:
     """
     Scene Pose Optimization - Apply/refine poses for all objects in a scene folder.

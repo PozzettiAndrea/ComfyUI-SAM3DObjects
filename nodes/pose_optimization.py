@@ -6,7 +6,7 @@ from typing import Any, Dict
 from comfy_env import isolated
 
 
-@isolated(env="sam3dobjects", import_paths=[".", "../vendor"])
+@isolated(env="sam3dobjects", import_paths=[".", "vendor"])
 class SAM3D_PoseOptimization:
     """
     Refine object pose using ICP and render-based optimization.
