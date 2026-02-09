@@ -316,7 +316,7 @@ class SAM3D_ScenePoseOptimize:
                     # Z-up to Y-up conversion matrix (SAM3D decoder outputs Z-up)
                     z_up_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
 
-                    # Apply transformation: Z-up → Y-up, then scale, rotate, translate
+                    # Apply transformation: Z-up -> Y-up, then scale, rotate, translate
                     # Note: PyTorch3D quaternion_to_matrix returns row-vector convention (v @ R)
                     # Do NOT transpose - that would apply inverse rotation
                     vertices = mesh.vertices.copy()
@@ -387,7 +387,7 @@ class SAM3D_ScenePoseOptimize:
                 iou_scores.append(-1.0)
 
         elapsed = time.time() - start_time
-        print(f"\n[SAM3DObjects] ✓ Pose optimization done: {elapsed:.0f}s ({len(object_dirs)} objects)")
+        print(f"\n[SAM3DObjects] OK Pose optimization done: {elapsed:.0f}s ({len(object_dirs)} objects)")
 
         # Save cache metadata for future runs
         self._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)

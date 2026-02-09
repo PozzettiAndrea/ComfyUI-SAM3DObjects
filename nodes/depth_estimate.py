@@ -173,7 +173,7 @@ class SAM3D_DepthEstimate:
         depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
 
         elapsed = time.time() - start_time
-        print(f"[SAM3DObjects] ✓ Depth estimation done: {elapsed:.0f}s")
+        print(f"[SAM3DObjects] OK Depth estimation done: {elapsed:.0f}s")
         return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)
 
     def _get_next_inference_dir(self, base_output_dir: str) -> str:

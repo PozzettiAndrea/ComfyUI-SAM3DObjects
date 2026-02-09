@@ -159,7 +159,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         # Apply transformation to mesh
         # SAM3D decoder outputs Z-up meshes. The GLB files contain Z-up coordinates.
         # layout_post_optimization works in Y-up (pytorch3d convention).
-        # We must convert Z-up → Y-up before applying the refined transform.
+        # We must convert Z-up -> Y-up before applying the refined transform.
         z_up_to_y_up_matrix = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T  # Z-up to Y-up
 
         # Ensure scale is per-axis (3 values)
@@ -175,7 +175,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         # 1. Convert Z-up (SAM3D decoder) to Y-up (pytorch3d convention)
         vertices_y_up = vertices @ z_up_to_y_up_matrix
 
-        # 2. Apply refined transform (correct order: scale → rotate → translate)
+        # 2. Apply refined transform (correct order: scale -> rotate -> translate)
         # This matches the original apply_transform() in layout_post_optimization_utils.py
         vertices_scaled = vertices_y_up * scale_vec  # Per-axis scale
         vertices_rotated = vertices_scaled @ rot_matrix.T  # Rotate
@@ -499,7 +499,7 @@ def _apply_and_save_pose(
     # 1. Convert Z-up to Y-up
     vertices_y_up = vertices @ z_up_to_y_up_matrix
 
-    # 2. Apply transform: scale → rotate → translate
+    # 2. Apply transform: scale -> rotate -> translate
     vertices_scaled = vertices_y_up * scale_vec
     vertices_rotated = vertices_scaled @ rot_matrix.T
     vertices_transformed = vertices_rotated + trans_np
