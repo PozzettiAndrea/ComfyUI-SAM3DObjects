@@ -181,7 +181,7 @@ class SAM3D_ProjectionOverlay:
         img_tensor = torch.from_numpy(overlay).float().unsqueeze(0)
 
         elapsed = time.time() - start_time
-        print(f"[SAM3DObjects] ProjectionOverlay: ✓ Done in {elapsed:.1f}s, output shape {img_tensor.shape}")
+        print(f"[SAM3DObjects] ProjectionOverlay: OK Done in {elapsed:.1f}s, output shape {img_tensor.shape}")
         return (img_tensor,)
 
     def _render_mask_colors(self, loaded_meshes, img_array, K, colors, point_size, alpha):
@@ -276,8 +276,8 @@ class SAM3D_ProjectionOverlay:
                 faces=mesh.faces.copy(),
                 vertex_colors=mesh.visual.vertex_colors if hasattr(mesh.visual, 'vertex_colors') else None,
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down → OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward → OpenGL backward
+            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, material=material)
             scene.add(pyrender_mesh)
@@ -332,8 +332,8 @@ class SAM3D_ProjectionOverlay:
                 faces=mesh.faces.copy(),
                 visual=mesh.visual,  # Preserve textures/vertex colors
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down → OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward → OpenGL backward
+            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, smooth=True)
             scene.add(pyrender_mesh)

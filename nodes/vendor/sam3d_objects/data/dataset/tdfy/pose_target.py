@@ -104,7 +104,7 @@ class InvariantPoseTarget:
 
     Background:
     ---
-    We want to estimate a transformation T: R³ → R³ despite scene scale ambiguity.
+    We want to estimate a transformation T: R^3 -> R^3 despite scene scale ambiguity.
 
     The transformation taking object points to scene points is defined as
         T(x) = s · R(q) · x + t

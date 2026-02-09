@@ -11,7 +11,7 @@ from .point_remapper import PointRemapper
 
 class PointPatchEmbed(nn.Module):
     """
-    Projects (x,y,z) → D
+    Projects (x,y,z) -> D
     Splits into patches (patch_size x patch_size)
     Runs a tiny self-attention block inside each window
     Returns one token per window.

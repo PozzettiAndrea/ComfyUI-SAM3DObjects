@@ -1042,7 +1042,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
         texture_mode=texture_mode,
     )
 
-    # Undo to_glb's Z→Y transform
+    # Undo to_glb's Z->Y transform
     undo_transform = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
     result_mesh.vertices = result_mesh.vertices @ undo_transform
 

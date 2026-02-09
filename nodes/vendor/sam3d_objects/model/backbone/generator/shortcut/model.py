@@ -61,7 +61,7 @@ class ShortCut(FlowMatching):
         batch_size = first_tensor.shape[0]
         device = first_tensor.device
 
-        # Use binary-time schedule: d ∈ {1/2^i for i in range(8)}
+        # Use binary-time schedule: d in {1/2^i for i in range(8)}
         base = [1 / 2**i for i in range(8)]
         
         # Deterministic approach: exactly self_consistency_prob fraction will have d>0
@@ -279,8 +279,8 @@ class ShortCut(FlowMatching):
         if self_consistency_mask.any():
             d_nonzero = d[self_consistency_mask]
             # Sample how many multiples of d to use for each sample
-            # We want t to be k*d where k is a random integer such that t ∈ [0, 1-d]
-            # This ensures t + d ≤ 1
+            # We want t to be k*d where k is a random integer such that t in [0, 1-d]
+            # This ensures t + d <= 1
             max_multiples = torch.floor((1.0 - d_nonzero) / d_nonzero).long()
             # Ensure max_multiples is at least 0 to avoid empty range
             max_multiples = torch.clamp(max_multiples, min=0)
