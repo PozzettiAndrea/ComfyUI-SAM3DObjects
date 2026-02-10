@@ -219,6 +219,7 @@ def _run_phase1_stage1(
     from sam3d_objects.pipeline.inference_utils import (
         downsample_sparse_structure, prune_sparse_structure, get_pose_decoder
     )
+    from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
     dtype = _get_dtype(config)
@@ -245,6 +246,7 @@ def _run_phase1_stage1(
     ss_decoder = instantiate(dec_config)
     ss_decoder = load_model_from_checkpoint(
         ss_decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
+        state_dict_key=None,
         state_dict_fn=remove_prefix_state_dict_fn("module."),
     ).cuda()
 
@@ -348,6 +350,10 @@ def _run_phase1_stage1(
                     tokens = ss_embedder(*condition_args, **condition_kwargs)
                     condition_args = (tokens,)
                     condition_kwargs = {}
+                elif ss_embedder is not None:
+                    tokens = ss_embedder(**condition_kwargs)
+                    condition_args = (tokens,)
+                    condition_kwargs = {}
 
                 return_dict = ss_generator(latent_shape_dict, image_tensor.device, *condition_args, **condition_kwargs)
 
@@ -405,6 +411,7 @@ def _run_phase2_stage2(
     from hydra.utils import instantiate
     from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
     dtype = _get_dtype(config)
@@ -492,6 +499,10 @@ def _run_phase2_stage2(
                     tokens = slat_embedder(*condition_args, **condition_kwargs)
                     condition_args = (tokens,)
                     condition_kwargs = {}
+                elif slat_embedder is not None:
+                    tokens = slat_embedder(**condition_kwargs)
+                    condition_args = (tokens,)
+                    condition_kwargs = {}
 
                 condition_args = condition_args + (coords.cpu().numpy(),)
                 slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
@@ -549,6 +560,7 @@ def _run_phase3_mesh_decode(
     decoder = instantiate(dec_config)
     decoder = load_model_from_checkpoint(
         decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
+        state_dict_key=None,
         state_dict_fn=remove_prefix_state_dict_fn("module."),
     ).cuda()
 
@@ -638,6 +650,7 @@ def _run_phase4_texture(
     decoder = instantiate(dec_config)
     decoder = load_model_from_checkpoint(
         decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
+        state_dict_key=None,
         state_dict_fn=remove_prefix_state_dict_fn("module."),
     ).cuda()
 
