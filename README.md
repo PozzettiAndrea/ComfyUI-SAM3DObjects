@@ -1,6 +1,12 @@
 # ComfyUI-SAM3DObjects
 
-**[View Workflow Gallery](https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/)**
+<div align="center">
+<a href="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/">
+<img src="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/gallery-preview.png" alt="Workflow Test Gallery" width="800">
+</a>
+<br>
+<b><a href="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/">View Live Test Gallery →</a></b>
+</div>
 
 https://github.com/user-attachments/assets/f8580108-8b59-4938-9339-b3ef8b72039f
 
