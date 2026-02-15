@@ -213,6 +213,7 @@ class SAM3DGenerateSLAT:
                 cfg_strength=stage1_cfg,
                 cfg_strength_pm=stage1_cfg_pm,
                 output_dir=output_dir,
+                memory=generator.get("memory", "cpu_offload"),
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
@@ -236,6 +237,7 @@ class SAM3DGenerateSLAT:
             inference_steps=stage2_steps,
             cfg_strength=stage2_cfg,
             output_dir=output_dir,
+            memory=generator.get("memory", "cpu_offload"),
         )
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
         # Note: The saved file contains full dict with stage1_data for pose info
