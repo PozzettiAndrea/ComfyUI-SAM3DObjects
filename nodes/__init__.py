@@ -1,3 +1,22 @@
+# Patch torch.nn.init to skip wasteful random weight initialization.
+# All models load checkpoint weights via load_state_dict() immediately after
+# construction, so the default kaiming/xavier/etc. init is pure overhead.
+# Safe: this file only runs inside the comfy-env isolated subprocess.
+import torch.nn.init as _init
+
+def _noop(tensor, *args, **kwargs):
+    return tensor
+
+for _fn in (
+    "kaiming_uniform_", "kaiming_normal_",
+    "xavier_uniform_", "xavier_normal_",
+    "uniform_", "normal_", "trunc_normal_",
+    "ones_", "zeros_", "constant_",
+    "orthogonal_",
+):
+    if hasattr(_init, _fn):
+        setattr(_init, _fn, _noop)
+
 from .load_model import LoadSAM3DModel
 from .depth_estimate import SAM3D_DepthEstimate
 from .generate_slat import SAM3DGenerateSLAT
