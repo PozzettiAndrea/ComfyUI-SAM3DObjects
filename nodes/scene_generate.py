@@ -159,6 +159,9 @@ class SAM3DSceneGenerate:
         from pathlib import Path
         from PIL import Image
 
+        os.environ["ATTN_BACKEND"] = generator.get("attn_backend", "flash_attn")
+        os.environ["SPARSE_ATTN_BACKEND"] = generator.get("attn_backend", "flash_attn")
+
         from .utils.scene_batch import run_scene_generate_batch
 
         # Get batch size from mask tensor [N, H, W]
@@ -241,6 +244,7 @@ class SAM3DSceneGenerate:
             "add_textures": add_textures,
             "texture_mode": texture_mode,
             "texture_size": texture_size,
+            "attn_backend": generator.get("attn_backend", "flash_attn"),
         }
 
         # Run batch processing - models are loaded once per phase

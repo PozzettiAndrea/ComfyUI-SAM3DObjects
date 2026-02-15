@@ -65,6 +65,9 @@ class SAM3DGaussianDecode:
         import torch
         from pathlib import Path
 
+        os.environ["ATTN_BACKEND"] = slat_decoder_gs.get("attn_backend", "flash_attn")
+        os.environ["SPARSE_ATTN_BACKEND"] = slat_decoder_gs.get("attn_backend", "flash_attn")
+
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
