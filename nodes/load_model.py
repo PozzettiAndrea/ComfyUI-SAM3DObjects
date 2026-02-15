@@ -72,9 +72,9 @@ class LoadSAM3DModel:
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference"
                 }),
-                "use_gpu_cache": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "Keep models on GPU between stages for faster inference"
+                "memory": (["cache_gpu", "cpu_offload", "delete"], {
+                    "default": "cpu_offload",
+                    "tooltip": "Model memory strategy: cache_gpu = keep on GPU between runs, cpu_offload = move to CPU RAM after use, delete = free after use"
                 }),
             },
             "hidden": {
@@ -99,7 +99,7 @@ class LoadSAM3DModel:
         self,
         attn_backend: str,
         compile: bool,
-        use_gpu_cache: bool,
+        memory: str,
         unique_id: str = None,
         prompt: dict = None,
     ):
@@ -130,7 +130,7 @@ class LoadSAM3DModel:
         model = {
             "config_path": config_path,
             "compile": compile,
-            "use_gpu_cache": use_gpu_cache,
+            "memory": memory,
             "attn_backend": attn_backend,
         }
         return (model, model, model, model)

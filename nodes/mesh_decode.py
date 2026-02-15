@@ -113,6 +113,7 @@ class SAM3DMeshDecode:
             simplify=simplify,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
+            memory=slat_decoder_mesh.get("memory", "cpu_offload"),
         )
 
         # Extract GLB path from result

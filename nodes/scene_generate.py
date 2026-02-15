@@ -245,6 +245,7 @@ class SAM3DSceneGenerate:
             "texture_mode": texture_mode,
             "texture_size": texture_size,
             "attn_backend": generator.get("attn_backend", "flash_attn"),
+            "memory": generator.get("memory", "cpu_offload"),
         }
 
         # Run batch processing - models are loaded once per phase
