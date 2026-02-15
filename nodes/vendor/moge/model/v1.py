@@ -231,8 +231,16 @@ class MoGeModel(nn.Module):
         model_config = checkpoint['model_config']
         if model_kwargs is not None:
             model_config.update(model_kwargs)
-        model = cls(**model_config)
-        model.load_state_dict(checkpoint['model'])
+        # Try meta-device init to halve peak VRAM during loading
+        try:
+            with torch.device('meta'):
+                model = cls(**model_config)
+            model.load_state_dict(checkpoint['model'], assign=True)
+            print("[MoGe] Meta-device init succeeded — zero memory allocated for weights")
+        except Exception as e:
+            print(f"[MoGe] Meta-device init failed ({type(e).__name__}: {e}), falling back to standard init")
+            model = cls(**model_config)
+            model.load_state_dict(checkpoint['model'])
         return model
 
     def init_weights(self):
