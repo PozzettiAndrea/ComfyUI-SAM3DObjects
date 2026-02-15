@@ -143,6 +143,22 @@ def load_sharded_checkpoint(path: str, device: Optional[str]):
     return checkpoint
 
 
+def try_instantiate_on_meta(instantiate_fn, config):
+    """Instantiate model on meta device if possible (no real memory allocated).
+
+    Returns (model, use_assign) where use_assign=True means load_state_dict
+    should use assign=True to materialize real tensors.
+    """
+    try:
+        with torch.device('meta'):
+            model = instantiate_fn(config)
+        logger.info("Meta-device init succeeded — zero memory allocated for weights")
+        return model, True
+    except Exception as e:
+        logger.warning(f"Meta-device init failed ({type(e).__name__}: {e}), falling back to standard init")
+        return instantiate_fn(config), False
+
+
 def load_model_from_checkpoint(
     model: Union[pl.LightningModule, torch.nn.Module],
     checkpoint_path: str,
@@ -154,6 +170,7 @@ def load_model_from_checkpoint(
     remove_name: Union[List[str], None] = None,
     state_dict_key: Union[None, str, Iterable[str]] = "state_dict",
     state_dict_fn: Optional[Callable[[Any], Any]] = None,
+    assign: bool = False,
 ):
     logger.info(f"Loading checkpoint from {checkpoint_path}")
     if os.path.isfile(checkpoint_path):
@@ -194,7 +211,7 @@ def load_model_from_checkpoint(
     if state_dict_fn is not None:
         state_dict = state_dict_fn(state_dict)
 
-    model.load_state_dict(state_dict, strict=strict)
+    model.load_state_dict(state_dict, strict=strict, assign=assign)
 
     if device is not None:
         model = model.to(device)

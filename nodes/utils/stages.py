@@ -33,6 +33,7 @@ import numpy as np
 import torch
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
+from . import model_cache
 
 
 # =============================================================================
@@ -68,9 +69,15 @@ def _load_generator(config_path: str, generator_type: str):
     Returns:
         Loaded generator model on GPU
     """
+    cache_key = f"generator:{generator_type}"
+    cached = model_cache.try_load(cache_key)
+    if cached is not None:
+        print(f"[Worker] Using cached {generator_type}_generator", file=sys.stderr)
+        return cached
+
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn, try_instantiate_on_meta
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -80,7 +87,7 @@ def _load_generator(config_path: str, generator_type: str):
     gen_config = OmegaConf.load(gen_config_path)
     model_config = gen_config["module"]["generator"]["backbone"]
 
-    model = instantiate(model_config)
+    model, use_assign = try_instantiate_on_meta(instantiate, model_config)
     model = load_model_from_checkpoint(
         model,
         str(gen_ckpt_path),
@@ -90,6 +97,7 @@ def _load_generator(config_path: str, generator_type: str):
         eval=True,
         state_dict_key="state_dict",
         state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
+        assign=use_assign,
     )
 
     model = model.cuda().to(_get_dtype(config))
@@ -107,9 +115,15 @@ def _load_decoder(config_path: str, decoder_type: str):
     Returns:
         Loaded decoder model on GPU
     """
+    cache_key = f"decoder:{decoder_type}"
+    cached = model_cache.try_load(cache_key)
+    if cached is not None:
+        print(f"[Worker] Using cached {decoder_type}", file=sys.stderr)
+        return cached
+
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
+    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn, try_instantiate_on_meta
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -122,7 +136,7 @@ def _load_decoder(config_path: str, decoder_type: str):
 
     dec_config = OmegaConf.load(dec_config_path)
 
-    model = instantiate(dec_config)
+    model, use_assign = try_instantiate_on_meta(instantiate, dec_config)
     model = load_model_from_checkpoint(
         model,
         str(dec_ckpt_path),
@@ -132,6 +146,7 @@ def _load_decoder(config_path: str, decoder_type: str):
         eval=True,
         state_dict_key=None,  # Decoder checkpoints have weights at root level
         state_dict_fn=remove_prefix_state_dict_fn("module."),
+        assign=use_assign,
     )
 
     model = model.cuda()
@@ -149,9 +164,15 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
     Returns:
         Loaded embedder on GPU
     """
+    cache_key = f"embedder:{embedder_type}"
+    cached = model_cache.try_load(cache_key)
+    if cached is not None:
+        print(f"[Worker] Using cached {embedder_type}_embedder", file=sys.stderr)
+        return cached
+
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn, try_instantiate_on_meta
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -161,7 +182,7 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
     gen_config = OmegaConf.load(gen_config_path)
     embedder_config = gen_config.module.condition_embedder.backbone
 
-    embedder = instantiate(embedder_config)
+    embedder, use_assign = try_instantiate_on_meta(instantiate, embedder_config)
     embedder = load_model_from_checkpoint(
         embedder,
         str(gen_ckpt_path),
@@ -171,6 +192,7 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
         eval=True,
         state_dict_key="state_dict",
         state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
+        assign=use_assign,
     )
 
     embedder = embedder.cuda().to(_get_dtype(config))
@@ -198,6 +220,20 @@ def _unload(*models):
             del m
     gc.collect()
     torch.cuda.empty_cache()
+
+
+def _offload_models(memory_mode, **named_models):
+    """Offload models according to memory strategy.
+
+    Args:
+        memory_mode: 'cache_gpu', 'cpu_offload', or 'delete'
+        **named_models: cache_key=model pairs
+    """
+    for key, model in named_models.items():
+        if model is not None:
+            model_cache.offload(key, model, memory_mode)
+    if memory_mode != "cache_gpu":
+        torch.cuda.empty_cache()
 
 
 # =============================================================================
@@ -327,7 +363,8 @@ def run_stage1(
     inference_steps: int = 25,
     cfg_strength: float = 7.0,
     cfg_strength_pm: float = 0.0,
-    output_dir: str = None
+    output_dir: str = None,
+    memory: str = "cpu_offload",
 ) -> Dict[str, Any]:
     """
     Run Stage 1 (sparse structure generation).
@@ -511,9 +548,12 @@ def run_stage1(
     # Add voxel coordinates
     return_dict["voxel"] = return_dict["coords"][:, 1:] / 64 - 0.5
 
-    # Unload models
-    print(f"[Worker] Unloading Stage 1 models...", file=sys.stderr)
-    _unload(ss_generator, ss_decoder, ss_embedder)
+    # Offload models
+    print(f"[Worker] Offloading Stage 1 models (mode={memory})...", file=sys.stderr)
+    _offload_models(
+        memory,
+        **{"generator:ss": ss_generator, "decoder:ss": ss_decoder, "embedder:ss": ss_embedder},
+    )
 
     print(f"[Worker] Stage 1 complete", file=sys.stderr)
 
@@ -573,7 +613,8 @@ def run_stage2(
     seed: int = 42,
     inference_steps: int = 25,
     cfg_strength: float = 5.0,
-    output_dir: str = None
+    output_dir: str = None,
+    memory: str = "cpu_offload",
 ) -> Dict[str, Any]:
     """
     Run Stage 2 (SLAT generation).
@@ -684,9 +725,12 @@ def run_stage2(
             # Apply mean/std normalization
             slat = slat * slat_std + slat_mean
 
-    # Unload models
-    print(f"[Worker] Unloading Stage 2 models...", file=sys.stderr)
-    _unload(slat_generator, slat_embedder)
+    # Offload models
+    print(f"[Worker] Offloading Stage 2 models (mode={memory})...", file=sys.stderr)
+    _offload_models(
+        memory,
+        **{"generator:slat": slat_generator, "embedder:slat": slat_embedder},
+    )
 
     print(f"[Worker] Stage 2 complete", file=sys.stderr)
 
@@ -730,6 +774,7 @@ def run_decode(
     simplify: float = 0.95,
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
+    memory: str = "cpu_offload",
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding).
@@ -792,9 +837,9 @@ def run_decode(
     with torch.no_grad():
         output = decoder(slat)
 
-    # Unload decoder
-    print(f"[Worker] Unloading decoder...", file=sys.stderr)
-    _unload(decoder)
+    # Offload decoder
+    print(f"[Worker] Offloading decoder (mode={memory})...", file=sys.stderr)
+    _offload_models(memory, **{f"decoder:{decoder_name}": decoder})
 
     print(f"[Worker] Decode complete", file=sys.stderr)
 
