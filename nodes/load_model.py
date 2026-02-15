@@ -64,6 +64,10 @@ class LoadSAM3DModel:
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "attn_backend": (["flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
+                    "default": "flash_attn",
+                    "tooltip": "Attention backend (flash_attn recommended for A100/H100/H200)"
+                }),
                 "compile": ("BOOLEAN", {
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference"
@@ -93,6 +97,7 @@ class LoadSAM3DModel:
 
     def load_model(
         self,
+        attn_backend: str,
         compile: bool,
         use_gpu_cache: bool,
         unique_id: str = None,
@@ -126,6 +131,7 @@ class LoadSAM3DModel:
             "config_path": config_path,
             "compile": compile,
             "use_gpu_cache": use_gpu_cache,
+            "attn_backend": attn_backend,
         }
         return (model, model, model, model)
 
