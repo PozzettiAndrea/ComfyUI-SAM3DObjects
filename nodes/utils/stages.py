@@ -17,7 +17,6 @@ import base64
 import pickle
 from pathlib import Path
 from typing import Any, Dict, Optional
-import comfy.model_management
 
 log = logging.getLogger("sam3dobjects")
 
@@ -223,7 +222,7 @@ def _unload(*models):
         if m is not None:
             del m
     gc.collect()
-    comfy.model_management.soft_empty_cache()
+    torch.cuda.empty_cache()
 
 
 def _offload_models(memory_mode, **named_models):
@@ -237,7 +236,7 @@ def _offload_models(memory_mode, **named_models):
         if model is not None:
             model_cache.offload(key, model, memory_mode)
     if memory_mode != "cache_gpu":
-        comfy.model_management.soft_empty_cache()
+        torch.cuda.empty_cache()
 
 
 # =============================================================================
@@ -1031,7 +1030,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
     from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
 
-    device = comfy.model_management.get_torch_device()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Load Gaussian from PLY
     log.info("Loading Gaussian from PLY...")

@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 import numpy as np
 import torch
-import comfy.model_management
 
 log = logging.getLogger("sam3dobjects")
 
@@ -35,7 +34,8 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     pointmap = torch.load(pointmap_path, weights_only=False)
     log.info("Loaded pointmap tensor: shape=%s", pointmap.shape)
 
-    pointmap = pointmap.to(comfy.model_management.get_torch_device())
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    pointmap = pointmap.to(device)
 
     return pointmap
 

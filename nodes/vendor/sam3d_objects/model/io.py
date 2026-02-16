@@ -214,7 +214,11 @@ def load_model_from_checkpoint(
     model.load_state_dict(state_dict, strict=strict, assign=assign)
 
     if device is not None:
-        model = model.to(device)
+        # Use to_empty() for models on meta device (assign=True already loaded weights)
+        if next(model.parameters()).device.type == 'meta':
+            model = model.to_empty(device=device)
+        else:
+            model = model.to(device)
 
     if freeze:
         for param in model.parameters():
