@@ -139,7 +139,15 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
         assign=use_assign,
     )
 
-    model = model.to(_resolve_dtype(precision))
+    # Use the model's own mixed-precision if available (keeps GroupNorm in fp32),
+    # otherwise fall back to blanket .to(dtype).
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        if hasattr(model, 'convert_to_fp16'):
+            model.convert_to_fp16()
+            model.dtype = dtype
+        else:
+            model = model.to(dtype)
 
     _MODEL_CACHE[cache_key] = model
     return model
@@ -191,7 +199,28 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
         assign=use_assign,
     )
 
-    model = model.to(_resolve_dtype(precision))
+    # Use the model's own mixed-precision if available (keeps GroupNorm in fp32),
+    # otherwise fall back to blanket .to(dtype).
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        if hasattr(model, 'convert_to_fp16'):
+            model.convert_to_fp16()
+            model.dtype = dtype
+        else:
+            model = model.to(dtype)
+
+    # Re-init FlexiCubes / SparseFeatures2Mesh lookup tables on the real device.
+    # These are plain classes (not nn.Module) whose tensors are created from Python
+    # constants in __init__. Meta-device init leaves them as empty meta tensors.
+    if hasattr(model, 'mesh_extractor'):
+        from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import SparseFeatures2Mesh
+        me = model.mesh_extractor
+        if isinstance(me, SparseFeatures2Mesh):
+            device = str(comfy.model_management.get_torch_device())
+            model.mesh_extractor = SparseFeatures2Mesh(
+                device=device, res=me.res, use_color=me.use_color,
+            )
+            log.info("Re-initialized mesh_extractor on %s", device)
 
     _MODEL_CACHE[cache_key] = model
     return model
@@ -892,6 +921,9 @@ def run_decode(
     else:
         slat = slat.cuda()
 
+    # Don't cast feats here — the decoder's input_layer is fp32 (not touched by
+    # convert_to_fp16), and the model casts to fp16 internally after input_layer.
+
     # Load decoder
     if decode_format == "gaussian":
         decoder_name = 'slat_decoder_gs'
@@ -901,7 +933,19 @@ def run_decode(
     log.info("Loading decoder (%s)...", decoder_name)
     decoder = _get_or_load_decoder(config_path, decoder_name, precision)
 
-    log.info("Running decoder...")
+    log.info("Running decoder... slat.feats.dtype=%s, slat.feats.shape=%s, slat.coords.shape=%s",
+             slat.feats.dtype, slat.feats.shape, slat.coords.shape)
+    log.info("Decoder type: %s, model.dtype=%s", type(decoder).__name__, getattr(decoder, 'dtype', 'N/A'))
+
+    # Log parameter dtypes for debugging
+    param_dtypes = set()
+    for p in decoder.parameters():
+        param_dtypes.add(str(p.dtype))
+    log.info("Decoder parameter dtypes: %s", param_dtypes)
+
+    import sys
+    sys.stdout.flush()
+    sys.stderr.flush()
 
     with torch.no_grad():
         output = decoder(slat)
