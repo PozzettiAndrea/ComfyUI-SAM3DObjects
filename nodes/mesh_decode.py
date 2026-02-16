@@ -1,7 +1,10 @@
 """SAM3DMeshDecode node for decoding SLAT to mesh."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DMeshDecode:
     """
@@ -87,9 +90,9 @@ class SAM3DMeshDecode:
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
-        print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
+        log.info("MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:
-            print(f"[SAM3DObjects] MeshDecode: Will apply postprocessing (simplify={simplify})")
+            log.info("MeshDecode: Will apply postprocessing (simplify=%s)", simplify)
 
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
@@ -132,5 +135,5 @@ class SAM3DMeshDecode:
         if not glb_path:
             raise RuntimeError("GLB file was not generated")
 
-        print(f"[SAM3DObjects] MeshDecode completed: {glb_path}")
+        log.info("MeshDecode completed: %s", glb_path)
         return (glb_path,)

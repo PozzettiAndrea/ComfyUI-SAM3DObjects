@@ -1,7 +1,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 from typing import *
 import torch
 from . import BACKEND, DEBUG
+
+log = logging.getLogger("sam3dobjects")
 
 if BACKEND == "torchsparse":
     from torchsparse import SparseTensor as SparseTensorData
@@ -129,11 +132,11 @@ class SparseTensor:
                         self.coords[self.layout[i], 0] == i
                     ), f"The data of batch {i} is not contiguous"
             except Exception as e:
-                print("Debugging information:")
-                print(f"- Shape: {self.shape}")
-                print(f"- Layout: {self.layout}")
-                print(f"- Scale: {self._scale}")
-                print(f"- Coords: {self.coords}")
+                log.debug("Debugging information:")
+                log.debug("- Shape: %s", self.shape)
+                log.debug("- Layout: %s", self.layout)
+                log.debug("- Scale: %s", self._scale)
+                log.debug("- Coords: %s", self.coords)
                 raise e
 
     def __cal_shape(self, feats, coords):

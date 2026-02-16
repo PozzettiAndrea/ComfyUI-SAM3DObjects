@@ -1,7 +1,10 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+log = logging.getLogger("sam3dobjects")
 
 
 DEFAULT_TRIVEC_CONFIG = {
@@ -278,7 +281,7 @@ class DfsOctree:
         )
         for key in keys:
             if key not in state_dict:
-                print(f"Warning: key {key} not found in the state_dict.")
+                log.warning("key %s not found in the state_dict.", key)
                 continue
             try:
                 if not isinstance(getattr(self, key), nn.Module):
@@ -286,7 +289,7 @@ class DfsOctree:
                 else:
                     getattr(self, key).load_state_dict(state_dict[key])
             except Exception as e:
-                print(e)
+                log.error("%s", e)
                 raise ValueError(f"Error loading key {key}.")
 
     def gather_from_leaf_children(self, data):

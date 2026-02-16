@@ -1,7 +1,10 @@
 """SAM3D_PoseOptimization node for refining object pose using ICP and render optimization."""
 
+import logging
 import os
 from typing import Any, Dict
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3D_PoseOptimization:
     """
@@ -86,7 +89,7 @@ class SAM3D_PoseOptimization:
 
         from .utils.pose_optimization import run_pose_optimization
 
-        print(f"[SAM3DObjects] PoseOptimization: Starting pose refinement")
+        log.info("PoseOptimization: Starting pose refinement")
 
         # Validate inputs
         if not glb_path:
@@ -100,7 +103,7 @@ class SAM3D_PoseOptimization:
         scale = pose.get("scale")
 
         if rotation is None or translation is None or scale is None:
-            print("[SAM3DObjects] Warning: Incomplete pose data, returning original")
+            log.warning("Incomplete pose data, returning original")
             return (glb_path, pose, -1.0)
 
         # Serialize helper
@@ -145,7 +148,7 @@ class SAM3D_PoseOptimization:
         response = run_pose_optimization(request)
 
         if response.get("status") == "error":
-            print(f"[SAM3DObjects] Worker error: {response.get('error')}")
+            log.error("Worker error: %s", response.get('error'))
             return (glb_path, pose, -1.0)
 
         # Extract results
@@ -162,5 +165,5 @@ class SAM3D_PoseOptimization:
             else:
                 refined_pose[key] = pose.get(key)
 
-        print(f"[SAM3DObjects] Pose optimization completed (IoU: {iou:.3f})")
+        log.info("Pose optimization completed (IoU: %.3f)", iou)
         return (output_glb_path, refined_pose, float(iou))

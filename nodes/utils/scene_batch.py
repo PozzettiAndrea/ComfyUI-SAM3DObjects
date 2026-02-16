@@ -11,6 +11,7 @@ Each phase loads its own models directly - no shared lazy manager.
 """
 
 import gc
+import logging
 import os
 import sys
 import base64
@@ -25,6 +26,9 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 from PIL import Image
+import comfy.model_management
+
+log = logging.getLogger("sam3dobjects")
 
 
 def _load_config(config_path: str):
@@ -54,7 +58,7 @@ def _unload(*models):
         if m is not None:
             del m
     gc.collect()
-    torch.cuda.empty_cache()
+    comfy.model_management.soft_empty_cache()
 
 
 def _offload_models(memory_mode, **named_models):
@@ -63,7 +67,7 @@ def _offload_models(memory_mode, **named_models):
         if model is not None:
             model_cache.offload(key, model, memory_mode)
     if memory_mode != "cache_gpu":
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
 
 def _try_load_cached(key):
@@ -120,7 +124,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         memory = request.get("memory", "cpu_offload")
 
         num_objects = len(masks_b64)
-        print(f"[Worker] Scene batch: Processing {num_objects} object(s)", file=sys.stderr)
+        log.info("Scene batch: Processing %d object(s)", num_objects)
 
         # Deserialize image once
         image_bytes = base64.b64decode(image_b64)
@@ -134,9 +138,9 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             masks.append(mask_np)
 
         # Load pointmap once
-        print(f"[Worker] Loading pointmap from: {pointmap_path}", file=sys.stderr)
+        log.info("Loading pointmap from: %s", pointmap_path)
         pointmap = load_pointmap_from_file(pointmap_path)
-        print(f"[Worker] Pointmap shape: {pointmap.shape}", file=sys.stderr)
+        log.info("Pointmap shape: %s", pointmap.shape)
 
         # Create object directories
         object_dirs = []
@@ -151,7 +155,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # ============================================================
         # PHASE 1: Stage 1 (Sparse Structure) for ALL masks
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 1: Stage 1 (Sparse Gen) ==========", file=sys.stderr)
+        log.info("========== PHASE 1: Stage 1 (Sparse Gen) ==========")
         phase1_start = time.time()
 
         _run_phase1_stage1(
@@ -159,12 +163,12 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             seed, stage1_steps, stage1_cfg, stage1_cfg_pm, memory
         )
 
-        print(f"[Worker] Phase 1 complete: {time.time() - phase1_start:.0f}s", file=sys.stderr)
+        log.info("Phase 1 complete: %.0fs", time.time() - phase1_start)
 
         # ============================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 2: Stage 2 (SLAT Gen) ==========", file=sys.stderr)
+        log.info("========== PHASE 2: Stage 2 (SLAT Gen) ==========")
         phase2_start = time.time()
 
         slat_paths = _run_phase2_stage2(
@@ -172,12 +176,12 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             seed, stage2_steps, stage2_cfg, memory
         )
 
-        print(f"[Worker] Phase 2 complete: {time.time() - phase2_start:.0f}s", file=sys.stderr)
+        log.info("Phase 2 complete: %.0fs", time.time() - phase2_start)
 
         # ============================================================
         # PHASE 3: Mesh Decode for ALL SLATs
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 3: Mesh Decode ==========", file=sys.stderr)
+        log.info("========== PHASE 3: Mesh Decode ==========")
         phase3_start = time.time()
 
         glb_paths = _run_phase3_mesh_decode(
@@ -185,13 +189,13 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             with_postprocess, simplify, memory
         )
 
-        print(f"[Worker] Phase 3 complete: {time.time() - phase3_start:.0f}s", file=sys.stderr)
+        log.info("Phase 3 complete: %.0fs", time.time() - phase3_start)
 
         # ============================================================
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake
         # ============================================================
         if add_textures and gs_config_path:
-            print(f"\n[Worker] ========== PHASE 4: Gaussian + Texture Bake ==========", file=sys.stderr)
+            log.info("========== PHASE 4: Gaussian + Texture Bake ==========")
             phase4_start = time.time()
 
             _run_phase4_texture(
@@ -199,9 +203,9 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                 texture_bake_impl, texture_mode, texture_size, memory
             )
 
-            print(f"[Worker] Phase 4 complete: {time.time() - phase4_start:.0f}s", file=sys.stderr)
+            log.info("Phase 4 complete: %.0fs", time.time() - phase4_start)
 
-        print(f"\n[Worker] Scene batch complete: {num_objects} object(s)", file=sys.stderr)
+        log.info("Scene batch complete: %d object(s)", num_objects)
 
         return {
             "status": "success",
@@ -211,7 +215,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"[Worker] Error in scene_generate_batch: {e}", file=sys.stderr)
+        log.error("Error in scene_generate_batch: %s", e)
         traceback.print_exc(file=sys.stderr)
         return {
             "status": "error",
@@ -247,7 +251,7 @@ def _run_phase1_stage1(
     dtype = _get_dtype(config)
 
     # Load Stage 1 models (check cache first)
-    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
+    log.info("Loading Stage 1 models...")
 
     ss_generator = _try_load_cached("generator:ss")
     ss_decoder = _try_load_cached("decoder:ss")
@@ -265,7 +269,7 @@ def _run_phase1_stage1(
             assign=use_assign,
         ).cuda().to(dtype)
     else:
-        print(f"[Worker] Using cached ss_generator", file=sys.stderr)
+        log.debug("Using cached ss_generator")
         gen_config_path = checkpoint_dir / config.ss_generator_config_path
         gen_ckpt_path = checkpoint_dir / config.ss_generator_ckpt_path
         gen_config = OmegaConf.load(gen_config_path)
@@ -283,7 +287,7 @@ def _run_phase1_stage1(
             assign=use_assign,
         ).cuda()
     else:
-        print(f"[Worker] Using cached ss_decoder", file=sys.stderr)
+        log.debug("Using cached ss_decoder")
 
     if ss_embedder is None:
         embedder_config = gen_config.module.condition_embedder.backbone
@@ -295,7 +299,7 @@ def _run_phase1_stage1(
             assign=use_assign,
         ).cuda().to(dtype)
     else:
-        print(f"[Worker] Using cached ss_embedder", file=sys.stderr)
+        log.debug("Using cached ss_embedder")
 
     # Get preprocessor
     preprocessor_config = config.get('ss_preprocessor')
@@ -320,7 +324,7 @@ def _run_phase1_stage1(
 
     # Process each mask
     for idx, (mask_np, object_dir) in enumerate(zip(masks, object_dirs)):
-        print(f"[Worker] Stage 1 [{idx+1}/{len(masks)}]...", file=sys.stderr)
+        log.info("Stage 1 [%d/%d]...", idx + 1, len(masks))
 
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
         metadata_path = os.path.join(object_dir, "stage1_metadata.json")
@@ -334,11 +338,11 @@ def _run_phase1_stage1(
                 if (cached.get("seed") == seed and cached.get("steps") == stage1_steps and
                     cached.get("cfg") == stage1_cfg and cached.get("cfg_pm", 0.0) == stage1_cfg_pm):
                     use_cache = True
-            except:
-                pass
+            except Exception as e:
+                log.debug("Failed to read stage 1 cache metadata: %s", e)
 
         if use_cache:
-            print(f"[Worker] Stage 1 [{idx+1}]: Using cache", file=sys.stderr)
+            log.info("Stage 1 [%d]: Using cache", idx + 1)
             continue
 
         torch.manual_seed(seed)
@@ -436,7 +440,7 @@ def _run_phase1_stage1(
         object_results[idx]["scale"] = scale
 
     # Offload
-    print(f"[Worker] Offloading Stage 1 models (mode={memory})...", file=sys.stderr)
+    log.info("Offloading Stage 1 models (mode=%s)...", memory)
     _offload_models(
         memory,
         **{"generator:ss": ss_generator, "decoder:ss": ss_decoder, "embedder:ss": ss_embedder},
@@ -458,7 +462,7 @@ def _run_phase2_stage2(
     dtype = _get_dtype(config)
 
     # Load Stage 2 models (check cache first)
-    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
+    log.info("Loading Stage 2 models...")
 
     gen_config_path = checkpoint_dir / config.slat_generator_config_path
     gen_ckpt_path = checkpoint_dir / config.slat_generator_ckpt_path
@@ -474,7 +478,7 @@ def _run_phase2_stage2(
             assign=use_assign,
         ).cuda().to(dtype)
     else:
-        print(f"[Worker] Using cached slat_generator", file=sys.stderr)
+        log.debug("Using cached slat_generator")
 
     slat_embedder = _try_load_cached("embedder:slat")
     if slat_embedder is None:
@@ -487,7 +491,7 @@ def _run_phase2_stage2(
             assign=use_assign,
         ).cuda().to(dtype)
     else:
-        print(f"[Worker] Using cached slat_embedder", file=sys.stderr)
+        log.debug("Using cached slat_embedder")
 
     # Get preprocessor
     preprocessor_config = config.get('slat_preprocessor')
@@ -509,7 +513,7 @@ def _run_phase2_stage2(
     slat_paths = []
 
     for idx, (mask_np, object_dir) in enumerate(zip(masks, object_dirs)):
-        print(f"[Worker] Stage 2 [{idx+1}/{len(masks)}]...", file=sys.stderr)
+        log.info("Stage 2 [%d/%d]...", idx + 1, len(masks))
 
         torch.manual_seed(seed)
         mask_pil = Image.fromarray(mask_np)
@@ -583,7 +587,7 @@ def _run_phase2_stage2(
             object_results[idx]["scale"] = scale
 
     # Offload
-    print(f"[Worker] Offloading Stage 2 models (mode={memory})...", file=sys.stderr)
+    log.info("Offloading Stage 2 models (mode=%s)...", memory)
     _offload_models(
         memory,
         **{"generator:slat": slat_generator, "embedder:slat": slat_embedder},
@@ -606,7 +610,7 @@ def _run_phase3_mesh_decode(
     config, checkpoint_dir = _load_config(mesh_config_path)
 
     # Load mesh decoder (check cache first)
-    print(f"[Worker] Loading mesh decoder...", file=sys.stderr)
+    log.info("Loading mesh decoder...")
     decoder = _try_load_cached("decoder:slat_decoder_mesh")
     if decoder is None:
         dec_config_path = checkpoint_dir / config.slat_decoder_mesh_config_path
@@ -621,12 +625,12 @@ def _run_phase3_mesh_decode(
             assign=use_assign,
         ).cuda()
     else:
-        print(f"[Worker] Using cached mesh decoder", file=sys.stderr)
+        log.debug("Using cached mesh decoder")
 
     glb_paths = []
 
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
-        print(f"[Worker] Mesh decode [{idx+1}/{len(slat_paths)}]...", file=sys.stderr)
+        log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
         slat_data = torch.load(slat_path, weights_only=False)
 
@@ -682,7 +686,7 @@ def _run_phase3_mesh_decode(
         object_results[idx]["glb_path"] = glb_path
 
     # Offload
-    print(f"[Worker] Offloading mesh decoder (mode={memory})...", file=sys.stderr)
+    log.info("Offloading mesh decoder (mode=%s)...", memory)
     _offload_models(memory, **{"decoder:slat_decoder_mesh": decoder})
 
     return glb_paths
@@ -701,7 +705,7 @@ def _run_phase4_texture(
     config, checkpoint_dir = _load_config(gs_config_path)
 
     # Load gaussian decoder (check cache first)
-    print(f"[Worker] Loading gaussian decoder...", file=sys.stderr)
+    log.info("Loading gaussian decoder...")
     decoder = _try_load_cached("decoder:slat_decoder_gs")
     if decoder is None:
         dec_config_path = checkpoint_dir / config.slat_decoder_gs_config_path
@@ -716,13 +720,13 @@ def _run_phase4_texture(
             assign=use_assign,
         ).cuda()
     else:
-        print(f"[Worker] Using cached gaussian decoder", file=sys.stderr)
+        log.debug("Using cached gaussian decoder")
 
     ply_paths = []
 
     # Decode all gaussians
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
-        print(f"[Worker] Gaussian decode [{idx+1}/{len(slat_paths)}]...", file=sys.stderr)
+        log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
         slat_data = torch.load(slat_path, weights_only=False)
         slat = slat_data.get("slat")
@@ -750,12 +754,12 @@ def _run_phase4_texture(
         object_results[idx]["ply_path"] = ply_path
 
     # Offload gaussian decoder
-    print(f"[Worker] Offloading gaussian decoder (mode={memory})...", file=sys.stderr)
+    log.info("Offloading gaussian decoder (mode=%s)...", memory)
     _offload_models(memory, **{"decoder:slat_decoder_gs": decoder})
 
     # Texture bake all
     for idx, (ply_path, glb_path, object_dir) in enumerate(zip(ply_paths, glb_paths, object_dirs)):
-        print(f"[Worker] Texture bake [{idx+1}/{len(ply_paths)}]...", file=sys.stderr)
+        log.info("Texture bake [%d/%d]...", idx + 1, len(ply_paths))
         try:
             bake_result = texture_bake_impl({
                 "ply_path": ply_path,
@@ -770,4 +774,4 @@ def _run_phase4_texture(
                 if textured_glb:
                     object_results[idx]["textured_glb_path"] = textured_glb
         except Exception as e:
-            print(f"[Worker] Warning: Texture bake failed for object {idx}: {e}", file=sys.stderr)
+            log.warning("Texture bake failed for object %d: %s", idx, e)

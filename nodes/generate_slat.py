@@ -1,8 +1,11 @@
 """SAM3DGenerateSLAT node - merged Stage 1 + Stage 2 with internal caching."""
 
+import logging
 import os
 import json
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DGenerateSLAT:
     """
@@ -108,8 +111,8 @@ class SAM3DGenerateSLAT:
                 cached.get("cfg") == cfg and
                 cached.get("cfg_pm", 0.0) == cfg_pm):
                 return True
-        except:
-            pass
+        except Exception as e:
+            log.debug("Failed to read SLAT cache metadata: %s", e)
 
         return False
 
@@ -161,7 +164,7 @@ class SAM3DGenerateSLAT:
         from .utils.stages import run_stage1, run_stage2
         from .utils.helpers import load_pointmap_from_file
 
-        print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
+        log.info("GenerateSLAT: Starting SLAT generation...")
 
         # Derive output_dir from pointmap_path (same directory created by DepthEstimate)
         output_dir = os.path.dirname(pointmap_path)
@@ -181,9 +184,9 @@ class SAM3DGenerateSLAT:
         mask_pil = Image.fromarray(mask_np)
 
         # Load pointmap
-        print(f"[SAM3DObjects] Loading pointmap from: {pointmap_path}")
+        log.info("Loading pointmap from: %s", pointmap_path)
         pointmap = load_pointmap_from_file(pointmap_path)
-        print(f"[SAM3DObjects] Pointmap shape: {pointmap.shape}")
+        log.info("Pointmap shape: %s", pointmap.shape)
 
         # Get config path from generator model
         config_path = generator["config_path"]
@@ -195,14 +198,14 @@ class SAM3DGenerateSLAT:
 
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
-            print(f"[SAM3DObjects] Using cached Stage 1 output")
+            log.info("Using cached Stage 1 output")
             stage1_output = torch.load(sparse_path, weights_only=False)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
                 debug_image_path = cached_debug
         else:
-            print(f"[SAM3DObjects] Running Stage 1 (sparse structure)...")
+            log.info("Running Stage 1 (sparse structure)...")
             result = run_stage1(
                 config_path,
                 image_pil,
@@ -224,10 +227,10 @@ class SAM3DGenerateSLAT:
             if stage1_file != sparse_path:
                 torch.save(stage1_output, sparse_path)
             self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
-            print(f"[SAM3DObjects] Stage 1 complete, saved to: {sparse_path}")
+            log.info("Stage 1 complete, saved to: %s", sparse_path)
 
         # Stage 2: SLAT generation
-        print(f"[SAM3DObjects] Running Stage 2 (SLAT generation)...")
+        log.info("Running Stage 2 (SLAT generation)...")
         stage2_result = run_stage2(
             config_path,
             image_pil,
@@ -242,7 +245,7 @@ class SAM3DGenerateSLAT:
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
         # Note: The saved file contains full dict with stage1_data for pose info
         slat_path = stage2_result["output"]["files"]["slat"]
-        print(f"[SAM3DObjects] Stage 2 complete: {slat_path}")
+        log.info("Stage 2 complete: %s", slat_path)
 
         # Load debug image if available
         debug_image = None
@@ -251,13 +254,13 @@ class SAM3DGenerateSLAT:
                 pil_img = Image.open(debug_image_path).convert("RGB")
                 img_np = np.array(pil_img).astype(np.float32) / 255.0
                 debug_image = torch.from_numpy(img_np).unsqueeze(0)  # [1, H, W, C]
-                print(f"[SAM3DObjects] Debug image loaded: {debug_image.shape}")
+                log.debug("Debug image loaded: %s", debug_image.shape)
             except Exception as e:
-                print(f"[SAM3DObjects] Failed to load debug image: {e}")
+                log.warning("Failed to load debug image: %s", e)
 
         # Create placeholder if no debug image
         if debug_image is None:
             debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
 
-        print(f"[SAM3DObjects] GenerateSLAT completed: {slat_path}")
+        log.info("GenerateSLAT completed: %s", slat_path)
         return (slat_path, debug_image)

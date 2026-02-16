@@ -1,9 +1,12 @@
 """SAM3D_ProjectionOverlay node - visualize projected meshes over original image."""
 
+import logging
 import os
 import re
 import time
 from typing import Tuple
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3D_ProjectionOverlay:
     """
@@ -78,7 +81,7 @@ class SAM3D_ProjectionOverlay:
         from PIL import Image
 
         start_time = time.time()
-        print(f"[SAM3DObjects] ProjectionOverlay: Creating overlay (mode={render_mode})")
+        log.info("ProjectionOverlay: Creating overlay (mode=%s)", render_mode)
 
         # Validate folder exists
         if not os.path.exists(pose_opt_folder):
@@ -90,7 +93,7 @@ class SAM3D_ProjectionOverlay:
         else:
             # Try to find source folder
             source_folder = pose_opt_folder
-            print(f"[SAM3DObjects] ProjectionOverlay: Warning - folder doesn't end with _pose_optimized")
+            log.warning("ProjectionOverlay: folder doesn't end with _pose_optimized")
 
         # Load original image
         image_path = os.path.join(source_folder, "image.png")
@@ -100,7 +103,7 @@ class SAM3D_ProjectionOverlay:
         orig_img = Image.open(image_path).convert("RGB")
         img_array = np.array(orig_img).astype(np.float32) / 255.0
         H, W = img_array.shape[:2]
-        print(f"[SAM3DObjects] ProjectionOverlay: Loaded image {W}x{H}")
+        log.info("ProjectionOverlay: Loaded image %dx%d", W, H)
 
         # Load intrinsics
         intrinsics_path = os.path.join(source_folder, "intrinsics.pt")
@@ -116,7 +119,7 @@ class SAM3D_ProjectionOverlay:
         K[1, 1] *= H  # fy
         K[0, 2] *= W  # cx
         K[1, 2] *= H  # cy
-        print(f"[SAM3DObjects] ProjectionOverlay: Intrinsics loaded")
+        log.info("ProjectionOverlay: Intrinsics loaded")
 
         # Find all mesh files
         mesh_files = []
@@ -128,10 +131,10 @@ class SAM3D_ProjectionOverlay:
                 mesh_files.append((idx, os.path.join(pose_opt_folder, name)))
 
         mesh_files.sort(key=lambda x: x[0])
-        print(f"[SAM3DObjects] ProjectionOverlay: Found {len(mesh_files)} meshes")
+        log.info("ProjectionOverlay: Found %d meshes", len(mesh_files))
 
         if not mesh_files:
-            print("[SAM3DObjects] ProjectionOverlay: No meshes found, returning original image")
+            log.warning("ProjectionOverlay: No meshes found, returning original image")
             img_tensor = torch.from_numpy(img_array).unsqueeze(0)
             return (img_tensor,)
 
@@ -161,10 +164,10 @@ class SAM3D_ProjectionOverlay:
                     mesh = mesh_list[0] if len(mesh_list) == 1 else trimesh.util.concatenate(mesh_list)
                 loaded_meshes.append((idx, mesh))
             except Exception as e:
-                print(f"[SAM3DObjects] ProjectionOverlay: Error loading object {idx}: {e}")
+                log.error("ProjectionOverlay: Error loading object %d: %s", idx, e)
                 continue
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Loaded {len(loaded_meshes)} meshes")
+        log.info("ProjectionOverlay: Loaded %d meshes", len(loaded_meshes))
 
         # Render based on mode
         if render_mode == "mask_colors":
@@ -181,7 +184,7 @@ class SAM3D_ProjectionOverlay:
         img_tensor = torch.from_numpy(overlay).float().unsqueeze(0)
 
         elapsed = time.time() - start_time
-        print(f"[SAM3DObjects] ProjectionOverlay: OK Done in {elapsed:.1f}s, output shape {img_tensor.shape}")
+        log.info("ProjectionOverlay: Done in %.1fs, output shape %s", elapsed, img_tensor.shape)
         return (img_tensor,)
 
     def _render_mask_colors(self, loaded_meshes, img_array, K, colors, point_size, alpha):
@@ -225,7 +228,7 @@ class SAM3D_ProjectionOverlay:
             all_x, all_y = all_x[valid], all_y[valid]
 
             overlay[all_y, all_x] = overlay[all_y, all_x] * (1 - alpha) + color * alpha
-            print(f"[SAM3DObjects] ProjectionOverlay: Object {idx}: {len(x)} points projected")
+            log.info("ProjectionOverlay: Object %d: %d points projected", idx, len(x))
 
         return overlay
 
@@ -292,7 +295,7 @@ class SAM3D_ProjectionOverlay:
         color_normalized = color_img.astype(np.float32) / 255.0
         overlay[mask] = color_normalized[mask]
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} meshes (3d_mesh)")
+        log.info("ProjectionOverlay: Rendered %d meshes (3d_mesh)", len(loaded_meshes))
         return overlay
 
     def _render_3d_mesh_textured(self, loaded_meshes, img_array, K, alpha, H, W):
@@ -348,7 +351,7 @@ class SAM3D_ProjectionOverlay:
         color_normalized = color_img.astype(np.float32) / 255.0
         overlay[mask] = color_normalized[mask]
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} textured meshes")
+        log.info("ProjectionOverlay: Rendered %d textured meshes", len(loaded_meshes))
         return overlay
 
 

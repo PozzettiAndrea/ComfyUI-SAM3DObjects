@@ -1,9 +1,12 @@
+import logging
 import os
 os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '1'
 import sys
 from pathlib import Path
 if (_package_root := str(Path(__file__).absolute().parents[2])) not in sys.path:
     sys.path.insert(0, _package_root)
+
+log = logging.getLogger("sam3dobjects")
 
 import click
 
@@ -73,12 +76,12 @@ def main(
         if save_depth_vis:
             p = output_path.joinpath('depth_vis.png')
             cv2.imwrite(str(p), cv2.cvtColor(colorize_depth(depth, depth_mask), cv2.COLOR_RGB2BGR))
-            print(f"{p}")
+            log.info("%s", p)
 
         if save_ply:
             p = output_path.joinpath('pointcloud.ply')
             point_cloud.export(p)
-            print(f"{p}")
+            log.info("%s", p)
 
 if __name__ == '__main__':
     main()

@@ -9,6 +9,7 @@ Supports three memory strategies:
 
 import gc
 import torch
+import comfy.model_management
 
 # Module-level cache: key -> model (on CPU or GPU)
 _CACHE = {}
@@ -21,11 +22,11 @@ def offload(key, model, mode="cpu_offload"):
     elif mode == "cpu_offload":
         model.cpu()
         _CACHE[key] = model
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
     else:
         del model
         gc.collect()
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
 
 def try_load(key):
@@ -33,8 +34,9 @@ def try_load(key):
     if key not in _CACHE:
         return None
     model = _CACHE[key]
-    if next(model.parameters()).device.type != "cuda":
-        model = model.cuda()
+    device = comfy.model_management.get_torch_device()
+    if next(model.parameters()).device != device:
+        model = model.to(device)
         _CACHE[key] = model
     return model
 
@@ -46,4 +48,4 @@ def clear():
         del model
     _CACHE.clear()
     gc.collect()
-    torch.cuda.empty_cache()
+    comfy.model_management.soft_empty_cache()

@@ -1,8 +1,11 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
 import math
+
+log = logging.getLogger("sam3dobjects")
 from scipy.stats import qmc
 from sam3d_objects.pipeline.image_operations import get_text_size, put_text
 from easydict import EasyDict as edict
@@ -194,9 +197,7 @@ class OctreeRenderer:
         try:
             import diffoctreerast
         except ImportError:
-            print(
-                "\033[93m[WARNING] diffoctreerast is not installed. The renderer will be disabled.\033[0m"
-            )
+            log.warning("diffoctreerast is not installed. The renderer will be disabled.")
             self.unsupported = True
         else:
             self.unsupported = False

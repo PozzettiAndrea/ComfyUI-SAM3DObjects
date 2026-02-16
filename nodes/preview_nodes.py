@@ -2,6 +2,10 @@
 Preview nodes for Point Clouds and Gaussian Splats
 """
 
+import logging
+
+log = logging.getLogger("sam3dobjects")
+
 class SAM3D_PreviewPointCloud:
     """
     Preview point cloud PLY files in the browser using VTK.js
@@ -55,7 +59,7 @@ Controls:
         Args:
             file_path: Path to existing PLY file
         """
-        print(f"[SAM3D Preview] preview() called with file_path='{file_path}'")
+        log.debug("preview() called with file_path='%s'", file_path)
 
         if not file_path or file_path.strip() == "":
             # No input provided

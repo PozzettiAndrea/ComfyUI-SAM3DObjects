@@ -11,11 +11,15 @@ Each function loads its own models directly - no shared state.
 """
 
 import gc
+import logging
 import sys
 import base64
 import pickle
 from pathlib import Path
 from typing import Any, Dict, Optional
+import comfy.model_management
+
+log = logging.getLogger("sam3dobjects")
 
 # Add vendor/ to sys.path BEFORE any sam3d_objects imports
 # This ensures all imports resolve through the same path
@@ -72,7 +76,7 @@ def _load_generator(config_path: str, generator_type: str):
     cache_key = f"generator:{generator_type}"
     cached = model_cache.try_load(cache_key)
     if cached is not None:
-        print(f"[Worker] Using cached {generator_type}_generator", file=sys.stderr)
+        log.debug("Using cached %s_generator", generator_type)
         return cached
 
     from omegaconf import OmegaConf
@@ -118,7 +122,7 @@ def _load_decoder(config_path: str, decoder_type: str):
     cache_key = f"decoder:{decoder_type}"
     cached = model_cache.try_load(cache_key)
     if cached is not None:
-        print(f"[Worker] Using cached {decoder_type}", file=sys.stderr)
+        log.debug("Using cached %s", decoder_type)
         return cached
 
     from omegaconf import OmegaConf
@@ -167,7 +171,7 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
     cache_key = f"embedder:{embedder_type}"
     cached = model_cache.try_load(cache_key)
     if cached is not None:
-        print(f"[Worker] Using cached {embedder_type}_embedder", file=sys.stderr)
+        log.debug("Using cached %s_embedder", embedder_type)
         return cached
 
     from omegaconf import OmegaConf
@@ -219,7 +223,7 @@ def _unload(*models):
         if m is not None:
             del m
     gc.collect()
-    torch.cuda.empty_cache()
+    comfy.model_management.soft_empty_cache()
 
 
 def _offload_models(memory_mode, **named_models):
@@ -233,7 +237,7 @@ def _offload_models(memory_mode, **named_models):
         if model is not None:
             model_cache.offload(key, model, memory_mode)
     if memory_mode != "cache_gpu":
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
 
 # =============================================================================
@@ -251,7 +255,7 @@ def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
     scale = pose_data.get("scale")
 
     if rotation is None or translation is None or scale is None:
-        print(f"[Worker] Warning: Missing pose data, skipping Gaussian pose application", file=sys.stderr)
+        log.warning("Missing pose data, skipping Gaussian pose application")
         return gaussian
 
     # Convert to tensors
@@ -307,7 +311,7 @@ def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
     new_rotations = quaternion_multiply(pose_rotation_quat, current_rotations)
     gaussian.from_rotation(new_rotations)
 
-    print(f"[Worker] Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}", file=sys.stderr)
+    log.info(f"Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}")
     return gaussian
 
 
@@ -322,7 +326,7 @@ def _apply_pose_to_vertices(vertices: np.ndarray, pose_data: Dict) -> np.ndarray
     scale = pose_data.get("scale")
 
     if rotation is None or translation is None or scale is None:
-        print(f"[Worker] Warning: Missing pose data, skipping pose application", file=sys.stderr)
+        log.warning("Missing pose data, skipping pose application")
         return vertices
 
     # Convert to numpy arrays
@@ -378,7 +382,7 @@ def run_stage1(
         get_pose_decoder,
     )
 
-    print(f"[Worker] Running Stage 1 (sparse gen)", file=sys.stderr)
+    log.info("Running Stage 1 (sparse gen)")
 
     config, checkpoint_dir = _load_config(config_path)
     dtype = _get_dtype(config)
@@ -406,7 +410,7 @@ def run_stage1(
         image_np = np.concatenate([image_np, alpha], axis=-1)
 
     # Get preprocessor and preprocess image
-    print(f"[Worker] Preprocessing image...", file=sys.stderr)
+    log.info("Preprocessing image...")
     ss_preprocessor = _get_preprocessor(config_path, 'ss')
 
     # Convert pointmap to tensor for preprocessing
@@ -432,16 +436,16 @@ def run_stage1(
                 debug_pil = PILImage.fromarray(debug_img_np)
                 debug_image_path = str(Path(output_dir) / "debug_preprocessed_stage1.png")
                 debug_pil.save(debug_image_path)
-                print(f"[Worker] Saved debug image: {debug_image_path}", file=sys.stderr)
+                log.debug("Saved debug image: %s", debug_image_path)
         except Exception as e:
-            print(f"[Worker] Failed to save debug image: {e}", file=sys.stderr)
+            log.warning("Failed to save debug image: %s", e)
 
     # Store pointmap scale/shift for pose decoding
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
     # Load models
-    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
+    log.info("Loading Stage 1 models...")
     ss_generator = _load_generator(config_path, 'ss')
     ss_decoder = _load_decoder(config_path, 'ss')
     ss_embedder = _load_condition_embedder(config_path, 'ss')
@@ -457,7 +461,7 @@ def run_stage1(
     ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
     ss_generator.reverse_fn.unconditional_handling = "add_flag"
 
-    print(f"[Worker] Running sparse structure generation...", file=sys.stderr)
+    log.info("Running sparse structure generation...")
 
     downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
 
@@ -526,13 +530,13 @@ def run_stage1(
                 )
 
             coords, downsample_factor = downsample_sparse_structure(coords)
-            print(f"[Worker] Downsampled coords from {original_shape[0]} to {coords.shape[0]}", file=sys.stderr)
+            log.debug("Downsampled coords from %d to %d", original_shape[0], coords.shape[0])
 
             return_dict["coords"] = coords
             return_dict["downsample_factor"] = downsample_factor
 
     # Apply pose decoding
-    print(f"[Worker] Decoding pose...", file=sys.stderr)
+    log.info("Decoding pose...")
     pose_decoder_name = getattr(config, 'pose_decoder_name', 'default')
     pose_decoder = get_pose_decoder(pose_decoder_name)
     pose_result = pose_decoder(
@@ -549,13 +553,13 @@ def run_stage1(
     return_dict["voxel"] = return_dict["coords"][:, 1:] / 64 - 0.5
 
     # Offload models
-    print(f"[Worker] Offloading Stage 1 models (mode={memory})...", file=sys.stderr)
+    log.info("Offloading Stage 1 models (mode=%s)...", memory)
     _offload_models(
         memory,
         **{"generator:ss": ss_generator, "decoder:ss": ss_decoder, "embedder:ss": ss_embedder},
     )
 
-    print(f"[Worker] Stage 1 complete", file=sys.stderr)
+    log.info("Stage 1 complete")
 
     # Save sparse structure
     if output_dir:
@@ -567,7 +571,7 @@ def run_stage1(
 
     sparse_path = save_dir / "sparse_structure.pt"
     torch.save(return_dict, sparse_path)
-    print(f"[Worker] Saved sparse structure: {sparse_path}", file=sys.stderr)
+    log.info("Saved sparse structure: %s", sparse_path)
 
     saved_output = {
         "output_dir": str(save_dir),
@@ -624,7 +628,7 @@ def run_stage2(
     """
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    print(f"[Worker] Running Stage 2 (SLAT gen)", file=sys.stderr)
+    log.info("Running Stage 2 (SLAT gen)")
 
     config, checkpoint_dir = _load_config(config_path)
     dtype = _get_dtype(config)
@@ -652,7 +656,7 @@ def run_stage2(
         image_np = np.concatenate([image_np, alpha], axis=-1)
 
     # Get preprocessor and preprocess image
-    print(f"[Worker] Preprocessing image for SLAT...", file=sys.stderr)
+    log.info("Preprocessing image for SLAT...")
     slat_preprocessor = _get_preprocessor(config_path, 'slat')
     slat_input_dict = preprocess_image_lazy(image_np, mask_np, slat_preprocessor)
 
@@ -665,7 +669,7 @@ def run_stage2(
     coords = coords.cuda()
 
     # Load models
-    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
+    log.info("Loading Stage 2 models...")
     slat_generator = _load_generator(config_path, 'slat')
     slat_embedder = _load_condition_embedder(config_path, 'slat')
 
@@ -679,7 +683,7 @@ def run_stage2(
     slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
     slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
 
-    print(f"[Worker] Running SLAT generation...", file=sys.stderr)
+    log.info("Running SLAT generation...")
 
     # Get SLAT normalization stats
     slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8)).cuda()
@@ -726,13 +730,13 @@ def run_stage2(
             slat = slat * slat_std + slat_mean
 
     # Offload models
-    print(f"[Worker] Offloading Stage 2 models (mode={memory})...", file=sys.stderr)
+    log.info("Offloading Stage 2 models (mode=%s)...", memory)
     _offload_models(
         memory,
         **{"generator:slat": slat_generator, "embedder:slat": slat_embedder},
     )
 
-    print(f"[Worker] Stage 2 complete", file=sys.stderr)
+    log.info("Stage 2 complete")
 
     # Build output dict with SLAT for saving
     output_dict = {
@@ -785,7 +789,7 @@ def run_decode(
     import trimesh
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    print(f"[Worker] Running decode ({decode_format})", file=sys.stderr)
+    log.info("Running decode (%s)", decode_format)
 
     # Extract slat - handle different input formats
     slat = None
@@ -829,19 +833,19 @@ def run_decode(
     else:
         decoder_name = 'slat_decoder_mesh'
 
-    print(f"[Worker] Loading decoder ({decoder_name})...", file=sys.stderr)
+    log.info("Loading decoder (%s)...", decoder_name)
     decoder = _load_decoder(config_path, decoder_name)
 
-    print(f"[Worker] Running decoder...", file=sys.stderr)
+    log.info("Running decoder...")
 
     with torch.no_grad():
         output = decoder(slat)
 
     # Offload decoder
-    print(f"[Worker] Offloading decoder (mode={memory})...", file=sys.stderr)
+    log.info("Offloading decoder (mode=%s)...", memory)
     _offload_models(memory, **{f"decoder:{decoder_name}": decoder})
 
-    print(f"[Worker] Decode complete", file=sys.stderr)
+    log.info("Decode complete")
 
     # Determine output directory
     if output_dir:
@@ -868,10 +872,10 @@ def run_decode(
                 }
 
         if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
-            print(f"[Worker] Applying pose transformation to Gaussian...", file=sys.stderr)
+            log.info("Applying pose transformation to Gaussian...")
             gaussian = _apply_pose_to_gaussian(gaussian, pose_data)
         elif not world_coordinates:
-            print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
+            log.info("Skipping pose (world_coordinates=False)")
 
         ply_path = save_dir / "gaussian.ply"
         try:
@@ -880,9 +884,9 @@ def run_decode(
                 transform = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
             gaussian.save_ply(str(ply_path), transform=transform)
             saved_files["files"]["ply"] = str(ply_path)
-            print(f"[Worker] Saved Gaussian PLY: {ply_path}", file=sys.stderr)
+            log.info("Saved Gaussian PLY: %s", ply_path)
         except Exception as e:
-            print(f"[Worker] Warning: Failed to save Gaussian PLY: {e}", file=sys.stderr)
+            log.warning("Failed to save Gaussian PLY: %s", e)
 
         return {
             "status": "success",
@@ -913,7 +917,7 @@ def run_decode(
 
             # Apply postprocessing if requested
             if with_postprocess:
-                print(f"[Worker] Applying mesh postprocessing (simplify={simplify})...", file=sys.stderr)
+                log.info("Applying mesh postprocessing (simplify=%s)...", simplify)
                 from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
                 vertices, faces = postprocess_mesh(
                     vertices,
@@ -923,7 +927,7 @@ def run_decode(
                     fill_holes=True,
                     verbose=True,
                 )
-                print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
+                log.info("Postprocessing complete: %d vertices, %d faces", len(vertices), len(faces))
                 original_vertex_colors = None
 
             # Process vertex colors if available
@@ -949,12 +953,12 @@ def run_decode(
                     }
 
             if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
-                print(f"[Worker] Applying pose transformation to world coordinates...", file=sys.stderr)
+                log.info("Applying pose transformation to world coordinates...")
                 vertices = _apply_pose_to_vertices(vertices, pose_data)
             elif not world_coordinates:
-                print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
+                log.info("Skipping pose (world_coordinates=False)")
             else:
-                print(f"[Worker] No pose data found, mesh will be in normalized coordinates", file=sys.stderr)
+                log.info("No pose data found, mesh will be in normalized coordinates")
 
             # Transform from Z-up to Y-up if requested
             if up_axis == "Y-up (standard)":
@@ -975,10 +979,10 @@ def run_decode(
             with open(glb_path, 'wb') as f:
                 f.write(glb_bytes)
             saved_files["files"]["glb"] = str(glb_path)
-            print(f"[Worker] Saved Mesh GLB: {glb_path}", file=sys.stderr)
+            log.info("Saved Mesh GLB: %s", glb_path)
 
         except Exception as e:
-            print(f"[Worker] Warning: Failed to save Mesh GLB: {e}", file=sys.stderr)
+            log.error("Failed to save Mesh GLB: %s", e)
             import traceback
             traceback.print_exc(file=sys.stderr)
             mesh_path = save_dir / "mesh.pt"
@@ -1009,7 +1013,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     """
     import trimesh
 
-    print("[Worker] Running direct texture baking", file=sys.stderr)
+    log.info("Running direct texture baking")
 
     # Extract parameters
     ply_path = request["ply_path"]
@@ -1019,28 +1023,28 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     texture_size = request.get("texture_size", 1024)
     rendering_engine = request.get("rendering_engine", "nvdiffrast")
 
-    print(f"[Worker] PLY: {ply_path}", file=sys.stderr)
-    print(f"[Worker] GLB: {glb_path}", file=sys.stderr)
-    print(f"[Worker] Mode: {texture_mode}, Size: {texture_size}", file=sys.stderr)
+    log.info("PLY: %s", ply_path)
+    log.info("GLB: %s", glb_path)
+    log.info("Mode: %s, Size: %d", texture_mode, texture_size)
 
     from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
     from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
     from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = comfy.model_management.get_torch_device()
 
     # Load Gaussian from PLY
-    print(f"[Worker] Loading Gaussian from PLY...", file=sys.stderr)
+    log.info("Loading Gaussian from PLY...")
     gaussian = Gaussian(
         aabb=[-1, -1, -1, 2, 2, 2],
         sh_degree=0,
         device=device
     )
     gaussian.load_ply(ply_path)
-    print(f"[Worker] Loaded Gaussian with {gaussian._xyz.shape[0]} points", file=sys.stderr)
+    log.info("Loaded Gaussian with %d points", gaussian._xyz.shape[0])
 
     # Load Mesh from GLB
-    print(f"[Worker] Loading Mesh from GLB...", file=sys.stderr)
+    log.info("Loading Mesh from GLB...")
     loaded = trimesh.load(glb_path)
 
     if isinstance(loaded, trimesh.Scene):
@@ -1051,7 +1055,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     else:
         trimesh_mesh = loaded
 
-    print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
+    log.info("Loaded mesh with %d vertices", len(trimesh_mesh.vertices))
 
     # Convert to MeshExtractResult format
     vertices_np = np.array(trimesh_mesh.vertices)
@@ -1073,7 +1077,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     # Run texture baking
-    print(f"[Worker] Running texture baking...", file=sys.stderr)
+    log.info("Running texture baking...")
     result_mesh = to_glb(
         gaussian,
         mesh,
@@ -1097,7 +1101,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     with open(output_path, 'wb') as f:
         f.write(glb_bytes)
 
-    print(f"[Worker] Saved textured GLB: {output_path}", file=sys.stderr)
+    log.info("Saved textured GLB: %s", output_path)
 
     # Cleanup
     _unload(gaussian, mesh)

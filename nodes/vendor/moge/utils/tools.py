@@ -1,4 +1,5 @@
 from typing import *
+import logging
 import time
 from pathlib import Path
 from numbers import Number
@@ -10,6 +11,8 @@ import os
 import importlib
 import importlib.util
 
+log = logging.getLogger("sam3dobjects")
+
 
 def catch_exception(fn):
     @wraps(fn)
@@ -18,7 +21,7 @@ def catch_exception(fn):
             return fn(*args, **kwargs)
         except Exception as e:
             import traceback
-            print(f"Exception in {fn.__name__}",  end='r')
+            log.error("Exception in %s", fn.__name__)
             # print({', '.join(repr(arg) for arg in args)}, {', '.join(f'{k}={v!r}' for k, v in kwargs.items())})
             traceback.print_exc(chain=False)
             time.sleep(0.1)
@@ -202,9 +205,9 @@ class timeit:
         if self.verbose:
             if self.average:
                 avg = self.average_time
-                print(f"{self.name or 'It'} took {avg:.6f} seconds in average.")
+                log.info("%s took %.6f seconds in average.", self.name or 'It', avg)
             else:
-                print(f"{self.name or 'It'} took {self.time:.6f} seconds.")
+                log.info("%s took %.6f seconds.", self.name or 'It', self.time)
 
 
 def strip_common_prefix_suffix(strings: List[str]) -> List[str]:

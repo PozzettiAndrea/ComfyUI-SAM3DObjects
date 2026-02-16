@@ -1,7 +1,10 @@
 """SAM3D_DepthEstimate node for running MoGe depth estimation separately."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3D_DepthEstimate:
     """
@@ -75,7 +78,7 @@ class SAM3D_DepthEstimate:
             sys.path.insert(0, _VENDOR_PATH)
 
         start_time = time.time()
-        print(f"[SAM3DObjects] DepthEstimate: Running depth estimation with MoGe...")
+        log.info("DepthEstimate: Running depth estimation with MoGe...")
 
         # Convert ComfyUI tensor to PIL Image
         # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
@@ -92,7 +95,7 @@ class SAM3D_DepthEstimate:
 
         # Load from ComfyUI/models/sam3d/sam-3d-objects/moge-vitl/model.pt
         moge_path = Path(folder_paths.models_dir) / "sam3d" / "sam-3d-objects" / "moge-vitl" / "model.pt"
-        print(f"[SAM3DObjects] Loading MoGe model from {moge_path}...")
+        log.info("Loading MoGe model from %s...", moge_path)
         raw_model = MoGeModel.from_pretrained(str(moge_path))
 
         model = MoGe(raw_model, device="cuda")  # Wrapper handles .cuda().eval()
@@ -140,8 +143,9 @@ class SAM3D_DepthEstimate:
         del model
         del raw_model
         gc.collect()
-        torch.cuda.empty_cache()
-        print(f"[SAM3DObjects] Depth model unloaded")
+        import comfy.model_management
+        comfy.model_management.soft_empty_cache()
+        log.info("Depth model unloaded")
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()
@@ -173,7 +177,7 @@ class SAM3D_DepthEstimate:
         depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
 
         elapsed = time.time() - start_time
-        print(f"[SAM3DObjects] OK Depth estimation done: {elapsed:.0f}s")
+        log.info("Depth estimation done: %.0fs", elapsed)
         return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)
 
     def _get_next_inference_dir(self, base_output_dir: str) -> str:

@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import trimesh
+import comfy.model_management
 from pytorch3d.structures import Meshes
 from pytorch3d.transforms import quaternion_to_matrix, Transform3d, matrix_to_quaternion
 from sam3d_objects.data.dataset.tdfy.transforms_3d import compose_transform, decompose_transform
@@ -89,7 +90,7 @@ def layout_post_optimization(
 
     set_seed(100)
     if device is None:
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
 
     # init transform and process mesh
     Rotation = quaternion_to_matrix(Quaternion.squeeze(1))

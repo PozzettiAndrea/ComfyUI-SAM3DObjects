@@ -1,3 +1,4 @@
+import logging
 from typing import *
 from numbers import Number
 from functools import partial
@@ -5,6 +6,8 @@ from pathlib import Path
 import importlib
 import warnings
 import json
+
+log = logging.getLogger("sam3dobjects")
 
 import torch
 import torch.nn as nn
@@ -236,9 +239,9 @@ class MoGeModel(nn.Module):
             with torch.device('meta'):
                 model = cls(**model_config)
             model.load_state_dict(checkpoint['model'], assign=True)
-            print("[MoGe] Meta-device init succeeded — zero memory allocated for weights")
+            log.info("Meta-device init succeeded — zero memory allocated for weights")
         except Exception as e:
-            print(f"[MoGe] Meta-device init failed ({type(e).__name__}: {e}), falling back to standard init")
+            log.warning("Meta-device init failed (%s: %s), falling back to standard init", type(e).__name__, e)
             model = cls(**model_config)
             model.load_state_dict(checkpoint['model'])
         return model
