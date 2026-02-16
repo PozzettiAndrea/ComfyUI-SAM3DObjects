@@ -1,3 +1,4 @@
+import logging
 import os
 os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '1'
 from pathlib import Path
@@ -8,6 +9,8 @@ from typing import *
 import itertools
 import json
 import warnings
+
+log = logging.getLogger("sam3dobjects")
 
 import click
 
@@ -91,7 +94,7 @@ def main(
         splitted_images = split_panorama_image(image, splitted_extrinsics, splitted_intriniscs, splitted_resolution)
 
         # Infer each view 
-        print('Inferring...') if pbar.disable else pbar.set_postfix_str(f'Inferring')
+        log.info('Inferring...') if pbar.disable else pbar.set_postfix_str('Inferring')
 
         splitted_distance_maps, splitted_masks = [], []
         for i in trange(0, len(splitted_images), batch_size, desc='Inferring splitted views', disable=len(splitted_images) <= batch_size, leave=False):
@@ -112,7 +115,7 @@ def main(
                 cv2.imwrite(str(splitted_save_path / f'{i:02d}_distance_vis.png'), cv2.cvtColor(colorize_depth(splitted_distance_maps[i], splitted_masks[i]), cv2.COLOR_RGB2BGR))
 
         # Merge
-        print('Merging...') if pbar.disable else pbar.set_postfix_str(f'Merging')
+        log.info('Merging...') if pbar.disable else pbar.set_postfix_str('Merging')
 
         merging_width, merging_height = min(1920, width), min(960, height)
         panorama_depth, panorama_mask = merge_panorama_depth(merging_width, merging_height, splitted_distance_maps, splitted_masks, splitted_extrinsics, splitted_intriniscs)
@@ -122,7 +125,7 @@ def main(
         points = panorama_depth[:, :, None] * spherical_uv_to_directions(utils3d.numpy.image_uv(width=width, height=height))
         
         # Write outputs
-        print('Writing outputs...') if pbar.disable else pbar.set_postfix_str(f'Inferring')
+        log.info('Writing outputs...') if pbar.disable else pbar.set_postfix_str('Inferring')
         save_path = Path(output_path, image_path.relative_to(input_path).parent, image_path.stem)
         save_path.mkdir(exist_ok=True, parents=True)
         if save_maps_:

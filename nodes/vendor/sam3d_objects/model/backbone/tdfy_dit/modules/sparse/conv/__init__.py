@@ -1,6 +1,8 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 from .. import BACKEND
 
+log = logging.getLogger("sam3dobjects")
 
 SPCONV_ALGO = "auto"  # 'auto', 'implicit_gemm', 'native'
 
@@ -16,7 +18,7 @@ def __from_env():
         "native",
     ]:
         SPCONV_ALGO = env_spconv_algo
-    print(f"[SPARSE][CONV] spconv algo: {SPCONV_ALGO}")
+    log.info("spconv algo: %s", SPCONV_ALGO)
 
 
 __from_env()

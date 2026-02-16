@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import sys
@@ -7,6 +8,8 @@ import json
 import time
 import random
 from typing import *
+
+log = logging.getLogger("sam3dobjects")
 import itertools
 from contextlib import nullcontext
 from concurrent.futures import ThreadPoolExecutor
@@ -101,7 +104,7 @@ def main(
                     'batch_size_total': batch_size_total,
                 })
             except:
-                print('Failed to log config to MLFlow')
+                log.warning('Failed to log config to MLFlow')
         Path(workspace).mkdir(parents=True, exist_ok=True)
         with Path(workspace).joinpath('config.json').open('w') as f:
             json.dump(config, f, indent=4)
@@ -111,13 +114,13 @@ def main(
         set_seed(seed, device_specific=True)
 
     # Initialize model
-    print('Initialize model')
+    log.info('Initialize model')
     with accelerator.local_main_process_first():
         from moge.model import import_model_class_by_version
         MoGeModel = import_model_class_by_version(config['model_version'])      
         model = MoGeModel(**config['model'])
     count_total_parameters = sum(p.numel() for p in model.parameters())
-    print(f'Total parameters: {count_total_parameters}')
+    log.info('Total parameters: %d', count_total_parameters)
 
     # Set up EMA model
     if enable_ema and accelerator.is_main_process:
@@ -136,31 +139,31 @@ def main(
 
     count_grouped_parameters = [sum(p.numel() for p in param_group['params'] if p.requires_grad) for param_group in optimizer.param_groups]
     for i, count in enumerate(count_grouped_parameters):
-        print(f'- Group {i}: {count} parameters')
+        log.info('- Group %d: %d parameters', i, count)
 
     # Attempt to load checkpoint
     checkpoint: Dict[str, Any]
     with accelerator.local_main_process_first():
         if checkpoint_path.endswith('.pt'):
             # - Load specific checkpoint file
-            print(f'Load checkpoint: {checkpoint_path}')
+            log.info('Load checkpoint: %s', checkpoint_path)
             checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
-        elif checkpoint_path == "latest": 
+        elif checkpoint_path == "latest":
             # - Load latest
             checkpoint_path = Path(workspace, 'checkpoint', 'latest.pt')
             if checkpoint_path.exists():
-                print(f'Load checkpoint: {checkpoint_path}')
+                log.info('Load checkpoint: %s', checkpoint_path)
                 checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
                 i_step = checkpoint['step']
                 if 'model' not in checkpoint and (checkpoint_model_path := Path(workspace, 'checkpoint', f'{i_step:08d}.pt')).exists():
-                    print(f'Load model checkpoint: {checkpoint_model_path}')
+                    log.info('Load model checkpoint: %s', checkpoint_model_path)
                     checkpoint['model'] = torch.load(checkpoint_model_path, map_location='cpu', weights_only=True)['model']
                 if 'optimizer' not in checkpoint and (checkpoint_optimizer_path := Path(workspace, 'checkpoint', f'{i_step:08d}_optimizer.pt')).exists():
-                    print(f'Load optimizer checkpoint: {checkpoint_optimizer_path}')
+                    log.info('Load optimizer checkpoint: %s', checkpoint_optimizer_path)
                     checkpoint.update(torch.load(checkpoint_optimizer_path, map_location='cpu', weights_only=True))
                 if enable_ema and accelerator.is_main_process:
                     if 'ema_model' not in checkpoint and (checkpoint_ema_model_path := Path(workspace, 'checkpoint', f'{i_step:08d}_ema.pt')).exists():
-                        print(f'Load EMA model checkpoint: {checkpoint_ema_model_path}')
+                        log.info('Load EMA model checkpoint: %s', checkpoint_ema_model_path)
                         checkpoint['ema_model'] = torch.load(checkpoint_ema_model_path, map_location='cpu', weights_only=True)['model']
             else:
                 checkpoint = None
@@ -169,21 +172,21 @@ def main(
             i_step = int(checkpoint_path)
             checkpoint = {'step': i_step}
             if (checkpoint_model_path := Path(workspace, 'checkpoint', f'{i_step:08d}.pt')).exists():
-                print(f'Load model checkpoint: {checkpoint_model_path}')
+                log.info('Load model checkpoint: %s', checkpoint_model_path)
                 checkpoint['model'] = torch.load(checkpoint_model_path, map_location='cpu', weights_only=True)['model']
             if (checkpoint_optimizer_path := Path(workspace, 'checkpoint', f'{i_step:08d}_optimizer.pt')).exists():
-                print(f'Load optimizer checkpoint: {checkpoint_optimizer_path}')
+                log.info('Load optimizer checkpoint: %s', checkpoint_optimizer_path)
                 checkpoint.update(torch.load(checkpoint_optimizer_path, map_location='cpu', weights_only=True))
             if enable_ema and accelerator.is_main_process:
                 if (checkpoint_ema_model_path := Path(workspace, 'checkpoint', f'{i_step:08d}_ema.pt')).exists():
-                    print(f'Load EMA model checkpoint: {checkpoint_ema_model_path}')
+                    log.info('Load EMA model checkpoint: %s', checkpoint_ema_model_path)
                     checkpoint['ema_model'] = torch.load(checkpoint_ema_model_path, map_location='cpu', weights_only=True)['model']
         else:
             checkpoint = None
 
     if checkpoint is None:
         # Initialize model weights
-        print('Initialize model weights')
+        log.info('Initialize model weights')
         with accelerator.local_main_process_first():
             model.init_weights()
         initial_step = 0
@@ -218,7 +221,7 @@ def main(
                 save_path.write_bytes(data)
                 break
             except Exception as e:
-                print('Error while saving checkpoint, retrying in 1 minute: ', e)
+                log.error('Error while saving checkpoint, retrying in 1 minute: %s', e)
                 time.sleep(60)
 
     # Ready to train
@@ -362,7 +365,7 @@ def main(
                         try:
                             mlflow.log_metrics(records, step=i_step)
                         except Exception as e:
-                            print(f'Error while logging metrics to mlflow: {e}')
+                            log.error('Error while logging metrics to mlflow: %s', e)
                 records = []
 
             # Save model weight checkpoint

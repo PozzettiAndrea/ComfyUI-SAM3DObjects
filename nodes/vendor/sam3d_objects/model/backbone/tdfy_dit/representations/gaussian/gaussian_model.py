@@ -1,9 +1,12 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 import torch
 import numpy as np
 from plyfile import PlyData, PlyElement
 from .general_utils import inverse_sigmoid, strip_symmetric, build_scaling_rotation
 from ...renderers.sh_utils import SH2RGB
+
+log = logging.getLogger("sam3dobjects")
 
 
 class Gaussian:
@@ -170,12 +173,12 @@ class Gaussian:
                 colors_normalized[:, i] = 0.5
         colors_rgb = np.clip(colors_normalized * 255, 0, 255).astype(np.uint8)
 
-        print(f"[PLY Export] Saving both SH coefficients and RGB colors (ASCII format)")
-        print(f"  SH range: [{f_dc_tensor.min():.3f}, {f_dc_tensor.max():.3f}]")
-        print(f"  RGB range: [0, 255] uint8 (per-channel normalized)")
-        print(f"  Sample RGB (first 5):")
+        log.info("Saving both SH coefficients and RGB colors (ASCII format)")
+        log.debug("SH range: [%.3f, %.3f]", f_dc_tensor.min(), f_dc_tensor.max())
+        log.debug("RGB range: [0, 255] uint8 (per-channel normalized)")
+        log.debug("Sample RGB (first 5):")
         for i in range(min(5, colors_rgb.shape[0])):
-            print(f"    Point {i}: R={colors_rgb[i,0]:3d} G={colors_rgb[i,1]:3d} B={colors_rgb[i,2]:3d}")
+            log.debug("  Point %d: R=%3d G=%3d B=%3d", i, colors_rgb[i, 0], colors_rgb[i, 1], colors_rgb[i, 2])
 
         opacities = inverse_sigmoid(self.get_opacity).detach().cpu().numpy()
         if opacities.ndim == 1:
@@ -215,12 +218,12 @@ class Gaussian:
         plydata.write(path)
 
     def load_ply(self, path):
-        print(f"[Gaussian] load_ply: Loading from {path}")
+        log.info("load_ply: Loading from %s", path)
         plydata = PlyData.read(path)
-        print(f"[Gaussian] load_ply: PLY loaded, {len(plydata.elements[0])} vertices")
-        print(f"[Gaussian] load_ply: Properties: {[p.name for p in plydata.elements[0].properties]}")
+        log.info("load_ply: PLY loaded, %d vertices", len(plydata.elements[0]))
+        log.debug("load_ply: Properties: %s", [p.name for p in plydata.elements[0].properties])
 
-        print(f"[Gaussian] load_ply: Extracting xyz coordinates...")
+        log.debug("load_ply: Extracting xyz coordinates...")
         xyz = np.stack(
             (
                 np.asarray(plydata.elements[0]["x"]),
@@ -229,18 +232,18 @@ class Gaussian:
             ),
             axis=1,
         )
-        print(f"[Gaussian] load_ply: xyz shape={xyz.shape}, dtype={xyz.dtype}, strides={xyz.strides}")
+        log.debug("load_ply: xyz shape=%s, dtype=%s, strides=%s", xyz.shape, xyz.dtype, xyz.strides)
 
-        print(f"[Gaussian] load_ply: Extracting opacities...")
+        log.debug("load_ply: Extracting opacities...")
         opacities = np.asarray(plydata.elements[0]["opacity"])[..., np.newaxis].copy()
-        print(f"[Gaussian] load_ply: opacities shape={opacities.shape}, dtype={opacities.dtype}, strides={opacities.strides}")
+        log.debug("load_ply: opacities shape=%s, dtype=%s, strides=%s", opacities.shape, opacities.dtype, opacities.strides)
 
-        print(f"[Gaussian] load_ply: Extracting features_dc...")
+        log.debug("load_ply: Extracting features_dc...")
         features_dc = np.zeros((xyz.shape[0], 3, 1))
         features_dc[:, 0, 0] = np.asarray(plydata.elements[0]["f_dc_0"])
         features_dc[:, 1, 0] = np.asarray(plydata.elements[0]["f_dc_1"])
         features_dc[:, 2, 0] = np.asarray(plydata.elements[0]["f_dc_2"])
-        print(f"[Gaussian] load_ply: features_dc shape={features_dc.shape}, dtype={features_dc.dtype}")
+        log.debug("load_ply: features_dc shape=%s, dtype=%s", features_dc.shape, features_dc.dtype)
 
         if self.sh_degree > 0:
             extra_f_names = [
@@ -258,7 +261,7 @@ class Gaussian:
                 (features_extra.shape[0], 3, (self.max_sh_degree + 1) ** 2 - 1)
             )
 
-        print(f"[Gaussian] load_ply: Extracting scales...")
+        log.debug("load_ply: Extracting scales...")
         scale_names = [
             p.name
             for p in plydata.elements[0].properties
@@ -268,9 +271,9 @@ class Gaussian:
         scales = np.zeros((xyz.shape[0], len(scale_names)))
         for idx, attr_name in enumerate(scale_names):
             scales[:, idx] = np.asarray(plydata.elements[0][attr_name])
-        print(f"[Gaussian] load_ply: scales shape={scales.shape}, dtype={scales.dtype}")
+        log.debug("load_ply: scales shape=%s, dtype=%s", scales.shape, scales.dtype)
 
-        print(f"[Gaussian] load_ply: Extracting rotations...")
+        log.debug("load_ply: Extracting rotations...")
         rot_names = [
             p.name for p in plydata.elements[0].properties if p.name.startswith("rot")
         ]
@@ -278,36 +281,36 @@ class Gaussian:
         rots = np.zeros((xyz.shape[0], len(rot_names)))
         for idx, attr_name in enumerate(rot_names):
             rots[:, idx] = np.asarray(plydata.elements[0][attr_name])
-        print(f"[Gaussian] load_ply: rots shape={rots.shape}, dtype={rots.dtype}")
+        log.debug("load_ply: rots shape=%s, dtype=%s", rots.shape, rots.dtype)
 
         # convert to actual gaussian attributes
-        print(f"[Gaussian] load_ply: Converting to torch tensors on device={self.device}...")
-        print(f"[Gaussian] load_ply: Converting xyz...")
+        log.debug("load_ply: Converting to torch tensors on device=%s...", self.device)
+        log.debug("load_ply: Converting xyz...")
         xyz = torch.tensor(xyz, dtype=torch.float, device=self.device)
-        print(f"[Gaussian] load_ply: Converting features_dc...")
+        log.debug("load_ply: Converting features_dc...")
         features_dc = (
             torch.tensor(features_dc, dtype=torch.float, device=self.device)
             .transpose(1, 2)
             .contiguous()
         )
         if self.sh_degree > 0:
-            print(f"[Gaussian] load_ply: Converting features_extra...")
+            log.debug("load_ply: Converting features_extra...")
             features_extra = (
                 torch.tensor(features_extra, dtype=torch.float, device=self.device)
                 .transpose(1, 2)
                 .contiguous()
             )
-        print(f"[Gaussian] load_ply: Converting opacities...")
+        log.debug("load_ply: Converting opacities...")
         opacities = torch.sigmoid(
             torch.tensor(opacities, dtype=torch.float, device=self.device)
         )
-        print(f"[Gaussian] load_ply: Converting scales...")
+        log.debug("load_ply: Converting scales...")
         scales = torch.exp(torch.tensor(scales, dtype=torch.float, device=self.device))
-        print(f"[Gaussian] load_ply: Converting rots...")
+        log.debug("load_ply: Converting rots...")
         rots = torch.tensor(rots, dtype=torch.float, device=self.device)
 
         # convert to _hidden attributes
-        print(f"[Gaussian] load_ply: Setting internal attributes...")
+        log.debug("load_ply: Setting internal attributes...")
         self._xyz = (xyz - self.aabb[None, :3]) / self.aabb[None, 3:]
         self._features_dc = features_dc
         if self.sh_degree > 0:
@@ -322,7 +325,7 @@ class Gaussian:
             - self.scale_bias
         )
         self._rotation = rots - self.rots_bias[None, :]
-        print(f"[Gaussian] load_ply: Complete! Loaded {self._xyz.shape[0]} gaussians")
+        log.info("load_ply: Complete! Loaded %d gaussians", self._xyz.shape[0])
 
 def softplus_inverse_scaling_activation(x):
     return x + torch.log(-torch.expm1(-x))

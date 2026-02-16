@@ -1,7 +1,10 @@
 """SAM3DGaussianDecode node for decoding SLAT to Gaussian splats."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DGaussianDecode:
     """
@@ -71,7 +74,7 @@ class SAM3DGaussianDecode:
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
-        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
+        log.info("GaussianDecode: Decoding SLAT to Gaussian...")
 
         # Derive output_dir from slat path (same directory)
         output_dir = os.path.dirname(slat)
@@ -112,5 +115,5 @@ class SAM3DGaussianDecode:
         if not ply_path:
             raise RuntimeError("PLY file was not generated")
 
-        print(f"[SAM3DObjects] GaussianDecode completed: {ply_path}")
+        log.info("GaussianDecode completed: %s", ply_path)
         return (ply_path,)

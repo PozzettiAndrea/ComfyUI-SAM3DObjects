@@ -1,4 +1,5 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import logging
 from typing import Any, Iterable, Tuple, Union, Dict, Sequence, Mapping, Container
 import optree
 import torch
@@ -7,6 +8,8 @@ import inspect
 import ast
 import astor
 from torch.utils import _pytree
+
+log = logging.getLogger("sam3dobjects")
 
 # None = root, Iterable[Any] = path, Any = path of one
 ChildPathType = Union[None, Iterable[Any], Any]
@@ -227,7 +230,7 @@ def print_stats(tensor, label=None):
         label = _get_caller_arg_name(argnum=0)
     stats = get_stats(tensor)
     string = f"{label}:\n" + "\n".join(f"- {k}: {v}" for k, v in stats.items())
-    print(string)
+    log.debug("%s", string)
 
 
 def tree_reduce_unique(fn, tree, ensure_unique=True, **kwargs):

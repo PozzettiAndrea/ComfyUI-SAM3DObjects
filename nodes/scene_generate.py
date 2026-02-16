@@ -1,9 +1,12 @@
 """SAM3DSceneGenerate node - batch process multiple masks to 3D objects."""
 
+import logging
 import os
 import json
 import shutil
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DSceneGenerate:
     """
@@ -171,9 +174,9 @@ class SAM3DSceneGenerate:
             batch_size = 1
             masks = masks.unsqueeze(0)
 
-        print(f"[SAM3DObjects] SceneGenerate: Processing {batch_size} object(s) with phase-based batching")
+        log.info("SceneGenerate: Processing %d object(s) with phase-based batching", batch_size)
         if add_textures:
-            print(f"[SAM3DObjects] SceneGenerate: Texture baking enabled (mode={texture_mode}, size={texture_size})")
+            log.info("SceneGenerate: Texture baking enabled (mode=%s, size=%d)", texture_mode, texture_size)
 
         # Derive base output dir from pointmap path
         base_output_dir = os.path.dirname(pointmap_path)
@@ -188,12 +191,12 @@ class SAM3DSceneGenerate:
         # Save intrinsics for pose optimization
         intrinsics_path = os.path.join(base_output_dir, "intrinsics.pt")
         torch.save(intrinsics, intrinsics_path)
-        print(f"[SAM3DObjects] SceneGenerate: Saved intrinsics to {intrinsics_path}")
+        log.info("SceneGenerate: Saved intrinsics to %s", intrinsics_path)
 
         # Save image for pose optimization (needed for render-and-compare)
         image_path = os.path.join(base_output_dir, "image.png")
         image_pil.save(image_path)
-        print(f"[SAM3DObjects] SceneGenerate: Saved image to {image_path}")
+        log.info("SceneGenerate: Saved image to %s", image_path)
 
         # Get config paths from models
         generator_config = generator["config_path"]
@@ -249,7 +252,7 @@ class SAM3DSceneGenerate:
         }
 
         # Run batch processing - models are loaded once per phase
-        print(f"[SAM3DObjects] SceneGenerate: Starting batch processing...")
+        log.info("SceneGenerate: Starting batch processing...")
         result = run_scene_generate_batch(request)
 
         if result.get("status") == "error":
@@ -262,11 +265,11 @@ class SAM3DSceneGenerate:
 
             # Log output paths
             if obj_result.get("glb_path"):
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Mesh -> {obj_result['glb_path']}")
+                log.info("SceneGenerate [%d]: Mesh -> %s", idx, obj_result['glb_path'])
             if obj_result.get("textured_glb_path"):
-                print(f"[SAM3DObjects] SceneGenerate [{idx}]: Textured -> {obj_result['textured_glb_path']}")
+                log.info("SceneGenerate [%d]: Textured -> %s", idx, obj_result['textured_glb_path'])
 
-        print(f"\n[SAM3DObjects] SceneGenerate: Completed {batch_size} object(s)")
-        print(f"[SAM3DObjects] SceneGenerate: Output folder: {base_output_dir}")
+        log.info("SceneGenerate: Completed %d object(s)", batch_size)
+        log.info("SceneGenerate: Output folder: %s", base_output_dir)
 
         return (base_output_dir,)

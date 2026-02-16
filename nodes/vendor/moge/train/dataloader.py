@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import json
@@ -8,6 +9,8 @@ import traceback
 import itertools
 from numbers import Number
 import io
+
+log = logging.getLogger("sam3dobjects")
 
 import numpy as np
 import cv2
@@ -141,7 +144,7 @@ class TrainDataLoaderPipeline:
                 **data,
             })
         except Exception as e:
-            print(f"Failed to load instance {instance['dataset']}/{instance['filename']} because of exception:", e)
+            log.error("Failed to load instance %s/%s because of exception: %s", instance['dataset'], instance['filename'], e)
             instance.update(self.invalid_instance)
         return instance
 

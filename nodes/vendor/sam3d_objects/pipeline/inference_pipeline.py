@@ -6,11 +6,15 @@ import torch
 from loguru import logger
 from functools import wraps
 from torch.utils._pytree import tree_map_only
+import comfy.model_management
 
 
 def set_attention_backend():
-    if torch.cuda.is_available():
+    device = comfy.model_management.get_torch_device()
+    if device.type == "cuda":
         gpu_name = torch.cuda.get_device_name(0)
+    else:
+        gpu_name = str(device)
 
     logger.info(f"GPU name is {gpu_name}")
     if "A100" in gpu_name or "H100" in gpu_name or "H200" in gpu_name:

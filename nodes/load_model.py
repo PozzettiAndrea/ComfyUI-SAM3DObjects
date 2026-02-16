@@ -1,7 +1,10 @@
 """LoadSAM3DModel node - downloads checkpoints and passes config paths."""
 
+import logging
 import os
 from pathlib import Path
+
+log = logging.getLogger("sam3dobjects")
 
 try:
     from .comfy_utils import get_sam3d_models_path
@@ -72,6 +75,10 @@ class LoadSAM3DModel:
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference"
                 }),
+                "precision": (["auto", "bf16", "fp16", "fp32"], {
+                    "default": "auto",
+                    "tooltip": "Model precision. auto: best for your GPU (bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older)."
+                }),
                 "memory": (["cache_gpu", "cpu_offload", "delete"], {
                     "default": "cpu_offload",
                     "tooltip": "Model memory strategy: cache_gpu = keep on GPU between runs, cpu_offload = move to CPU RAM after use, delete = free after use"
@@ -99,16 +106,17 @@ class LoadSAM3DModel:
         self,
         attn_backend: str,
         compile: bool,
-        memory: str,
+        precision: str = "auto",
+        memory: str = "cpu_offload",
         unique_id: str = None,
         prompt: dict = None,
     ):
-        print(f"[SAM3DObjects] Loading SAM3D model...")
+        log.info("Loading SAM3D model...")
 
         # Detect which outputs are connected
         used_outputs = self._detect_used_outputs(prompt, unique_id)
         if used_outputs:
-            print(f"[SAM3DObjects] Connected outputs: {', '.join(used_outputs)}")
+            log.info("Connected outputs: %s", ', '.join(used_outputs))
 
         # Download checkpoints if needed
         checkpoint_path = self._get_or_download_checkpoint(used_outputs)
@@ -124,12 +132,13 @@ class LoadSAM3DModel:
         if "depth_model" in used_outputs or not used_outputs:
             self._ensure_moge_downloaded()
 
-        print(f"[SAM3DObjects] Model loaded successfully")
+        log.info("Model loaded successfully")
 
         # Return simple config dict
         model = {
             "config_path": config_path,
             "compile": compile,
+            "precision": precision,
             "memory": memory,
             "attn_backend": attn_backend,
         }
@@ -175,10 +184,10 @@ class LoadSAM3DModel:
                 missing_files.append(filename)
 
         if missing_files:
-            print(f"[SAM3DObjects] Need to download {len(missing_files)} file(s)...")
+            log.info("Need to download %d file(s)...", len(missing_files))
             cls._download_files(checkpoint_dir, missing_files)
         else:
-            print(f"[SAM3DObjects] All required checkpoints present")
+            log.info("All required checkpoints present")
 
         return checkpoint_dir
 
@@ -209,11 +218,11 @@ class LoadSAM3DModel:
         except ImportError:
             raise ImportError("huggingface_hub required: pip install huggingface-hub")
 
-        print(f"[SAM3DObjects] Downloading from HuggingFace: {REPO_ID}")
+        log.info("Downloading from HuggingFace: %s", REPO_ID)
 
         for filename in files:
             hf_path = f"checkpoints/{filename}"
-            print(f"[SAM3DObjects] Downloading {filename}...")
+            log.info("Downloading %s...", filename)
             hf_hub_download(
                 repo_id=REPO_ID,
                 filename=hf_path,
@@ -221,7 +230,7 @@ class LoadSAM3DModel:
                 local_dir_use_symlinks=False,
             )
 
-        print(f"[SAM3DObjects] Download complete")
+        log.info("Download complete")
 
     @classmethod
     def _ensure_dinov2_downloaded(cls):
@@ -238,7 +247,7 @@ class LoadSAM3DModel:
 
         # Download repo if not present
         if not (dinov2_dir / "hubconf.py").exists():
-            print(f"[SAM3DObjects] Downloading DINOv2 repo to {dinov2_dir}...")
+            log.info("Downloading DINOv2 repo to %s...", dinov2_dir)
             try:
                 dinov2_dir.mkdir(parents=True, exist_ok=True)
                 result = subprocess.run(
@@ -248,16 +257,16 @@ class LoadSAM3DModel:
                 )
                 if result.returncode != 0:
                     raise RuntimeError(f"git clone failed: {result.stderr}")
-                print(f"[SAM3DObjects] DINOv2 repo downloaded")
+                log.info("DINOv2 repo downloaded")
             except Exception as e:
-                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 repo: {e}")
+                log.warning("Failed to download DINOv2 repo: %s", e)
                 return
         else:
-            print(f"[SAM3DObjects] DINOv2 repo already present")
+            log.info("DINOv2 repo already present")
 
         # Download weights if not present (use wget to avoid SSL issues in isolated subprocess)
         if not weights_file.exists():
-            print(f"[SAM3DObjects] Downloading DINOv2 weights...")
+            log.info("Downloading DINOv2 weights...")
             try:
                 weights_url = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth"
                 # Use wget/curl to bypass Python SSL certificate issues in isolated subprocess
@@ -275,11 +284,11 @@ class LoadSAM3DModel:
                     )
                     if result.returncode != 0:
                         raise RuntimeError(f"wget/curl failed: {result.stderr}")
-                print(f"[SAM3DObjects] DINOv2 weights downloaded")
+                log.info("DINOv2 weights downloaded")
             except Exception as e:
-                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 weights: {e}")
+                log.warning("Failed to download DINOv2 weights: %s", e)
         else:
-            print(f"[SAM3DObjects] DINOv2 weights already present")
+            log.info("DINOv2 weights already present")
 
     @classmethod
     def _ensure_moge_downloaded(cls):
@@ -294,16 +303,16 @@ class LoadSAM3DModel:
 
         # Check if already downloaded
         if (moge_dir / "model.pt").exists():
-            print(f"[SAM3DObjects] MoGe already downloaded")
+            log.info("MoGe already downloaded")
             return
 
-        print(f"[SAM3DObjects] Downloading MoGe to {moge_dir}...")
+        log.info("Downloading MoGe to %s...", moge_dir)
         try:
             snapshot_download(
                 "Ruicheng/moge-vitl",
                 local_dir=str(moge_dir),
                 local_dir_use_symlinks=False,
             )
-            print(f"[SAM3DObjects] MoGe downloaded successfully")
+            log.info("MoGe downloaded successfully")
         except Exception as e:
-            print(f"[SAM3DObjects] Warning: Failed to download MoGe: {e}")
+            log.warning("Failed to download MoGe: %s", e)
