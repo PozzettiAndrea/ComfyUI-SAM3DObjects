@@ -143,8 +143,7 @@ class SAM3D_DepthEstimate:
         del model
         del raw_model
         gc.collect()
-        import comfy.model_management
-        comfy.model_management.soft_empty_cache()
+        torch.cuda.empty_cache()
         log.info("Depth model unloaded")
 
         # Create output directory

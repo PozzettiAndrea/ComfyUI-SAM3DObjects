@@ -99,7 +99,9 @@ class Head(nn.Module):
             nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2),
             nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate')
         )
-        upsampler[0].weight.data[:] = upsampler[0].weight.data[:, :, :1, :1]
+        # Skip weight initialization on meta device (no data to copy)
+        if upsampler[0].weight.device.type != 'meta':
+            upsampler[0].weight.data[:] = upsampler[0].weight.data[:, :, :1, :1]
         return upsampler
 
     def _make_output_block(self, dim_in: int, dim_out: int, dim_times_res_block_hidden: int, last_res_blocks: int, last_conv_channels: int, last_conv_size: int, res_block_norm: Literal['group_norm', 'layer_norm']):
@@ -241,7 +243,9 @@ class MoGeModel(nn.Module):
             model.load_state_dict(checkpoint['model'], assign=True)
             log.info("Meta-device init succeeded — zero memory allocated for weights")
         except Exception as e:
+            import traceback
             log.warning("Meta-device init failed (%s: %s), falling back to standard init", type(e).__name__, e)
+            log.debug("Full traceback:\n%s", traceback.format_exc())
             model = cls(**model_config)
             model.load_state_dict(checkpoint['model'])
         return model

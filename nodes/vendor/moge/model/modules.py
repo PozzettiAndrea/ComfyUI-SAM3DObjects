@@ -149,9 +149,11 @@ class Resampler(nn.Sequential):
                 nn.PixelShuffle(scale_factor),
                 nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate')
             )
-            for i in range(1, scale_factor ** 2):
-                self[0].weight.data[i::scale_factor ** 2] = self[0].weight.data[0::scale_factor ** 2]
-                self[0].bias.data[i::scale_factor ** 2] = self[0].bias.data[0::scale_factor ** 2]
+            # Skip weight initialization on meta device (no data to copy)
+            if self[0].weight.device.type != 'meta':
+                for i in range(1, scale_factor ** 2):
+                    self[0].weight.data[i::scale_factor ** 2] = self[0].weight.data[0::scale_factor ** 2]
+                    self[0].bias.data[i::scale_factor ** 2] = self[0].bias.data[0::scale_factor ** 2]
         elif type_ in ['nearest', 'bilinear']:
             nn.Sequential.__init__(self,
                 nn.Upsample(scale_factor=scale_factor, mode=type_, align_corners=False if type_ == 'bilinear' else None),
@@ -162,7 +164,9 @@ class Resampler(nn.Sequential):
                 nn.ConvTranspose2d(in_channels, out_channels, kernel_size=scale_factor, stride=scale_factor),
                 nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate')
             )
-            self[0].weight.data[:] = self[0].weight.data[:, :, :1, :1]
+            # Skip weight initialization on meta device (no data to copy)
+            if self[0].weight.device.type != 'meta':
+                self[0].weight.data[:] = self[0].weight.data[:, :, :1, :1]
         elif type_ == 'pixel_unshuffle':
             nn.Sequential.__init__(self,
                 nn.PixelUnshuffle(scale_factor),
