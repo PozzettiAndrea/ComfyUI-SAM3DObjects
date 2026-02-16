@@ -163,13 +163,6 @@ class SparseStructureFlowModel(nn.Module):
         if use_fp16:
             self.convert_to_fp16()
 
-    @property
-    def device(self) -> torch.device:
-        """
-        Return the device of the model.
-        """
-        return next(self.parameters()).device
-
     def convert_to_fp16(self) -> None:
         """
         Convert the torso of the model to float16.

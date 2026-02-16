@@ -95,13 +95,6 @@ class SparseTransformerBase(nn.Module):
             ]
         )
 
-    @property
-    def device(self) -> torch.device:
-        """
-        Return the device of the model.
-        """
-        return next(self.parameters()).device
-
     def convert_to_fp16(self) -> None:
         """
         Convert the torso of the model to float16.
