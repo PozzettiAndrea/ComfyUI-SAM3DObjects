@@ -10,7 +10,6 @@ This module processes multiple masks efficiently by:
 Each phase loads its own models directly - no shared lazy manager.
 """
 
-import gc
 import logging
 import os
 import sys
@@ -26,53 +25,12 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 from PIL import Image
-import comfy.model_management
+from .stages import (
+    _load_config, _resolve_dtype, auto_detect_attn_backend,
+    _get_or_load_generator, _get_or_load_decoder, _get_or_load_condition_embedder,
+)
 
 log = logging.getLogger("sam3dobjects")
-
-
-def _load_config(config_path: str):
-    """Load pipeline.yaml and return config + checkpoint_dir."""
-    from omegaconf import OmegaConf
-    config = OmegaConf.load(config_path)
-    checkpoint_dir = Path(config_path).parent
-    return config, checkpoint_dir
-
-
-def _get_dtype(config):
-    """Get torch dtype from config."""
-    dtype_str = getattr(config, 'dtype', 'float16')
-    if dtype_str == 'bfloat16':
-        return torch.bfloat16
-    elif dtype_str == 'float16':
-        return torch.float16
-    return torch.float32
-
-
-from . import model_cache
-
-
-def _unload(*models):
-    """Delete models and free VRAM."""
-    for m in models:
-        if m is not None:
-            del m
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
-
-
-def _offload_models(memory_mode, **named_models):
-    """Offload models according to memory strategy."""
-    for key, model in named_models.items():
-        if model is not None:
-            model_cache.offload(key, model, memory_mode)
-    if memory_mode != "cache_gpu":
-        comfy.model_management.soft_empty_cache()
-
-
-def _try_load_cached(key):
-    """Try to load a cached model. Returns model on GPU or None."""
-    return model_cache.try_load(key)
 
 
 def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -81,7 +39,9 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
     Each phase loads models directly, processes all objects, then unloads.
     """
-    attn_backend = request.get("attn_backend", "flash_attn")
+    attn_backend = request.get("attn_backend", "auto")
+    if attn_backend == "auto":
+        attn_backend = auto_detect_attn_backend()
     os.environ["ATTN_BACKEND"] = attn_backend
     os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
 
@@ -122,6 +82,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         texture_mode = request.get("texture_mode", "opt")
         texture_size = request.get("texture_size", 1024)
         memory = request.get("memory", "cpu_offload")
+        precision = request.get("precision", "fp16")
 
         num_objects = len(masks_b64)
         log.info("Scene batch: Processing %d object(s)", num_objects)
@@ -160,7 +121,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         _run_phase1_stage1(
             config_path, image, masks, pointmap, object_dirs, object_results,
-            seed, stage1_steps, stage1_cfg, stage1_cfg_pm, memory
+            seed, stage1_steps, stage1_cfg, stage1_cfg_pm, memory, precision
         )
 
         log.info("Phase 1 complete: %.0fs", time.time() - phase1_start)
@@ -173,7 +134,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         slat_paths = _run_phase2_stage2(
             config_path, image, masks, object_dirs, object_results,
-            seed, stage2_steps, stage2_cfg, memory
+            seed, stage2_steps, stage2_cfg, memory, precision
         )
 
         log.info("Phase 2 complete: %.0fs", time.time() - phase2_start)
@@ -186,7 +147,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         glb_paths = _run_phase3_mesh_decode(
             mesh_config_path, slat_paths, object_dirs, object_results,
-            with_postprocess, simplify, memory
+            with_postprocess, simplify, memory, precision
         )
 
         log.info("Phase 3 complete: %.0fs", time.time() - phase3_start)
@@ -200,7 +161,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
             _run_phase4_texture(
                 gs_config_path, slat_paths, glb_paths, object_dirs, object_results,
-                texture_bake_impl, texture_mode, texture_size, memory
+                texture_bake_impl, texture_mode, texture_size, memory, precision
             )
 
             log.info("Phase 4 complete: %.0fs", time.time() - phase4_start)
@@ -236,70 +197,24 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_phase1_stage1(
     config_path, image, masks, pointmap, object_dirs, object_results,
-    seed, stage1_steps, stage1_cfg, stage1_cfg_pm, memory="cpu_offload"
+    seed, stage1_steps, stage1_cfg, stage1_cfg_pm, memory="cpu_offload",
+    precision="fp16"
 ):
-    """Phase 1: Load Stage1 models once, process all masks, offload."""
-    from omegaconf import OmegaConf
+    """Phase 1: Load Stage1 models once, process all masks."""
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn, try_instantiate_on_meta
     from sam3d_objects.pipeline.inference_utils import (
         downsample_sparse_structure, prune_sparse_structure, get_pose_decoder
     )
     from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
-    # Load Stage 1 models (check cache first)
+    # Load Stage 1 models (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading Stage 1 models...")
-
-    ss_generator = _try_load_cached("generator:ss")
-    ss_decoder = _try_load_cached("decoder:ss")
-    ss_embedder = _try_load_cached("embedder:ss")
-
-    if ss_generator is None:
-        gen_config_path = checkpoint_dir / config.ss_generator_config_path
-        gen_ckpt_path = checkpoint_dir / config.ss_generator_ckpt_path
-        gen_config = OmegaConf.load(gen_config_path)
-        ss_generator, use_assign = try_instantiate_on_meta(instantiate, gen_config["module"]["generator"]["backbone"])
-        ss_generator = load_model_from_checkpoint(
-            ss_generator, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key="state_dict",
-            state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
-            assign=use_assign,
-        ).cuda().to(dtype)
-    else:
-        log.debug("Using cached ss_generator")
-        gen_config_path = checkpoint_dir / config.ss_generator_config_path
-        gen_ckpt_path = checkpoint_dir / config.ss_generator_ckpt_path
-        gen_config = OmegaConf.load(gen_config_path)
-
-    if ss_decoder is None:
-        dec_config_path = checkpoint_dir / config.ss_decoder_config_path
-        dec_ckpt_path = checkpoint_dir / config.ss_decoder_ckpt_path
-        dec_config = OmegaConf.load(dec_config_path)
-        from sam3d_objects.model.io import remove_prefix_state_dict_fn
-        ss_decoder, use_assign = try_instantiate_on_meta(instantiate, dec_config)
-        ss_decoder = load_model_from_checkpoint(
-            ss_decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key=None,
-            state_dict_fn=remove_prefix_state_dict_fn("module."),
-            assign=use_assign,
-        ).cuda()
-    else:
-        log.debug("Using cached ss_decoder")
-
-    if ss_embedder is None:
-        embedder_config = gen_config.module.condition_embedder.backbone
-        ss_embedder, use_assign = try_instantiate_on_meta(instantiate, embedder_config)
-        ss_embedder = load_model_from_checkpoint(
-            ss_embedder, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key="state_dict",
-            state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
-            assign=use_assign,
-        ).cuda().to(dtype)
-    else:
-        log.debug("Using cached ss_embedder")
+    ss_generator = _get_or_load_generator(config_path, 'ss', precision)
+    ss_decoder = _get_or_load_decoder(config_path, 'ss', precision)
+    ss_embedder = _get_or_load_condition_embedder(config_path, 'ss', precision)
 
     # Get preprocessor
     preprocessor_config = config.get('ss_preprocessor')
@@ -439,59 +354,24 @@ def _run_phase1_stage1(
         object_results[idx]["translation"] = translation
         object_results[idx]["scale"] = scale
 
-    # Offload
-    log.info("Offloading Stage 1 models (mode=%s)...", memory)
-    _offload_models(
-        memory,
-        **{"generator:ss": ss_generator, "decoder:ss": ss_decoder, "embedder:ss": ss_embedder},
-    )
-
 
 def _run_phase2_stage2(
     config_path, image, masks, object_dirs, object_results,
-    seed, stage2_steps, stage2_cfg, memory="cpu_offload"
+    seed, stage2_steps, stage2_cfg, memory="cpu_offload",
+    precision="fp16"
 ):
-    """Phase 2: Load Stage2 models once, process all sparse structures, offload."""
-    from omegaconf import OmegaConf
+    """Phase 2: Load Stage2 models once, process all sparse structures."""
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn, try_instantiate_on_meta
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
     from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
-    # Load Stage 2 models (check cache first)
+    # Load Stage 2 models (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading Stage 2 models...")
-
-    gen_config_path = checkpoint_dir / config.slat_generator_config_path
-    gen_ckpt_path = checkpoint_dir / config.slat_generator_ckpt_path
-    gen_config = OmegaConf.load(gen_config_path)
-
-    slat_generator = _try_load_cached("generator:slat")
-    if slat_generator is None:
-        slat_generator, use_assign = try_instantiate_on_meta(instantiate, gen_config["module"]["generator"]["backbone"])
-        slat_generator = load_model_from_checkpoint(
-            slat_generator, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key="state_dict",
-            state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
-            assign=use_assign,
-        ).cuda().to(dtype)
-    else:
-        log.debug("Using cached slat_generator")
-
-    slat_embedder = _try_load_cached("embedder:slat")
-    if slat_embedder is None:
-        embedder_config = gen_config.module.condition_embedder.backbone
-        slat_embedder, use_assign = try_instantiate_on_meta(instantiate, embedder_config)
-        slat_embedder = load_model_from_checkpoint(
-            slat_embedder, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key="state_dict",
-            state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
-            assign=use_assign,
-        ).cuda().to(dtype)
-    else:
-        log.debug("Using cached slat_embedder")
+    slat_generator = _get_or_load_generator(config_path, 'slat', precision)
+    slat_embedder = _get_or_load_condition_embedder(config_path, 'slat', precision)
 
     # Get preprocessor
     preprocessor_config = config.get('slat_preprocessor')
@@ -586,46 +466,20 @@ def _run_phase2_stage2(
             object_results[idx]["translation"] = translation
             object_results[idx]["scale"] = scale
 
-    # Offload
-    log.info("Offloading Stage 2 models (mode=%s)...", memory)
-    _offload_models(
-        memory,
-        **{"generator:slat": slat_generator, "embedder:slat": slat_embedder},
-    )
-
     return slat_paths
 
 
 def _run_phase3_mesh_decode(
     mesh_config_path, slat_paths, object_dirs, object_results,
-    with_postprocess, simplify, memory="cpu_offload"
+    with_postprocess, simplify, memory="cpu_offload", precision="fp16"
 ):
-    """Phase 3: Load mesh decoder once, process all SLATs, offload."""
+    """Phase 3: Load mesh decoder once, process all SLATs."""
     import trimesh
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn, try_instantiate_on_meta
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    config, checkpoint_dir = _load_config(mesh_config_path)
-
-    # Load mesh decoder (check cache first)
+    # Load mesh decoder (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading mesh decoder...")
-    decoder = _try_load_cached("decoder:slat_decoder_mesh")
-    if decoder is None:
-        dec_config_path = checkpoint_dir / config.slat_decoder_mesh_config_path
-        dec_ckpt_path = checkpoint_dir / config.slat_decoder_mesh_ckpt_path
-        dec_config = OmegaConf.load(dec_config_path)
-
-        decoder, use_assign = try_instantiate_on_meta(instantiate, dec_config)
-        decoder = load_model_from_checkpoint(
-            decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key=None,
-            state_dict_fn=remove_prefix_state_dict_fn("module."),
-            assign=use_assign,
-        ).cuda()
-    else:
-        log.debug("Using cached mesh decoder")
+    decoder = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
 
     glb_paths = []
 
@@ -685,42 +539,20 @@ def _run_phase3_mesh_decode(
         glb_paths.append(glb_path)
         object_results[idx]["glb_path"] = glb_path
 
-    # Offload
-    log.info("Offloading mesh decoder (mode=%s)...", memory)
-    _offload_models(memory, **{"decoder:slat_decoder_mesh": decoder})
-
     return glb_paths
 
 
 def _run_phase4_texture(
     gs_config_path, slat_paths, glb_paths, object_dirs, object_results,
-    texture_bake_impl, texture_mode, texture_size, memory="cpu_offload"
+    texture_bake_impl, texture_mode, texture_size, memory="cpu_offload",
+    precision="fp16"
 ):
     """Phase 4: Load gaussian decoder once, decode all, then texture bake."""
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn, try_instantiate_on_meta
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    config, checkpoint_dir = _load_config(gs_config_path)
-
-    # Load gaussian decoder (check cache first)
+    # Load gaussian decoder (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading gaussian decoder...")
-    decoder = _try_load_cached("decoder:slat_decoder_gs")
-    if decoder is None:
-        dec_config_path = checkpoint_dir / config.slat_decoder_gs_config_path
-        dec_ckpt_path = checkpoint_dir / config.slat_decoder_gs_ckpt_path
-        dec_config = OmegaConf.load(dec_config_path)
-
-        decoder, use_assign = try_instantiate_on_meta(instantiate, dec_config)
-        decoder = load_model_from_checkpoint(
-            decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-            state_dict_key=None,
-            state_dict_fn=remove_prefix_state_dict_fn("module."),
-            assign=use_assign,
-        ).cuda()
-    else:
-        log.debug("Using cached gaussian decoder")
+    decoder = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
 
     ply_paths = []
 
@@ -752,10 +584,6 @@ def _run_phase4_texture(
 
         ply_paths.append(ply_path)
         object_results[idx]["ply_path"] = ply_path
-
-    # Offload gaussian decoder
-    log.info("Offloading gaussian decoder (mode=%s)...", memory)
-    _offload_models(memory, **{"decoder:slat_decoder_gs": decoder})
 
     # Texture bake all
     for idx, (ply_path, glb_path, object_dir) in enumerate(zip(ply_paths, glb_paths, object_dirs)):

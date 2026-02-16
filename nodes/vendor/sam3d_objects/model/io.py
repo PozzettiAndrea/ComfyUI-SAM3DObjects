@@ -143,6 +143,26 @@ def load_sharded_checkpoint(path: str, device: Optional[str]):
     return checkpoint
 
 
+def _reinit_meta_buffers(model, device):
+    """Replace meta-device buffers with empty tensors on target device.
+
+    After load_state_dict(assign=True), non-persistent buffers remain on meta
+    because they aren't in the checkpoint. This replaces them so subsequent
+    operations don't crash.
+    """
+    for name, buf in list(model.named_buffers()):
+        if buf.device.type == 'meta':
+            parts = name.split('.')
+            parent = model
+            for part in parts[:-1]:
+                parent = getattr(parent, part)
+            parent.register_buffer(
+                parts[-1],
+                torch.empty(buf.shape, dtype=buf.dtype, device=device),
+                persistent=False,
+            )
+
+
 def try_instantiate_on_meta(instantiate_fn, config):
     """Instantiate model on meta device if possible (no real memory allocated).
 
@@ -213,12 +233,13 @@ def load_model_from_checkpoint(
 
     model.load_state_dict(state_dict, strict=strict, assign=assign)
 
-    if device is not None:
-        # Use to_empty() for models on meta device (assign=True already loaded weights)
-        if next(model.parameters()).device.type == 'meta':
-            model = model.to_empty(device=device)
-        else:
-            model = model.to(device)
+    if assign and device is not None:
+        # With assign=True, parameters are already on the checkpoint's device
+        # (set by map_location in torch.load). Only fix non-persistent buffers
+        # that stayed on meta because they aren't in the checkpoint.
+        _reinit_meta_buffers(model, device)
+    elif device is not None:
+        model = model.to(device)
 
     if freeze:
         for param in model.parameters():

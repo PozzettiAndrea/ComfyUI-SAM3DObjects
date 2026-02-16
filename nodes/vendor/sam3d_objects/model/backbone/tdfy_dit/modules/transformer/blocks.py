@@ -16,8 +16,6 @@ class AbsolutePositionEmbedder(nn.Module):
         self.channels = channels
         self.in_channels = in_channels
         self.freq_dim = channels // in_channels // 2
-        self.freqs = torch.arange(self.freq_dim, dtype=torch.float32) / self.freq_dim
-        self.freqs = 1.0 / (10000**self.freqs)
 
     def _sin_cos_embedding(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -29,8 +27,9 @@ class AbsolutePositionEmbedder(nn.Module):
         Returns:
             an (N, D) Tensor of positional embeddings.
         """
-        self.freqs = self.freqs.to(x.device)
-        out = torch.outer(x, self.freqs)
+        freqs = torch.arange(self.freq_dim, dtype=torch.float32, device=x.device) / self.freq_dim
+        freqs = 1.0 / (10000**freqs)
+        out = torch.outer(x, freqs)
         out = torch.cat([torch.sin(out), torch.cos(out)], dim=-1)
         return out
 

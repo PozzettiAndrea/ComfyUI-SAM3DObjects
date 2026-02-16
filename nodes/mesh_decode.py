@@ -84,8 +84,12 @@ class SAM3DMeshDecode:
         import torch
         from pathlib import Path
 
-        os.environ["ATTN_BACKEND"] = slat_decoder_mesh.get("attn_backend", "flash_attn")
-        os.environ["SPARSE_ATTN_BACKEND"] = slat_decoder_mesh.get("attn_backend", "flash_attn")
+        attn_backend = slat_decoder_mesh.get("attn_backend", "auto")
+        if attn_backend == "auto":
+            from .utils.stages import auto_detect_attn_backend
+            attn_backend = auto_detect_attn_backend()
+        os.environ["ATTN_BACKEND"] = attn_backend
+        os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
 
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
@@ -117,6 +121,7 @@ class SAM3DMeshDecode:
             up_axis=up_axis,
             world_coordinates=world_coordinates,
             memory=slat_decoder_mesh.get("memory", "cpu_offload"),
+            precision=slat_decoder_mesh.get("precision", "fp16"),
         )
 
         # Extract GLB path from result

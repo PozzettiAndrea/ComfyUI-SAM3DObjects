@@ -28,12 +28,11 @@ class RotaryPositionEmbedder(nn.Module):
         self.hidden_size = hidden_size
         self.in_channels = in_channels
         self.freq_dim = hidden_size // in_channels // 2
-        self.freqs = torch.arange(self.freq_dim, dtype=torch.float32) / self.freq_dim
-        self.freqs = 1.0 / (10000**self.freqs)
 
     def _get_phases(self, indices: torch.Tensor) -> torch.Tensor:
-        self.freqs = self.freqs.to(indices.device)
-        phases = torch.outer(indices, self.freqs)
+        freqs = torch.arange(self.freq_dim, dtype=torch.float32, device=indices.device) / self.freq_dim
+        freqs = 1.0 / (10000**freqs)
+        phases = torch.outer(indices, freqs)
         phases = torch.polar(torch.ones_like(phases), phases)
         return phases
 

@@ -4,6 +4,8 @@ import logging
 import os
 from pathlib import Path
 
+import comfy.model_management as mm
+
 log = logging.getLogger("sam3dobjects")
 
 try:
@@ -67,9 +69,9 @@ class LoadSAM3DModel:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "attn_backend": (["flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
-                    "default": "flash_attn",
-                    "tooltip": "Attention backend (flash_attn recommended for A100/H100/H200)"
+                "attn_backend": (["auto", "flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
+                    "default": "auto",
+                    "tooltip": "Attention backend. auto: flash_attn if installed, else sdpa. flash_attn recommended for A100/H100/H200."
                 }),
                 "compile": ("BOOLEAN", {
                     "default": False,
@@ -77,7 +79,7 @@ class LoadSAM3DModel:
                 }),
                 "precision": (["auto", "bf16", "fp16", "fp32"], {
                     "default": "auto",
-                    "tooltip": "Model precision. auto: best for your GPU (bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older)."
+                    "tooltip": "Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
                 }),
                 "memory": (["cache_gpu", "cpu_offload", "delete"], {
                     "default": "cpu_offload",
@@ -112,6 +114,29 @@ class LoadSAM3DModel:
         prompt: dict = None,
     ):
         log.info("Loading SAM3D model...")
+
+        # Resolve precision "auto" using GPU capabilities
+        # spconv's compiled CUDA kernels don't include bf16 GEMM, so auto picks fp16.
+        if precision == "auto":
+            device = mm.get_torch_device()
+            if mm.should_use_fp16(device) or mm.should_use_bf16(device):
+                precision = "fp16"
+            else:
+                precision = "fp32"
+        log.info("Precision: %s", precision)
+
+        # Resolve attention "auto" based on installed packages
+        if attn_backend == "auto":
+            for module in ["flash_attn", "xformers"]:
+                try:
+                    __import__(module)
+                    attn_backend = module
+                    break
+                except ImportError:
+                    continue
+            else:
+                attn_backend = "sdpa"
+        log.info("Attention backend: %s", attn_backend)
 
         # Detect which outputs are connected
         used_outputs = self._detect_used_outputs(prompt, unique_id)

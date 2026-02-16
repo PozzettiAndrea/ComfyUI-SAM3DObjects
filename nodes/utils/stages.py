@@ -35,8 +35,23 @@ import sam3d_objects.model.backbone.tdfy_dit.models  # noqa: E402
 import numpy as np
 import torch
 
+# Patch spconv to support bfloat16 (missing in spconv <=2.3.8)
+try:
+    from cumm import tensorview as tv
+    from spconv.pytorch import cppcore
+    if torch.bfloat16 not in cppcore._TORCH_DTYPE_TO_TV:
+        cppcore._TORCH_DTYPE_TO_TV[torch.bfloat16] = tv.bfloat16
+        cppcore._TV_DTYPE_TO_TORCH[tv.bfloat16] = torch.bfloat16
+        log.info("Patched spconv with bfloat16 support")
+except Exception:
+    pass  # Non-critical; bf16 just won't be available
+import comfy.model_management
+
 from .helpers import preprocess_image_lazy, save_output_to_disk
-from . import model_cache
+
+# Module-level model cache: key -> nn.Module (on GPU)
+# comfy-env's SubprocessModelPatcher auto-detects GPU models and handles VRAM eviction.
+_MODEL_CACHE = {}
 
 
 # =============================================================================
@@ -51,32 +66,52 @@ def _load_config(config_path: str):
     return config, checkpoint_dir
 
 
-def _get_dtype(config):
-    """Get torch dtype from config."""
-    dtype_str = getattr(config, 'dtype', 'float16')
-    if dtype_str == 'bfloat16':
+def _resolve_dtype(precision: str) -> torch.dtype:
+    """Convert precision string to torch dtype.
+
+    Args:
+        precision: One of "bf16", "fp16", "fp32".
+    """
+    if precision == "bf16":
         return torch.bfloat16
-    elif dtype_str == 'float16':
+    if precision == "fp16":
         return torch.float16
     return torch.float32
 
 
-def _load_generator(config_path: str, generator_type: str):
+def auto_detect_attn_backend() -> str:
+    """Auto-detect best attention backend based on installed packages.
+
+    Priority: flash_attn > xformers > sdpa (always available).
+    Safe to call before vendor imports (only does __import__ checks).
+    """
+    for module in ["flash_attn", "xformers"]:
+        try:
+            __import__(module)
+            log.info("Auto-detected attention backend: %s", module)
+            return module
+        except ImportError:
+            continue
+    log.info("Auto-detected attention backend: sdpa (no flash_attn or xformers found)")
+    return "sdpa"
+
+
+def _get_or_load_generator(config_path: str, generator_type: str, precision: str = "fp16"):
     """
     Load a generator model (ss_generator or slat_generator).
 
     Args:
         config_path: Path to pipeline.yaml
         generator_type: 'ss' or 'slat'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded generator model on GPU
+        The generator model (on GPU)
     """
     cache_key = f"generator:{generator_type}"
-    cached = model_cache.try_load(cache_key)
-    if cached is not None:
+    if cache_key in _MODEL_CACHE:
         log.debug("Using cached %s_generator", generator_type)
-        return cached
+        return _MODEL_CACHE[cache_key]
 
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
@@ -90,12 +125,13 @@ def _load_generator(config_path: str, generator_type: str):
     gen_config = OmegaConf.load(gen_config_path)
     model_config = gen_config["module"]["generator"]["backbone"]
 
+    load_device = comfy.model_management.get_torch_device()
     model, use_assign = try_instantiate_on_meta(instantiate, model_config)
     model = load_model_from_checkpoint(
         model,
         str(gen_ckpt_path),
         strict=False,
-        device="cpu",
+        device=str(load_device),
         freeze=True,
         eval=True,
         state_dict_key="state_dict",
@@ -103,26 +139,28 @@ def _load_generator(config_path: str, generator_type: str):
         assign=use_assign,
     )
 
-    model = model.cuda().to(_get_dtype(config))
+    model = model.to(_resolve_dtype(precision))
+
+    _MODEL_CACHE[cache_key] = model
     return model
 
 
-def _load_decoder(config_path: str, decoder_type: str):
+def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "fp16"):
     """
     Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh).
 
     Args:
         config_path: Path to pipeline.yaml
         decoder_type: 'ss', 'slat_decoder_gs', 'slat_decoder_mesh'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded decoder model on GPU
+        The decoder model (on GPU)
     """
     cache_key = f"decoder:{decoder_type}"
-    cached = model_cache.try_load(cache_key)
-    if cached is not None:
+    if cache_key in _MODEL_CACHE:
         log.debug("Using cached %s", decoder_type)
-        return cached
+        return _MODEL_CACHE[cache_key]
 
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
@@ -139,12 +177,13 @@ def _load_decoder(config_path: str, decoder_type: str):
 
     dec_config = OmegaConf.load(dec_config_path)
 
+    load_device = comfy.model_management.get_torch_device()
     model, use_assign = try_instantiate_on_meta(instantiate, dec_config)
     model = load_model_from_checkpoint(
         model,
         str(dec_ckpt_path),
         strict=False,
-        device="cpu",
+        device=str(load_device),
         freeze=True,
         eval=True,
         state_dict_key=None,  # Decoder checkpoints have weights at root level
@@ -152,26 +191,28 @@ def _load_decoder(config_path: str, decoder_type: str):
         assign=use_assign,
     )
 
-    model = model.cuda()
+    model = model.to(_resolve_dtype(precision))
+
+    _MODEL_CACHE[cache_key] = model
     return model
 
 
-def _load_condition_embedder(config_path: str, embedder_type: str):
+def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precision: str = "fp16"):
     """
     Load a condition embedder (ss or slat).
 
     Args:
         config_path: Path to pipeline.yaml
         embedder_type: 'ss' or 'slat'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded embedder on GPU
+        The embedder model (on GPU)
     """
     cache_key = f"embedder:{embedder_type}"
-    cached = model_cache.try_load(cache_key)
-    if cached is not None:
+    if cache_key in _MODEL_CACHE:
         log.debug("Using cached %s_embedder", embedder_type)
-        return cached
+        return _MODEL_CACHE[cache_key]
 
     from omegaconf import OmegaConf
     from hydra.utils import instantiate
@@ -185,12 +226,13 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
     gen_config = OmegaConf.load(gen_config_path)
     embedder_config = gen_config.module.condition_embedder.backbone
 
+    load_device = comfy.model_management.get_torch_device()
     embedder, use_assign = try_instantiate_on_meta(instantiate, embedder_config)
     embedder = load_model_from_checkpoint(
         embedder,
         str(gen_ckpt_path),
         strict=False,
-        device="cpu",
+        device=str(load_device),
         freeze=True,
         eval=True,
         state_dict_key="state_dict",
@@ -198,7 +240,11 @@ def _load_condition_embedder(config_path: str, embedder_type: str):
         assign=use_assign,
     )
 
-    embedder = embedder.cuda().to(_get_dtype(config))
+    _reinit_dino_buffers(embedder)
+    _share_dino_backbones(embedder)
+    embedder = embedder.to(_resolve_dtype(precision))
+
+    _MODEL_CACHE[cache_key] = embedder
     return embedder
 
 
@@ -225,18 +271,49 @@ def _unload(*models):
     torch.cuda.empty_cache()
 
 
-def _offload_models(memory_mode, **named_models):
-    """Offload models according to memory strategy.
 
-    Args:
-        memory_mode: 'cache_gpu', 'cpu_offload', or 'delete'
-        **named_models: cache_key=model pairs
+
+def _reinit_dino_buffers(model):
+    """Reinitialize Dino mean/std buffers after meta-device loading.
+
+    Meta-device init creates these as empty tensors. They need correct
+    ImageNet normalization values for proper preprocessing.
     """
-    for key, model in named_models.items():
-        if model is not None:
-            model_cache.offload(key, model, memory_mode)
-    if memory_mode != "cache_gpu":
+    for module in model.modules():
+        if type(module).__name__ == 'Dino' and hasattr(module, 'mean'):
+            device = module.mean.device
+            dtype = module.mean.dtype
+            module.mean = torch.as_tensor([[0.485, 0.456, 0.406]]).view(-1, 1, 1).to(device=device, dtype=dtype)
+            module.std = torch.as_tensor([[0.229, 0.224, 0.225]]).view(-1, 1, 1).to(device=device, dtype=dtype)
+
+
+def _share_dino_backbones(model):
+    """Share frozen DINOv2 backbone between Dino instances. Saves ~1.1GB VRAM.
+
+    The EmbedderFuser has two Dino modules (one for image, one for mask)
+    with identical frozen backbones loaded from the same pretrained weights.
+    """
+    if not hasattr(model, 'module_list'):
+        return
+
+    from sam3d_objects.model.backbone.dit.embedder.dino import Dino
+    dino_modules = [m for m in model.module_list if isinstance(m, Dino)]
+
+    if len(dino_modules) > 1:
+        shared = dino_modules[0].backbone
+        for dino in dino_modules[1:]:
+            dino.backbone = shared
+        log.info("Shared DINOv2 backbone across %d Dino instances (saved ~1.1GB)", len(dino_modules))
+        gc.collect()
         torch.cuda.empty_cache()
+
+
+def clear_model_cache():
+    """Clear all cached models and free memory."""
+    global _MODEL_CACHE
+    _MODEL_CACHE.clear()
+    gc.collect()
+    torch.cuda.empty_cache()
 
 
 # =============================================================================
@@ -368,6 +445,7 @@ def run_stage1(
     cfg_strength_pm: float = 0.0,
     output_dir: str = None,
     memory: str = "cpu_offload",
+    precision: str = "fp16",
 ) -> Dict[str, Any]:
     """
     Run Stage 1 (sparse structure generation).
@@ -384,7 +462,7 @@ def run_stage1(
     log.info("Running Stage 1 (sparse gen)")
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
     # Set seed
     torch.manual_seed(seed)
@@ -443,11 +521,11 @@ def run_stage1(
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # Load models
+    # Load models (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading Stage 1 models...")
-    ss_generator = _load_generator(config_path, 'ss')
-    ss_decoder = _load_decoder(config_path, 'ss')
-    ss_embedder = _load_condition_embedder(config_path, 'ss')
+    ss_generator = _get_or_load_generator(config_path, 'ss', precision)
+    ss_decoder = _get_or_load_decoder(config_path, 'ss', precision)
+    ss_embedder = _get_or_load_condition_embedder(config_path, 'ss', precision)
 
     # Configure generator (match original override_ss_generator_cfg_config)
     ss_generator.no_shortcut = True
@@ -551,13 +629,6 @@ def run_stage1(
     # Add voxel coordinates
     return_dict["voxel"] = return_dict["coords"][:, 1:] / 64 - 0.5
 
-    # Offload models
-    log.info("Offloading Stage 1 models (mode=%s)...", memory)
-    _offload_models(
-        memory,
-        **{"generator:ss": ss_generator, "decoder:ss": ss_decoder, "embedder:ss": ss_embedder},
-    )
-
     log.info("Stage 1 complete")
 
     # Save sparse structure
@@ -618,6 +689,7 @@ def run_stage2(
     cfg_strength: float = 5.0,
     output_dir: str = None,
     memory: str = "cpu_offload",
+    precision: str = "fp16",
 ) -> Dict[str, Any]:
     """
     Run Stage 2 (SLAT generation).
@@ -630,7 +702,7 @@ def run_stage2(
     log.info("Running Stage 2 (SLAT gen)")
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
     # Set seed
     torch.manual_seed(seed)
@@ -667,10 +739,10 @@ def run_stage2(
         coords = torch.from_numpy(coords).int()
     coords = coords.cuda()
 
-    # Load models
+    # Load models (cached on GPU; comfy-env handles VRAM eviction)
     log.info("Loading Stage 2 models...")
-    slat_generator = _load_generator(config_path, 'slat')
-    slat_embedder = _load_condition_embedder(config_path, 'slat')
+    slat_generator = _get_or_load_generator(config_path, 'slat', precision)
+    slat_embedder = _get_or_load_condition_embedder(config_path, 'slat', precision)
 
     # Configure generator (match original override_slat_generator_cfg_config)
     slat_generator.no_shortcut = True
@@ -728,13 +800,6 @@ def run_stage2(
             # Apply mean/std normalization
             slat = slat * slat_std + slat_mean
 
-    # Offload models
-    log.info("Offloading Stage 2 models (mode=%s)...", memory)
-    _offload_models(
-        memory,
-        **{"generator:slat": slat_generator, "embedder:slat": slat_embedder},
-    )
-
     log.info("Stage 2 complete")
 
     # Build output dict with SLAT for saving
@@ -778,6 +843,7 @@ def run_decode(
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
     memory: str = "cpu_offload",
+    precision: str = "fp16",
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding).
@@ -833,16 +899,12 @@ def run_decode(
         decoder_name = 'slat_decoder_mesh'
 
     log.info("Loading decoder (%s)...", decoder_name)
-    decoder = _load_decoder(config_path, decoder_name)
+    decoder = _get_or_load_decoder(config_path, decoder_name, precision)
 
     log.info("Running decoder...")
 
     with torch.no_grad():
         output = decoder(slat)
-
-    # Offload decoder
-    log.info("Offloading decoder (mode=%s)...", memory)
-    _offload_models(memory, **{f"decoder:{decoder_name}": decoder})
 
     log.info("Decode complete")
 

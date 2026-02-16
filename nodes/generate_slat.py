@@ -158,8 +158,12 @@ class SAM3DGenerateSLAT:
         from pathlib import Path
         from PIL import Image
 
-        os.environ["ATTN_BACKEND"] = generator.get("attn_backend", "flash_attn")
-        os.environ["SPARSE_ATTN_BACKEND"] = generator.get("attn_backend", "flash_attn")
+        attn_backend = generator.get("attn_backend", "auto")
+        if attn_backend == "auto":
+            from .utils.stages import auto_detect_attn_backend
+            attn_backend = auto_detect_attn_backend()
+        os.environ["ATTN_BACKEND"] = attn_backend
+        os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
 
         from .utils.stages import run_stage1, run_stage2
         from .utils.helpers import load_pointmap_from_file
@@ -217,6 +221,7 @@ class SAM3DGenerateSLAT:
                 cfg_strength_pm=stage1_cfg_pm,
                 output_dir=output_dir,
                 memory=generator.get("memory", "cpu_offload"),
+                precision=generator.get("precision", "fp16"),
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
@@ -241,6 +246,7 @@ class SAM3DGenerateSLAT:
             cfg_strength=stage2_cfg,
             output_dir=output_dir,
             memory=generator.get("memory", "cpu_offload"),
+            precision=generator.get("precision", "fp16"),
         )
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
         # Note: The saved file contains full dict with stage1_data for pose info
