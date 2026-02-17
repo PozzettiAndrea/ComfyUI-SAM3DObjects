@@ -19,7 +19,7 @@ class MultiHeadRMSNorm(nn.Module):
         self.gamma = nn.Parameter(torch.ones(heads, dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return (F.normalize(x, dim=-1) * self.gamma * self.scale).to(x.dtype)
+        return (F.normalize(x, dim=-1) * self.gamma.to(x.device) * self.scale).to(x.dtype)
 
 
 class RotaryPositionEmbedder(nn.Module):

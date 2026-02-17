@@ -69,6 +69,7 @@ class SAM3D_DepthEstimate:
         from pathlib import Path
         from PIL import Image
         import folder_paths
+        import comfy.utils
         from pytorch3d.renderer import look_at_view_transform
         from pytorch3d.transforms import Transform3d
 
@@ -77,6 +78,7 @@ class SAM3D_DepthEstimate:
         if _VENDOR_PATH not in sys.path:
             sys.path.insert(0, _VENDOR_PATH)
 
+        pbar = comfy.utils.ProgressBar(4)
         start_time = time.time()
         log.info("DepthEstimate: Running depth estimation with MoGe...")
 
@@ -101,6 +103,7 @@ class SAM3D_DepthEstimate:
         import comfy.model_management as mm
         device = mm.get_torch_device()
         model = MoGe(raw_model, device=str(device))
+        pbar.update(1)  # Model loaded
 
         # Prepare image tensor
         loaded_image = image_np.astype(np.float32) / 255.0
@@ -112,6 +115,7 @@ class SAM3D_DepthEstimate:
                 output = model(loaded_image)
 
         pointmaps = output["pointmaps"]
+        pbar.update(1)  # Inference done
 
         # Apply camera convention transform (R3 -> PyTorch3D camera space)
         device = pointmaps.device
@@ -147,6 +151,7 @@ class SAM3D_DepthEstimate:
         gc.collect()
         torch.cuda.empty_cache()
         log.info("Depth model unloaded")
+        pbar.update(1)  # Transforms + cleanup done
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()
@@ -177,6 +182,7 @@ class SAM3D_DepthEstimate:
         # Convert to ComfyUI MASK format [B, H, W]
         depth_mask = torch.from_numpy(depth_normalized).unsqueeze(0).float()
 
+        pbar.update(1)  # Outputs saved
         elapsed = time.time() - start_time
         log.info("Depth estimation done: %.0fs", elapsed)
         return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)

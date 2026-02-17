@@ -71,7 +71,7 @@ class LoadSAM3DModel:
             "required": {
                 "attn_backend": (["auto", "flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
                     "default": "auto",
-                    "tooltip": "Attention backend. auto: flash_attn if installed, else sdpa. flash_attn recommended for A100/H100/H200."
+                    "tooltip": "Deprecated - attention is now auto-detected by ComfyUI. This setting has no effect."
                 }),
                 "compile": ("BOOLEAN", {
                     "default": False,
@@ -120,19 +120,6 @@ class LoadSAM3DModel:
                 precision = "fp32"
         log.info("Precision: %s", precision)
 
-        # Resolve attention "auto" based on installed packages
-        if attn_backend == "auto":
-            for module in ["flash_attn", "xformers"]:
-                try:
-                    __import__(module)
-                    attn_backend = module
-                    break
-                except ImportError:
-                    continue
-            else:
-                attn_backend = "sdpa"
-        log.info("Attention backend: %s", attn_backend)
-
         # Detect which outputs are connected
         used_outputs = self._detect_used_outputs(prompt, unique_id)
         if used_outputs:
@@ -159,7 +146,6 @@ class LoadSAM3DModel:
             "config_path": config_path,
             "compile": compile,
             "precision": precision,
-            "attn_backend": attn_backend,
         }
         return (model, model, model, model)
 

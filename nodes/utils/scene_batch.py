@@ -40,20 +40,6 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
     Each phase loads models directly, processes all objects, then unloads.
     """
-    attn_backend = request.get("attn_backend", "auto")
-    if attn_backend == "auto":
-        for module in ["flash_attn", "xformers"]:
-            try:
-                __import__(module)
-                attn_backend = module
-                break
-            except ImportError:
-                continue
-        else:
-            attn_backend = "sdpa"
-    os.environ["ATTN_BACKEND"] = attn_backend
-    os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
-
     from .helpers import preprocess_image_lazy, load_pointmap_from_file
     from .stages import run_texture_bake_direct as texture_bake_impl
 

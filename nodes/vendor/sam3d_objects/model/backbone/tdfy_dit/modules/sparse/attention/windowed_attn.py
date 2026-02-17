@@ -3,17 +3,8 @@ from typing import *
 import torch
 import math
 from .. import SparseTensor
-from .. import DEBUG, ATTN
-
-if ATTN == "xformers":
-    import xformers.ops as xops
-elif ATTN == "flash_attn":
-    import flash_attn
-elif ATTN == "sdpa":
-    from torch.nn.functional import scaled_dot_product_attention as sdpa
-    from .masked_sdpa import masked_sdpa
-else:
-    raise ValueError(f"Unknown attention module: {ATTN}")
+from .. import DEBUG
+from comfy_attn import dispatch_attention, dispatch_attention_varlen
 
 
 __all__ = [
@@ -136,50 +127,32 @@ def sparse_windowed_scaled_dot_product_self_attention(
             start += seq_lens[i]
 
     if all([seq_len == window_size for seq_len in seq_lens]):
+        # Uniform windows — use standard batched dense attention
         B = len(seq_lens)
         N = window_size
         qkv_feats = qkv_feats.reshape(B, N, 3, H, C)
-        if ATTN == "xformers":
-            q, k, v = qkv_feats.unbind(dim=2)  # [B, N, H, C]
-            out = xops.memory_efficient_attention(q, k, v)  # [B, N, H, C]
-        elif ATTN == "flash_attn":
-            out = flash_attn.flash_attn_qkvpacked_func(qkv_feats)  # [B, N, H, C]
-        elif ATTN == "sdpa":
-            q, k, v = qkv_feats.unbind(dim=2)
-            q = q.permute(0, 2, 1, 3)  # [N, H, L, C]
-            k = k.permute(0, 2, 1, 3)  # [N, H, L, C]
-            v = v.permute(0, 2, 1, 3)  # [N, H, L, C]
-            out = sdpa(q, k, v)  # [N, H, L, C]
-            out = out.permute(0, 2, 1, 3)  # [N, L, H, C]
-        else:
-            raise ValueError(f"Unknown attention module: {ATTN}")
+        q, k, v = qkv_feats.unbind(dim=2)  # [B, N, H, C]
+        # Permute to [B, H, N, C] for comfy-attn
+        q = q.permute(0, 2, 1, 3)
+        k = k.permute(0, 2, 1, 3)
+        v = v.permute(0, 2, 1, 3)
+        out = dispatch_attention(q, k, v)  # [B, H, N, C]
+        out = out.permute(0, 2, 1, 3)  # [B, N, H, C]
         out = out.reshape(B * N, H, C)  # [M, H, C]
     else:
-        if ATTN == "xformers":
-            q, k, v = qkv_feats.unbind(dim=1)  # [M, H, C]
-            q = q.unsqueeze(0)  # [1, M, H, C]
-            k = k.unsqueeze(0)  # [1, M, H, C]
-            v = v.unsqueeze(0)  # [1, M, H, C]
-            mask = xops.fmha.BlockDiagonalMask.from_seqlens(seq_lens)
-            out = xops.memory_efficient_attention(q, k, v, mask)[0]  # [M, H, C]
-        elif ATTN == "flash_attn":
-            cu_seqlens = (
-                torch.cat(
-                    [torch.tensor([0]), torch.cumsum(torch.tensor(seq_lens), dim=0)],
-                    dim=0,
-                )
-                .to(qkv.device)
-                .int()
+        # Variable windows — use varlen attention
+        q, k, v = qkv_feats.unbind(dim=1)  # [M, H, C] each
+        cu_seqlens = (
+            torch.cat(
+                [torch.tensor([0]), torch.cumsum(torch.tensor(seq_lens), dim=0)],
+                dim=0,
             )
-            out = flash_attn.flash_attn_varlen_qkvpacked_func(
-                qkv_feats, cu_seqlens, max(seq_lens)
-            )  # [M, H, C]
-        elif ATTN == "sdpa":
-            q, k, v = qkv_feats.unbind(dim=1)
-            q = q.unsqueeze(0)
-            k = k.unsqueeze(0)
-            v = v.unsqueeze(0)
-            out = masked_sdpa(q, k, v, seq_lens, seq_lens)
+            .to(qkv.device)
+            .int()
+        )
+        out = dispatch_attention_varlen(
+            q, k, v, cu_seqlens, cu_seqlens, max(seq_lens), max(seq_lens),
+        )  # [M, H, C]
 
     out = out[bwd_indices]  # [T, H, C]
 

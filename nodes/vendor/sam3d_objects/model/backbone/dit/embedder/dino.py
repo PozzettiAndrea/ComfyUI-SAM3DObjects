@@ -128,7 +128,7 @@ class Dino(torch.nn.Module):
             _resized_images = _resized_images.repeat(1, 3, 1, 1)
 
         if self.normalize_images:
-            _resized_images = _resized_images.sub_(self.mean).div_(self.std)
+            _resized_images = _resized_images.sub_(self.mean.to(_resized_images.device)).div_(self.std.to(_resized_images.device))
 
         return _resized_images
 
@@ -142,6 +142,16 @@ class Dino(torch.nn.Module):
         )
 
     def _forward_last_layer(self, input_img):
+        # Move backbone's orphan params (cls_token, pos_embed, etc.) to input
+        # device — needed for ComfyUI lowvram where forward_features() is called
+        # directly (bypassing __call__ hooks).
+        device = input_img.device
+        for p in self.backbone.parameters(recurse=False):
+            if p.data.device != device:
+                p.data = p.data.to(device)
+        for b in self.backbone.buffers(recurse=False):
+            if b.device != device:
+                b.data = b.data.to(device)
         output = self.backbone.forward_features(input_img)
         if self.prenorm_features:
             features = output["x_prenorm"]

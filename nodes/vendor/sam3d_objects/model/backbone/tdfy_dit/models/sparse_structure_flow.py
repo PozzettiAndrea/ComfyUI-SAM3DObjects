@@ -225,7 +225,7 @@ class SparseStructureFlowModel(nn.Module):
             h = torch.cat([h, pose], dim=1)
 
         h = self.input_layer(h)
-        h = h + self.pos_emb[None]
+        h = h + self.pos_emb.to(h.device)[None]
         t_emb = self.t_embedder(t)
         if self.share_mod:
             t_emb = self.adaLN_modulation(t_emb)

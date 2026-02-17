@@ -56,6 +56,11 @@ class SparseConv3d(nn.Module):
         self.padding = padding
 
     def forward(self, x: SparseTensor) -> SparseTensor:
+        # Ensure spconv weights are on the same device as input features.
+        # spconv uses custom CUDA kernels that require all tensors on GPU —
+        # it can't stream weights from CPU like comfy_cast_weights layers.
+        if self.conv.weight.device != x.feats.device:
+            self.conv = self.conv.to(x.feats.device)
         spatial_changed = any(s != 1 for s in self.stride) or (self.padding is not None)
         new_data = self.conv(x.data)
         new_shape = [x.shape[0], self.conv.out_channels]
@@ -113,6 +118,9 @@ class SparseInverseConv3d(nn.Module):
         )
 
     def forward(self, x: SparseTensor) -> SparseTensor:
+        # Ensure spconv weights are on the same device as input features.
+        if self.conv.weight.device != x.feats.device:
+            self.conv = self.conv.to(x.feats.device)
         spatial_changed = any(s != 1 for s in self.stride)
         if spatial_changed:
             # recover the original spconv order

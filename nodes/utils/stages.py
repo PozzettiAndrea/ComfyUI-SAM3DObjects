@@ -47,12 +47,103 @@ except Exception:
     pass  # Non-critical; bf16 just won't be available
 import comfy.model_management
 import comfy.model_patcher
+import comfy.utils
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
 
 # Module-level patcher cache: key -> comfy.model_patcher.ModelPatcher
 # ComfyUI manages VRAM placement, per-layer offloading, and cross-model eviction.
 _PATCHER_CACHE = {}
+
+
+def _enable_lowvram_cast(model: torch.nn.Module) -> None:
+    """Swap leaf modules to comfy.ops.disable_weight_init versions for lowvram support.
+
+    ComfyUI's ModelPatcher can only partially-load modules that have the
+    `comfy_cast_weights` attribute (from CastWeightBiasOp).  Native ComfyUI models
+    use `comfy.ops.disable_weight_init.*` layers, but third-party models use plain
+    `torch.nn.*`.  This function retroactively swaps __class__ on every leaf module
+    so that ModelPatcher's lowvram layer-streaming works transparently.
+
+    Also installs forward pre-hooks on non-leaf modules that own direct parameters
+    or buffers (e.g. cls_token, pos_embed on ViT) so they get moved to the input
+    device on-the-fly during lowvram inference.
+    """
+    try:
+        from comfy.ops import disable_weight_init
+    except ImportError:
+        return
+
+    _CLASS_MAP = {
+        torch.nn.Linear: disable_weight_init.Linear,
+        torch.nn.Conv1d: disable_weight_init.Conv1d,
+        torch.nn.Conv2d: disable_weight_init.Conv2d,
+        torch.nn.Conv3d: disable_weight_init.Conv3d,
+        torch.nn.GroupNorm: disable_weight_init.GroupNorm,
+        torch.nn.LayerNorm: disable_weight_init.LayerNorm,
+        torch.nn.ConvTranspose2d: disable_weight_init.ConvTranspose2d,
+        torch.nn.ConvTranspose1d: disable_weight_init.ConvTranspose1d,
+        torch.nn.Embedding: disable_weight_init.Embedding,
+    }
+
+    cast_count = 0
+    for _name, module in model.named_modules():
+        comfy_cls = _CLASS_MAP.get(type(module))
+        if comfy_cls is not None:
+            module.__class__ = comfy_cls
+            cast_count += 1
+
+    # Install forward pre-hooks on non-leaf modules that own orphan params/buffers.
+    # These are things like cls_token, pos_embed on ViT — tiny tensors that aren't
+    # inside any leaf layer, so comfy_cast_weights doesn't cover them.
+    hook_count = 0
+    for _name, module in model.named_modules():
+        if hasattr(module, 'comfy_cast_weights'):
+            continue  # Leaf module — handled by cast_weights mechanism
+        direct_params = list(module.named_parameters(recurse=False))
+        direct_bufs = list(module.named_buffers(recurse=False))
+        if not direct_params and not direct_bufs:
+            continue  # No orphan tensors
+
+        def _move_orphans_hook(mod, args, kwargs=None):
+            # Infer target device from first tensor in args or kwargs
+            device = None
+            for a in args:
+                if isinstance(a, torch.Tensor):
+                    device = a.device
+                    break
+                # SparseTensor and similar wrapper types have a .feats tensor
+                if hasattr(a, 'feats') and isinstance(a.feats, torch.Tensor):
+                    device = a.feats.device
+                    break
+            if device is None and kwargs:
+                for v in kwargs.values():
+                    if isinstance(v, torch.Tensor):
+                        device = v.device
+                        break
+                    if hasattr(v, 'feats') and isinstance(v.feats, torch.Tensor):
+                        device = v.feats.device
+                        break
+            if device is None:
+                # Last resort: check if any child already on CUDA
+                for p in mod.parameters():
+                    if p.device.type == 'cuda':
+                        device = p.device
+                        break
+            if device is None:
+                return
+            for _, p in mod.named_parameters(recurse=False):
+                if p.data.device != device:
+                    p.data = p.data.to(device)
+            for _, b in mod.named_buffers(recurse=False):
+                if b.device != device:
+                    b.data = b.data.to(device)
+
+        module.register_forward_pre_hook(_move_orphans_hook, with_kwargs=True)
+        hook_count += 1
+
+    if cast_count or hook_count:
+        log.debug("Enabled lowvram: %d cast modules, %d orphan-param hooks", cast_count, hook_count)
 
 
 # =============================================================================
@@ -140,6 +231,7 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
         else:
             model = model.to(dtype)
 
+    _enable_lowvram_cast(model)
     patcher = comfy.model_patcher.ModelPatcher(
         model,
         load_device=comfy.model_management.get_torch_device(),
@@ -216,6 +308,7 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
             )
             log.info("Re-initialized mesh_extractor on %s", device)
 
+    _enable_lowvram_cast(model)
     patcher = comfy.model_patcher.ModelPatcher(
         model,
         load_device=comfy.model_management.get_torch_device(),
@@ -272,6 +365,7 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
     _share_dino_backbones(embedder)
     embedder = embedder.to(_resolve_dtype(precision))
 
+    _enable_lowvram_cast(embedder)
     patcher = comfy.model_patcher.ModelPatcher(
         embedder,
         load_device=comfy.model_management.get_torch_device(),
@@ -606,13 +700,23 @@ def run_stage1(
                 condition_args = (tokens,)
                 condition_kwargs = {}
 
-            # Run generator
-            return_dict = ss_generator(
+            # Run generator with progress reporting
+            steps = ss_generator.inference_steps
+            pbar = comfy.utils.ProgressBar(steps)
+            gen_iter = ss_generator.generate_iter(
                 latent_shape_dict,
                 image_tensor.device,
                 *condition_args,
                 **condition_kwargs,
             )
+            try:
+                from tqdm import tqdm
+                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 1 (sparse structure)")
+            except ImportError:
+                pass
+            for _, xt, _ in gen_iter:
+                pbar.update(1)
+            return_dict = xt
 
             if not has_latent_mapping:
                 return_dict = {"shape": return_dict}
@@ -823,10 +927,20 @@ def run_stage2(
             # Add coords to condition args
             condition_args = condition_args + (coords.cpu().numpy(),)
 
-            # Run generator
-            slat_feats = slat_generator(
+            # Run generator with progress reporting
+            steps = slat_generator.inference_steps
+            pbar = comfy.utils.ProgressBar(steps)
+            gen_iter = slat_generator.generate_iter(
                 latent_shape, DEVICE, *condition_args, **condition_kwargs
             )
+            try:
+                from tqdm import tqdm
+                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 2 (SLAT generation)")
+            except ImportError:
+                pass
+            for _, xt, _ in gen_iter:
+                pbar.update(1)
+            slat_feats = xt
 
             # Create SparseTensor
             slat = sp.SparseTensor(
@@ -891,6 +1005,7 @@ def run_decode(
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
     log.info("Running decode (%s)", decode_format)
+    pbar = comfy.utils.ProgressBar(4)
 
     # Extract slat - handle different input formats
     slat = None
@@ -939,6 +1054,7 @@ def run_decode(
     else:
         decoder_name = 'slat_decoder_mesh'
 
+    pbar.update(1)  # SLAT loaded
     log.info("Loading decoder (%s)...", decoder_name)
     dec_patcher = _get_or_load_decoder(config_path, decoder_name, precision)
     comfy.model_management.load_models_gpu([dec_patcher])
@@ -958,9 +1074,11 @@ def run_decode(
     sys.stdout.flush()
     sys.stderr.flush()
 
+    pbar.update(1)  # Decoder loaded
     with torch.no_grad():
         output = decoder(slat)
 
+    pbar.update(1)  # Decode complete
     log.info("Decode complete")
 
     # Determine output directory
@@ -1004,6 +1122,7 @@ def run_decode(
         except Exception as e:
             log.warning("Failed to save Gaussian PLY: %s", e)
 
+        pbar.update(1)  # Output saved
         return {
             "status": "success",
             "stage2_mode": True,
@@ -1109,6 +1228,7 @@ def run_decode(
             torch.save(mesh_data, mesh_path)
             saved_files["files"]["mesh_pt"] = str(mesh_path)
 
+        pbar.update(1)  # Output saved
         return {
             "status": "success",
             "stage2_mode": True,

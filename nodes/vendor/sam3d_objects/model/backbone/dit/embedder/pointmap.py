@@ -93,10 +93,13 @@ class PointPatchEmbed(nn.Module):
         if self.point_proj.bias is not None:
             nn.init.constant_(self.point_proj.bias, 0)
 
-    def _get_pos_embed(self, hw):
+    def _get_pos_embed(self, hw, device=None):
         h, w = hw
+        pos_embed = self.pos_embed
+        if device is not None:
+            pos_embed = pos_embed.to(device)
         pos_embed = F.interpolate(
-            self.pos_embed, size=(h, w), mode="bilinear", align_corners=False
+            pos_embed, size=(h, w), mode="bilinear", align_corners=False
         )
         pos_embed = pos_embed.permute(0, 2, 3, 1)  # (B, H, W, C)
         return pos_embed
@@ -140,11 +143,11 @@ class PointPatchEmbed(nn.Module):
         
         # Create dropped embedding for all windows - use same token for all patches
         # Shape: (batch_size, n_windows, embed_dim)
-        dropped_embedding = self.dropped_xyz_token.view(1, 1, embed_dim).expand(batch_size, n_windows, embed_dim)
-        
+        dropped_embedding = self.dropped_xyz_token.to(embeddings.device).view(1, 1, embed_dim).expand(batch_size, n_windows, embed_dim)
+
         # Add positional embeddings to dropped tokens (same as regular embeddings get)
         n_windows_h = n_windows_w = int(n_windows ** 0.5)
-        pos_embed_patch = self._get_pos_embed((n_windows_h, n_windows_w)).reshape(
+        pos_embed_patch = self._get_pos_embed((n_windows_h, n_windows_w), device=embeddings.device).reshape(
             1, n_windows, embed_dim
         )
         dropped_embedding = dropped_embedding + pos_embed_patch
@@ -179,7 +182,7 @@ class PointPatchEmbed(nn.Module):
         x = self.point_proj(xyz_remapped)  # (B,H,W,D)
 
         x[~valid_mask] = 0.0  # Stop gradient for invalid points
-        x[~valid_mask] += self.invalid_xyz_token
+        x[~valid_mask] += self.invalid_xyz_token.to(x.device)
         
         return x, B, H, W
 
@@ -198,11 +201,11 @@ class PointPatchEmbed(nn.Module):
         x = x.view(-1, self.patch_size * self.patch_size, self.embed_dim)
 
         # (4) CLS token that contains the patch information
-        cls_tok = self.cls_token.expand(x.shape[0], -1, -1)
+        cls_tok = self.cls_token.to(x.device).expand(x.shape[0], -1, -1)
         toks = torch.cat([cls_tok, x], dim=1)
 
         # (5) add positional embedding for window
-        toks = toks + self.pos_embed_window
+        toks = toks + self.pos_embed_window.to(toks.device)
 
         # (6) intra-window attention
         for blk in self.blocks:
@@ -214,7 +217,7 @@ class PointPatchEmbed(nn.Module):
         window_embeddings = toks[:, 0].view(B, n_windows_h * n_windows_w, self.embed_dim)
     
         # Add positional embeddings
-        pos_embed_patch = self._get_pos_embed((n_windows_h, n_windows_w)).reshape(
+        pos_embed_patch = self._get_pos_embed((n_windows_h, n_windows_w), device=window_embeddings.device).reshape(
             1, n_windows_h * n_windows_w, self.embed_dim
         )
         out = window_embeddings + pos_embed_patch

@@ -215,10 +215,11 @@ class EmbedderFuser(torch.nn.Module):
                     cond_token = self.projection_nets[i](cond_token)
                 if pos_group is not None:
                     pos_idx = self.positional_embed_map[pos_group]
+                    idx_emb = self.idx_emb.to(cond_token.device)
                     if self.use_pos_embedding == "random":
-                        cond_token += self.idx_emb[pos_idx : pos_idx + 1]
+                        cond_token += idx_emb[pos_idx : pos_idx + 1]
                     elif self.use_pos_embedding == "learned":
-                        cond_token += self.idx_emb[pos_idx : pos_idx + 1, None]
+                        cond_token += idx_emb[pos_idx : pos_idx + 1, None]
                     else:
                         raise NotImplementedError(
                             f"Unknown pos embedding {self.use_pos_embedding}"
