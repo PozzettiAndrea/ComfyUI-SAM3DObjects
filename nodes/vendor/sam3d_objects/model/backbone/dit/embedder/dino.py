@@ -1,11 +1,8 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
+import importlib
 import torch
 from typing import Optional, Dict, Any
-import warnings
-import time
-import os
 from pathlib import Path
-from torchvision.transforms import Normalize
 import torch.nn.functional as F
 from loguru import logger
 
@@ -28,17 +25,6 @@ def _wrap_attn_comfy(module):
     module.__class__ = _W
 
 
-def _get_comfyui_dinov2_path() -> Optional[Path]:
-    """Check if DINOv2 is downloaded to ComfyUI models folder."""
-    try:
-        import folder_paths
-        dinov2_path = Path(folder_paths.models_dir) / "sam3dobjects" / "dinov2"
-        if (dinov2_path / "hubconf.py").exists():
-            return dinov2_path
-    except ImportError:
-        pass
-    return None
-
 
 class Dino(torch.nn.Module):
     def __init__(
@@ -55,69 +41,34 @@ class Dino(torch.nn.Module):
         prune_network: bool = False,  # False for backward compatible
     ):
         super().__init__()
-        if backbone_kwargs is None:
-            backbone_kwargs = {}
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+        import comfy.utils
+        import folder_paths
 
-            # Check for local ComfyUI copy first (avoids network issues in subprocesses)
-            local_path = _get_comfyui_dinov2_path()
-            if local_path is not None:
-                repo_or_dir = str(local_path)
-                source = "local"
-                logger.info(f"Loading DINO model: {dino_model} from local path {local_path}")
+        # Build model architecture from vendored MoGe dinov2 code (no network needed)
+        factory = getattr(
+            importlib.import_module("moge.model.dinov2.hub.backbones"),
+            dino_model,
+        )
+        self.backbone = factory(pretrained=False)
 
-                # Pass local weights path to avoid network download (SSL issues in isolated envs)
-                # dino_model is like "dinov2_vitl14_reg", weights file is "dinov2_vitl14_reg4_pretrain.pth"
-                weights_filename = dino_model.replace("_reg", "_reg4") + "_pretrain.pth"
-                local_weights = local_path / weights_filename
-                if local_weights.exists():
-                    backbone_kwargs['weights'] = str(local_weights)
-                    logger.info(f"Using local weights: {local_weights}")
-            else:
-                logger.info(f"Loading DINO model: {dino_model} from {repo_or_dir} (source: {source})")
+        # Load weights from safetensors in ComfyUI models folder
+        weights_path = (
+            Path(folder_paths.models_dir)
+            / "sam3dobjects"
+            / f"{dino_model}.safetensors"
+        )
+        state_dict = comfy.utils.load_torch_file(str(weights_path))
+        self.backbone.load_state_dict(state_dict, strict=True)
+        logger.info(f"Loaded DINOv2 from {weights_path.name} "
+                     f"(embed_dim={self.backbone.embed_dim})")
 
-            if backbone_kwargs:
-                logger.info(f"DINO backbone kwargs: {backbone_kwargs}")
-
-            # Retry logic for torch.hub.load() to handle transient network errors
-            max_retries = 3
-            retry_delay = 2  # seconds
-            last_error = None
-
-            for attempt in range(max_retries):
-                try:
-                    self.backbone = torch.hub.load(
-                        repo_or_dir=repo_or_dir,
-                        model=dino_model,
-                        source=source,
-                        verbose=False,
-                        **backbone_kwargs,
-                    )
-                    break  # Success, exit retry loop
-                except Exception as e:
-                    last_error = e
-                    if attempt < max_retries - 1:
-                        wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
-                        logger.warning(f"Failed to load DINO model (attempt {attempt + 1}/{max_retries}): {e}")
-                        logger.info(f"Retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
-                    else:
-                        logger.error(f"Failed to load DINO model after {max_retries} attempts")
-                        raise last_error
-
-            # Log model properties after loading
-            logger.info(f"Loaded DINO model - type: {type(self.backbone)}, "
-                        f"embed_dim: {self.backbone.embed_dim}, "
-                        f"patch_size: {getattr(self.backbone.patch_embed, 'patch_size', 'N/A')}")
-
-            # Route attention through comfy-attn (sage/flash/sdpa)
-            for block in self.backbone.blocks:
-                _wrap_attn_comfy(block.attn)
-            from comfy_attn import set_backend, get_backend_label
-            set_backend("auto")
-            logger.info(f"DINOv2 attention: {get_backend_label()} ({len(self.backbone.blocks)} blocks)")
+        # Route attention through comfy-attn (sage/flash/sdpa)
+        for block in self.backbone.blocks:
+            _wrap_attn_comfy(block.attn)
+        from comfy_attn import set_backend, get_backend_label
+        set_backend("auto")
+        logger.info(f"DINOv2 attention: {get_backend_label()} ({len(self.backbone.blocks)} blocks)")
 
         self.resize_input_size = (input_size, input_size)
         self.embed_dim = self.backbone.embed_dim

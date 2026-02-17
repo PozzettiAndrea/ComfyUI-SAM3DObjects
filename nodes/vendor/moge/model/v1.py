@@ -16,7 +16,6 @@ import torch.utils
 import torch.utils.checkpoint
 import torch.version
 import utils3d
-from huggingface_hub import hf_hub_download
 
 from ..utils.geometry_torch import normalized_view_plane_uv, recover_focal_shift, gaussian_blur_2d
 from .utils import wrap_dinov2_attention_with_comfy_attn, wrap_module_with_gradient_checkpointing, unwrap_module_with_gradient_checkpointing
@@ -215,31 +214,36 @@ class MoGeModel(nn.Module):
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path: Union[str, Path, IO[bytes]], model_kwargs: Optional[Dict[str, Any]] = None, **hf_kwargs) -> 'MoGeModel':
         """
-        Load a model from a checkpoint file.
+        Load a model from a safetensors checkpoint file.
 
         ### Parameters:
-        - `pretrained_model_name_or_path`: path to the checkpoint file or repo id.
-        - `model_kwargs`: additional keyword arguments to override the parameters in the checkpoint.
-        - `hf_kwargs`: additional keyword arguments to pass to the `hf_hub_download` function. Ignored if `pretrained_model_name_or_path` is a local path.
+        - `pretrained_model_name_or_path`: path to the .safetensors file.
+          Expects a sibling `*_config.json` with model constructor args.
+        - `model_kwargs`: additional keyword arguments to override the parameters in the config.
 
         ### Returns:
         - A new instance of `MoGe` with the parameters loaded from the checkpoint.
         """
-        if Path(pretrained_model_name_or_path).exists():
-            checkpoint = torch.load(pretrained_model_name_or_path, map_location='cpu', weights_only=True)
-        else:
-            cached_checkpoint_path = hf_hub_download(
-                repo_id=pretrained_model_name_or_path,
-                repo_type="model",
-                filename="model.pt",
-                **hf_kwargs
-            )
-            checkpoint = torch.load(cached_checkpoint_path, map_location='cpu', weights_only=True)
-        model_config = checkpoint['model_config']
+        import comfy.utils
+
+        ckpt_path = Path(pretrained_model_name_or_path)
+
+        # Load config from sibling JSON (e.g. moge_vitl.safetensors → moge_vitl_config.json)
+        config_path = ckpt_path.with_name(ckpt_path.stem + "_config.json")
+        with open(config_path) as f:
+            model_config = json.load(f)
+
         if model_kwargs is not None:
             model_config.update(model_kwargs)
-        model = cls(**model_config)
-        model.load_state_dict(checkpoint['model'])
+
+        # Load weights via ComfyUI (handles safetensors natively, mmap-friendly)
+        state_dict = comfy.utils.load_torch_file(str(ckpt_path))
+
+        # Meta-device init to halve peak VRAM during loading
+        with torch.device('meta'):
+            model = cls(**model_config)
+        model.load_state_dict(state_dict, assign=True)
+        log.info("MoGe loaded from %s (%d tensors)", ckpt_path.name, len(state_dict))
         return model
 
     def init_weights(self):

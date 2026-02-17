@@ -100,7 +100,7 @@ class SAM3D_DepthEstimate:
         if _MOGE_PATCHER is None:
             from moge.model.v1 import MoGeModel
 
-            moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge-vitl" / "model.pt"
+            moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
             log.info("Loading MoGe model from %s...", moge_path)
             raw_model = MoGeModel.from_pretrained(str(moge_path))
 
