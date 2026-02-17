@@ -10,6 +10,24 @@ import torch.nn.functional as F
 from loguru import logger
 
 
+def _wrap_attn_comfy(module):
+    """Class-swap a DINOv2 Attention module to use comfy-attn dispatch (sage/flash/sdpa)."""
+    import torch
+    from comfy_attn import dispatch_attention
+
+    class _W(module.__class__):
+        def forward(self, x, **kwargs):
+            B, N, C = x.shape
+            qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
+            q, k, v = torch.unbind(qkv, 2)
+            q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+            out = dispatch_attention(q, k, v)
+            out = out.transpose(1, 2).contiguous().view(B, N, C)
+            return self.proj_drop(self.proj(out))
+
+    module.__class__ = _W
+
+
 def _get_comfyui_dinov2_path() -> Optional[Path]:
     """Check if DINOv2 is downloaded to ComfyUI models folder."""
     try:
@@ -94,6 +112,12 @@ class Dino(torch.nn.Module):
                         f"embed_dim: {self.backbone.embed_dim}, "
                         f"patch_size: {getattr(self.backbone.patch_embed, 'patch_size', 'N/A')}")
 
+            # Route attention through comfy-attn (sage/flash/sdpa)
+            for block in self.backbone.blocks:
+                _wrap_attn_comfy(block.attn)
+            from comfy_attn import set_backend, get_backend_label
+            set_backend("auto")
+            logger.info(f"DINOv2 attention: {get_backend_label()} ({len(self.backbone.blocks)} blocks)")
 
         self.resize_input_size = (input_size, input_size)
         self.embed_dim = self.backbone.embed_dim

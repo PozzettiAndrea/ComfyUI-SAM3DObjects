@@ -19,22 +19,21 @@ def unwrap_module_with_gradient_checkpointing(module: nn.Module):
     module.__class__ = module.__class__._restore_cls
 
 
-def wrap_dinov2_attention_with_sdpa(module: nn.Module):
-    assert torch.__version__ >= '2.0', "SDPA requires PyTorch 2.0 or later"
-    class _AttentionWrapper(module.__class__):
-        def forward(self, x: torch.Tensor, attn_bias=None) -> torch.Tensor:
+def wrap_dinov2_attention_with_comfy_attn(module: nn.Module):
+    """Replace DINOv2 attention forward with comfy-attn dispatch (sage/flash/sdpa)."""
+    from comfy_attn import dispatch_attention
+
+    class _ComfyAttnWrapper(module.__class__):
+        def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
             B, N, C = x.shape
-            qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)  # (3, B, H, N, C // H)
+            qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
+            q, k, v = torch.unbind(qkv, 2)
+            q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+            out = dispatch_attention(q, k, v)
+            out = out.transpose(1, 2).contiguous().view(B, N, C)
+            return self.proj_drop(self.proj(out))
 
-            q, k, v = torch.unbind(qkv, 0)      # (B, H, N, C // H)
-
-            x = F.scaled_dot_product_attention(q, k, v, attn_bias)
-            x = x.permute(0, 2, 1, 3).reshape(B, N, C) 
-
-            x = self.proj(x)
-            x = self.proj_drop(x)
-            return x
-    module.__class__ = _AttentionWrapper
+    module.__class__ = _ComfyAttnWrapper
     return module
 
 

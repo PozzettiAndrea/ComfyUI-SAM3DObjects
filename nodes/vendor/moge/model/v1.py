@@ -19,7 +19,7 @@ import utils3d
 from huggingface_hub import hf_hub_download
 
 from ..utils.geometry_torch import normalized_view_plane_uv, recover_focal_shift, gaussian_blur_2d
-from .utils import wrap_dinov2_attention_with_sdpa, wrap_module_with_gradient_checkpointing, unwrap_module_with_gradient_checkpointing
+from .utils import wrap_dinov2_attention_with_comfy_attn, wrap_module_with_gradient_checkpointing, unwrap_module_with_gradient_checkpointing
 from ..utils.tools import timeit
 
 
@@ -207,8 +207,10 @@ class MoGeModel(nn.Module):
         self.register_buffer("image_mean", image_mean)
         self.register_buffer("image_std", image_std)
         
-        if torch.__version__ >= '2.0':
-            self.enable_pytorch_native_sdpa()
+        self.enable_comfy_attn()
+        from comfy_attn import set_backend, get_backend_label
+        set_backend("auto")
+        log.info("MoGe attention: %s (%d blocks)", get_backend_label(), len(self.backbone.blocks))
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path: Union[str, Path, IO[bytes]], model_kwargs: Optional[Dict[str, Any]] = None, **hf_kwargs) -> 'MoGeModel':
@@ -236,18 +238,8 @@ class MoGeModel(nn.Module):
         model_config = checkpoint['model_config']
         if model_kwargs is not None:
             model_config.update(model_kwargs)
-        # Try meta-device init to halve peak VRAM during loading
-        try:
-            with torch.device('meta'):
-                model = cls(**model_config)
-            model.load_state_dict(checkpoint['model'], assign=True)
-            log.info("Meta-device init succeeded — zero memory allocated for weights")
-        except Exception as e:
-            import traceback
-            log.warning("Meta-device init failed (%s: %s), falling back to standard init", type(e).__name__, e)
-            log.debug("Full traceback:\n%s", traceback.format_exc())
-            model = cls(**model_config)
-            model.load_state_dict(checkpoint['model'])
+        model = cls(**model_config)
+        model.load_state_dict(checkpoint['model'])
         return model
 
     def init_weights(self):
@@ -259,9 +251,9 @@ class MoGeModel(nn.Module):
         for i in range(len(self.backbone.blocks)):
             self.backbone.blocks[i] = wrap_module_with_gradient_checkpointing(self.backbone.blocks[i])
 
-    def enable_pytorch_native_sdpa(self):
+    def enable_comfy_attn(self):
         for i in range(len(self.backbone.blocks)):
-            self.backbone.blocks[i].attn = wrap_dinov2_attention_with_sdpa(self.backbone.blocks[i].attn)
+            self.backbone.blocks[i].attn = wrap_dinov2_attention_with_comfy_attn(self.backbone.blocks[i].attn)
     
     def _remap_points(self, points: torch.Tensor) -> torch.Tensor:
         if self.remap_output == 'linear':
