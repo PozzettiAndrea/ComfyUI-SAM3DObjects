@@ -17,9 +17,6 @@ except ImportError:
 # HuggingFace repo for SAM3D checkpoints (safetensors format, mmap-friendly)
 REPO_ID = "apozz/sam-3d-objects-safetensors"
 
-# Fallback repo with .ckpt format (original)
-FALLBACK_REPO_ID = "jetjodh/sam-3d-objects"
-
 # Output names for detecting which are connected
 OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
 
@@ -143,7 +140,7 @@ class LoadSAM3DModel:
 
         # Download checkpoints if needed
         checkpoint_path = self._get_or_download_checkpoint(used_outputs)
-        config_path = str(checkpoint_path / "checkpoints" / "pipeline.yaml")
+        config_path = str(checkpoint_path / "pipeline.yaml")
 
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
@@ -186,8 +183,6 @@ class LoadSAM3DModel:
     def _get_or_download_checkpoint(cls, used_outputs: set = None) -> Path:
         """Get checkpoint path, downloading required files if necessary."""
         models_dir = get_sam3d_models_path()
-        checkpoint_dir = models_dir / "sam-3d-objects"
-        checkpoints_path = checkpoint_dir / "checkpoints"
 
         # Determine required files
         required_files = set(ALWAYS_DOWNLOAD)
@@ -201,17 +196,17 @@ class LoadSAM3DModel:
         # Check which files are missing
         missing_files = []
         for filename in required_files:
-            filepath = checkpoints_path / filename
+            filepath = models_dir / filename
             if not cls._verify_checkpoint(filepath, filename):
                 missing_files.append(filename)
 
         if missing_files:
             log.info("Need to download %d file(s)...", len(missing_files))
-            cls._download_files(checkpoint_dir, missing_files)
+            cls._download_files(models_dir, missing_files)
         else:
             log.info("All required checkpoints present")
 
-        return checkpoint_dir
+        return models_dir
 
     @classmethod
     def _verify_checkpoint(cls, filepath: Path, filename: str) -> bool:
@@ -232,10 +227,7 @@ class LoadSAM3DModel:
 
     @classmethod
     def _download_files(cls, target_dir: Path, files: list):
-        """Download specific files from HuggingFace.
-
-        Tries safetensors repo first, falls back to ckpt repo for YAML configs.
-        """
+        """Download specific files from HuggingFace."""
         target_dir.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -246,24 +238,13 @@ class LoadSAM3DModel:
         log.info("Downloading from HuggingFace: %s", REPO_ID)
 
         for filename in files:
-            hf_path = f"checkpoints/{filename}"
             log.info("Downloading %s...", filename)
-            try:
-                hf_hub_download(
-                    repo_id=REPO_ID,
-                    filename=hf_path,
-                    local_dir=str(target_dir),
-                    local_dir_use_symlinks=False,
-                )
-            except Exception as e:
-                # Fall back to original repo for files not in safetensors repo
-                log.warning("File not found in %s, trying fallback: %s", REPO_ID, e)
-                hf_hub_download(
-                    repo_id=FALLBACK_REPO_ID,
-                    filename=hf_path,
-                    local_dir=str(target_dir),
-                    local_dir_use_symlinks=False,
-                )
+            hf_hub_download(
+                repo_id=REPO_ID,
+                filename=filename,
+                local_dir=str(target_dir),
+                local_dir_use_symlinks=False,
+            )
 
         log.info("Download complete")
 
@@ -277,7 +258,7 @@ class LoadSAM3DModel:
         import subprocess
 
         models_dir = get_sam3d_models_path()
-        dinov2_dir = models_dir / "sam-3d-objects" / "dinov2"
+        dinov2_dir = models_dir / "dinov2"
         weights_file = dinov2_dir / "dinov2_vitl14_reg4_pretrain.pth"
 
         # Download repo if not present
@@ -334,7 +315,7 @@ class LoadSAM3DModel:
         from huggingface_hub import snapshot_download
 
         models_dir = get_sam3d_models_path()
-        moge_dir = models_dir / "sam-3d-objects" / "moge-vitl"
+        moge_dir = models_dir / "moge-vitl"
 
         # Check if already downloaded
         if (moge_dir / "model.pt").exists():
