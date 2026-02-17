@@ -2,6 +2,7 @@
 from torch import nn
 import torch.nn.functional as F
 from typing import Optional
+from comfy.ops import disable_weight_init
 
 
 class FeedForward(nn.Module):
@@ -29,10 +30,10 @@ class FeedForward(nn.Module):
             output_dim = dim
 
         self.skip_w2 = skip_w2
-        self.w1 = nn.Linear(dim, hidden_dim, bias=False)
+        self.w1 = disable_weight_init.Linear(dim, hidden_dim, bias=False)
         if not self.skip_w2:
-            self.w2 = nn.Linear(hidden_dim, output_dim, bias=False)
-        self.w3 = nn.Linear(dim, hidden_dim, bias=False)
+            self.w2 = disable_weight_init.Linear(hidden_dim, output_dim, bias=False)
+        self.w3 = disable_weight_init.Linear(dim, hidden_dim, bias=False)
 
     def forward(self, x):
         x = F.silu(self.w1(x)) * self.w3(x)

@@ -1,14 +1,14 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
-import torch.nn as nn
+from comfy.ops import disable_weight_init
 
 
-class LayerNorm32(nn.LayerNorm):
+class LayerNorm32(disable_weight_init.LayerNorm):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return super().forward(x.float()).type(x.dtype)
 
 
-class GroupNorm32(nn.GroupNorm):
+class GroupNorm32(disable_weight_init.GroupNorm):
     """
     A GroupNorm layer that converts to float32 before the forward pass.
     """

@@ -4,6 +4,7 @@ from typing import *
 from torch.utils import _pytree
 import torch
 import torch.nn as nn
+from comfy.ops import disable_weight_init
 from ..attention import MultiHeadAttention, MOTMultiHeadSelfAttention
 from ..norm import LayerNorm32
 from .blocks import FeedForwardNet
@@ -49,7 +50,7 @@ class ModulatedTransformerBlock(nn.Module):
         )
         if not share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(channels, 6 * channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(channels, 6 * channels, bias=True)
             )
 
     def _forward(self, x: torch.Tensor, mod: torch.Tensor) -> torch.Tensor:
@@ -135,7 +136,7 @@ class ModulatedTransformerCrossBlock(nn.Module):
         )
         if not share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(channels, 6 * channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(channels, 6 * channels, bias=True)
             )
 
     def _forward(self, x: torch.Tensor, mod: torch.Tensor, context: torch.Tensor):
@@ -252,7 +253,7 @@ class MOTModulatedTransformerCrossBlock(nn.Module):
         )
         if not share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(channels, 6 * channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(channels, 6 * channels, bias=True)
             )
             if freeze_shared_parameters:
                 self.adaLN_modulation.eval()

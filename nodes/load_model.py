@@ -14,43 +14,46 @@ except ImportError:
     from comfy_utils import get_sam3d_models_path
 
 
-# HuggingFace repo for SAM3D checkpoints
-REPO_ID = "jetjodh/sam-3d-objects"
+# HuggingFace repo for SAM3D checkpoints (safetensors format, mmap-friendly)
+REPO_ID = "apozz/sam-3d-objects-safetensors"
+
+# Fallback repo with .ckpt format (original)
+FALLBACK_REPO_ID = "jetjodh/sam-3d-objects"
 
 # Output names for detecting which are connected
 OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
 
-# Map outputs to required checkpoint files
+# Map outputs to required checkpoint files (safetensors preferred)
 REQUIRED_FILES = {
     "depth_model": [],  # Depth uses MoGe v1 (Ruicheng/moge-vitl) from HuggingFace
     "generator": [
-        "ss_generator.ckpt",
+        "ss_generator.safetensors",
         "ss_generator.yaml",
-        "ss_decoder.ckpt",
+        "ss_decoder.safetensors",
         "ss_decoder.yaml",
-        "slat_generator.ckpt",
+        "slat_generator.safetensors",
         "slat_generator.yaml",
     ],
     "slat_decoder_gs": [
-        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs.safetensors",
         "slat_decoder_gs.yaml",
-        "slat_decoder_gs_4.ckpt",
+        "slat_decoder_gs_4.safetensors",
         "slat_decoder_gs_4.yaml",
     ],
     "slat_decoder_mesh": [
-        "slat_decoder_mesh.ckpt",
+        "slat_decoder_mesh.safetensors",
         "slat_decoder_mesh.yaml",
     ],
 }
 
 # Expected file sizes for verification (within 10% tolerance)
 EXPECTED_SIZES = {
-    "ss_generator.ckpt": 6_690_000_000,
-    "slat_generator.ckpt": 4_910_000_000,
-    "ss_decoder.ckpt": 147_600_000,
-    "slat_decoder_gs.ckpt": 171_000_000,
-    "slat_decoder_gs_4.ckpt": 170_000_000,
-    "slat_decoder_mesh.ckpt": 364_000_000,
+    "ss_generator.safetensors": 6_690_000_000,
+    "slat_generator.safetensors": 4_910_000_000,
+    "ss_decoder.safetensors": 147_600_000,
+    "slat_decoder_gs.safetensors": 171_000_000,
+    "slat_decoder_gs_4.safetensors": 170_000_000,
+    "slat_decoder_mesh.safetensors": 364_000_000,
 }
 
 # Config files to always download
@@ -235,7 +238,10 @@ class LoadSAM3DModel:
 
     @classmethod
     def _download_files(cls, target_dir: Path, files: list):
-        """Download specific files from HuggingFace."""
+        """Download specific files from HuggingFace.
+
+        Tries safetensors repo first, falls back to ckpt repo for YAML configs.
+        """
         target_dir.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -248,12 +254,22 @@ class LoadSAM3DModel:
         for filename in files:
             hf_path = f"checkpoints/{filename}"
             log.info("Downloading %s...", filename)
-            hf_hub_download(
-                repo_id=REPO_ID,
-                filename=hf_path,
-                local_dir=str(target_dir),
-                local_dir_use_symlinks=False,
-            )
+            try:
+                hf_hub_download(
+                    repo_id=REPO_ID,
+                    filename=hf_path,
+                    local_dir=str(target_dir),
+                    local_dir_use_symlinks=False,
+                )
+            except Exception as e:
+                # Fall back to original repo for files not in safetensors repo
+                log.warning("File not found in %s, trying fallback: %s", REPO_ID, e)
+                hf_hub_download(
+                    repo_id=FALLBACK_REPO_ID,
+                    filename=hf_path,
+                    local_dir=str(target_dir),
+                    local_dir_use_symlinks=False,
+                )
 
         log.info("Download complete")
 

@@ -98,7 +98,9 @@ class SAM3D_DepthEstimate:
         log.info("Loading MoGe model from %s...", moge_path)
         raw_model = MoGeModel.from_pretrained(str(moge_path))
 
-        model = MoGe(raw_model, device="cuda")  # Wrapper handles .cuda().eval()
+        import comfy.model_management as mm
+        device = mm.get_torch_device()
+        model = MoGe(raw_model, device=str(device))
 
         # Prepare image tensor
         loaded_image = image_np.astype(np.float32) / 255.0
@@ -106,7 +108,7 @@ class SAM3D_DepthEstimate:
 
         # Run depth model
         with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=torch.float16):
+            with torch.autocast(device_type=device.type, dtype=torch.float16):
                 output = model(loaded_image)
 
         pointmaps = output["pointmaps"]

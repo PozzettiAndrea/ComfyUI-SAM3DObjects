@@ -4,6 +4,7 @@ from typing import *
 from torch.utils import _pytree
 import torch
 import torch.nn as nn
+from comfy.ops import disable_weight_init
 from ..modules.utils import convert_module_to_f16, convert_module_to_f32
 from collections import namedtuple
 from ..modules.utils import FP16_TYPE
@@ -60,7 +61,7 @@ class SparseStructureFlowModel(nn.Module):
         self.t_embedder = TimestepEmbedder(model_channels, freeze=freeze_shared_parameters)
         if share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(model_channels, 6 * model_channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(model_channels, 6 * model_channels, bias=True)
             )
 
         self.blocks = nn.ModuleList(

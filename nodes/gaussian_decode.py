@@ -70,8 +70,15 @@ class SAM3DGaussianDecode:
 
         attn_backend = slat_decoder_gs.get("attn_backend", "auto")
         if attn_backend == "auto":
-            from .utils.stages import auto_detect_attn_backend
-            attn_backend = auto_detect_attn_backend()
+            for module in ["flash_attn", "xformers"]:
+                try:
+                    __import__(module)
+                    attn_backend = module
+                    break
+                except ImportError:
+                    continue
+            else:
+                attn_backend = "sdpa"
         os.environ["ATTN_BACKEND"] = attn_backend
         os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
 

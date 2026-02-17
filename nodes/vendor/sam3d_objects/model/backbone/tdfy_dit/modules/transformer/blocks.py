@@ -2,6 +2,7 @@
 from typing import *
 import torch
 import torch.nn as nn
+from comfy.ops import disable_weight_init
 from ..attention import MultiHeadAttention
 from ..norm import LayerNorm32
 
@@ -59,9 +60,9 @@ class FeedForwardNet(nn.Module):
     def __init__(self, channels: int, mlp_ratio: float = 4.0):
         super().__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(channels, int(channels * mlp_ratio)),
+            disable_weight_init.Linear(channels, int(channels * mlp_ratio)),
             nn.GELU(approximate="tanh"),
-            nn.Linear(int(channels * mlp_ratio), channels),
+            disable_weight_init.Linear(int(channels * mlp_ratio), channels),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

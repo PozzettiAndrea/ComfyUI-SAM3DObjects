@@ -143,42 +143,6 @@ def load_sharded_checkpoint(path: str, device: Optional[str]):
     return checkpoint
 
 
-def _reinit_meta_buffers(model, device):
-    """Replace meta-device buffers with empty tensors on target device.
-
-    After load_state_dict(assign=True), non-persistent buffers remain on meta
-    because they aren't in the checkpoint. This replaces them so subsequent
-    operations don't crash.
-    """
-    for name, buf in list(model.named_buffers()):
-        if buf.device.type == 'meta':
-            parts = name.split('.')
-            parent = model
-            for part in parts[:-1]:
-                parent = getattr(parent, part)
-            parent.register_buffer(
-                parts[-1],
-                torch.empty(buf.shape, dtype=buf.dtype, device=device),
-                persistent=False,
-            )
-
-
-def try_instantiate_on_meta(instantiate_fn, config):
-    """Instantiate model on meta device if possible (no real memory allocated).
-
-    Returns (model, use_assign) where use_assign=True means load_state_dict
-    should use assign=True to materialize real tensors.
-    """
-    try:
-        with torch.device('meta'):
-            model = instantiate_fn(config)
-        logger.info("Meta-device init succeeded — zero memory allocated for weights")
-        return model, True
-    except Exception as e:
-        logger.warning(f"Meta-device init failed ({type(e).__name__}: {e}), falling back to standard init")
-        return instantiate_fn(config), False
-
-
 def load_model_from_checkpoint(
     model: Union[pl.LightningModule, torch.nn.Module],
     checkpoint_path: str,
@@ -190,15 +154,21 @@ def load_model_from_checkpoint(
     remove_name: Union[List[str], None] = None,
     state_dict_key: Union[None, str, Iterable[str]] = "state_dict",
     state_dict_fn: Optional[Callable[[Any], Any]] = None,
-    assign: bool = False,
 ):
     logger.info(f"Loading checkpoint from {checkpoint_path}")
     if os.path.isfile(checkpoint_path):
-        checkpoint = torch.load(
-            checkpoint_path,
-            map_location=device,
-            weights_only=False,
-        )
+        if checkpoint_path.endswith('.safetensors'):
+            # Safetensors: flat state_dict, supports mmap for zero-copy loading
+            from safetensors.torch import load_file
+            checkpoint = load_file(checkpoint_path, device=device or "cpu")
+            # safetensors returns a flat state_dict directly, no nested keys
+            state_dict_key = None
+        else:
+            checkpoint = torch.load(
+                checkpoint_path,
+                map_location=device,
+                weights_only=False,
+            )
     elif os.path.isdir(checkpoint_path):  # sharded
         checkpoint = load_sharded_checkpoint(checkpoint_path, device=device)
     else:  # if neither a file nor a directory, path does not exist
@@ -231,14 +201,9 @@ def load_model_from_checkpoint(
     if state_dict_fn is not None:
         state_dict = state_dict_fn(state_dict)
 
-    model.load_state_dict(state_dict, strict=strict, assign=assign)
+    model.load_state_dict(state_dict, strict=strict)
 
-    if assign and device is not None:
-        # With assign=True, parameters are already on the checkpoint's device
-        # (set by map_location in torch.load). Only fix non-persistent buffers
-        # that stayed on meta because they aren't in the checkpoint.
-        _reinit_meta_buffers(model, device)
-    elif device is not None:
+    if device is not None:
         model = model.to(device)
 
     if freeze:

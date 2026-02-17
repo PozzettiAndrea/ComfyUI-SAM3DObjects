@@ -5,6 +5,7 @@ from torch.utils import _pytree
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from comfy.ops import disable_weight_init
 from .full_attn import scaled_dot_product_attention
 from sam3d_objects.data.utils import (
     tree_reduce_unique,
@@ -120,16 +121,16 @@ class MultiHeadAttention(nn.Module):
         self.qk_rms_norm = qk_rms_norm
 
         if self._type == "self":
-            self.to_qkv = nn.Linear(channels, channels * 3, bias=qkv_bias)
+            self.to_qkv = disable_weight_init.Linear(channels, channels * 3, bias=qkv_bias)
         else:
-            self.to_q = nn.Linear(channels, channels, bias=qkv_bias)
-            self.to_kv = nn.Linear(self.ctx_channels, channels * 2, bias=qkv_bias)
+            self.to_q = disable_weight_init.Linear(channels, channels, bias=qkv_bias)
+            self.to_kv = disable_weight_init.Linear(self.ctx_channels, channels * 2, bias=qkv_bias)
 
         if self.qk_rms_norm:
             self.q_rms_norm = MultiHeadRMSNorm(self.head_dim, num_heads)
             self.k_rms_norm = MultiHeadRMSNorm(self.head_dim, num_heads)
 
-        self.to_out = nn.Linear(channels, channels)
+        self.to_out = disable_weight_init.Linear(channels, channels)
 
         if use_rope:
             self.rope = RotaryPositionEmbedder(channels)
@@ -218,20 +219,20 @@ class MOTMultiHeadSelfAttention(nn.Module):
         if self._type == "self":
             self.to_qkv = torch.nn.ModuleDict(
                 {
-                    latent_name: nn.Linear(channels, channels * 3, bias=qkv_bias)
+                    latent_name: disable_weight_init.Linear(channels, channels * 3, bias=qkv_bias)
                     for latent_name in latent_names
                 }
             )
         else:
             self.to_q = torch.nn.ModuleDict(
                 {
-                    latent_name: nn.Linear(channels, channels, bias=qkv_bias)
+                    latent_name: disable_weight_init.Linear(channels, channels, bias=qkv_bias)
                     for latent_name in latent_names
                 }
             )
             self.to_kv = torch.nn.ModuleDict(
                 {
-                    latent_name: nn.Linear(
+                    latent_name: disable_weight_init.Linear(
                         self.ctx_channels, channels * 2, bias=qkv_bias
                     )
                     for latent_name in latent_names
@@ -253,7 +254,7 @@ class MOTMultiHeadSelfAttention(nn.Module):
             )
 
         self.to_out = torch.nn.ModuleDict(
-            {latent_name: nn.Linear(channels, channels) for latent_name in latent_names}
+            {latent_name: disable_weight_init.Linear(channels, channels) for latent_name in latent_names}
         )
 
         if use_rope:

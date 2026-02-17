@@ -25,8 +25,9 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 from PIL import Image
+import comfy.model_management
 from .stages import (
-    _load_config, _resolve_dtype, auto_detect_attn_backend,
+    _load_config, _resolve_dtype,
     _get_or_load_generator, _get_or_load_decoder, _get_or_load_condition_embedder,
 )
 
@@ -41,7 +42,15 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
     """
     attn_backend = request.get("attn_backend", "auto")
     if attn_backend == "auto":
-        attn_backend = auto_detect_attn_backend()
+        for module in ["flash_attn", "xformers"]:
+            try:
+                __import__(module)
+                attn_backend = module
+                break
+            except ImportError:
+                continue
+        else:
+            attn_backend = "sdpa"
     os.environ["ATTN_BACKEND"] = attn_backend
     os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
 
@@ -210,11 +219,17 @@ def _run_phase1_stage1(
     config, checkpoint_dir = _load_config(config_path)
     dtype = _resolve_dtype(precision)
 
-    # Load Stage 1 models (cached on GPU; comfy-env handles VRAM eviction)
+    # Load Stage 1 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 1 models...")
-    ss_generator = _get_or_load_generator(config_path, 'ss', precision)
-    ss_decoder = _get_or_load_decoder(config_path, 'ss', precision)
-    ss_embedder = _get_or_load_condition_embedder(config_path, 'ss', precision)
+    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
+    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
+
+    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
+
+    ss_generator = ss_gen_patcher.model
+    ss_decoder = ss_dec_patcher.model
+    ss_embedder = ss_emb_patcher.model
 
     # Get preprocessor
     preprocessor_config = config.get('ss_preprocessor')
@@ -286,8 +301,9 @@ def _run_phase1_stage1(
         pointmap_shift = ss_input_dict.get("pointmap_shift")
 
         # Run generation
+        device = comfy.model_management.get_torch_device()
         with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=dtype):
+            with torch.autocast(device_type=device.type, dtype=dtype):
                 image_tensor = ss_input_dict["image"]
                 bs = image_tensor.shape[0]
 
@@ -368,10 +384,15 @@ def _run_phase2_stage2(
     config, checkpoint_dir = _load_config(config_path)
     dtype = _resolve_dtype(precision)
 
-    # Load Stage 2 models (cached on GPU; comfy-env handles VRAM eviction)
+    # Load Stage 2 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 2 models...")
-    slat_generator = _get_or_load_generator(config_path, 'slat', precision)
-    slat_embedder = _get_or_load_condition_embedder(config_path, 'slat', precision)
+    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
+    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
+
+    comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
+
+    slat_generator = slat_gen_patcher.model
+    slat_embedder = slat_emb_patcher.model
 
     # Get preprocessor
     preprocessor_config = config.get('slat_preprocessor')
@@ -386,8 +407,9 @@ def _run_phase2_stage2(
     slat_generator.reverse_fn.strength = stage2_cfg
     slat_generator.inference_steps = stage2_steps
 
-    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8)).cuda()
-    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8)).cuda()
+    device = comfy.model_management.get_torch_device()
+    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
+    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8), device=device)
     slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
 
     slat_paths = []
@@ -415,14 +437,14 @@ def _run_phase2_stage2(
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
-        coords = coords.cuda()
+        coords = coords.to(device)
 
         # Preprocess
         slat_input_dict = preprocess_image_lazy(image_np, mask_np, slat_preprocessor)
 
         # Run generation
         with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=dtype):
+            with torch.autocast(device_type=device.type, dtype=dtype):
                 image_tensor = slat_input_dict["image"]
                 DEVICE = image_tensor.device
                 latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
@@ -477,10 +499,13 @@ def _run_phase3_mesh_decode(
     import trimesh
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    # Load mesh decoder (cached on GPU; comfy-env handles VRAM eviction)
+    # Load mesh decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading mesh decoder...")
-    decoder = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
+    dec_patcher = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
+    comfy.model_management.load_models_gpu([dec_patcher])
+    decoder = dec_patcher.model
 
+    device = comfy.model_management.get_torch_device()
     glb_paths = []
 
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
@@ -497,9 +522,9 @@ def _run_phase3_mesh_decode(
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.cuda(), feats=feats.cuda())
+            slat = sp.SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
-            slat = slat.cuda()
+            slat = slat.to(device)
 
         with torch.no_grad():
             output = decoder(slat)
@@ -550,10 +575,13 @@ def _run_phase4_texture(
     """Phase 4: Load gaussian decoder once, decode all, then texture bake."""
     from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
 
-    # Load gaussian decoder (cached on GPU; comfy-env handles VRAM eviction)
+    # Load gaussian decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading gaussian decoder...")
-    decoder = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
+    dec_patcher = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
+    comfy.model_management.load_models_gpu([dec_patcher])
+    decoder = dec_patcher.model
 
+    device = comfy.model_management.get_torch_device()
     ply_paths = []
 
     # Decode all gaussians
@@ -569,9 +597,9 @@ def _run_phase4_texture(
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.cuda(), feats=feats.cuda())
+            slat = sp.SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
-            slat = slat.cuda()
+            slat = slat.to(device)
 
         with torch.no_grad():
             output = decoder(slat)
