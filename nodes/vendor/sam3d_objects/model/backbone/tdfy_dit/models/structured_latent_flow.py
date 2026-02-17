@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from comfy.ops import disable_weight_init
 from ..modules.utils import zero_module, convert_module_to_f16, convert_module_to_f32
 from ..modules.transformer import AbsolutePositionEmbedder
 from ..modules.norm import LayerNorm32
@@ -40,7 +41,7 @@ class SparseResBlock3d(nn.Module):
         )
         self.emb_layers = nn.Sequential(
             nn.SiLU(),
-            nn.Linear(emb_channels, 2 * self.out_channels, bias=True),
+            disable_weight_init.Linear(emb_channels, 2 * self.out_channels, bias=True),
         )
         self.skip_connection = (
             sp.SparseLinear(channels, self.out_channels)
@@ -133,7 +134,7 @@ class SLatFlowModel(nn.Module):
         self.t_embedder = TimestepEmbedder(model_channels)
         if share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(model_channels, 6 * model_channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(model_channels, 6 * model_channels, bias=True)
             )
 
         if pe_mode == "ape":

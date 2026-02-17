@@ -1,6 +1,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
 from torch import nn
+from comfy.ops import disable_weight_init
 from ..modules.transformer import (
     AbsolutePositionEmbedder,
 )
@@ -14,8 +15,8 @@ class Latent(nn.Module):
         self, in_channels, model_channels: int, pos_embedder: Callable[[], torch.Tensor]
     ):
         super().__init__()
-        self.input_layer = nn.Linear(in_channels, model_channels)
-        self.out_layer = nn.Linear(model_channels, in_channels)
+        self.input_layer = disable_weight_init.Linear(in_channels, model_channels)
+        self.out_layer = disable_weight_init.Linear(model_channels, in_channels)
 
         pos_emb = pos_embedder()
         if isinstance(pos_emb, torch.nn.Parameter):

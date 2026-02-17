@@ -3,6 +3,7 @@ from typing import *
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from comfy.ops import disable_weight_init
 from .. import SparseTensor
 from .full_attn import sparse_scaled_dot_product_attention
 from .serialized_attn import (
@@ -74,16 +75,16 @@ class SparseMultiHeadAttention(nn.Module):
         self.qk_rms_norm = qk_rms_norm
 
         if self._type == "self":
-            self.to_qkv = nn.Linear(channels, channels * 3, bias=qkv_bias)
+            self.to_qkv = disable_weight_init.Linear(channels, channels * 3, bias=qkv_bias)
         else:
-            self.to_q = nn.Linear(channels, channels, bias=qkv_bias)
-            self.to_kv = nn.Linear(self.ctx_channels, channels * 2, bias=qkv_bias)
+            self.to_q = disable_weight_init.Linear(channels, channels, bias=qkv_bias)
+            self.to_kv = disable_weight_init.Linear(self.ctx_channels, channels * 2, bias=qkv_bias)
 
         if self.qk_rms_norm:
             self.q_rms_norm = SparseMultiHeadRMSNorm(channels // num_heads, num_heads)
             self.k_rms_norm = SparseMultiHeadRMSNorm(channels // num_heads, num_heads)
 
-        self.to_out = nn.Linear(channels, channels)
+        self.to_out = disable_weight_init.Linear(channels, channels)
 
         if use_rope:
             self.rope = RotaryPositionEmbedder(channels)

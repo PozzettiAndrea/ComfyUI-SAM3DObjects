@@ -2,6 +2,7 @@
 import torch.nn as nn
 import torch
 import numpy as np
+from comfy.ops import disable_weight_init
 
 
 class TimestepEmbedder(nn.Module):
@@ -12,9 +13,9 @@ class TimestepEmbedder(nn.Module):
     def __init__(self, hidden_size, frequency_embedding_size=256, freeze=False):
         super().__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(frequency_embedding_size, hidden_size, bias=True),
+            disable_weight_init.Linear(frequency_embedding_size, hidden_size, bias=True),
             nn.SiLU(),
-            nn.Linear(hidden_size, hidden_size, bias=True),
+            disable_weight_init.Linear(hidden_size, hidden_size, bias=True),
         )
         self.frequency_embedding_size = frequency_embedding_size
         if freeze:

@@ -1,6 +1,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
 import torch.nn as nn
+from comfy.ops import disable_weight_init
 from . import SparseTensor
 from . import DEBUG
 
@@ -12,7 +13,7 @@ __all__ = [
 ]
 
 
-class SparseGroupNorm(nn.GroupNorm):
+class SparseGroupNorm(disable_weight_init.GroupNorm):
     def __init__(self, num_groups, num_channels, eps=1e-5, affine=True):
         super(SparseGroupNorm, self).__init__(num_groups, num_channels, eps, affine)
 
@@ -31,7 +32,7 @@ class SparseGroupNorm(nn.GroupNorm):
         return input.replace(nfeats)
 
 
-class SparseLayerNorm(nn.LayerNorm):
+class SparseLayerNorm(disable_weight_init.LayerNorm):
     def __init__(self, normalized_shape, eps=1e-5, elementwise_affine=True):
         super(SparseLayerNorm, self).__init__(normalized_shape, eps, elementwise_affine)
 

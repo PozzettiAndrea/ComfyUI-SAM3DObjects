@@ -2,6 +2,7 @@
 from typing import *
 import torch
 import torch.nn as nn
+from comfy.ops import disable_weight_init
 from ..basic import SparseTensor
 from ..attention import SparseMultiHeadAttention, SerializeMode
 from ...norm import LayerNorm32
@@ -54,7 +55,7 @@ class ModulatedSparseTransformerBlock(nn.Module):
         )
         if not share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(channels, 6 * channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(channels, 6 * channels, bias=True)
             )
 
     def _forward(self, x: SparseTensor, mod: torch.Tensor) -> SparseTensor:
@@ -146,7 +147,7 @@ class ModulatedSparseTransformerCrossBlock(nn.Module):
         )
         if not share_mod:
             self.adaLN_modulation = nn.Sequential(
-                nn.SiLU(), nn.Linear(channels, 6 * channels, bias=True)
+                nn.SiLU(), disable_weight_init.Linear(channels, 6 * channels, bias=True)
             )
 
     def _forward(

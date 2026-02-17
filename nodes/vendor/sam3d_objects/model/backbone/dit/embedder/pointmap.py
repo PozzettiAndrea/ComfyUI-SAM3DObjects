@@ -5,6 +5,7 @@ from torch import nn
 import torch.nn.functional as F
 from functools import partial
 from loguru import logger
+from comfy.ops import disable_weight_init
 
 from .point_remapper import PointRemapper
 
@@ -37,7 +38,7 @@ class PointPatchEmbed(nn.Module):
         self.point_remapper = PointRemapper(remap_output)
 
         # (1) point embedding
-        self.point_proj = nn.Linear(3, embed_dim)
+        self.point_proj = disable_weight_init.Linear(3, embed_dim)
         self.invalid_xyz_token = nn.Parameter(torch.zeros(embed_dim))
         
         # Special embedding for dropped patches (used during dropout)
