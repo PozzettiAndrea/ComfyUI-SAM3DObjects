@@ -129,7 +129,7 @@ class SLatGaussianDecoder(SparseTransformerBase):
                     ].reshape(-1, *v["shape"])
                     offset = offset * self.rep_config["lr"][k]
                     if self.rep_config["perturb_offset"]:
-                        offset = offset + self.offset_perturbation
+                        offset = offset + self.offset_perturbation.to(offset.device)
                     offset = (
                         torch.tanh(offset)
                         / self.resolution

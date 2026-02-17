@@ -158,20 +158,6 @@ class SAM3DGenerateSLAT:
         from pathlib import Path
         from PIL import Image
 
-        attn_backend = generator.get("attn_backend", "auto")
-        if attn_backend == "auto":
-            for module in ["flash_attn", "xformers"]:
-                try:
-                    __import__(module)
-                    attn_backend = module
-                    break
-                except ImportError:
-                    continue
-            else:
-                attn_backend = "sdpa"
-        os.environ["ATTN_BACKEND"] = attn_backend
-        os.environ["SPARSE_ATTN_BACKEND"] = attn_backend
-
         from .utils.stages import run_stage1, run_stage2
         from .utils.helpers import load_pointmap_from_file
 

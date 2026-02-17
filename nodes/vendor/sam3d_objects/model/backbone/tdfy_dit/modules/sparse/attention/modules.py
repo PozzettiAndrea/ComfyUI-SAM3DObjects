@@ -25,11 +25,14 @@ class SparseMultiHeadRMSNorm(nn.Module):
     ) -> Union[SparseTensor, torch.Tensor]:
         x_type = x.dtype
         x = x.float()
+        # Move gamma to input device — SparseTensor inputs bypass pre-hook device detection
+        ref_device = x.feats.device if isinstance(x, SparseTensor) else x.device
+        gamma = self.gamma.to(ref_device)
         if isinstance(x, SparseTensor):
             x = x.replace(F.normalize(x.feats, dim=-1))
         else:
             x = F.normalize(x, dim=-1)
-        return (x * self.gamma * self.scale).to(x_type)
+        return (x * gamma * self.scale).to(x_type)
 
 
 class SparseMultiHeadAttention(nn.Module):

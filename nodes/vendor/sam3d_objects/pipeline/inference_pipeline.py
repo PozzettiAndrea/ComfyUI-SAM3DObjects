@@ -8,22 +8,6 @@ from functools import wraps
 from torch.utils._pytree import tree_map_only
 import comfy.model_management
 
-
-def set_attention_backend():
-    device = comfy.model_management.get_torch_device()
-    if device.type == "cuda":
-        gpu_name = torch.cuda.get_device_name(0)
-    else:
-        gpu_name = str(device)
-
-    logger.info(f"GPU name is {gpu_name}")
-    if "A100" in gpu_name or "H100" in gpu_name or "H200" in gpu_name:
-        # logger.info("Use flash_attn")
-        os.environ["ATTN_BACKEND"] = "flash_attn"
-        os.environ["SPARSE_ATTN_BACKEND"] = "flash_attn"
-
-set_attention_backend()
-
 from typing import List, Union
 from hydra.utils import instantiate
 from omegaconf import OmegaConf

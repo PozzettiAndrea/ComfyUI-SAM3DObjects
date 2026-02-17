@@ -47,7 +47,10 @@ class Latent(nn.Module):
 
     def to_input(self, x):
         x = self.input_layer(x)
-        x = x + self.pos_emb[None]
+        # Move pos_emb to input device — needed for ComfyUI lowvram where
+        # to_input() is called directly (not via __call__), so forward
+        # pre-hooks don't fire.
+        x = x + self.pos_emb.to(x.device)[None]
 
         return x
 
