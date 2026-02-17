@@ -6,6 +6,9 @@ from typing import Any
 
 log = logging.getLogger("sam3dobjects")
 
+# Module-level cache for MoGe ModelPatcher (persists across node executions)
+_MOGE_PATCHER = None
+
 class SAM3D_DepthEstimate:
     """
     Depth Estimation using MoGe model.
@@ -60,8 +63,9 @@ class SAM3D_DepthEstimate:
         Returns:
             Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
         """
+        global _MOGE_PATCHER
+
         # These imports happen in the isolated subprocess
-        import gc
         import sys
         import time
         import torch
@@ -70,6 +74,8 @@ class SAM3D_DepthEstimate:
         from PIL import Image
         import folder_paths
         import comfy.utils
+        import comfy.model_management as mm
+        import comfy.model_patcher
         from pytorch3d.renderer import look_at_view_transform
         from pytorch3d.transforms import Transform3d
 
@@ -90,19 +96,29 @@ class SAM3D_DepthEstimate:
             image_np = (image.cpu().numpy() * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_np)
 
-        # Load MoGe depth model from ComfyUI models folder (v1 - SAM-3D was trained on this)
-        from sam3d_objects.pipeline.depth_models.moge import MoGe
-        from moge.model.v1 import MoGeModel
-        import folder_paths
+        # Load MoGe depth model (cached in ModelPatcher for VRAM management)
+        if _MOGE_PATCHER is None:
+            from moge.model.v1 import MoGeModel
 
-        # Load from ComfyUI/models/sam3dobjects/moge-vitl/model.pt
-        moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge-vitl" / "model.pt"
-        log.info("Loading MoGe model from %s...", moge_path)
-        raw_model = MoGeModel.from_pretrained(str(moge_path))
+            moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge-vitl" / "model.pt"
+            log.info("Loading MoGe model from %s...", moge_path)
+            raw_model = MoGeModel.from_pretrained(str(moge_path))
 
-        import comfy.model_management as mm
+            from .utils.stages import _enable_lowvram_cast
+            _enable_lowvram_cast(raw_model)
+
+            _MOGE_PATCHER = comfy.model_patcher.ModelPatcher(
+                raw_model,
+                load_device=mm.get_torch_device(),
+                offload_device=mm.unet_offload_device(),
+            )
+            log.info("MoGe wrapped in ModelPatcher")
+
         device = mm.get_torch_device()
-        model = MoGe(raw_model, device=str(device))
+        mm.load_models_gpu([_MOGE_PATCHER])
+
+        from sam3d_objects.pipeline.depth_models.moge import MoGe
+        model = MoGe(_MOGE_PATCHER.model, device=str(device))
         pbar.update(1)  # Model loaded
 
         # Prepare image tensor
@@ -145,13 +161,7 @@ class SAM3D_DepthEstimate:
         pointmap_np = points_tensor.permute(1, 2, 0).cpu().numpy()  # HWC
         intrinsics_np = intrinsics.cpu().numpy() if intrinsics is not None else None
 
-        # Unload depth model
-        del model
-        del raw_model
-        gc.collect()
-        torch.cuda.empty_cache()
-        log.info("Depth model unloaded")
-        pbar.update(1)  # Transforms + cleanup done
+        pbar.update(1)  # Transforms done
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()
