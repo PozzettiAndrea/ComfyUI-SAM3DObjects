@@ -14,7 +14,7 @@ def _get_comfyui_dinov2_path() -> Optional[Path]:
     """Check if DINOv2 is downloaded to ComfyUI models folder."""
     try:
         import folder_paths
-        dinov2_path = Path(folder_paths.models_dir) / "sam3d" / "sam-3d-objects" / "dinov2"
+        dinov2_path = Path(folder_paths.models_dir) / "sam3dobjects" / "dinov2"
         if (dinov2_path / "hubconf.py").exists():
             return dinov2_path
     except ImportError:

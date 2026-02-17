@@ -93,8 +93,8 @@ class SAM3D_DepthEstimate:
         from moge.model.v1 import MoGeModel
         import folder_paths
 
-        # Load from ComfyUI/models/sam3d/sam-3d-objects/moge-vitl/model.pt
-        moge_path = Path(folder_paths.models_dir) / "sam3d" / "sam-3d-objects" / "moge-vitl" / "model.pt"
+        # Load from ComfyUI/models/sam3dobjects/moge-vitl/model.pt
+        moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge-vitl" / "model.pt"
         log.info("Loading MoGe model from %s...", moge_path)
         raw_model = MoGeModel.from_pretrained(str(moge_path))
 
