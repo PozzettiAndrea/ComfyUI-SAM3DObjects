@@ -127,7 +127,6 @@ class SAM3DMeshDecode:
             simplify=simplify,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
-            memory=slat_decoder_mesh.get("memory", "cpu_offload"),
             precision=slat_decoder_mesh.get("precision", "fp16"),
         )
 

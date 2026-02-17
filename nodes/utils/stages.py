@@ -469,7 +469,6 @@ def run_stage1(
     cfg_strength: float = 7.0,
     cfg_strength_pm: float = 0.0,
     output_dir: str = None,
-    memory: str = "cpu_offload",
     precision: str = "fp16",
 ) -> Dict[str, Any]:
     """
@@ -720,7 +719,6 @@ def run_stage2(
     inference_steps: int = 25,
     cfg_strength: float = 5.0,
     output_dir: str = None,
-    memory: str = "cpu_offload",
     precision: str = "fp16",
 ) -> Dict[str, Any]:
     """
@@ -881,7 +879,6 @@ def run_decode(
     simplify: float = 0.95,
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
-    memory: str = "cpu_offload",
     precision: str = "fp16",
 ) -> Dict[str, Any]:
     """

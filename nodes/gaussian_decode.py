@@ -107,7 +107,6 @@ class SAM3DGaussianDecode:
             output_dir=output_dir,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
-            memory=slat_decoder_gs.get("memory", "cpu_offload"),
             precision=slat_decoder_gs.get("precision", "fp16"),
         )
 

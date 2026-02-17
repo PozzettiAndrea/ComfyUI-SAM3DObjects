@@ -227,7 +227,6 @@ class SAM3DGenerateSLAT:
                 cfg_strength=stage1_cfg,
                 cfg_strength_pm=stage1_cfg_pm,
                 output_dir=output_dir,
-                memory=generator.get("memory", "cpu_offload"),
                 precision=generator.get("precision", "fp16"),
             )
             # Load sparse structure from saved file
@@ -252,7 +251,6 @@ class SAM3DGenerateSLAT:
             inference_steps=stage2_steps,
             cfg_strength=stage2_cfg,
             output_dir=output_dir,
-            memory=generator.get("memory", "cpu_offload"),
             precision=generator.get("precision", "fp16"),
         )
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)

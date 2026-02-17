@@ -84,10 +84,6 @@ class LoadSAM3DModel:
                     "default": "auto",
                     "tooltip": "Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
                 }),
-                "memory": (["cache_gpu", "cpu_offload", "delete"], {
-                    "default": "cpu_offload",
-                    "tooltip": "Model memory strategy: cache_gpu = keep on GPU between runs, cpu_offload = move to CPU RAM after use, delete = free after use"
-                }),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
@@ -112,7 +108,6 @@ class LoadSAM3DModel:
         attn_backend: str,
         compile: bool,
         precision: str = "auto",
-        memory: str = "cpu_offload",
         unique_id: str = None,
         prompt: dict = None,
     ):
@@ -167,7 +162,6 @@ class LoadSAM3DModel:
             "config_path": config_path,
             "compile": compile,
             "precision": precision,
-            "memory": memory,
             "attn_backend": attn_backend,
         }
         return (model, model, model, model)
