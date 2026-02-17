@@ -132,12 +132,12 @@ class LoadSAM3DModel:
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
-        # Download models to ComfyUI/models/sam3d/ (subprocesses may have SSL issues)
+        # Download MoGe / DINOv2 safetensors to ComfyUI/models/sam3d/sam-3d-objects/
         if "generator" in used_outputs or not used_outputs:
-            self._ensure_dinov2_downloaded()
+            self._ensure_dinov2_safetensors()
 
         if "depth_model" in used_outputs or not used_outputs:
-            self._ensure_moge_downloaded()
+            self._ensure_moge_safetensors()
 
         log.info("Model loaded successfully")
 
@@ -235,86 +235,44 @@ class LoadSAM3DModel:
         log.info("Download complete")
 
     @classmethod
-    def _ensure_dinov2_downloaded(cls):
-        """Download DINOv2 repo and weights to ComfyUI models folder.
-
-        Downloads both the code repo and the pretrained weights.
-        This avoids SSL issues in isolated subprocesses.
-        """
-        import subprocess
+    def _ensure_dinov2_safetensors(cls):
+        """Download DINOv2 ViT-L/14 register weights (safetensors) to models folder."""
+        from huggingface_hub import hf_hub_download
 
         models_dir = get_sam3d_models_path()
-        dinov2_dir = models_dir / "dinov2"
-        weights_file = dinov2_dir / "dinov2_vitl14_reg4_pretrain.pth"
+        target = models_dir / "dinov2_vitl14_reg.safetensors"
 
-        # Download repo if not present
-        if not (dinov2_dir / "hubconf.py").exists():
-            log.info("Downloading DINOv2 repo to %s...", dinov2_dir)
-            try:
-                dinov2_dir.mkdir(parents=True, exist_ok=True)
-                result = subprocess.run(
-                    ["git", "clone", "--depth", "1", "https://github.com/facebookresearch/dinov2.git", str(dinov2_dir)],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode != 0:
-                    raise RuntimeError(f"git clone failed: {result.stderr}")
-                log.info("DINOv2 repo downloaded")
-            except Exception as e:
-                log.warning("Failed to download DINOv2 repo: %s", e)
-                return
-        else:
-            log.info("DINOv2 repo already present")
-
-        # Download weights if not present (use wget to avoid SSL issues in isolated subprocess)
-        if not weights_file.exists():
-            log.info("Downloading DINOv2 weights...")
-            try:
-                weights_url = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth"
-                # Use wget/curl to bypass Python SSL certificate issues in isolated subprocess
-                result = subprocess.run(
-                    ["wget", "-q", "-O", str(weights_file), weights_url],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode != 0:
-                    # Try curl as fallback
-                    result = subprocess.run(
-                        ["curl", "-sL", "-o", str(weights_file), weights_url],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if result.returncode != 0:
-                        raise RuntimeError(f"wget/curl failed: {result.stderr}")
-                log.info("DINOv2 weights downloaded")
-            except Exception as e:
-                log.warning("Failed to download DINOv2 weights: %s", e)
-        else:
-            log.info("DINOv2 weights already present")
-
-    @classmethod
-    def _ensure_moge_downloaded(cls):
-        """Download MoGe to ComfyUI models folder.
-
-        SAM-3D was trained on MoGe v1 (Ruicheng/moge-vitl), so we use that.
-        """
-        from huggingface_hub import snapshot_download
-
-        models_dir = get_sam3d_models_path()
-        moge_dir = models_dir / "moge-vitl"
-
-        # Check if already downloaded
-        if (moge_dir / "model.pt").exists():
-            log.info("MoGe already downloaded")
+        if target.exists():
+            log.info("DINOv2 safetensors already present")
             return
 
-        log.info("Downloading MoGe to %s...", moge_dir)
-        try:
-            snapshot_download(
-                "Ruicheng/moge-vitl",
-                local_dir=str(moge_dir),
+        log.info("Downloading DINOv2 safetensors...")
+        hf_hub_download(
+            repo_id=REPO_ID,
+            filename="dinov2_vitl14_reg.safetensors",
+            local_dir=str(models_dir),
+            local_dir_use_symlinks=False,
+        )
+        log.info("DINOv2 safetensors downloaded")
+
+    @classmethod
+    def _ensure_moge_safetensors(cls):
+        """Download MoGe ViT-L weights + config (safetensors) to models folder."""
+        from huggingface_hub import hf_hub_download
+
+        models_dir = get_sam3d_models_path()
+        target = models_dir / "moge_vitl.safetensors"
+
+        if target.exists():
+            log.info("MoGe safetensors already present")
+            return
+
+        log.info("Downloading MoGe safetensors...")
+        for fname in ("moge_vitl.safetensors", "moge_vitl_config.json"):
+            hf_hub_download(
+                repo_id=REPO_ID,
+                filename=fname,
+                local_dir=str(models_dir),
                 local_dir_use_symlinks=False,
             )
-            log.info("MoGe downloaded successfully")
-        except Exception as e:
-            log.warning("Failed to download MoGe: %s", e)
+        log.info("MoGe safetensors downloaded")
