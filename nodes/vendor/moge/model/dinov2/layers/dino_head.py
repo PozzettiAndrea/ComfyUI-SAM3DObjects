@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 from torch.nn.init import trunc_normal_
 from torch.nn.utils import weight_norm
+from comfy.ops import disable_weight_init
 
 
 class DINOHead(nn.Module):
@@ -24,7 +25,7 @@ class DINOHead(nn.Module):
         nlayers = max(nlayers, 1)
         self.mlp = _build_mlp(nlayers, in_dim, bottleneck_dim, hidden_dim=hidden_dim, use_bn=use_bn, bias=mlp_bias)
         self.apply(self._init_weights)
-        self.last_layer = weight_norm(nn.Linear(bottleneck_dim, out_dim, bias=False))
+        self.last_layer = weight_norm(disable_weight_init.Linear(bottleneck_dim, out_dim, bias=False))
         self.last_layer.weight_g.data.fill_(1)
 
     def _init_weights(self, m):
@@ -43,16 +44,16 @@ class DINOHead(nn.Module):
 
 def _build_mlp(nlayers, in_dim, bottleneck_dim, hidden_dim=None, use_bn=False, bias=True):
     if nlayers == 1:
-        return nn.Linear(in_dim, bottleneck_dim, bias=bias)
+        return disable_weight_init.Linear(in_dim, bottleneck_dim, bias=bias)
     else:
-        layers = [nn.Linear(in_dim, hidden_dim, bias=bias)]
+        layers = [disable_weight_init.Linear(in_dim, hidden_dim, bias=bias)]
         if use_bn:
             layers.append(nn.BatchNorm1d(hidden_dim))
         layers.append(nn.GELU())
         for _ in range(nlayers - 2):
-            layers.append(nn.Linear(hidden_dim, hidden_dim, bias=bias))
+            layers.append(disable_weight_init.Linear(hidden_dim, hidden_dim, bias=bias))
             if use_bn:
                 layers.append(nn.BatchNorm1d(hidden_dim))
             layers.append(nn.GELU())
-        layers.append(nn.Linear(hidden_dim, bottleneck_dim, bias=bias))
+        layers.append(disable_weight_init.Linear(hidden_dim, bottleneck_dim, bias=bias))
         return nn.Sequential(*layers)

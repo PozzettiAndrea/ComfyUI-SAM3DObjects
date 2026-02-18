@@ -27,7 +27,7 @@ class SAM3DGenerateSLAT:
                 "generator": ("SAM3D_MODEL", {"tooltip": "Generator from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "mask": ("MASK", {"tooltip": "Binary mask for object"}),
-                "pointmap_path": ("STRING", {"forceInput": True, "tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
+                "pointmap": ("SAM3D_POINTMAP", {"tooltip": "Pointmap tensor from SAM3DDepthEstimate"}),
                 "seed": ("INT", {
                     "default": 42,
                     "min": 0,
@@ -134,7 +134,7 @@ class SAM3DGenerateSLAT:
         generator,
         image,  # torch.Tensor [B, H, W, C]
         mask,   # torch.Tensor [B, H, W] or [H, W]
-        pointmap_path: str,
+        pointmap,
         seed: int,
         stage1_steps: int = 25,
         stage1_cfg: float = 7.5,
@@ -154,17 +154,20 @@ class SAM3DGenerateSLAT:
         # These imports happen in the isolated subprocess
         import os
         import torch
+        import comfy.utils
         import numpy as np
         from pathlib import Path
         from PIL import Image
 
+        import folder_paths
+        import comfy.model_management as mm
         from .utils.stages import run_stage1, run_stage2
-        from .utils.helpers import load_pointmap_from_file
 
         log.info("GenerateSLAT: Starting SLAT generation...")
 
-        # Derive output_dir from pointmap_path (same directory created by DepthEstimate)
-        output_dir = os.path.dirname(pointmap_path)
+        # Use temp directory for intermediate files
+        output_dir = os.path.join(folder_paths.get_temp_directory(), "sam3d_slat")
+        os.makedirs(output_dir, exist_ok=True)
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -180,9 +183,9 @@ class SAM3DGenerateSLAT:
         mask_np = (mask_np * 255).astype(np.uint8)
         mask_pil = Image.fromarray(mask_np)
 
-        # Load pointmap
-        log.info("Loading pointmap from: %s", pointmap_path)
-        pointmap = load_pointmap_from_file(pointmap_path)
+        # Move pointmap to device
+        device = mm.get_torch_device()
+        pointmap = pointmap.to(device)
         log.info("Pointmap shape: %s", pointmap.shape)
 
         # Get config path from generator model
@@ -196,7 +199,7 @@ class SAM3DGenerateSLAT:
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
             log.info("Using cached Stage 1 output")
-            stage1_output = torch.load(sparse_path, weights_only=False)
+            stage1_output = comfy.utils.load_torch_file(sparse_path)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
@@ -217,7 +220,7 @@ class SAM3DGenerateSLAT:
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
-            stage1_output = torch.load(stage1_file, weights_only=False)
+            stage1_output = comfy.utils.load_torch_file(stage1_file)
             debug_image_path = result.get("debug_image")
 
             # Copy to expected location if different

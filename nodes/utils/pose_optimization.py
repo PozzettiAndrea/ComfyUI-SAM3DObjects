@@ -14,6 +14,7 @@ import traceback
 from typing import Any, Dict
 import numpy as np
 import torch
+import comfy.utils
 import comfy.model_management
 
 log = logging.getLogger("sam3dobjects")
@@ -113,7 +114,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
             mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
         # Load pointmap
-        pointmap_data = torch.load(pointmap_path, weights_only=False)
+        pointmap_data = comfy.utils.load_torch_file(pointmap_path)
         if isinstance(pointmap_data, dict):
             pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
         else:
@@ -310,7 +311,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         # Load pointmap
         log.info("Loading pointmap: %s", pointmap_path)
-        pointmap_data = torch.load(pointmap_path, weights_only=False)
+        pointmap_data = comfy.utils.load_torch_file(pointmap_path)
         if isinstance(pointmap_data, dict):
             pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
         else:

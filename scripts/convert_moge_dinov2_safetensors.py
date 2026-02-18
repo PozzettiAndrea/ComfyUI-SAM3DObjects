@@ -7,8 +7,8 @@ Usage:
     python convert_moge_dinov2_safetensors.py --upload --token FILE # Upload with token from file
 
 Converts:
-  - moge-vitl/model.pt                  → moge_vitl.safetensors  + moge_vitl_config.json
-  - dinov2_vitl14_reg4_pretrain.pth      → dinov2_vitl14_reg.safetensors
+  - moge-vitl/model.pt                  -> moge_vitl.safetensors  + moge_vitl_config.json
+  - dinov2_vitl14_reg4_pretrain.pth      -> dinov2_vitl14_reg.safetensors
 
 Both are uploaded to the existing apozz/sam-3d-objects-safetensors repo.
 """

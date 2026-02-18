@@ -2,6 +2,7 @@
 from typing import Any, Callable, Dict, List, Optional, Union, Iterable
 import lightning.pytorch as pl
 import torch
+import comfy.utils
 from pathlib import Path
 import os
 import re
@@ -28,7 +29,7 @@ def rename_checkpoint_weights_using_suffix_matching(
     model_names = param_names + buffer_names
 
     # load stored weights
-    state = torch.load(checkpoint_path_in, weights_only=False)
+    state = comfy.utils.load_torch_file(checkpoint_path_in)
 
     model_state = get_child(state, *keys)
     model_state_names = list(model_state.keys())
@@ -164,11 +165,11 @@ def load_model_from_checkpoint(
             # safetensors returns a flat state_dict directly, no nested keys
             state_dict_key = None
         else:
-            checkpoint = torch.load(
+            checkpoint = comfy.utils.load_torch_file(
                 checkpoint_path,
-                map_location=device,
-                weights_only=False,
             )
+            # comfy.utils.load_torch_file auto-extracts 'state_dict' key
+            state_dict_key = None
     elif os.path.isdir(checkpoint_path):  # sharded
         checkpoint = load_sharded_checkpoint(checkpoint_path, device=device)
     else:  # if neither a file nor a directory, path does not exist

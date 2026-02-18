@@ -2,6 +2,7 @@
 import logging
 import torch
 import numpy as np
+import comfy.model_management
 from plyfile import PlyData, PlyElement
 from .general_utils import inverse_sigmoid, strip_symmetric, build_scaling_rotation
 from ...renderers.sh_utils import SH2RGB
@@ -61,14 +62,15 @@ class Gaussian:
 
         self.rotation_activation = torch.nn.functional.normalize
 
+        device = comfy.model_management.get_torch_device()
         self.scale_bias = self.inverse_scaling_activation(
             torch.tensor(self.scaling_bias)
-        ).cuda()
-        self.rots_bias = torch.zeros((4)).cuda()
+        ).to(device)
+        self.rots_bias = torch.zeros((4)).to(device)
         self.rots_bias[0] = 1
         self.opacity_bias = self.inverse_opacity_activation(
             torch.tensor(self.opacity_bias)
-        ).cuda()
+        ).to(device)
 
     @staticmethod
     def build_covariance_from_scaling_rotation(scaling, scaling_modifier, rotation):

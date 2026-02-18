@@ -33,11 +33,11 @@ class SAM3D_DepthEstimate:
             },
         }
 
-    RETURN_TYPES = ("SAM3D_INTRINSICS", "STRING", "STRING", "MASK")
-    RETURN_NAMES = ("intrinsics", "pointmap_path", "pointcloud_ply", "depth_mask")
+    RETURN_TYPES = ("SAM3D_INTRINSICS", "SAM3D_POINTMAP", "STRING", "MASK")
+    RETURN_NAMES = ("intrinsics", "pointmap", "pointcloud_ply", "depth_mask")
     OUTPUT_TOOLTIPS = (
         "Camera intrinsics matrix (3x3)",
-        "Path to pointmap tensor file (.pt) - pass to SAM3D_SparseGen",
+        "Pointmap tensor (H, W, 3) - pass to SAM3DGenerateSLAT",
         "Path to PLY file for visualization",
         "Depth map as mask (normalized 0-1)"
     )
@@ -61,7 +61,7 @@ class SAM3D_DepthEstimate:
             image: Input image tensor [B, H, W, C]
 
         Returns:
-            Tuple of (intrinsics, pointmap_path, pointcloud_ply, depth_mask)
+            Tuple of (intrinsics, pointmap, pointcloud_ply, depth_mask)
         """
         global _MOGE_PATCHER
 
@@ -167,9 +167,8 @@ class SAM3D_DepthEstimate:
         base_output_dir = folder_paths.get_output_directory()
         inference_dir = self._get_next_inference_dir(base_output_dir)
 
-        # Save pointmap tensor for SparseGen (preserves H×W structure)
-        pointmap_path = os.path.join(inference_dir, "pointmap.pt")
-        torch.save(torch.from_numpy(pointmap_np), pointmap_path)
+        # Convert pointmap to tensor for direct node-to-node transfer
+        pointmap_tensor = torch.from_numpy(pointmap_np)
 
         # Save PLY file for visualization
         pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
@@ -195,7 +194,7 @@ class SAM3D_DepthEstimate:
         pbar.update(1)  # Outputs saved
         elapsed = time.time() - start_time
         log.info("Depth estimation done: %.0fs", elapsed)
-        return (intrinsics_np, pointmap_path, pointcloud_ply, depth_mask)
+        return (intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
 
     def _get_next_inference_dir(self, base_output_dir: str) -> str:
         """

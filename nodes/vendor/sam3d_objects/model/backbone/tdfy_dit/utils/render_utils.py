@@ -1,6 +1,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 import torch
 import numpy as np
+import comfy.model_management
 from tqdm import tqdm
 import utils3d
 from PIL import Image
@@ -21,12 +22,13 @@ def yaw_pitch_r_fov_to_extrinsics_intrinsics(yaws, pitchs, rs, fovs):
         rs = [rs] * len(yaws)
     if not isinstance(fovs, list):
         fovs = [fovs] * len(yaws)
+    device = comfy.model_management.get_torch_device()
     extrinsics = []
     intrinsics = []
     for yaw, pitch, r, fov in zip(yaws, pitchs, rs, fovs):
-        fov = torch.deg2rad(torch.tensor(float(fov))).cuda()
-        yaw = torch.tensor(float(yaw)).cuda()
-        pitch = torch.tensor(float(pitch)).cuda()
+        fov = torch.deg2rad(torch.tensor(float(fov))).to(device)
+        yaw = torch.tensor(float(yaw)).to(device)
+        pitch = torch.tensor(float(pitch)).to(device)
         orig = (
             torch.tensor(
                 [
@@ -34,13 +36,13 @@ def yaw_pitch_r_fov_to_extrinsics_intrinsics(yaws, pitchs, rs, fovs):
                     torch.cos(yaw) * torch.cos(pitch),
                     torch.sin(pitch),
                 ]
-            ).cuda()
+            ).to(device)
             * r
         )
         extr = utils3d.torch.extrinsics_look_at(
             orig,
-            torch.tensor([0, 0, 0]).float().cuda(),
-            torch.tensor([0, 0, 1]).float().cuda(),
+            torch.tensor([0, 0, 0]).float().to(device),
+            torch.tensor([0, 0, 1]).float().to(device),
         )
         intr = utils3d.torch.intrinsics_from_fov(fov_x=fov, fov_y=fov)
         extrinsics.append(extr)

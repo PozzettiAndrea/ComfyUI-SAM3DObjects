@@ -2,6 +2,7 @@
 import logging
 from typing import *
 import torch
+import comfy.model_management
 from . import BACKEND, DEBUG
 
 log = logging.getLogger("sam3dobjects")
@@ -242,8 +243,9 @@ class SparseTensor:
         return self.replace(new_feats, new_coords)
 
     def cuda(self) -> "SparseTensor":
-        new_feats = self.feats.cuda()
-        new_coords = self.coords.cuda()
+        device = comfy.model_management.get_torch_device()
+        new_feats = self.feats.to(device)
+        new_coords = self.coords.to(device)
         return self.replace(new_feats, new_coords)
 
     def half(self) -> "SparseTensor":

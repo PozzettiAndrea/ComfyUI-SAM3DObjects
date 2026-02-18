@@ -342,8 +342,9 @@ class SparseStructureDecoderTdfyWrapper(SparseStructureDecoder):
                 if file_type == ".safetensors":
                     self.load_state_dict(load_file(pretrained_ckpt_path))
                 else:
+                    import comfy.utils
                     self.load_state_dict(
-                        torch.load(pretrained_ckpt_path, weights_only=True)
+                        comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
                     )
             else:
                 raise FileNotFoundError(
@@ -364,8 +365,9 @@ class SparseStructureEncoderTdfyWrapper(SparseStructureEncoder):
                 if file_type == ".safetensors":
                     self.load_state_dict(load_file(pretrained_ckpt_path))
                 else:
+                    import comfy.utils
                     self.load_state_dict(
-                        torch.load(pretrained_ckpt_path, weights_only=True)
+                        comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
                     )
             else:
                 raise FileNotFoundError(

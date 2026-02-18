@@ -3,7 +3,6 @@
 import logging
 import os
 import json
-import shutil
 from typing import Any
 
 log = logging.getLogger("sam3dobjects")
@@ -31,7 +30,7 @@ class SAM3DSceneGenerate:
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "masks": ("MASK", {"tooltip": "Batch of masks [N, H, W] - each becomes a 3D object"}),
                 "intrinsics": ("SAM3D_INTRINSICS", {"tooltip": "Camera intrinsics from SAM3DDepthEstimate"}),
-                "pointmap_path": ("STRING", {"forceInput": True, "tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
+                "pointmap": ("SAM3D_POINTMAP", {"tooltip": "Pointmap tensor from SAM3DDepthEstimate"}),
                 "seed": ("INT", {
                     "default": 42,
                     "min": 0,
@@ -124,7 +123,7 @@ class SAM3DSceneGenerate:
         image,  # torch.Tensor [B, H, W, C]
         masks,  # torch.Tensor [N, H, W]
         intrinsics,  # numpy array
-        pointmap_path: str,
+        pointmap,
         seed: int,
         stage1_steps: int = 12,
         stage1_cfg: float = 7.5,
@@ -156,11 +155,11 @@ class SAM3DSceneGenerate:
         import io
         import base64
         import pickle
-        import shutil
         import torch
         import numpy as np
         from pathlib import Path
         from PIL import Image
+        import folder_paths
 
         from .utils.scene_batch import run_scene_generate_batch
 
@@ -175,8 +174,18 @@ class SAM3DSceneGenerate:
         if add_textures:
             log.info("SceneGenerate: Texture baking enabled (mode=%s, size=%d)", texture_mode, texture_size)
 
-        # Derive base output dir from pointmap path
-        base_output_dir = os.path.dirname(pointmap_path)
+        # Create output directory for scene generation
+        output_root = folder_paths.get_output_directory()
+        existing = []
+        for name in os.listdir(output_root):
+            if name.startswith("sam3d_scene_") and os.path.isdir(os.path.join(output_root, name)):
+                try:
+                    existing.append(int(name.split("_")[-1]))
+                except ValueError:
+                    pass
+        next_num = max(existing) + 1 if existing else 1
+        base_output_dir = os.path.join(output_root, f"sam3d_scene_{next_num}")
+        os.makedirs(base_output_dir, exist_ok=True)
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -219,16 +228,16 @@ class SAM3DSceneGenerate:
             mask_path = os.path.join(object_dir, "mask.npy")
             np.save(mask_path, mask_np)
 
-            # Copy pointmap to object directory
+            # Save pointmap to object directory for pose optimization
             object_pointmap_path = os.path.join(object_dir, "pointmap.pt")
             if not os.path.exists(object_pointmap_path):
-                shutil.copy(pointmap_path, object_pointmap_path)
+                torch.save({"pointmap": pointmap}, object_pointmap_path)
 
         # Build request for batch processing
         request = {
             "image": image_b64,
             "masks": masks_b64,
-            "pointmap_path": pointmap_path,
+            "pointmap": pointmap,
             "base_output_dir": base_output_dir,
             "config_path": generator_config,
             "mesh_config_path": mesh_config,

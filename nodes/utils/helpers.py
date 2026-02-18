@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 import numpy as np
 import torch
+import comfy.utils
 
 log = logging.getLogger("sam3dobjects")
 
@@ -26,16 +27,21 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     Load pointmap from a .pt tensor file.
 
     Args:
-        pointmap_path: Path to .pt file
+        pointmap_path: Path to .pt file (dict format with "pointmap" key)
 
     Returns:
         Pointmap tensor in HWC format (H, W, 3)
     """
-    pointmap = torch.load(pointmap_path, weights_only=False)
+    import comfy.model_management as mm
+
+    data = comfy.utils.load_torch_file(pointmap_path)
+    if isinstance(data, dict):
+        pointmap = data.get("pointmap") or data.get("data")
+    else:
+        pointmap = data
     log.info("Loaded pointmap tensor: shape=%s", pointmap.shape)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    pointmap = pointmap.to(device)
+    pointmap = pointmap.to(mm.get_torch_device())
 
     return pointmap
 

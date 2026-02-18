@@ -9,6 +9,7 @@ import warnings
 
 from torch import Tensor, nn
 import torch.nn.functional as F
+from comfy.ops import disable_weight_init
 
 
 class SwiGLUFFN(nn.Module):
@@ -24,8 +25,8 @@ class SwiGLUFFN(nn.Module):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.w12 = nn.Linear(in_features, 2 * hidden_features, bias=bias)
-        self.w3 = nn.Linear(hidden_features, out_features, bias=bias)
+        self.w12 = disable_weight_init.Linear(in_features, 2 * hidden_features, bias=bias)
+        self.w3 = disable_weight_init.Linear(hidden_features, out_features, bias=bias)
 
     def forward(self, x: Tensor) -> Tensor:
         x12 = self.w12(x)

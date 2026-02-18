@@ -25,6 +25,7 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 from PIL import Image
+import comfy.utils
 import comfy.model_management
 from .stages import (
     _load_config, _resolve_dtype,
@@ -40,7 +41,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
     Each phase loads models directly, processes all objects, then unloads.
     """
-    from .helpers import preprocess_image_lazy, load_pointmap_from_file
+    from .helpers import preprocess_image_lazy
     from .stages import run_texture_bake_direct as texture_bake_impl
 
     # Suppress stdout (used for JSON IPC)
@@ -59,7 +60,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # Extract parameters
         image_b64 = request["image"]
         masks_b64 = request["masks"]
-        pointmap_path = request["pointmap_path"]
+        pointmap = request["pointmap"]
         base_output_dir = request["base_output_dir"]
         config_path = request["config_path"]
         mesh_config_path = request["mesh_config_path"]
@@ -92,9 +93,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             mask_np = pickle.loads(base64.b64decode(mask_b64))
             masks.append(mask_np)
 
-        # Load pointmap once
-        log.info("Loading pointmap from: %s", pointmap_path)
-        pointmap = load_pointmap_from_file(pointmap_path)
+        # Pointmap passed directly as tensor
         log.info("Pointmap shape: %s", pointmap.shape)
 
         # Create object directories
@@ -418,7 +417,7 @@ def _run_phase2_stage2(
 
         # Load sparse structure
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
-        stage1_output = torch.load(sparse_path, weights_only=False)
+        stage1_output = comfy.utils.load_torch_file(sparse_path)
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
@@ -496,7 +495,7 @@ def _run_phase3_mesh_decode(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = comfy.utils.load_torch_file(slat_path)
 
         # Extract slat
         slat = slat_data.get("slat")
@@ -573,7 +572,7 @@ def _run_phase4_texture(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = comfy.utils.load_torch_file(slat_path)
         slat = slat_data.get("slat")
         if not isinstance(slat, sp.SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")

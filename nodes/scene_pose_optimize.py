@@ -133,6 +133,7 @@ class SAM3D_ScenePoseOptimize:
         import pickle
         import base64
         import torch
+        import comfy.utils
         import numpy as np
         import trimesh
         from pathlib import Path
@@ -156,7 +157,7 @@ class SAM3D_ScenePoseOptimize:
             raise ValueError(f"Intrinsics file not found: {intrinsics_path}. Run SAM3DSceneGenerate first.")
 
         # Load intrinsics
-        intrinsics = torch.load(intrinsics_path, weights_only=False)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path)
         log.info("ScenePoseOptimize: Loaded intrinsics from %s", intrinsics_path)
 
         # Discover object folders
@@ -243,7 +244,7 @@ class SAM3D_ScenePoseOptimize:
             # Load initial pose from sparse_structure.pt (computed in Stage 1)
             sparse_path = os.path.join(object_dir, "sparse_structure.pt")
             if os.path.exists(sparse_path):
-                sparse_data = torch.load(sparse_path, weights_only=False)
+                sparse_data = comfy.utils.load_torch_file(sparse_path)
                 rotation = sparse_data.get("rotation")
                 translation = sparse_data.get("translation")
                 scale = sparse_data.get("scale")

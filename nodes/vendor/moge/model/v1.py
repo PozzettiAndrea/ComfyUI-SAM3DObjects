@@ -16,6 +16,7 @@ import torch.utils
 import torch.utils.checkpoint
 import torch.version
 import utils3d
+from comfy.ops import disable_weight_init
 
 from ..utils.geometry_torch import normalized_view_plane_uv, recover_focal_shift, gaussian_blur_2d
 from .utils import wrap_dinov2_attention_with_comfy_attn, wrap_module_with_gradient_checkpointing, unwrap_module_with_gradient_checkpointing
@@ -42,15 +43,15 @@ class ResidualConvBlock(nn.Module):
             raise ValueError(f'Unsupported activation function: {activation}')
 
         self.layers = nn.Sequential(
-            nn.GroupNorm(1, in_channels),
+            disable_weight_init.GroupNorm(1, in_channels),
             activation_cls(),
-            nn.Conv2d(in_channels, hidden_channels, kernel_size=3, padding=1, padding_mode=padding_mode),
-            nn.GroupNorm(hidden_channels // 32 if norm == 'group_norm' else 1, hidden_channels),
+            disable_weight_init.Conv2d(in_channels, hidden_channels, kernel_size=3, padding=1, padding_mode=padding_mode),
+            disable_weight_init.GroupNorm(hidden_channels // 32 if norm == 'group_norm' else 1, hidden_channels),
             activation_cls(),
-            nn.Conv2d(hidden_channels, out_channels, kernel_size=3, padding=1, padding_mode=padding_mode)
+            disable_weight_init.Conv2d(hidden_channels, out_channels, kernel_size=3, padding=1, padding_mode=padding_mode)
         )
         
-        self.skip_connection = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0) if in_channels != out_channels else nn.Identity()  
+        self.skip_connection = disable_weight_init.Conv2d(in_channels, out_channels, kernel_size=1, padding=0) if in_channels != out_channels else nn.Identity()  
   
     def forward(self, x):  
         skip = self.skip_connection(x)  
@@ -77,7 +78,7 @@ class Head(nn.Module):
         super().__init__()
         
         self.projects = nn.ModuleList([
-            nn.Conv2d(in_channels=dim_in, out_channels=dim_proj, kernel_size=1, stride=1, padding=0,) for _ in range(num_features)
+            disable_weight_init.Conv2d(in_channels=dim_in, out_channels=dim_proj, kernel_size=1, stride=1, padding=0,) for _ in range(num_features)
         ])
 
         self.upsample_blocks = nn.ModuleList([
@@ -95,20 +96,18 @@ class Head(nn.Module):
     
     def _make_upsampler(self, in_channels: int, out_channels: int):
         upsampler = nn.Sequential(
-            nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate')
+            disable_weight_init.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2),
+            disable_weight_init.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate')
         )
-        # Skip weight initialization on meta device (no data to copy)
-        if upsampler[0].weight.device.type != 'meta':
-            upsampler[0].weight.data[:] = upsampler[0].weight.data[:, :, :1, :1]
+        upsampler[0].weight.data[:] = upsampler[0].weight.data[:, :, :1, :1]
         return upsampler
 
     def _make_output_block(self, dim_in: int, dim_out: int, dim_times_res_block_hidden: int, last_res_blocks: int, last_conv_channels: int, last_conv_size: int, res_block_norm: Literal['group_norm', 'layer_norm']):
         return nn.Sequential(
-            nn.Conv2d(dim_in, last_conv_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate'),
+            disable_weight_init.Conv2d(dim_in, last_conv_channels, kernel_size=3, stride=1, padding=1, padding_mode='replicate'),
             *(ResidualConvBlock(last_conv_channels, last_conv_channels, dim_times_res_block_hidden * last_conv_channels, activation='relu', norm=res_block_norm) for _ in range(last_res_blocks)),
             nn.ReLU(inplace=True),
-            nn.Conv2d(last_conv_channels, dim_out, kernel_size=last_conv_size, stride=1, padding=last_conv_size // 2, padding_mode='replicate'),
+            disable_weight_init.Conv2d(last_conv_channels, dim_out, kernel_size=last_conv_size, stride=1, padding=last_conv_size // 2, padding_mode='replicate'),
         )
             
     def forward(self, hidden_states: torch.Tensor, image: torch.Tensor):
@@ -228,7 +227,7 @@ class MoGeModel(nn.Module):
 
         ckpt_path = Path(pretrained_model_name_or_path)
 
-        # Load config from sibling JSON (e.g. moge_vitl.safetensors → moge_vitl_config.json)
+        # Load config from sibling JSON (e.g. moge_vitl.safetensors -> moge_vitl_config.json)
         config_path = ckpt_path.with_name(ckpt_path.stem + "_config.json")
         with open(config_path) as f:
             model_config = json.load(f)
@@ -239,10 +238,9 @@ class MoGeModel(nn.Module):
         # Load weights via ComfyUI (handles safetensors natively, mmap-friendly)
         state_dict = comfy.utils.load_torch_file(str(ckpt_path))
 
-        # Meta-device init to halve peak VRAM during loading
-        with torch.device('meta'):
-            model = cls(**model_config)
-        model.load_state_dict(state_dict, assign=True)
+        # disable_weight_init skips reset_parameters() -> cheap construction
+        model = cls(**model_config)
+        model.load_state_dict(state_dict, strict=False)
         log.info("MoGe loaded from %s (%d tensors)", ckpt_path.name, len(state_dict))
         return model
 

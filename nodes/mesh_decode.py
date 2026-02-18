@@ -82,6 +82,7 @@ class SAM3DMeshDecode:
         # These imports happen in the isolated subprocess
         import os
         import torch
+        import comfy.utils
         from pathlib import Path
 
         from .utils.stages import run_decode
@@ -101,7 +102,7 @@ class SAM3DMeshDecode:
         ensure_decoder_files(config_path, "mesh")
 
         # Load SLAT
-        slat_data = torch.load(slat, weights_only=False)
+        slat_data = comfy.utils.load_torch_file(slat)
 
         # Run Mesh decoding
         result = run_decode(

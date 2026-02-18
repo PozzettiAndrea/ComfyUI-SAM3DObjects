@@ -76,6 +76,7 @@ class SAM3D_ProjectionOverlay:
         import re
         import time
         import torch
+        import comfy.utils
         import numpy as np
         import trimesh
         from PIL import Image
@@ -110,7 +111,7 @@ class SAM3D_ProjectionOverlay:
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics not found: {intrinsics_path}")
 
-        intrinsics = torch.load(intrinsics_path, weights_only=False)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path)
         intrinsics = np.array(intrinsics)
 
         # Denormalize intrinsics

@@ -96,7 +96,8 @@ class MoGeModel(nn.Module):
                 filename="model.pt",
                 **hf_kwargs
             )
-        checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
+        import comfy.utils
+        checkpoint = comfy.utils.load_torch_file(checkpoint_path, safe_load=True)
         
         model_config = checkpoint['model_config']
         if model_kwargs is not None:
