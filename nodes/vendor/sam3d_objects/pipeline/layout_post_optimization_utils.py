@@ -119,7 +119,7 @@ def get_mesh(Mesh, tfm_ori, device):
     mesh_vertices = Mesh.vertices.copy()
     # rotate mesh (from z-up to y-up)
     mesh_vertices = mesh_vertices @ np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
-    mesh_vertices = torch.from_numpy(mesh_vertices).float().cuda()
+    mesh_vertices = torch.from_numpy(mesh_vertices).float().to(device)
     points_world = tfm_ori.transform_points(mesh_vertices.unsqueeze(0))
     Mesh.vertices = points_world[0].cpu().numpy()  # pytorch3d, y-up, x left, z inwards.
     verts, faces_idx = load_and_simplify_mesh(Mesh, device)

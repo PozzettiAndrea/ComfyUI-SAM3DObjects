@@ -21,7 +21,8 @@ def load_pretrained_weights(model, pretrained_weights, checkpoint_key):
     if urlparse(pretrained_weights).scheme:  # If it looks like an URL
         state_dict = torch.hub.load_state_dict_from_url(pretrained_weights, map_location="cpu")
     else:
-        state_dict = torch.load(pretrained_weights, map_location="cpu")
+        import comfy.utils
+        state_dict = comfy.utils.load_torch_file(pretrained_weights)
     if checkpoint_key is not None and checkpoint_key in state_dict:
         logger.info(f"Take key {checkpoint_key} in provided checkpoint dict")
         state_dict = state_dict[checkpoint_key]

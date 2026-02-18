@@ -71,12 +71,12 @@ def scaled_dot_product_attention(*args, **kwargs):
         k = args[1] if len(args) > 1 else kwargs["k"]
         v = args[2] if len(args) > 2 else kwargs["v"]
 
-    # q, k, v: [N, L, H, C] → [N, H, L, C] for comfy-attn
+    # q, k, v: [N, L, H, C] -> [N, H, L, C] for comfy-attn
     q = q.permute(0, 2, 1, 3)
     k = k.permute(0, 2, 1, 3)
     v = v.permute(0, 2, 1, 3)
 
     out = dispatch_attention(q, k, v)
 
-    # [N, H, L, C] → [N, L, H, C]
+    # [N, H, L, C] -> [N, L, H, C]
     return out.permute(0, 2, 1, 3)

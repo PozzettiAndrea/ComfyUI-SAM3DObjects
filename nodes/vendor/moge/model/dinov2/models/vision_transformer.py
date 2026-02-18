@@ -16,6 +16,7 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint
 from torch.nn.init import trunc_normal_
+from comfy.ops import disable_weight_init
 
 from ..layers import Mlp, PatchEmbed, SwiGLUFFNFused, MemEffAttention, NestedTensorBlock as Block
 
@@ -92,7 +93,7 @@ class DinoVisionTransformer(nn.Module):
             interpolate_offset: (float) work-around offset to apply when interpolating positional embeddings
         """
         super().__init__()
-        norm_layer = partial(nn.LayerNorm, eps=1e-6)
+        norm_layer = partial(disable_weight_init.LayerNorm, eps=1e-6)
 
         self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
         self.num_tokens = 1
@@ -116,7 +117,6 @@ class DinoVisionTransformer(nn.Module):
         if drop_path_uniform is True:
             dpr = [drop_path_rate] * depth
         else:
-            # Use tolist() instead of .item() to support meta device initialization
             dpr = torch.linspace(0, drop_path_rate, depth).tolist()  # stochastic depth decay rule
 
         if ffn_layer == "mlp":

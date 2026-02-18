@@ -36,9 +36,8 @@ def from_pretrained(path: str, **kwargs):
 
     with open(config_file, "r") as f:
         config = json.load(f)
-    # Build model on meta device (zero memory, no random init)
-    with torch.device("meta"):
-        model = __getattr__(config["name"])(**config["args"], **kwargs)
-    model.load_state_dict(comfy.utils.load_torch_file(model_file), assign=True)
+    # disable_weight_init skips reset_parameters() -> cheap construction
+    model = __getattr__(config["name"])(**config["args"], **kwargs)
+    model.load_state_dict(comfy.utils.load_torch_file(model_file), strict=False)
 
     return model
