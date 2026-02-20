@@ -69,13 +69,16 @@ class SAM3DGaussianDecode:
         import comfy.utils
         from pathlib import Path
 
+        import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
         log.info("GaussianDecode: Decoding SLAT to Gaussian...")
 
-        # Derive output_dir from slat path (same directory)
-        output_dir = os.path.dirname(slat)
+        # Resolve relative path (e.g. output/sam3d_run_1/slat.pt) to absolute
+        comfyui_base = os.path.dirname(folder_paths.get_output_directory())
+        slat_abs = os.path.join(comfyui_base, slat)
+        output_dir = os.path.dirname(slat_abs)
 
         # Get config path from model
         config_path = slat_decoder_gs["config_path"]
@@ -84,7 +87,7 @@ class SAM3DGaussianDecode:
         ensure_decoder_files(config_path, "gaussian")
 
         # Load SLAT (our own intermediate file, not an untrusted checkpoint)
-        slat_data = torch.load(slat, weights_only=False)
+        slat_data = torch.load(slat_abs, weights_only=False)
 
         # Run Gaussian decoding
         result = run_decode(
@@ -94,7 +97,7 @@ class SAM3DGaussianDecode:
             output_dir=output_dir,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
-            precision=slat_decoder_gs.get("precision", "fp16"),
+            precision=slat_decoder_gs.get("precision", "bf16"),
         )
 
         # Extract PLY path from result
@@ -113,5 +116,7 @@ class SAM3DGaussianDecode:
         if not ply_path:
             raise RuntimeError("PLY file was not generated")
 
-        log.info("GaussianDecode completed: %s", ply_path)
-        return (ply_path,)
+        # Return path relative to ComfyUI root (e.g. output/sam3d_run_1/gaussian.ply)
+        rel_ply_path = os.path.relpath(ply_path, comfyui_base)
+        log.info("GaussianDecode completed: %s", rel_ply_path)
+        return (rel_ply_path,)

@@ -77,7 +77,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         add_textures = request.get("add_textures", False)
         texture_mode = request.get("texture_mode", "opt")
         texture_size = request.get("texture_size", 1024)
-        precision = request.get("precision", "fp16")
+        precision = request.get("precision", "bf16")
 
         num_objects = len(masks_b64)
         log.info("Scene batch: Processing %d object(s)", num_objects)
@@ -191,7 +191,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 def _run_phase1_stage1(
     config_path, image, masks, pointmap, object_dirs, object_results,
     seed, stage1_steps, stage1_cfg, stage1_cfg_pm,
-    precision="fp16"
+    precision="bf16"
 ):
     """Phase 1: Load Stage1 models once, process all masks."""
     from hydra.utils import instantiate
@@ -358,7 +358,7 @@ def _run_phase1_stage1(
 def _run_phase2_stage2(
     config_path, image, masks, object_dirs, object_results,
     seed, stage2_steps, stage2_cfg,
-    precision="fp16"
+    precision="bf16"
 ):
     """Phase 2: Load Stage2 models once, process all sparse structures."""
     from hydra.utils import instantiate
@@ -477,7 +477,7 @@ def _run_phase2_stage2(
 
 def _run_phase3_mesh_decode(
     mesh_config_path, slat_paths, object_dirs, object_results,
-    with_postprocess, simplify, precision="fp16"
+    with_postprocess, simplify, precision="bf16"
 ):
     """Phase 3: Load mesh decoder once, process all SLATs."""
     import trimesh
@@ -554,7 +554,7 @@ def _run_phase3_mesh_decode(
 def _run_phase4_texture(
     gs_config_path, slat_paths, glb_paths, object_dirs, object_results,
     texture_bake_impl, texture_mode, texture_size,
-    precision="fp16"
+    precision="bf16"
 ):
     """Phase 4: Load gaussian decoder once, decode all, then texture bake."""
     from ..sam3d.sparse import SparseTensor
