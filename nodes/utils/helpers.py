@@ -66,7 +66,7 @@ def preprocess_image_lazy(
     Returns:
         dict with preprocessed image, mask, pointmap etc.
     """
-    from sam3d_objects.data.dataset.tdfy.img_and_mask_transforms import get_mask
+    from ..sam3d.transforms import get_mask
 
     # Ensure RGBA format
     assert image_np.ndim == 3, f"Expected 3D image, got {image_np.ndim}D"

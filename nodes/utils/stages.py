@@ -11,40 +11,20 @@ Each function loads its own models directly - no shared state.
 """
 
 import gc
+import importlib
 import logging
 import sys
 import base64
 import pickle
+import yaml
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 log = logging.getLogger("sam3dobjects")
 
-# Add vendor/ to sys.path BEFORE any sam3d_objects imports
-# This ensures all imports resolve through the same path
-_VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
-if _VENDOR_PATH not in sys.path:
-    sys.path.insert(0, _VENDOR_PATH)
-
-# Pre-import spconv and modules that use it BEFORE hydra runs
-# This prevents double-import crashes (pybind11 can only init once)
-import spconv  # noqa: E402
-import sam3d_objects.model.backbone.tdfy_dit.modules.sparse  # noqa: E402
-import sam3d_objects.model.backbone.tdfy_dit.models  # noqa: E402
-
 import numpy as np
 import torch
-
-# Patch spconv to support bfloat16 (missing in spconv <=2.3.8)
-try:
-    from cumm import tensorview as tv
-    from spconv.pytorch import cppcore
-    if torch.bfloat16 not in cppcore._TORCH_DTYPE_TO_TV:
-        cppcore._TORCH_DTYPE_TO_TV[torch.bfloat16] = tv.bfloat16
-        cppcore._TV_DTYPE_TO_TORCH[tv.bfloat16] = torch.bfloat16
-        log.info("Patched spconv with bfloat16 support")
-except Exception:
-    pass  # Non-critical; bf16 just won't be available
 import comfy.model_management
 import comfy.model_patcher
 import comfy.utils
@@ -54,6 +34,195 @@ from .helpers import preprocess_image_lazy, save_output_to_disk
 # Module-level patcher cache: key -> comfy.model_patcher.ModelPatcher
 # ComfyUI manages VRAM placement, per-layer offloading, and cross-model eviction.
 _PATCHER_CACHE = {}
+
+
+# =============================================================================
+# Hydra Replacement: Config Loading + Recursive Instantiation
+# =============================================================================
+
+class _DotDict(dict):
+    """Dict with attribute access for OmegaConf compatibility."""
+    def __getattr__(self, name):
+        try:
+            val = self[name]
+        except KeyError:
+            raise AttributeError(name)
+        if isinstance(val, dict) and not isinstance(val, _DotDict):
+            val = _DotDict(val)
+            self[name] = val
+        return val
+
+
+# Registry: Hydra _target_ string -> (relative_module, class_name)
+# All modules use relative imports from this package (nodes.utils).
+_NATIVE_CLASS_MAP = {
+    # Flow models
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_flow.SparseStructureFlowModel':
+        ('..sam3d.model', 'SparseStructureFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mot_sparse_structure_flow.MOTSparseStructureFlowModel':
+        ('..sam3d.model', 'MOTSparseStructureFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mot_sparse_structure_flow.SparseStructureFlowTdfyWrapper':
+        ('..sam3d.model', 'MOTSparseStructureFlowTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_flow.SLatFlowModel':
+        ('..sam3d.model', 'SLatFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_flow.SLatFlowModelTdfyWrapper':
+        ('..sam3d.model', 'SLatFlowModelTdfyWrapper'),
+    # VAE
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_vae.SparseStructureDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SparseStructureDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_vae.SparseStructureEncoderTdfyWrapper':
+        ('..sam3d.vae', 'SparseStructureEncoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatGaussianDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_mesh.SLatMeshDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatMeshDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.encoder.SLatEncoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatEncoderTdfyWrapper'),
+    # Embedders
+    'sam3d_objects.model.backbone.dit.embedder.embedder_fuser.EmbedderFuser':
+        ('..sam3d.model', 'EmbedderFuser'),
+    'sam3d_objects.model.backbone.dit.embedder.dino.Dino':
+        ('..sam3d.model', 'Dino'),
+    'sam3d_objects.model.backbone.dit.embedder.dino.DinoForMasks':
+        ('..sam3d.model', 'DinoForMasks'),
+    'sam3d_objects.model.backbone.dit.embedder.pointmap.PointPatchEmbed':
+        ('..sam3d.model', 'PointPatchEmbed'),
+    # MM Latent
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.Latent':
+        ('..sam3d.model', 'Latent'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.LearntPositionEmbedder':
+        ('..sam3d.model', 'LearntPositionEmbedder'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.ShapePositionEmbedder':
+        ('..sam3d.model', 'ShapePositionEmbedder'),
+    # Generators
+    'sam3d_objects.model.backbone.generator.shortcut.model.ShortCut':
+        ('..sam3d.generators', 'ShortCut'),
+    'sam3d_objects.model.backbone.generator.flow_matching.model.FlowMatching':
+        ('..sam3d.generators', 'FlowMatching'),
+    'sam3d_objects.model.backbone.generator.flow_matching.model.lognorm_sampler':
+        ('..sam3d.generators', 'lognorm_sampler'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.ClassifierFreeGuidance':
+        ('..sam3d.generators', 'ClassifierFreeGuidance'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.ClassifierFreeGuidanceWithExternalUnconditionalProbability':
+        ('..sam3d.generators', 'ClassifierFreeGuidanceWithExternalUnconditionalProbability'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.PointmapCFG':
+        ('..sam3d.generators', 'PointmapCFG'),
+    # Transforms / Preprocessor
+    'sam3d_objects.data.dataset.tdfy.preprocessor.PreProcessor':
+        ('..sam3d.transforms', 'PreProcessor'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.resize_all_to_same_size':
+        ('..sam3d.transforms', 'resize_all_to_same_size'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.crop_around_mask_with_padding':
+        ('..sam3d.transforms', 'crop_around_mask_with_padding'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.ObjectCentricSSI':
+        ('..sam3d.transforms', 'ObjectCentricSSI'),
+    'sam3d_objects.data.dataset.tdfy.img_processing.pad_to_square_centered':
+        ('..sam3d.transforms', 'pad_to_square_centered'),
+    # Pipeline
+    'sam3d_objects.pipeline.depth_models.moge.MoGe':
+        ('..sam3d.pipeline', 'MoGe'),
+    # MoGe
+    'moge.model.v1.MoGeModel.from_pretrained':
+        ('..sam3d.moge', 'MoGeModel.from_pretrained'),
+}
+
+# Prefix-based fallback for any sam3d_objects targets not in the explicit map
+_MODULE_REMAP = [
+    ('sam3d_objects.model.backbone.tdfy_dit.models', '..sam3d.model'),
+    ('sam3d_objects.model.backbone.dit.embedder', '..sam3d.model'),
+    ('sam3d_objects.model.backbone.generator', '..sam3d.generators'),
+    ('sam3d_objects.data.dataset.tdfy', '..sam3d.transforms'),
+    ('sam3d_objects.data.utils', '..sam3d.data_utils'),
+    ('sam3d_objects.pipeline', '..sam3d.pipeline'),
+    ('moge.model', '..sam3d.moge'),
+]
+
+
+def _make_dict(**kwargs):
+    """Replacement for sam3d_objects.config.utils.make_dict."""
+    return dict(**kwargs)
+
+
+def _resolve_class(target: str):
+    """Resolve a _target_ string to a class. Uses relative imports from nodes.utils."""
+    # Special case: make_dict utility
+    if target == 'sam3d_objects.config.utils.make_dict':
+        return _make_dict
+
+    # Explicit map (fast path)
+    if target in _NATIVE_CLASS_MAP:
+        module_path, attr_chain = _NATIVE_CLASS_MAP[target]
+        module = importlib.import_module(module_path, package=__package__)
+        # Handle chained attrs like 'MoGeModel.from_pretrained'
+        obj = module
+        for attr in attr_chain.split('.'):
+            obj = getattr(obj, attr)
+        return obj
+
+    # Prefix-based remapping for vendor targets not in the explicit map
+    class_name = target.rsplit('.', 1)[1]
+    for old_prefix, new_module in _MODULE_REMAP:
+        if target.startswith(old_prefix + '.'):
+            module = importlib.import_module(new_module, package=__package__)
+            return getattr(module, class_name)
+
+    # External classes (torchvision, etc.) — absolute import
+    parts = target.rsplit('.', 1)
+    module = importlib.import_module(parts[0])
+    return getattr(module, parts[1])
+
+
+def _instantiate(config):
+    """Recursively instantiate a Hydra-style config dict (replaces hydra.utils.instantiate).
+
+    Handles:
+    - _target_: fully-qualified class/function path
+    - _partial_: true -> return functools.partial instead of calling
+    - Nested dicts with _target_ are recursively instantiated
+    - Lists are recursively processed
+    """
+    if isinstance(config, dict):
+        if '_target_' in config:
+            target = config['_target_']
+            cls = _resolve_class(target)
+            is_partial = config.get('_partial_', False)
+            kwargs = {}
+            for k, v in config.items():
+                if k.startswith('_'):  # Skip _target_, _recursive_, _partial_, etc.
+                    continue
+                kwargs[k] = _instantiate(v)
+            if is_partial:
+                return partial(cls, **kwargs)
+            return cls(**kwargs)
+        else:
+            return {k: _instantiate(v) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [_instantiate(v) for v in config]
+    else:
+        return config
+
+
+def _filter_and_remove_prefix(sd: dict, prefix: str) -> dict:
+    """Filter state dict to keys starting with prefix, then remove the prefix."""
+    n = len(prefix)
+    return {k[n:]: v for k, v in sd.items() if k.startswith(prefix)}
+
+
+def _remove_prefix(sd: dict, prefix: str) -> dict:
+    """Remove prefix from state dict keys that have it."""
+    n = len(prefix)
+    return {(k[n:] if k.startswith(prefix) else k): v for k, v in sd.items()}
+
+
+def _fix_meta_buffers(model: torch.nn.Module, device):
+    """Reinitialize any buffers left on meta device after assign=True loading."""
+    for name, buf in model.named_buffers():
+        if buf.device.type == "meta":
+            parts = name.split(".")
+            parent = model
+            for p in parts[:-1]:
+                parent = getattr(parent, p)
+            parent._buffers[parts[-1]] = torch.zeros_like(buf, device=device)
 
 
 def _enable_lowvram_cast(model: torch.nn.Module) -> None:
@@ -152,8 +321,8 @@ def _enable_lowvram_cast(model: torch.nn.Module) -> None:
 
 def _load_config(config_path: str):
     """Load pipeline.yaml and return config + checkpoint_dir."""
-    from omegaconf import OmegaConf
-    config = OmegaConf.load(config_path)
+    with open(config_path, 'r') as f:
+        config = _DotDict(yaml.safe_load(f))
     checkpoint_dir = Path(config_path).parent
     return config, checkpoint_dir
 
@@ -196,40 +365,34 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
         log.debug("Using cached %s_generator", generator_type)
         return _PATCHER_CACHE[cache_key]
 
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
-
     config, checkpoint_dir = _load_config(config_path)
 
     gen_config_path = checkpoint_dir / config[f"{generator_type}_generator_config_path"]
     gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"])
 
-    gen_config = OmegaConf.load(gen_config_path)
+    with open(gen_config_path, 'r') as f:
+        gen_config = yaml.safe_load(f)
     model_config = gen_config["module"]["generator"]["backbone"]
 
     offload_device = comfy.model_management.unet_offload_device()
-    model = instantiate(model_config)
-    model = load_model_from_checkpoint(
-        model,
-        str(gen_ckpt_path),
-        strict=False,
-        device=str(offload_device),
-        freeze=True,
-        eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
-    )
 
-    # Use the model's own mixed-precision if available (keeps GroupNorm in fp32),
-    # otherwise fall back to blanket .to(dtype).
-    dtype = _resolve_dtype(precision)
-    if dtype != torch.float32:
-        if hasattr(model, 'convert_to_fp16'):
-            model.convert_to_fp16()
-            model.dtype = dtype
-        else:
-            model = model.to(dtype)
+    # Build on meta device (zero memory), then load weights directly
+    with torch.device("meta"):
+        model = _instantiate(model_config)
+
+    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+    # Training checkpoints nest weights under "state_dict"; safetensors are flat
+    if 'state_dict' in sd:
+        sd = sd['state_dict']
+    sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
+    model.load_state_dict(sd, strict=False, assign=True)
+    _fix_meta_buffers(model, offload_device)
+
+    model.eval()
+    model.requires_grad_(False)
+
+    # Native models use manual_cast — dtype is handled by the operations tier.
+    # No convert_to_fp16() needed.
 
     _enable_lowvram_cast(model)
     patcher = comfy.model_patcher.ModelPatcher(
@@ -259,10 +422,6 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
         log.debug("Using cached %s", decoder_type)
         return _PATCHER_CACHE[cache_key]
 
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
-
     config, checkpoint_dir = _load_config(config_path)
 
     if decoder_type == 'ss':
@@ -272,34 +431,34 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
         dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
         dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{decoder_type}_ckpt_path"])
 
-    dec_config = OmegaConf.load(dec_config_path)
+    with open(dec_config_path, 'r') as f:
+        dec_config = yaml.safe_load(f)
+    # Remove pretrained_ckpt_path if present (training artifact)
+    dec_config.pop('pretrained_ckpt_path', None)
 
     offload_device = comfy.model_management.unet_offload_device()
-    model = instantiate(dec_config)
-    model = load_model_from_checkpoint(
-        model,
-        str(dec_ckpt_path),
-        strict=False,
-        device=str(offload_device),
-        freeze=True,
-        eval=True,
-        state_dict_key=None,  # Decoder checkpoints have weights at root level
-        state_dict_fn=remove_prefix_state_dict_fn("module."),
-    )
 
-    # Use the model's own mixed-precision if available (keeps GroupNorm in fp32),
-    # otherwise fall back to blanket .to(dtype).
+    # Decoders are small (~170-364 MB) and contain utility objects (FlexiCubes,
+    # SparseFeatures2Mesh) that create real data tensors in __init__, so skip
+    # the meta device pattern here — not worth the complexity.
+    model = _instantiate(dec_config)
+
+    sd = comfy.utils.load_torch_file(str(dec_ckpt_path))
+    # Decoder checkpoints have weights at root level with "module." prefix
+    sd = _remove_prefix(sd, "module.")
+    model.load_state_dict(sd, strict=False, assign=True)
+
+    model.eval()
+    model.requires_grad_(False)
+
+    # Cast to requested precision (sageattention requires fp16/bf16)
     dtype = _resolve_dtype(precision)
     if dtype != torch.float32:
-        if hasattr(model, 'convert_to_fp16'):
-            model.convert_to_fp16()
-            model.dtype = dtype
-        else:
-            model = model.to(dtype)
+        model.to(dtype=dtype)
 
     # Re-init FlexiCubes / SparseFeatures2Mesh lookup tables on the target device.
     if hasattr(model, 'mesh_extractor'):
-        from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import SparseFeatures2Mesh
+        from ..sam3d.representations import SparseFeatures2Mesh
         me = model.mesh_extractor
         if isinstance(me, SparseFeatures2Mesh):
             device = str(comfy.model_management.get_torch_device())
@@ -336,34 +495,35 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
         log.debug("Using cached %s_embedder", embedder_type)
         return _PATCHER_CACHE[cache_key]
 
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
-
     config, checkpoint_dir = _load_config(config_path)
 
     gen_config_path = checkpoint_dir / config[f"{embedder_type}_generator_config_path"]
     gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"])
 
-    gen_config = OmegaConf.load(gen_config_path)
-    embedder_config = gen_config.module.condition_embedder.backbone
+    with open(gen_config_path, 'r') as f:
+        gen_config = yaml.safe_load(f)
+    embedder_config = gen_config["module"]["condition_embedder"]["backbone"]
 
     offload_device = comfy.model_management.unet_offload_device()
-    embedder = instantiate(embedder_config)
-    embedder = load_model_from_checkpoint(
-        embedder,
-        str(gen_ckpt_path),
-        strict=False,
-        device=str(offload_device),
-        freeze=True,
-        eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
-    )
+
+    # Build on meta device (zero memory), then load weights directly
+    with torch.device("meta"):
+        embedder = _instantiate(embedder_config)
+
+    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+    # Training checkpoints nest weights under "state_dict"; safetensors are flat
+    if 'state_dict' in sd:
+        sd = sd['state_dict']
+    sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
+    embedder.load_state_dict(sd, strict=False, assign=True)
+    _fix_meta_buffers(embedder, offload_device)
+
+    embedder.eval()
+    embedder.requires_grad_(False)
 
     _reinit_dino_buffers(embedder)
     _share_dino_backbones(embedder)
-    embedder = embedder.to(_resolve_dtype(precision))
+    _wrap_dino_attention(embedder)
 
     _enable_lowvram_cast(embedder)
     patcher = comfy.model_patcher.ModelPatcher(
@@ -378,16 +538,14 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
 
 def _get_preprocessor(config_path: str, preprocessor_type: str):
     """Get preprocessor from config."""
-    from hydra.utils import instantiate
-
     config, _ = _load_config(config_path)
     preprocessor_config = config.get(f'{preprocessor_type}_preprocessor')
 
-    if preprocessor_config:
-        return instantiate(preprocessor_config)
+    if preprocessor_config and isinstance(preprocessor_config, dict) and '_target_' in preprocessor_config:
+        return _instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        return preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        return get_default_preprocessor()
 
 
 def _reinit_dino_buffers(model):
@@ -413,8 +571,11 @@ def _share_dino_backbones(model):
     if not hasattr(model, 'module_list'):
         return
 
-    from sam3d_objects.model.backbone.dit.embedder.dino import Dino
-    dino_modules = [m for m in model.module_list if isinstance(m, Dino)]
+    # Match both native and vendor Dino classes by checking for backbone attribute
+    dino_modules = [
+        m for m in model.module_list
+        if type(m).__name__ in ('Dino', 'DinoForMasks') and hasattr(m, 'backbone')
+    ]
 
     if len(dino_modules) > 1:
         shared = dino_modules[0].backbone
@@ -423,6 +584,21 @@ def _share_dino_backbones(model):
         log.info("Shared DINOv2 backbone across %d Dino instances (saved ~1.1GB)", len(dino_modules))
         gc.collect()
         comfy.model_management.soft_empty_cache()
+
+
+def _wrap_dino_attention(model):
+    """Wrap DINOv2 attention blocks with ComfyUI's attention dispatch after meta-device loading."""
+    from ..sam3d.model import _wrap_attn_comfy
+    try:
+        from comfy_attn import set_backend
+        set_backend("auto")
+    except ImportError:
+        pass
+    for module in model.modules():
+        if type(module).__name__ == 'Dino' and hasattr(module, 'backbone'):
+            for block in module.backbone.blocks:
+                _wrap_attn_comfy(block.attn)
+            log.info("Wrapped DINOv2 attention blocks (%d blocks)", len(module.backbone.blocks))
 
 
 def clear_model_cache():
@@ -571,7 +747,7 @@ def run_stage1(
     Models loaded: ss_generator (~6.7 GB), ss_condition_embedder (~1.2 GB), ss_decoder (~150 MB)
     Peak VRAM: ~8-9 GB
     """
-    from sam3d_objects.pipeline.inference_utils import (
+    from ..sam3d.pipeline import (
         downsample_sparse_structure,
         prune_sparse_structure,
         get_pose_decoder,
@@ -831,7 +1007,7 @@ def run_stage2(
     Models loaded: slat_generator (~4.9 GB), slat_condition_embedder (~1.2 GB)
     Peak VRAM: ~6-7 GB
     """
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
     log.info("Running Stage 2 (SLAT gen)")
 
@@ -943,7 +1119,7 @@ def run_stage2(
             slat_feats = xt
 
             # Create SparseTensor
-            slat = sp.SparseTensor(
+            slat = SparseTensor(
                 coords=coords,
                 feats=slat_feats[0],
             ).to(DEVICE)
@@ -1002,7 +1178,7 @@ def run_decode(
     Peak VRAM: ~1-2 GB
     """
     import trimesh
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor as _SparseTensor
 
     log.info("Running decode (%s)", decode_format)
     pbar = comfy.utils.ProgressBar(4)
@@ -1010,15 +1186,15 @@ def run_decode(
     # Extract slat - handle different input formats
     slat = None
 
-    if isinstance(slat_data, sp.SparseTensor):
+    if isinstance(slat_data, _SparseTensor):
         slat = slat_data
     elif isinstance(slat_data, dict) and "slat" in slat_data:
         slat_inner = slat_data["slat"]
-        if isinstance(slat_inner, sp.SparseTensor):
+        if isinstance(slat_inner, _SparseTensor):
             slat = slat_inner
         elif isinstance(slat_inner, str):
             slat_inner = pickle.loads(base64.b64decode(slat_inner))
-            if isinstance(slat_inner, sp.SparseTensor):
+            if isinstance(slat_inner, _SparseTensor):
                 slat = slat_inner
             else:
                 coords = slat_inner["coords"]
@@ -1040,7 +1216,7 @@ def run_decode(
         device = comfy.model_management.get_torch_device()
         coords = torch.from_numpy(coords).int().to(device) if isinstance(coords, np.ndarray) else coords.int().to(device)
         feats = torch.from_numpy(feats).to(device) if isinstance(feats, np.ndarray) else feats.to(device)
-        slat = sp.SparseTensor(coords=coords, feats=feats)
+        slat = _SparseTensor(coords=coords, feats=feats)
     else:
         device = comfy.model_management.get_torch_device()
         slat = slat.to(device)
@@ -1075,6 +1251,12 @@ def run_decode(
     sys.stderr.flush()
 
     pbar.update(1)  # Decoder loaded
+
+    # Cast SLAT features to match decoder precision
+    dtype = _resolve_dtype(precision)
+    if slat.feats.dtype != dtype:
+        slat.feats = slat.feats.to(dtype=dtype)
+
     with torch.no_grad():
         output = decoder(slat)
 
@@ -1153,7 +1335,7 @@ def run_decode(
             # Apply postprocessing if requested
             if with_postprocess:
                 log.info("Applying mesh postprocessing (simplify=%s)...", simplify)
-                from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
+                from ..sam3d.postprocessing import postprocess_mesh
                 vertices, faces = postprocess_mesh(
                     vertices,
                     faces,
@@ -1263,9 +1445,8 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     log.info("GLB: %s", glb_path)
     log.info("Mode: %s, Size: %d", texture_mode, texture_size)
 
-    from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
-    from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
-    from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
+    from ..sam3d.representations import Gaussian, MeshExtractResult
+    from ..sam3d.postprocessing import to_glb
 
     device = comfy.model_management.get_torch_device()
 

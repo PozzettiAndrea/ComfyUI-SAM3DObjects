@@ -101,8 +101,8 @@ class SAM3DMeshDecode:
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "mesh")
 
-        # Load SLAT
-        slat_data = comfy.utils.load_torch_file(slat)
+        # Load SLAT (our own intermediate file, not an untrusted checkpoint)
+        slat_data = torch.load(slat, weights_only=False)
 
         # Run Mesh decoding
         result = run_decode(

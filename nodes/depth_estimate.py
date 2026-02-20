@@ -79,11 +79,6 @@ class SAM3D_DepthEstimate:
         from pytorch3d.renderer import look_at_view_transform
         from pytorch3d.transforms import Transform3d
 
-        # Add vendor/ to sys.path for consistent imports
-        _VENDOR_PATH = str(Path(__file__).parent / "vendor")
-        if _VENDOR_PATH not in sys.path:
-            sys.path.insert(0, _VENDOR_PATH)
-
         pbar = comfy.utils.ProgressBar(4)
         start_time = time.time()
         log.info("DepthEstimate: Running depth estimation with MoGe...")
@@ -98,7 +93,7 @@ class SAM3D_DepthEstimate:
 
         # Load MoGe depth model (cached in ModelPatcher for VRAM management)
         if _MOGE_PATCHER is None:
-            from moge.model.v1 import MoGeModel
+            from .sam3d.moge import MoGeModel
 
             moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
             log.info("Loading MoGe model from %s...", moge_path)
@@ -117,7 +112,7 @@ class SAM3D_DepthEstimate:
         device = mm.get_torch_device()
         mm.load_models_gpu([_MOGE_PATCHER])
 
-        from sam3d_objects.pipeline.depth_models.moge import MoGe
+        from .sam3d.pipeline import MoGe
         model = MoGe(_MOGE_PATCHER.model, device=str(device))
         pbar.update(1)  # Model loaded
 
@@ -151,7 +146,7 @@ class SAM3D_DepthEstimate:
 
         # Infer intrinsics if not provided
         if intrinsics is None:
-            from sam3d_objects.pipeline.utils.pointmap import infer_intrinsics_from_pointmap
+            from .sam3d.pipeline import infer_intrinsics_from_pointmap
             intrinsics_result = infer_intrinsics_from_pointmap(
                 points_tensor.permute(1, 2, 0), device=device
             )
