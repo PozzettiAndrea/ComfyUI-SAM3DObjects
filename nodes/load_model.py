@@ -111,10 +111,12 @@ class LoadSAM3DModel:
         log.info("Loading SAM3D model...")
 
         # Resolve precision "auto" using GPU capabilities
-        # spconv's compiled CUDA kernels don't include bf16 GEMM, so auto picks fp16.
+        # Prefer bf16 (better dynamic range, native on Ampere+), fall back to fp16/fp32.
         if precision == "auto":
             device = mm.get_torch_device()
-            if mm.should_use_fp16(device) or mm.should_use_bf16(device):
+            if mm.should_use_bf16(device):
+                precision = "bf16"
+            elif mm.should_use_fp16(device):
                 precision = "fp16"
             else:
                 precision = "fp32"

@@ -348,7 +348,7 @@ def _resolve_dtype(precision: str) -> torch.dtype:
     return torch.float32
 
 
-def _get_or_load_generator(config_path: str, generator_type: str, precision: str = "fp16"):
+def _get_or_load_generator(config_path: str, generator_type: str, precision: str = "bf16"):
     """
     Load a generator model (ss_generator or slat_generator) wrapped in ModelPatcher.
 
@@ -405,7 +405,7 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
     return patcher
 
 
-def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "fp16"):
+def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
     """
     Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh) wrapped in ModelPatcher.
 
@@ -478,7 +478,7 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
     return patcher
 
 
-def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precision: str = "fp16"):
+def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precision: str = "bf16"):
     """
     Load a condition embedder (ss or slat) wrapped in ModelPatcher.
 
@@ -739,7 +739,7 @@ def run_stage1(
     cfg_strength: float = 7.0,
     cfg_strength_pm: float = 0.0,
     output_dir: str = None,
-    precision: str = "fp16",
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 1 (sparse structure generation).
@@ -999,7 +999,7 @@ def run_stage2(
     inference_steps: int = 25,
     cfg_strength: float = 5.0,
     output_dir: str = None,
-    precision: str = "fp16",
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 2 (SLAT generation).
@@ -1169,7 +1169,7 @@ def run_decode(
     simplify: float = 0.95,
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
-    precision: str = "fp16",
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding).
@@ -1245,10 +1245,6 @@ def run_decode(
     for p in decoder.parameters():
         param_dtypes.add(str(p.dtype))
     log.info("Decoder parameter dtypes: %s", param_dtypes)
-
-    import sys
-    sys.stdout.flush()
-    sys.stderr.flush()
 
     pbar.update(1)  # Decoder loaded
 
@@ -1401,7 +1397,7 @@ def run_decode(
         except Exception as e:
             log.error("Failed to save Mesh GLB: %s", e)
             import traceback
-            traceback.print_exc(file=sys.stderr)
+            traceback.print_exc()
             mesh_path = save_dir / "mesh.pt"
             mesh_data = {
                 "vertices": mesh.vertices.cpu() if hasattr(mesh.vertices, 'cpu') else mesh.vertices,

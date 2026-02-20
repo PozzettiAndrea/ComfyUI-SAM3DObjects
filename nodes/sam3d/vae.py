@@ -445,7 +445,7 @@ class SparseTransformerBase(nn.Module):
     def forward(self, x: SparseTensor) -> SparseTensor:
         h = self.input_layer(x)
         if self.pe_mode == "ape":
-            h = h + self.pos_embedder(x.coords[:, 1:])
+            h = h + self.pos_embedder(x.coords[:, 1:]).to(h.feats.dtype)
         for block in self.blocks:
             h = block(h)
         return h
@@ -612,6 +612,9 @@ class SLatGaussianDecoder(SparseTransformerBase):
     def to_representation(self, x: SparseTensor) -> List:
         """Convert a batch of network outputs to Gaussian representations."""
         from .representations import Gaussian
+        # Cast to fp32 for numpy compatibility in save_ply
+        if x.feats.dtype != torch.float32:
+            x = x.replace(x.feats.float())
         ret = []
         for i in range(x.shape[0]):
             representation = Gaussian(
@@ -815,7 +818,11 @@ class SLatMeshDecoder(SparseTransformerBase):
         from .representations import MeshExtractResult
         ret = []
         for i in range(x.shape[0]):
-            mesh = self.mesh_extractor(x[i], training=self.training)
+            xi = x[i]
+            # Mesh extraction is geometric post-processing — run in fp32
+            if xi.feats.dtype != torch.float32:
+                xi = xi.replace(xi.feats.float())
+            mesh = self.mesh_extractor(xi, training=self.training)
             ret.append(mesh)
         return ret
 

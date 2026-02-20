@@ -116,6 +116,22 @@ class SAM3DGenerateSLAT:
 
         return False
 
+    def _get_next_run_dir(self, base_output_dir: str) -> str:
+        """Find next available sam3d_run_N directory in the output folder."""
+        existing = []
+        if os.path.exists(base_output_dir):
+            for name in os.listdir(base_output_dir):
+                if name.startswith("sam3d_run_") and os.path.isdir(os.path.join(base_output_dir, name)):
+                    try:
+                        num = int(name.split("_")[-1])
+                        existing.append(num)
+                    except ValueError:
+                        pass
+        next_num = max(existing) + 1 if existing else 1
+        run_dir = os.path.join(base_output_dir, f"sam3d_run_{next_num}")
+        os.makedirs(run_dir, exist_ok=True)
+        return run_dir
+
     def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
         """Save Stage 1 params for cache validation."""
         import json
@@ -165,9 +181,9 @@ class SAM3DGenerateSLAT:
 
         log.info("GenerateSLAT: Starting SLAT generation...")
 
-        # Use temp directory for intermediate files
-        output_dir = os.path.join(folder_paths.get_temp_directory(), "sam3d_slat")
-        os.makedirs(output_dir, exist_ok=True)
+        # Create per-run output directory (absolute for file I/O)
+        output_dir = self._get_next_run_dir(folder_paths.get_output_directory())
+        comfyui_base = os.path.dirname(folder_paths.get_output_directory())
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -216,7 +232,7 @@ class SAM3DGenerateSLAT:
                 cfg_strength=stage1_cfg,
                 cfg_strength_pm=stage1_cfg_pm,
                 output_dir=output_dir,
-                precision=generator.get("precision", "fp16"),
+                precision=generator.get("precision", "bf16"),
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
@@ -240,7 +256,7 @@ class SAM3DGenerateSLAT:
             inference_steps=stage2_steps,
             cfg_strength=stage2_cfg,
             output_dir=output_dir,
-            precision=generator.get("precision", "fp16"),
+            precision=generator.get("precision", "bf16"),
         )
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
         # Note: The saved file contains full dict with stage1_data for pose info
@@ -262,5 +278,7 @@ class SAM3DGenerateSLAT:
         if debug_image is None:
             debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
 
-        log.info("GenerateSLAT completed: %s", slat_path)
-        return (slat_path, debug_image)
+        # Return path relative to ComfyUI root (e.g. output/sam3d_run_1/slat.pt)
+        rel_slat_path = os.path.relpath(slat_path, comfyui_base)
+        log.info("GenerateSLAT completed: %s", rel_slat_path)
+        return (rel_slat_path, debug_image)

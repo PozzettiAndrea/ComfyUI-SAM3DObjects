@@ -110,26 +110,6 @@ def set_conv_backend(backend: str) -> None:
     log.info(f"Conv backend set to: {backend}")
 
 
-# Patch spconv for bf16 support if available
-def _patch_spconv_bf16():
-    try:
-        import spconv.pytorch as spconv
-        original_fwd = spconv.SparseConvTensor.replace_feature
-
-        def patched_replace_feature(self, feature):
-            if self.features.dtype == torch.bfloat16:
-                self.features = self.features.to(torch.float32)
-            return original_fwd(self, feature)
-
-        spconv.SparseConvTensor.replace_feature = patched_replace_feature
-    except ImportError:
-        pass
-    except Exception as e:
-        log.warning(f"Failed to patch spconv for bf16: {e}")
-
-
-_patch_spconv_bf16()
-
 
 # ==========================================================================
 # Conv backend implementations (lazy-loaded)
