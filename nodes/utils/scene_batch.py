@@ -195,7 +195,7 @@ def _run_phase1_stage1(
 ):
     """Phase 1: Load Stage1 models once, process all masks."""
     from hydra.utils import instantiate
-    from sam3d_objects.pipeline.inference_utils import (
+    from ..sam3d.pipeline import (
         downsample_sparse_structure, prune_sparse_structure, get_pose_decoder
     )
     from .helpers import preprocess_image_lazy
@@ -220,8 +220,8 @@ def _run_phase1_stage1(
     if preprocessor_config:
         ss_preprocessor = instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        ss_preprocessor = preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        ss_preprocessor = get_default_preprocessor()
 
     # Get pose decoder
     pose_decoder_name = getattr(config, 'pose_decoder_name', 'default')
@@ -362,7 +362,7 @@ def _run_phase2_stage2(
 ):
     """Phase 2: Load Stage2 models once, process all sparse structures."""
     from hydra.utils import instantiate
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
     from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
@@ -383,8 +383,8 @@ def _run_phase2_stage2(
     if preprocessor_config:
         slat_preprocessor = instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        slat_preprocessor = preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        slat_preprocessor = get_default_preprocessor()
 
     # Configure generator
     slat_generator.no_shortcut = True
@@ -417,7 +417,7 @@ def _run_phase2_stage2(
 
         # Load sparse structure
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
-        stage1_output = comfy.utils.load_torch_file(sparse_path)
+        stage1_output = torch.load(sparse_path, weights_only=False)
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
@@ -448,7 +448,7 @@ def _run_phase2_stage2(
                 condition_args = condition_args + (coords.cpu().numpy(),)
                 slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
 
-                slat = sp.SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
+                slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
                 slat = slat * slat_std + slat_mean
 
         # Save
@@ -481,7 +481,7 @@ def _run_phase3_mesh_decode(
 ):
     """Phase 3: Load mesh decoder once, process all SLATs."""
     import trimesh
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
     # Load mesh decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading mesh decoder...")
@@ -495,18 +495,18 @@ def _run_phase3_mesh_decode(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = comfy.utils.load_torch_file(slat_path)
+        slat_data = torch.load(slat_path, weights_only=False)
 
         # Extract slat
         slat = slat_data.get("slat")
-        if not isinstance(slat, sp.SparseTensor):
+        if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")
             feats = slat.get("feats") if isinstance(slat, dict) else slat_data.get("feats")
             if isinstance(coords, np.ndarray):
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.to(device), feats=feats.to(device))
+            slat = SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
             slat = slat.to(device)
 
@@ -530,7 +530,7 @@ def _run_phase3_mesh_decode(
 
         # Postprocess if requested
         if with_postprocess:
-            from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
+            from ..sam3d.postprocessing import postprocess_mesh
             vertices, faces = postprocess_mesh(vertices, faces, simplify=True, simplify_ratio=simplify, fill_holes=True, verbose=False)
             vertex_colors = None
 
@@ -557,7 +557,7 @@ def _run_phase4_texture(
     precision="fp16"
 ):
     """Phase 4: Load gaussian decoder once, decode all, then texture bake."""
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
     # Load gaussian decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading gaussian decoder...")
@@ -572,16 +572,16 @@ def _run_phase4_texture(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = comfy.utils.load_torch_file(slat_path)
+        slat_data = torch.load(slat_path, weights_only=False)
         slat = slat_data.get("slat")
-        if not isinstance(slat, sp.SparseTensor):
+        if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")
             feats = slat.get("feats") if isinstance(slat, dict) else slat_data.get("feats")
             if isinstance(coords, np.ndarray):
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.to(device), feats=feats.to(device))
+            slat = SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
             slat = slat.to(device)
 

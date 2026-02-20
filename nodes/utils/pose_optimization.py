@@ -53,16 +53,9 @@ def depth_edge(depth: np.ndarray, rtol: float = 0.03, mask: np.ndarray = None) -
 def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
     """Run pose optimization using layout_post_optimization."""
     try:
-        from pathlib import Path
-
-        # Setup environment for sam3d_objects imports
-        vendor_path = Path(__file__).parent.parent / "vendor"
-        if str(vendor_path) not in sys.path:
-            sys.path.insert(0, str(vendor_path))
-
         import trimesh
         from pytorch3d.transforms import quaternion_to_matrix
-        from sam3d_objects.pipeline.inference_utils import layout_post_optimization
+        from ..sam3d.pipeline import layout_post_optimization
 
         log.info("Running pose optimization")
 
@@ -230,19 +223,12 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
     Supports: icp_only, render_only modes.
     """
     try:
-        from pathlib import Path
-
-        # Setup environment for sam3d_objects imports
-        vendor_path = Path(__file__).parent.parent / "vendor"
-        if str(vendor_path) not in sys.path:
-            sys.path.insert(0, str(vendor_path))
-
         import trimesh
         from pytorch3d.structures import Meshes
         from pytorch3d.transforms import quaternion_to_matrix, Transform3d, matrix_to_quaternion
         from pytorch3d.renderer import TexturesVertex
-        from sam3d_objects.data.dataset.tdfy.transforms_3d import compose_transform
-        from sam3d_objects.pipeline.layout_post_optimization_utils import (
+        from ..sam3d.transforms import compose_transform
+        from ..sam3d.pipeline import (
             get_mesh,
             get_mask_renderer,
             compute_iou,

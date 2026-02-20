@@ -199,7 +199,7 @@ class SAM3DGenerateSLAT:
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
             log.info("Using cached Stage 1 output")
-            stage1_output = comfy.utils.load_torch_file(sparse_path)
+            stage1_output = torch.load(sparse_path, weights_only=False)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
@@ -220,7 +220,7 @@ class SAM3DGenerateSLAT:
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
-            stage1_output = comfy.utils.load_torch_file(stage1_file)
+            stage1_output = torch.load(stage1_file, weights_only=False)
             debug_image_path = result.get("debug_image")
 
             # Copy to expected location if different

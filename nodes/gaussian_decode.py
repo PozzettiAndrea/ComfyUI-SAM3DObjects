@@ -83,8 +83,8 @@ class SAM3DGaussianDecode:
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "gaussian")
 
-        # Load SLAT
-        slat_data = comfy.utils.load_torch_file(slat)
+        # Load SLAT (our own intermediate file, not an untrusted checkpoint)
+        slat_data = torch.load(slat, weights_only=False)
 
         # Run Gaussian decoding
         result = run_decode(
