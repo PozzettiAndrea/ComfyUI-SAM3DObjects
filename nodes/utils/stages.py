@@ -35,6 +35,70 @@ from .helpers import preprocess_image_lazy, save_output_to_disk
 # ComfyUI manages VRAM placement, per-layer offloading, and cross-model eviction.
 _PATCHER_CACHE = {}
 
+# Inline decoder configs — used as fallback when YAML files are missing.
+# These are small, static configs that never change between releases.
+_DEFAULT_DECODER_CONFIGS = {
+    "slat_decoder_gs": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {
+            "lr": {"_xyz": 1.0, "_features_dc": 1.0, "_opacity": 1.0, "_scaling": 1.0, "_rotation": 0.1},
+            "perturb_offset": True,
+            "voxel_size": 1.5,
+            "num_gaussians": 32,
+            "2d_filter_kernel_size": 0.1,
+            "3d_filter_kernel_size": 0.0009,
+            "scaling_bias": 0.004,
+            "opacity_bias": 0.1,
+            "scaling_activation": "softplus",
+        },
+        "use_fp16": True,
+    },
+    "slat_decoder_gs_4": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {
+            "lr": {"_xyz": 1.0, "_features_dc": 1.0, "_opacity": 1.0, "_scaling": 1.0, "_rotation": 0.1},
+            "perturb_offset": True,
+            "voxel_size": 1.5,
+            "num_gaussians": 4,
+            "2d_filter_kernel_size": 0.1,
+            "3d_filter_kernel_size": 0.0009,
+            "scaling_bias": 0.004,
+            "opacity_bias": 0.1,
+            "scaling_activation": "softplus",
+        },
+        "use_fp16": True,
+    },
+    "slat_decoder_mesh": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_mesh.SLatMeshDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {"use_color": True},
+        "use_fp16": True,
+    },
+}
+
 
 # =============================================================================
 # Hydra Replacement: Config Loading + Recursive Instantiation
@@ -431,8 +495,17 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
         dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
         dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{decoder_type}_ckpt_path"])
 
-    with open(dec_config_path, 'r') as f:
-        dec_config = yaml.safe_load(f)
+    if dec_config_path.exists():
+        with open(dec_config_path, 'r') as f:
+            dec_config = yaml.safe_load(f)
+    else:
+        dec_config = _DEFAULT_DECODER_CONFIGS.get(decoder_type)
+        if dec_config is None:
+            raise FileNotFoundError(
+                f"No config file and no inline default for {decoder_type}: {dec_config_path}"
+            )
+        dec_config = dict(dec_config)  # shallow copy to avoid mutating the default
+        log.warning("Config file missing, using inline default: %s", dec_config_path)
     # Remove pretrained_ckpt_path if present (training artifact)
     dec_config.pop('pretrained_ckpt_path', None)
 

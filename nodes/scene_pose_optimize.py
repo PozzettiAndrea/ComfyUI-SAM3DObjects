@@ -156,8 +156,8 @@ class SAM3D_ScenePoseOptimize:
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics file not found: {intrinsics_path}. Run SAM3DSceneGenerate first.")
 
-        # Load intrinsics
-        intrinsics = comfy.utils.load_torch_file(intrinsics_path)
+        # Load intrinsics (our own intermediate file, may contain numpy arrays)
+        intrinsics = torch.load(intrinsics_path, weights_only=False)
         log.info("ScenePoseOptimize: Loaded intrinsics from %s", intrinsics_path)
 
         # Discover object folders
@@ -244,7 +244,7 @@ class SAM3D_ScenePoseOptimize:
             # Load initial pose from sparse_structure.pt (computed in Stage 1)
             sparse_path = os.path.join(object_dir, "sparse_structure.pt")
             if os.path.exists(sparse_path):
-                sparse_data = comfy.utils.load_torch_file(sparse_path)
+                sparse_data = torch.load(sparse_path, weights_only=False)
                 rotation = sparse_data.get("rotation")
                 translation = sparse_data.get("translation")
                 scale = sparse_data.get("scale")
@@ -289,6 +289,7 @@ class SAM3D_ScenePoseOptimize:
             if optimization_mode == "pose_only":
                 try:
                     log.info("ScenePoseOptimize [%d]: Applying pose directly (no optimization)", idx)
+                    from .utils.pose_optimization import _apply_and_save_pose
 
                     # Load mesh
                     mesh = trimesh.load(mesh_path)
@@ -298,48 +299,18 @@ class SAM3D_ScenePoseOptimize:
                             raise ValueError("No mesh found in GLB file")
                         mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
-                    # Convert pose to tensors
-                    from pytorch3d.transforms import quaternion_to_matrix
-
                     rot_np = np.array(rotation).squeeze()
                     trans_np = np.array(translation).squeeze()
                     scale_np = np.array(scale).squeeze()
 
-                    # Ensure scale is 3D
-                    if scale_np.ndim == 0:
-                        scale_np = np.array([float(scale_np)] * 3)
-                    elif scale_np.size == 1:
-                        scale_np = np.array([float(scale_np.flat[0])] * 3)
-                    else:
-                        scale_np = scale_np.flatten()[:3]
-
-                    # Convert quaternion to rotation matrix
-                    quat_tensor = torch.from_numpy(rot_np).float().unsqueeze(0)
-                    rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
-
-                    # Z-up to Y-up conversion matrix (SAM3D decoder outputs Z-up)
-                    z_up_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
-
-                    # Apply transformation: Z-up -> Y-up, then scale, rotate, translate
-                    # Note: PyTorch3D quaternion_to_matrix returns row-vector convention (v @ R)
-                    # Do NOT transpose - that would apply inverse rotation
-                    vertices = mesh.vertices.copy()
-                    vertices_y_up = vertices @ z_up_to_y_up
-                    vertices_scaled = vertices_y_up * scale_np
-                    vertices_rotated = vertices_scaled @ rot_matrix
-                    vertices_transformed = vertices_rotated + trans_np
-
-                    # Flip X and Y axes to match image coordinate convention
-                    # PyTorch3D: X-left, Y-up, Z-inward
-                    # Image coords: X-right, Y-down
-                    vertices_transformed[:, 0] = -vertices_transformed[:, 0]
-                    vertices_transformed[:, 1] = -vertices_transformed[:, 1]
-
-                    mesh.vertices = vertices_transformed
-                    mesh.export(output_glb_path)
+                    response = _apply_and_save_pose(
+                        mesh, rot_np, trans_np, scale_np,
+                        output_glb_path, object_dir, mesh_path,
+                        iou=-1.0, used_icp=False, used_render_opt=False
+                    )
 
                     log.info("ScenePoseOptimize [%d]: Saved: %s", idx, output_glb_path)
-                    iou_scores.append(1.0)  # No IoU computed in pose_only mode
+                    iou_scores.append(response.get("iou", -1.0))
 
                 except Exception as e:
                     log.error("ScenePoseOptimize [%d]: Pose-only transform failed", idx, exc_info=True)

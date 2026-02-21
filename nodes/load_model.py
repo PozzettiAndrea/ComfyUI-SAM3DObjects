@@ -17,9 +17,6 @@ except ImportError:
 # HuggingFace repo for SAM3D checkpoints (safetensors format, mmap-friendly)
 REPO_ID = "apozz/sam-3d-objects-safetensors"
 
-# Output names for detecting which are connected
-OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
-
 # Map outputs to required checkpoint files (safetensors preferred)
 REQUIRED_FILES = {
     "depth_model": [],  # Depth uses MoGe v1 (Ruicheng/moge-vitl) from HuggingFace
@@ -82,10 +79,6 @@ class LoadSAM3DModel:
                     "tooltip": "Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
                 }),
             },
-            "hidden": {
-                "unique_id": "UNIQUE_ID",
-                "prompt": "PROMPT",
-            }
         }
 
     RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
@@ -105,8 +98,7 @@ class LoadSAM3DModel:
         attn_backend: str,
         compile: bool,
         precision: str = "auto",
-        unique_id: str = None,
-        prompt: dict = None,
+        **kwargs,
     ):
         log.info("Loading SAM3D model...")
 
@@ -122,24 +114,17 @@ class LoadSAM3DModel:
                 precision = "fp32"
         log.info("Precision: %s", precision)
 
-        # Detect which outputs are connected
-        used_outputs = self._detect_used_outputs(prompt, unique_id)
-        if used_outputs:
-            log.info("Connected outputs: %s", ', '.join(used_outputs))
-
-        # Download checkpoints if needed
-        checkpoint_path = self._get_or_download_checkpoint(used_outputs)
+        # Download all checkpoints if needed (always download everything to avoid
+        # missing files when outputs are connected/disconnected between runs)
+        checkpoint_path = self._get_or_download_checkpoint()
         config_path = str(checkpoint_path / "pipeline.yaml")
 
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
         # Download MoGe / DINOv2 safetensors to ComfyUI/models/sam3d/sam-3d-objects/
-        if "generator" in used_outputs or not used_outputs:
-            self._ensure_dinov2_safetensors()
-
-        if "depth_model" in used_outputs or not used_outputs:
-            self._ensure_moge_safetensors()
+        self._ensure_dinov2_safetensors()
+        self._ensure_moge_safetensors()
 
         log.info("Model loaded successfully")
 
@@ -151,35 +136,15 @@ class LoadSAM3DModel:
         }
         return (model, model, model, model)
 
-    def _detect_used_outputs(self, prompt: dict, unique_id: str) -> set:
-        """Detect which outputs are connected downstream."""
-        if not prompt or not unique_id:
-            return set()
-
-        used = set()
-        for node_id, node_info in prompt.items():
-            if not isinstance(node_info, dict):
-                continue
-            for input_name, input_value in node_info.get("inputs", {}).items():
-                if isinstance(input_value, list) and len(input_value) == 2:
-                    linked_node_id, output_index = input_value
-                    if str(linked_node_id) == str(unique_id) and output_index < len(OUTPUT_NAMES):
-                        used.add(OUTPUT_NAMES[output_index])
-        return used
-
     @classmethod
-    def _get_or_download_checkpoint(cls, used_outputs: set = None) -> Path:
-        """Get checkpoint path, downloading required files if necessary."""
+    def _get_or_download_checkpoint(cls) -> Path:
+        """Get checkpoint path, downloading all required files if necessary."""
         models_dir = get_sam3d_models_path()
 
-        # Determine required files
+        # Always download all files
         required_files = set(ALWAYS_DOWNLOAD)
-        if used_outputs:
-            for output in used_outputs:
-                required_files.update(REQUIRED_FILES.get(output, []))
-        else:
-            for files in REQUIRED_FILES.values():
-                required_files.update(files)
+        for files in REQUIRED_FILES.values():
+            required_files.update(files)
 
         # Check which files are missing
         missing_files = []

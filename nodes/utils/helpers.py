@@ -34,9 +34,11 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     """
     import comfy.model_management as mm
 
-    data = comfy.utils.load_torch_file(pointmap_path)
+    data = torch.load(pointmap_path, weights_only=False)
     if isinstance(data, dict):
-        pointmap = data.get("pointmap") or data.get("data")
+        pointmap = data.get("pointmap")
+        if pointmap is None:
+            pointmap = data.get("data")
     else:
         pointmap = data
     log.info("Loaded pointmap tensor: shape=%s", pointmap.shape)
@@ -223,20 +225,20 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
 # Model download helpers
 # =============================================================================
 
-# HuggingFace repo for SAM3D checkpoints
-REPO_ID = "jetjodh/sam-3d-objects"
+# HuggingFace repo for SAM3D checkpoints (safetensors format)
+REPO_ID = "apozz/sam-3d-objects-safetensors"
 
-# Decoder files
+# Decoder files (safetensors + yaml configs)
 DECODER_FILES = {
     "gaussian": [
         "slat_decoder_gs.yaml",
-        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs.safetensors",
         "slat_decoder_gs_4.yaml",
-        "slat_decoder_gs_4.ckpt",
+        "slat_decoder_gs_4.safetensors",
     ],
     "mesh": [
         "slat_decoder_mesh.yaml",
-        "slat_decoder_mesh.ckpt",
+        "slat_decoder_mesh.safetensors",
     ],
 }
 
@@ -274,20 +276,16 @@ def _download_decoder_files(checkpoint_dir: Path, files: list):
             "Please install it: pip install huggingface-hub"
         )
 
-    # target_dir is parent of checkpoints/ for hf_hub_download
-    target_dir = checkpoint_dir.parent
-
     log.info("Downloading from HuggingFace: %s", REPO_ID)
 
     for filename in files:
-        hf_path = f"checkpoints/{filename}"
         log.info("Downloading %s...", filename)
 
         try:
             hf_hub_download(
                 repo_id=REPO_ID,
-                filename=hf_path,
-                local_dir=str(target_dir),
+                filename=filename,
+                local_dir=str(checkpoint_dir),
                 local_dir_use_symlinks=False,
             )
         except Exception as e:
