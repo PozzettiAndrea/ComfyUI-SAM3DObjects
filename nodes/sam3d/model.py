@@ -1963,8 +1963,8 @@ class PointPatchEmbed(nn.Module):
 
 
 def _wrap_attn_comfy(module):
-    """Class-swap a DINOv2 Attention module to use comfy-attn dispatch."""
-    from comfy_attn import dispatch_attention
+    """Class-swap a DINOv2 Attention module to use ComfyUI native optimized attention."""
+    from comfy.ldm.modules.attention import optimized_attention_for_device
 
     class _W(module.__class__):
         def forward(self, x, **kwargs):
@@ -1972,7 +1972,8 @@ def _wrap_attn_comfy(module):
             qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
             q, k, v = torch.unbind(qkv, 2)
             q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-            out = dispatch_attention(q, k, v)
+            attn_fn = optimized_attention_for_device(q.device)
+            out = attn_fn(q, k, v, heads=self.num_heads, skip_reshape=True, skip_output_reshape=True)
             out = out.transpose(1, 2).contiguous().view(B, N, C)
             return self.proj_drop(self.proj(out))
 

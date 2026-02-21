@@ -64,8 +64,8 @@ def unwrap_module_with_gradient_checkpointing(module: nn.Module):
 
 
 def wrap_dinov2_attention_with_comfy_attn(module: nn.Module):
-    """Replace DINOv2 attention forward with comfy-attn dispatch (sage/flash/sdpa)."""
-    from comfy_attn import dispatch_attention
+    """Replace DINOv2 attention forward with ComfyUI native optimized attention."""
+    from comfy.ldm.modules.attention import optimized_attention_for_device
 
     class _ComfyAttnWrapper(module.__class__):
         def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
@@ -73,7 +73,8 @@ def wrap_dinov2_attention_with_comfy_attn(module: nn.Module):
             qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
             q, k, v = torch.unbind(qkv, 2)
             q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-            out = dispatch_attention(q, k, v)
+            attn_fn = optimized_attention_for_device(q.device)
+            out = attn_fn(q, k, v, heads=self.num_heads, skip_reshape=True, skip_output_reshape=True)
             out = out.transpose(1, 2).contiguous().view(B, N, C)
             return self.proj_drop(self.proj(out))
 
