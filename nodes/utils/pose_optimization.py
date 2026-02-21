@@ -107,9 +107,11 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
             mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
         # Load pointmap
-        pointmap_data = comfy.utils.load_torch_file(pointmap_path)
+        pointmap_data = torch.load(pointmap_path, weights_only=False)
         if isinstance(pointmap_data, dict):
-            pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
+            pointmap_tensor = pointmap_data.get("pointmap")
+            if pointmap_tensor is None:
+                pointmap_tensor = pointmap_data.get("data")
         else:
             pointmap_tensor = pointmap_data
         pointmap_tensor = pointmap_tensor.float().to(device)
@@ -297,9 +299,11 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
         # Load pointmap
         log.info("Loading pointmap: %s", pointmap_path)
-        pointmap_data = comfy.utils.load_torch_file(pointmap_path)
+        pointmap_data = torch.load(pointmap_path, weights_only=False)
         if isinstance(pointmap_data, dict):
-            pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
+            pointmap_tensor = pointmap_data.get("pointmap")
+            if pointmap_tensor is None:
+                pointmap_tensor = pointmap_data.get("data")
         else:
             pointmap_tensor = pointmap_data
         pointmap_tensor = pointmap_tensor.float().to(device)
