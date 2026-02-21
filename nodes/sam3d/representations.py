@@ -420,33 +420,6 @@ class Gaussian:
             .numpy()
         )
 
-        # Also convert SH to RGB colors (for standard PLY viewers)
-        f_dc_tensor = self._features_dc[:, 0, :].detach()  # Shape: [N, 3]
-
-        # Apply SH rendering formula: C0 * sh + 0.5
-        C0 = 0.28209479177387814
-        colors_linear = (f_dc_tensor * C0 + 0.5).cpu().numpy()
-
-        # Normalize per-channel to maximize color variation
-        # This normalizes R, G, B independently to use full [0, 255] range
-        colors_normalized = np.zeros_like(colors_linear)
-        for i in range(3):  # R, G, B channels
-            channel = colors_linear[:, i]
-            channel_min = channel.min()
-            channel_max = channel.max()
-            if channel_max > channel_min:
-                colors_normalized[:, i] = (channel - channel_min) / (channel_max - channel_min)
-            else:
-                colors_normalized[:, i] = 0.5
-        colors_rgb = np.clip(colors_normalized * 255, 0, 255).astype(np.uint8)
-
-        log.info("Saving both SH coefficients and RGB colors (ASCII format)")
-        log.debug("SH range: [%.3f, %.3f]", f_dc_tensor.min(), f_dc_tensor.max())
-        log.debug("RGB range: [0, 255] uint8 (per-channel normalized)")
-        log.debug("Sample RGB (first 5):")
-        for i in range(min(5, colors_rgb.shape[0])):
-            log.debug("  Point %d: R=%3d G=%3d B=%3d", i, colors_rgb[i, 0], colors_rgb[i, 1], colors_rgb[i, 2])
-
         opacities = inverse_sigmoid(self.get_opacity).detach().cpu().numpy()
         if opacities.ndim == 1:
             opacities = opacities[:, np.newaxis]
@@ -454,14 +427,10 @@ class Gaussian:
         scale = torch.log(self.get_scaling).detach().cpu().numpy()
         rotation = (self._rotation + self.rots_bias[None, :]).detach().cpu().numpy()
 
-        # Build dtype with BOTH raw SH coefficients AND RGB colors
-        # RGB as uint8 [0, 255] for ASCII PLY (VTK.js compatibility)
-        # Gaussian Splatting viewers will use f_dc_0/1/2
+        # Standard Gaussian Splatting PLY format (float-only for gsplat.js compat)
         dtype_full = [("x", "f4"), ("y", "f4"), ("z", "f4"),
-                      ("nx", "f4"), ("ny", "f4"), ("nz", "f4"),
-                      ("red", "u1"), ("green", "u1"), ("blue", "u1")]
+                      ("nx", "f4"), ("ny", "f4"), ("nz", "f4")]
 
-        # Add raw SH coefficients (f_dc_0, f_dc_1, f_dc_2)
         for i in range(f_dc.shape[1]):
             dtype_full.append(("f_dc_{}".format(i), "f4"))
 
@@ -474,7 +443,7 @@ class Gaussian:
 
         elements = np.empty(xyz.shape[0], dtype=dtype_full)
         attributes = np.concatenate(
-            (xyz, normals, colors_rgb, f_dc, opacities, scale, rotation), axis=1
+            (xyz, normals, f_dc, opacities, scale, rotation), axis=1
         )
         elements[:] = list(map(tuple, attributes))
         el = PlyElement.describe(elements, "vertex")

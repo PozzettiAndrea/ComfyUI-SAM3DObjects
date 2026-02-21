@@ -40,8 +40,9 @@ import comfy.utils
 
 log = logging.getLogger("sam3dobjects")
 
-# Default operations tier
-ops = comfy.ops.manual_cast
+# Default operations — used only during meta-device construction.
+# Real operations are resolved via pick_operations() at load time.
+ops = comfy.ops.disable_weight_init
 
 
 # ==========================================================================
@@ -832,7 +833,17 @@ def _make_dinov2_model(
         model_base_name = _make_dinov2_model_name(arch_name, patch_size)
         model_full_name = _make_dinov2_model_name(arch_name, patch_size, num_register_tokens)
         url = _DINOV2_BASE_URL + f"/{model_base_name}/{model_full_name}_pretrain.pth"
-        state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
+        # Use comfy's download utility (caches in models dir)
+        import folder_paths
+        dinov2_dir = os.path.join(folder_paths.models_dir, "dinov2")
+        os.makedirs(dinov2_dir, exist_ok=True)
+        filename = f"{model_full_name}_pretrain.pth"
+        local_path = os.path.join(dinov2_dir, filename)
+        if not os.path.exists(local_path):
+            log.info("Downloading DINOv2 pretrained weights: %s", filename)
+            from urllib.request import urlretrieve
+            urlretrieve(url, local_path)
+        state_dict = comfy.utils.load_torch_file(local_path)
         model.load_state_dict(state_dict, strict=True)
 
     return model
@@ -1056,25 +1067,42 @@ class MoGeModelV1(nn.Module):
             dtype=dtype, device=device, operations=operations,
         )
 
-        image_mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
-        image_std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
-        self.register_buffer("image_mean", image_mean)
-        self.register_buffer("image_std", image_std)
-
-        self.enable_comfy_attn()
+        self.register_buffer("image_mean", torch.tensor([0.485, 0.456, 0.406], dtype=dtype).view(1, 3, 1, 1))
+        self.register_buffer("image_std", torch.tensor([0.229, 0.224, 0.225], dtype=dtype).view(1, 3, 1, 1))
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, model_kwargs=None, **hf_kwargs):
+    def from_pretrained(cls, pretrained_model_name_or_path, model_kwargs=None, dtype=None, **hf_kwargs):
         ckpt_path = Path(pretrained_model_name_or_path)
         config_path = ckpt_path.with_name(ckpt_path.stem + "_config.json")
         with open(config_path) as f:
             model_config = json.load(f)
         if model_kwargs is not None:
             model_config.update(model_kwargs)
+
+        # Fast loading: build on meta device (zero allocation), then assign weights
+        with torch.device("meta"):
+            model = cls(**model_config)
+
         state_dict = comfy.utils.load_torch_file(str(ckpt_path))
-        model = cls(**model_config)
-        model.load_state_dict(state_dict, strict=False)
-        log.info("MoGe v1 loaded from %s (%d tensors)", ckpt_path.name, len(state_dict))
+        model.load_state_dict(state_dict, strict=False, assign=True)
+
+        # Fix buffers left on meta (image_mean/std, etc.)
+        for name, buf in list(model.named_buffers()):
+            if buf.device.type == "meta":
+                parts = name.split(".")
+                parent = model
+                for p in parts[:-1]:
+                    parent = getattr(parent, p)
+                parent._buffers[parts[-1]] = torch.zeros_like(buf, device="cpu")
+
+        # Cast to target dtype if specified
+        if dtype is not None:
+            model.to(dtype=dtype)
+
+        # Enable optimized attention dispatch
+        model.enable_comfy_attn()
+
+        log.info("MoGe v1 loaded from %s (%d tensors, meta-device fast load)", ckpt_path.name, len(state_dict))
         return model
 
     def enable_comfy_attn(self):
@@ -1264,8 +1292,8 @@ class DINOv2Encoder(nn.Module):
             for _ in range(self.num_features)
         ])
 
-        self.register_buffer("image_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
-        self.register_buffer("image_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
+        self.register_buffer("image_mean", torch.tensor([0.485, 0.456, 0.406], dtype=dtype).view(1, 3, 1, 1))
+        self.register_buffer("image_std", torch.tensor([0.229, 0.224, 0.225], dtype=dtype).view(1, 3, 1, 1))
 
     @property
     def onnx_compatible_mode(self):
@@ -1460,7 +1488,7 @@ class MoGeModelV2(nn.Module):
             self.scale_head = MLPV2(**scale_head, dtype=dtype, device=device, operations=operations)
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path, model_kwargs=None, **hf_kwargs):
+    def from_pretrained(cls, pretrained_model_name_or_path, model_kwargs=None, dtype=None, **hf_kwargs):
         if Path(pretrained_model_name_or_path).exists():
             checkpoint_path = pretrained_model_name_or_path
         else:
@@ -1473,8 +1501,30 @@ class MoGeModelV2(nn.Module):
         model_config = checkpoint['model_config']
         if model_kwargs is not None:
             model_config.update(model_kwargs)
-        model = cls(**model_config)
-        model.load_state_dict(checkpoint['model'], strict=False)
+
+        # Fast loading: build on meta device (zero allocation), then assign weights
+        with torch.device("meta"):
+            model = cls(**model_config)
+
+        model.load_state_dict(checkpoint['model'], strict=False, assign=True)
+
+        # Fix buffers left on meta
+        for name, buf in list(model.named_buffers()):
+            if buf.device.type == "meta":
+                parts = name.split(".")
+                parent = model
+                for p in parts[:-1]:
+                    parent = getattr(parent, p)
+                parent._buffers[parts[-1]] = torch.zeros_like(buf, device="cpu")
+
+        # Cast to target dtype if specified
+        if dtype is not None:
+            model.to(dtype=dtype)
+
+        # Enable optimized attention dispatch
+        model.encoder.enable_pytorch_native_sdpa()
+
+        log.info("MoGe v2 loaded from %s (meta-device fast load)", Path(checkpoint_path).name)
         return model
 
     def enable_gradient_checkpointing(self):
