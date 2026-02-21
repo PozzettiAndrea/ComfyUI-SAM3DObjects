@@ -8,6 +8,7 @@ log = logging.getLogger("sam3dobjects")
 
 # Module-level cache for MoGe ModelPatcher (persists across node executions)
 _MOGE_PATCHER = None
+_MOGE_DTYPE = None
 
 class SAM3D_DepthEstimate:
     """
@@ -63,7 +64,7 @@ class SAM3D_DepthEstimate:
         Returns:
             Tuple of (intrinsics, pointmap, pointcloud_ply, depth_mask)
         """
-        global _MOGE_PATCHER
+        global _MOGE_PATCHER, _MOGE_DTYPE
 
         # These imports happen in the isolated subprocess
         import sys
@@ -91,13 +92,28 @@ class SAM3D_DepthEstimate:
             image_np = (image.cpu().numpy() * 255).astype(np.uint8)
         image_pil = Image.fromarray(image_np)
 
+        # Resolve dtype from model config
+        precision = depth_model.get("precision", "bf16")
+        if precision == "bf16":
+            model_dtype = torch.bfloat16
+        elif precision == "fp16":
+            model_dtype = torch.float16
+        else:
+            model_dtype = torch.float32
+
         # Load MoGe depth model (cached in ModelPatcher for VRAM management)
+        # Invalidate cache if dtype changed
+        if _MOGE_PATCHER is not None and _MOGE_DTYPE != model_dtype:
+            log.info("MoGe dtype changed (%s -> %s), reloading", _MOGE_DTYPE, model_dtype)
+            _MOGE_PATCHER = None
+
         if _MOGE_PATCHER is None:
             from .sam3d.moge import MoGeModel
 
             moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
             log.info("Loading MoGe model from %s...", moge_path)
-            raw_model = MoGeModel.from_pretrained(str(moge_path))
+
+            raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
 
             from .utils.stages import _enable_lowvram_cast
             _enable_lowvram_cast(raw_model)
@@ -107,7 +123,8 @@ class SAM3D_DepthEstimate:
                 load_device=mm.get_torch_device(),
                 offload_device=mm.unet_offload_device(),
             )
-            log.info("MoGe wrapped in ModelPatcher")
+            _MOGE_DTYPE = model_dtype
+            log.info("MoGe wrapped in ModelPatcher (dtype=%s)", model_dtype)
 
         device = mm.get_torch_device()
         mm.load_models_gpu([_MOGE_PATCHER])
@@ -120,10 +137,10 @@ class SAM3D_DepthEstimate:
         loaded_image = image_np.astype(np.float32) / 255.0
         loaded_image = torch.from_numpy(loaded_image).permute(2, 0, 1).contiguous()[:3]  # CHW, RGB
 
-        # Run depth model
+        # Run depth model — boundary cast to model dtype
+        # (native pattern: model_base.py _apply_model casts `xc = xc.to(dtype)`)
         with torch.no_grad():
-            with torch.autocast(device_type=device.type, dtype=torch.float16):
-                output = model(loaded_image)
+            output = model(loaded_image.to(device=device, dtype=model_dtype))
 
         pointmaps = output["pointmaps"]
         pbar.update(1)  # Inference done

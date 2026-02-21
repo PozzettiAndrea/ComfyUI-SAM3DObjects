@@ -93,10 +93,11 @@ class SAM3DMeshDecode:
         if with_postprocess:
             log.info("MeshDecode: Will apply postprocessing (simplify=%s)", simplify)
 
-        # Resolve relative path (e.g. output/sam3d_run_1/slat.pt) to absolute
-        comfyui_base = os.path.dirname(folder_paths.get_output_directory())
-        slat_abs = os.path.join(comfyui_base, slat)
-        output_dir = os.path.dirname(slat_abs)
+        # Resolve path to absolute (handles both absolute and relative inputs)
+        if not os.path.isabs(slat):
+            comfyui_base = os.path.dirname(folder_paths.get_output_directory())
+            slat = os.path.join(comfyui_base, slat)
+        output_dir = os.path.dirname(slat)
 
         # Get config path from model
         config_path = slat_decoder_mesh["config_path"]
@@ -105,7 +106,7 @@ class SAM3DMeshDecode:
         ensure_decoder_files(config_path, "mesh")
 
         # Load SLAT (our own intermediate file, not an untrusted checkpoint)
-        slat_data = torch.load(slat_abs, weights_only=False)
+        slat_data = torch.load(slat, weights_only=False)
 
         # Run Mesh decoding
         result = run_decode(
@@ -136,7 +137,5 @@ class SAM3DMeshDecode:
         if not glb_path:
             raise RuntimeError("GLB file was not generated")
 
-        # Return path relative to ComfyUI root (e.g. output/sam3d_run_1/mesh.glb)
-        rel_glb_path = os.path.relpath(glb_path, comfyui_base)
-        log.info("MeshDecode completed: %s", rel_glb_path)
-        return (rel_glb_path,)
+        log.info("MeshDecode completed: %s", glb_path)
+        return (glb_path,)

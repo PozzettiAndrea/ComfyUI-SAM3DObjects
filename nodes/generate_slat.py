@@ -181,9 +181,8 @@ class SAM3DGenerateSLAT:
 
         log.info("GenerateSLAT: Starting SLAT generation...")
 
-        # Create per-run output directory (absolute for file I/O)
+        # Create per-run output directory
         output_dir = self._get_next_run_dir(folder_paths.get_output_directory())
-        comfyui_base = os.path.dirname(folder_paths.get_output_directory())
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -278,7 +277,5 @@ class SAM3DGenerateSLAT:
         if debug_image is None:
             debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
 
-        # Return path relative to ComfyUI root (e.g. output/sam3d_run_1/slat.pt)
-        rel_slat_path = os.path.relpath(slat_path, comfyui_base)
-        log.info("GenerateSLAT completed: %s", rel_slat_path)
-        return (rel_slat_path, debug_image)
+        log.info("GenerateSLAT completed: %s", slat_path)
+        return (slat_path, debug_image)
