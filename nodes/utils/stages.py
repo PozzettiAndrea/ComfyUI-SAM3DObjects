@@ -662,11 +662,6 @@ def _share_dino_backbones(model):
 def _wrap_dino_attention(model):
     """Wrap DINOv2 attention blocks with ComfyUI's attention dispatch after meta-device loading."""
     from ..sam3d.model import _wrap_attn_comfy
-    try:
-        from comfy_attn import set_backend
-        set_backend("auto")
-    except ImportError:
-        pass
     for module in model.modules():
         if type(module).__name__ == 'Dino' and hasattr(module, 'backbone'):
             for block in module.backbone.blocks:
