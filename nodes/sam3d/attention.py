@@ -2,15 +2,18 @@
 """
 Consolidated attention dispatch for SAM3DObjects.
 
-Contains both dense and sparse attention implementations, all using ComfyUI's
-comfy_attn dispatch (dispatch_attention, dispatch_attention_varlen).
+Dense attention: ComfyUI's optimized_attention_for_device (native).
+Sparse/varlen attention: comfy.attention_sparse.dispatch_varlen_attention
+    (sage2 > flash > xformers > sdpa).
 """
 from typing import *
 from enum import Enum
 import math
 import torch
 import torch.nn.functional as F
-from comfy_attn import dispatch_attention, dispatch_attention_varlen
+
+from comfy.ldm.modules.attention import optimized_attention_for_device
+from comfy.attention_sparse import dispatch_varlen_attention
 
 from .sparse import SparseTensor, DEBUG
 
@@ -59,12 +62,13 @@ def scaled_dot_product_attention(*args, **kwargs):
         k = args[1] if len(args) > 1 else kwargs["k"]
         v = args[2] if len(args) > 2 else kwargs["v"]
 
-    # q, k, v: [N, L, H, C] -> [N, H, L, C] for comfy-attn
+    # q, k, v: [N, L, H, C] -> [N, H, L, C] for ComfyUI optimized_attention
     q = q.permute(0, 2, 1, 3)
     k = k.permute(0, 2, 1, 3)
     v = v.permute(0, 2, 1, 3)
 
-    out = dispatch_attention(q, k, v)
+    attn_fn = optimized_attention_for_device(q.device)
+    out = attn_fn(q, k, v, heads=q.shape[1], skip_reshape=True, skip_output_reshape=True)
 
     # [N, H, L, C] -> [N, L, H, C]
     return out.permute(0, 2, 1, 3)
@@ -222,7 +226,7 @@ def sparse_scaled_dot_product_attention(*args, **kwargs):
         .int()
         .to(device)
     )
-    out = dispatch_attention_varlen(
+    out = dispatch_varlen_attention(
         q, k, v, cu_seqlens_q, cu_seqlens_kv,
         max(q_seqlen), max(kv_seqlen),
     )
@@ -404,7 +408,8 @@ def sparse_serialized_scaled_dot_product_self_attention(
         q = q.permute(0, 2, 1, 3)
         k = k.permute(0, 2, 1, 3)
         v = v.permute(0, 2, 1, 3)
-        out = dispatch_attention(q, k, v)
+        attn_fn = optimized_attention_for_device(q.device)
+        out = attn_fn(q, k, v, heads=H, skip_reshape=True, skip_output_reshape=True)
         out = out.permute(0, 2, 1, 3)
         out = out.reshape(B * N, H, C)
     else:
@@ -417,7 +422,7 @@ def sparse_serialized_scaled_dot_product_self_attention(
             .to(qkv.device)
             .int()
         )
-        out = dispatch_attention_varlen(
+        out = dispatch_varlen_attention(
             q, k, v, cu_seqlens, cu_seqlens, max(seq_lens), max(seq_lens),
         )
 
@@ -535,7 +540,8 @@ def sparse_windowed_scaled_dot_product_self_attention(
         q = q.permute(0, 2, 1, 3)
         k = k.permute(0, 2, 1, 3)
         v = v.permute(0, 2, 1, 3)
-        out = dispatch_attention(q, k, v)
+        attn_fn = optimized_attention_for_device(q.device)
+        out = attn_fn(q, k, v, heads=H, skip_reshape=True, skip_output_reshape=True)
         out = out.permute(0, 2, 1, 3)
         out = out.reshape(B * N, H, C)
     else:
@@ -548,7 +554,7 @@ def sparse_windowed_scaled_dot_product_self_attention(
             .to(qkv.device)
             .int()
         )
-        out = dispatch_attention_varlen(
+        out = dispatch_varlen_attention(
             q, k, v, cu_seqlens, cu_seqlens, max(seq_lens), max(seq_lens),
         )
 
