@@ -178,7 +178,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         # 2. Apply refined transform (correct order: scale -> rotate -> translate)
         # This matches the original apply_transform() in layout_post_optimization_utils.py
         vertices_scaled = vertices_y_up * scale_vec  # Per-axis scale
-        vertices_rotated = vertices_scaled @ rot_matrix.T  # Rotate
+        vertices_rotated = vertices_scaled @ rot_matrix  # Rotate
         vertices_transformed = vertices_rotated + trans_np  # Translate
 
         mesh.vertices = vertices_transformed
@@ -496,7 +496,7 @@ def _apply_and_save_pose(
 
     # 2. Apply transform: scale -> rotate -> translate
     vertices_scaled = vertices_y_up * scale_vec
-    vertices_rotated = vertices_scaled @ rot_matrix.T
+    vertices_rotated = vertices_scaled @ rot_matrix
     vertices_transformed = vertices_rotated + trans_np
 
     mesh_trimesh.vertices = vertices_transformed
