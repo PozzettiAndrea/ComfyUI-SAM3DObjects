@@ -26,8 +26,8 @@ class SAM3D_ProjectionOverlay:
                     "default": "",
                     "tooltip": "Path to pose-optimized folder (output from SAM3D_ScenePoseOptimize)"
                 }),
-                "render_mode": (["mask_colors", "3d_mesh", "3d_mesh_textured"], {
-                    "default": "mask_colors",
+                "render_mode": (["3d_mesh_textured", "3d_mesh", "mask_colors"], {
+                    "default": "3d_mesh_textured",
                     "tooltip": "Rendering mode: mask_colors (colored points), 3d_mesh (solid mesh), 3d_mesh_textured (mesh with textures)"
                 }),
                 "point_size": ("INT", {
@@ -206,9 +206,11 @@ class SAM3D_ProjectionOverlay:
                 continue
 
             # Project vertices
+            # Mesh is in PyTorch3D convention (X left, Y up, Z into scene)
+            # OpenCV projection expects (X right, Y down), so negate X and Y
             X, Y, Z = v[:, 0], v[:, 1], v[:, 2]
-            x = (K[0, 0] * X / Z + K[0, 2]).astype(int)
-            y = (K[1, 1] * Y / Z + K[1, 2]).astype(int)
+            x = (K[0, 0] * (-X) / Z + K[0, 2]).astype(int)
+            y = (K[1, 1] * (-Y) / Z + K[1, 2]).astype(int)
 
             # Filter points within image bounds
             valid = (x >= 0) & (x < W) & (y >= 0) & (y < H)
@@ -271,17 +273,19 @@ class SAM3D_ProjectionOverlay:
             )
 
             # Transform mesh coordinates for pyrender (OpenGL conventions)
-            # Our pose-optimized mesh: X+ = right, Y+ = down, Z+ = forward (CV convention)
-            # pyrender/OpenGL expects: X+ = right, Y+ = up, Z+ = backward (camera looks along -Z)
-            # Transform: keep X, negate Y, negate Z
+            # Our pose-optimized mesh is in PyTorch3D convention:
+            #   X+ = left, Y+ = up, Z+ = into scene
+            # pyrender/OpenGL expects:
+            #   X+ = right, Y+ = up, Z+ = out of scene (camera looks along -Z)
+            # Transform: negate X, keep Y, negate Z
             import trimesh as tr
             mesh_gl = tr.Trimesh(
                 vertices=mesh.vertices.copy(),
                 faces=mesh.faces.copy(),
                 vertex_colors=mesh.visual.vertex_colors if hasattr(mesh.visual, 'vertex_colors') else None,
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
+            mesh_gl.vertices[:, 0] = -mesh_gl.vertices[:, 0]  # X: PT3D left -> OpenGL right
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: PT3D into scene -> OpenGL out
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, material=material)
             scene.add(pyrender_mesh)
@@ -329,15 +333,17 @@ class SAM3D_ProjectionOverlay:
         # Add meshes (pyrender will use vertex colors or textures if available)
         for idx, mesh in loaded_meshes:
             # Transform mesh coordinates for pyrender (OpenGL conventions)
-            # Same as 3d_mesh mode: keep X, negate Y, negate Z
+            # PyTorch3D: X left, Y up, Z into scene
+            # OpenGL: X right, Y up, Z out of scene
+            # Transform: negate X, keep Y, negate Z
             import trimesh as tr
             mesh_gl = tr.Trimesh(
                 vertices=mesh.vertices.copy(),
                 faces=mesh.faces.copy(),
                 visual=mesh.visual,  # Preserve textures/vertex colors
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
+            mesh_gl.vertices[:, 0] = -mesh_gl.vertices[:, 0]  # X: PT3D left -> OpenGL right
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: PT3D into scene -> OpenGL out
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, smooth=True)
             scene.add(pyrender_mesh)
