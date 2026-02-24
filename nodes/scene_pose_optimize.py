@@ -217,13 +217,25 @@ class SAM3D_ScenePoseOptimize:
         for idx, object_dir in enumerate(object_dirs):
             log.info("ScenePoseOptimize: === Object %d/%d ===", idx + 1, len(object_dirs))
 
-            # Check required files for this object
+            # Check required files for this object (fall back to base dir)
+            base_dir = os.path.dirname(object_dir)
+
             pointmap_path = os.path.join(object_dir, "pointmap.pt")
+            if not os.path.exists(pointmap_path):
+                pointmap_path = os.path.join(base_dir, "pointmap.pt")
+
             mask_path = os.path.join(object_dir, "mask.npy")
+
             mesh_path = os.path.join(object_dir, "mesh.glb")
+            if not os.path.exists(mesh_path):
+                mesh_path = os.path.join(base_dir, f"object_{idx}.glb")
 
             # Check for textured mesh first
             textured_mesh_path = os.path.join(object_dir, "textured_mesh.glb")
+            if not os.path.exists(textured_mesh_path):
+                textured_candidate = os.path.join(base_dir, f"object_{idx}_textured.glb")
+                if os.path.exists(textured_candidate):
+                    textured_mesh_path = textured_candidate
             if os.path.exists(textured_mesh_path):
                 mesh_path = textured_mesh_path
 
