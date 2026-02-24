@@ -2,6 +2,7 @@
 
 import logging
 import os
+import shutil
 from typing import Any
 
 import numpy as np
@@ -290,9 +291,15 @@ class SAM3DSceneGenerate:
                 world_coordinates=False,
                 precision=precision,
             )
-            glb_path = result.get("output", {}).get("files", {}).get("glb")
-            glb_paths.append(glb_path)
-            log.info("Mesh decode [%d]: %s", idx, glb_path)
+            glb_in_object = result.get("output", {}).get("files", {}).get("glb")
+            if glb_in_object and os.path.exists(glb_in_object):
+                base_glb = os.path.join(base_output_dir, f"object_{idx}.glb")
+                shutil.move(glb_in_object, base_glb)
+                glb_paths.append(base_glb)
+                log.info("Mesh decode [%d]: %s", idx, base_glb)
+            else:
+                glb_paths.append(None)
+                log.warning("Mesh decode [%d]: no GLB produced", idx)
 
         # ==================================================================
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake
@@ -334,8 +341,12 @@ class SAM3DSceneGenerate:
                     })
                     if bake_result.get("status") == "success":
                         textured_glb = bake_result.get("output", {}).get("glb_path")
-                        if textured_glb:
-                            log.info("Texture bake [%d]: %s", idx, textured_glb)
+                        if textured_glb and os.path.exists(textured_glb):
+                            base_textured = os.path.join(base_output_dir, f"object_{idx}_textured.glb")
+                            shutil.move(textured_glb, base_textured)
+                            # Update glb_path to prefer textured version
+                            glb_paths[idx] = base_textured
+                            log.info("Texture bake [%d]: %s", idx, base_textured)
                 except Exception as e:
                     log.warning("Texture bake failed for object %d: %s", idx, e)
 

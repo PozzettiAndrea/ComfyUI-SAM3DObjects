@@ -531,8 +531,12 @@ def _run_phase3_mesh_decode(
         # Postprocess if requested
         if with_postprocess:
             from ..sam3d.postprocessing import postprocess_mesh
-            vertices, faces = postprocess_mesh(vertices, faces, simplify=True, simplify_ratio=simplify, fill_holes=True, verbose=False)
-            vertex_colors = None
+            pp_result = postprocess_mesh(vertices, faces, simplify=True, simplify_ratio=simplify, fill_holes=True, verbose=False, vertex_colors=vertex_colors)
+            if len(pp_result) == 3:
+                vertices, faces, vertex_colors = pp_result
+            else:
+                vertices, faces = pp_result
+                vertex_colors = None
 
         # Z-up to Y-up transform
         z_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])

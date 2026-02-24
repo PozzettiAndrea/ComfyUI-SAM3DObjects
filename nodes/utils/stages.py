@@ -1402,16 +1402,21 @@ def run_decode(
             if with_postprocess:
                 log.info("Applying mesh postprocessing (simplify=%s)...", simplify)
                 from ..sam3d.postprocessing import postprocess_mesh
-                vertices, faces = postprocess_mesh(
+                pp_result = postprocess_mesh(
                     vertices,
                     faces,
                     simplify=True,
                     simplify_ratio=simplify,
                     fill_holes=True,
                     verbose=True,
+                    vertex_colors=original_vertex_colors,
                 )
+                if len(pp_result) == 3:
+                    vertices, faces, original_vertex_colors = pp_result
+                else:
+                    vertices, faces = pp_result
+                    original_vertex_colors = None
                 log.info("Postprocessing complete: %d vertices, %d faces", len(vertices), len(faces))
-                original_vertex_colors = None
 
             # Process vertex colors if available
             vertex_colors = None

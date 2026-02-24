@@ -555,6 +555,7 @@ def postprocess_mesh(
     fill_holes_num_views: int = 1000,
     debug: bool = False,
     verbose: bool = False,
+    vertex_colors: np.array = None,
 ):
     """
     Postprocess a mesh by simplifying, removing invisible faces, and removing isolated pieces.
@@ -570,6 +571,11 @@ def postprocess_mesh(
         fill_holes_resolution (int): Resolution of the rasterization.
         fill_holes_num_views (int): Number of views to rasterize the mesh.
         verbose (bool): Whether to print progress.
+        vertex_colors (np.array): Optional vertex colors. Shape (V, 3) or (V, 4).
+            If provided, colors are interpolated through decimation via decimate_pro.
+
+    Returns:
+        vertices, faces if vertex_colors is None, else vertices, faces, vertex_colors.
     """
 
     if verbose:
@@ -582,8 +588,12 @@ def postprocess_mesh(
         mesh = pv.PolyData(
             vertices, np.concatenate([np.full((faces.shape[0], 1), 3), faces], axis=1)
         )
+        if vertex_colors is not None:
+            mesh.point_data["colors"] = vertex_colors
         mesh = mesh.decimate(simplify_ratio, progress_bar=verbose)
         vertices, faces = mesh.points, mesh.faces.reshape(-1, 4)[:, 1:]
+        if vertex_colors is not None and "colors" in mesh.point_data:
+            vertex_colors = mesh.point_data["colors"]
         if verbose:
             tqdm.write(
                 f"After decimate: {vertices.shape[0]} vertices, {faces.shape[0]} faces"
@@ -607,11 +617,16 @@ def postprocess_mesh(
             verbose=verbose,
         )
         vertices, faces = vertices.cpu().numpy(), faces.cpu().numpy()
+        # fill_holes changes topology — vertex colors no longer valid
+        if vertex_colors is not None and len(vertex_colors) != len(vertices):
+            vertex_colors = None
         if verbose:
             tqdm.write(
                 f"After remove invisible faces: {vertices.shape[0]} vertices, {faces.shape[0]} faces"
             )
 
+    if vertex_colors is not None:
+        return vertices, faces, vertex_colors
     return vertices, faces
 
 
