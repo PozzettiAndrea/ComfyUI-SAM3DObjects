@@ -1,7 +1,12 @@
 """LoadSAM3DModel node - downloads checkpoints and passes config paths."""
 
+import logging
 import os
 from pathlib import Path
+
+import comfy.model_management as mm
+
+log = logging.getLogger("sam3dobjects")
 
 try:
     from .comfy_utils import get_sam3d_models_path
@@ -9,43 +14,40 @@ except ImportError:
     from comfy_utils import get_sam3d_models_path
 
 
-# HuggingFace repo for SAM3D checkpoints
-REPO_ID = "jetjodh/sam-3d-objects"
+# HuggingFace repo for SAM3D checkpoints (safetensors format, mmap-friendly)
+REPO_ID = "apozz/sam-3d-objects-safetensors"
 
-# Output names for detecting which are connected
-OUTPUT_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
-
-# Map outputs to required checkpoint files
+# Map outputs to required checkpoint files (safetensors preferred)
 REQUIRED_FILES = {
     "depth_model": [],  # Depth uses MoGe v1 (Ruicheng/moge-vitl) from HuggingFace
     "generator": [
-        "ss_generator.ckpt",
+        "ss_generator.safetensors",
         "ss_generator.yaml",
-        "ss_decoder.ckpt",
+        "ss_decoder.safetensors",
         "ss_decoder.yaml",
-        "slat_generator.ckpt",
+        "slat_generator.safetensors",
         "slat_generator.yaml",
     ],
     "slat_decoder_gs": [
-        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs.safetensors",
         "slat_decoder_gs.yaml",
-        "slat_decoder_gs_4.ckpt",
+        "slat_decoder_gs_4.safetensors",
         "slat_decoder_gs_4.yaml",
     ],
     "slat_decoder_mesh": [
-        "slat_decoder_mesh.ckpt",
+        "slat_decoder_mesh.safetensors",
         "slat_decoder_mesh.yaml",
     ],
 }
 
 # Expected file sizes for verification (within 10% tolerance)
 EXPECTED_SIZES = {
-    "ss_generator.ckpt": 6_690_000_000,
-    "slat_generator.ckpt": 4_910_000_000,
-    "ss_decoder.ckpt": 147_600_000,
-    "slat_decoder_gs.ckpt": 171_000_000,
-    "slat_decoder_gs_4.ckpt": 170_000_000,
-    "slat_decoder_mesh.ckpt": 364_000_000,
+    "ss_generator.safetensors": 6_690_000_000,
+    "slat_generator.safetensors": 4_910_000_000,
+    "ss_decoder.safetensors": 147_600_000,
+    "slat_decoder_gs.safetensors": 171_000_000,
+    "slat_decoder_gs_4.safetensors": 170_000_000,
+    "slat_decoder_mesh.safetensors": 364_000_000,
 }
 
 # Config files to always download
@@ -64,19 +66,19 @@ class LoadSAM3DModel:
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "attn_backend": (["auto", "flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
+                    "default": "auto",
+                    "tooltip": "Deprecated - attention is now auto-detected by ComfyUI. This setting has no effect."
+                }),
                 "compile": ("BOOLEAN", {
                     "default": False,
                     "tooltip": "Enable PyTorch model compilation for faster inference"
                 }),
-                "use_gpu_cache": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "Keep models on GPU between stages for faster inference"
+                "precision": (["auto", "bf16", "fp16", "fp32"], {
+                    "default": "auto",
+                    "tooltip": "Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
                 }),
             },
-            "hidden": {
-                "unique_id": "UNIQUE_ID",
-                "prompt": "PROMPT",
-            }
         }
 
     RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
@@ -93,88 +95,71 @@ class LoadSAM3DModel:
 
     def load_model(
         self,
+        attn_backend: str,
         compile: bool,
-        use_gpu_cache: bool,
-        unique_id: str = None,
-        prompt: dict = None,
+        precision: str = "auto",
+        **kwargs,
     ):
-        print(f"[SAM3DObjects] Loading SAM3D model...")
+        log.info("Loading SAM3D model...")
 
-        # Detect which outputs are connected
-        used_outputs = self._detect_used_outputs(prompt, unique_id)
-        if used_outputs:
-            print(f"[SAM3DObjects] Connected outputs: {', '.join(used_outputs)}")
+        # Resolve precision "auto" using GPU capabilities
+        # Prefer bf16 (better dynamic range, native on Ampere+), fall back to fp16/fp32.
+        if precision == "auto":
+            device = mm.get_torch_device()
+            if mm.should_use_bf16(device):
+                precision = "bf16"
+            elif mm.should_use_fp16(device):
+                precision = "fp16"
+            else:
+                precision = "fp32"
+        log.info("Precision: %s", precision)
 
-        # Download checkpoints if needed
-        checkpoint_path = self._get_or_download_checkpoint(used_outputs)
-        config_path = str(checkpoint_path / "checkpoints" / "pipeline.yaml")
+        # Download all checkpoints if needed (always download everything to avoid
+        # missing files when outputs are connected/disconnected between runs)
+        checkpoint_path = self._get_or_download_checkpoint()
+        config_path = str(checkpoint_path / "pipeline.yaml")
 
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
-        # Download models to ComfyUI/models/sam3d/ (subprocesses may have SSL issues)
-        if "generator" in used_outputs or not used_outputs:
-            self._ensure_dinov2_downloaded()
+        # Download MoGe / DINOv2 safetensors to ComfyUI/models/sam3d/sam-3d-objects/
+        self._ensure_dinov2_safetensors()
+        self._ensure_moge_safetensors()
 
-        if "depth_model" in used_outputs or not used_outputs:
-            self._ensure_moge_downloaded()
-
-        print(f"[SAM3DObjects] Model loaded successfully")
+        log.info("Model loaded successfully")
 
         # Return simple config dict
         model = {
             "config_path": config_path,
             "compile": compile,
-            "use_gpu_cache": use_gpu_cache,
+            "precision": precision,
         }
         return (model, model, model, model)
 
-    def _detect_used_outputs(self, prompt: dict, unique_id: str) -> set:
-        """Detect which outputs are connected downstream."""
-        if not prompt or not unique_id:
-            return set()
-
-        used = set()
-        for node_id, node_info in prompt.items():
-            if not isinstance(node_info, dict):
-                continue
-            for input_name, input_value in node_info.get("inputs", {}).items():
-                if isinstance(input_value, list) and len(input_value) == 2:
-                    linked_node_id, output_index = input_value
-                    if str(linked_node_id) == str(unique_id) and output_index < len(OUTPUT_NAMES):
-                        used.add(OUTPUT_NAMES[output_index])
-        return used
-
     @classmethod
-    def _get_or_download_checkpoint(cls, used_outputs: set = None) -> Path:
-        """Get checkpoint path, downloading required files if necessary."""
+    def _get_or_download_checkpoint(cls) -> Path:
+        """Get checkpoint path, downloading all required files if necessary."""
         models_dir = get_sam3d_models_path()
-        checkpoint_dir = models_dir / "sam-3d-objects"
-        checkpoints_path = checkpoint_dir / "checkpoints"
 
-        # Determine required files
+        # Always download all files
         required_files = set(ALWAYS_DOWNLOAD)
-        if used_outputs:
-            for output in used_outputs:
-                required_files.update(REQUIRED_FILES.get(output, []))
-        else:
-            for files in REQUIRED_FILES.values():
-                required_files.update(files)
+        for files in REQUIRED_FILES.values():
+            required_files.update(files)
 
         # Check which files are missing
         missing_files = []
         for filename in required_files:
-            filepath = checkpoints_path / filename
+            filepath = models_dir / filename
             if not cls._verify_checkpoint(filepath, filename):
                 missing_files.append(filename)
 
         if missing_files:
-            print(f"[SAM3DObjects] Need to download {len(missing_files)} file(s)...")
-            cls._download_files(checkpoint_dir, missing_files)
+            log.info("Need to download %d file(s)...", len(missing_files))
+            cls._download_files(models_dir, missing_files)
         else:
-            print(f"[SAM3DObjects] All required checkpoints present")
+            log.info("All required checkpoints present")
 
-        return checkpoint_dir
+        return models_dir
 
     @classmethod
     def _verify_checkpoint(cls, filepath: Path, filename: str) -> bool:
@@ -203,101 +188,58 @@ class LoadSAM3DModel:
         except ImportError:
             raise ImportError("huggingface_hub required: pip install huggingface-hub")
 
-        print(f"[SAM3DObjects] Downloading from HuggingFace: {REPO_ID}")
+        log.info("Downloading from HuggingFace: %s", REPO_ID)
 
         for filename in files:
-            hf_path = f"checkpoints/{filename}"
-            print(f"[SAM3DObjects] Downloading {filename}...")
+            log.info("Downloading %s...", filename)
             hf_hub_download(
                 repo_id=REPO_ID,
-                filename=hf_path,
+                filename=filename,
                 local_dir=str(target_dir),
                 local_dir_use_symlinks=False,
             )
 
-        print(f"[SAM3DObjects] Download complete")
+        log.info("Download complete")
 
     @classmethod
-    def _ensure_dinov2_downloaded(cls):
-        """Download DINOv2 repo and weights to ComfyUI models folder.
-
-        Downloads both the code repo and the pretrained weights.
-        This avoids SSL issues in isolated subprocesses.
-        """
-        import subprocess
+    def _ensure_dinov2_safetensors(cls):
+        """Download DINOv2 ViT-L/14 register weights (safetensors) to models folder."""
+        from huggingface_hub import hf_hub_download
 
         models_dir = get_sam3d_models_path()
-        dinov2_dir = models_dir / "sam-3d-objects" / "dinov2"
-        weights_file = dinov2_dir / "dinov2_vitl14_reg4_pretrain.pth"
+        target = models_dir / "dinov2_vitl14_reg.safetensors"
 
-        # Download repo if not present
-        if not (dinov2_dir / "hubconf.py").exists():
-            print(f"[SAM3DObjects] Downloading DINOv2 repo to {dinov2_dir}...")
-            try:
-                dinov2_dir.mkdir(parents=True, exist_ok=True)
-                result = subprocess.run(
-                    ["git", "clone", "--depth", "1", "https://github.com/facebookresearch/dinov2.git", str(dinov2_dir)],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode != 0:
-                    raise RuntimeError(f"git clone failed: {result.stderr}")
-                print(f"[SAM3DObjects] DINOv2 repo downloaded")
-            except Exception as e:
-                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 repo: {e}")
-                return
-        else:
-            print(f"[SAM3DObjects] DINOv2 repo already present")
-
-        # Download weights if not present (use wget to avoid SSL issues in isolated subprocess)
-        if not weights_file.exists():
-            print(f"[SAM3DObjects] Downloading DINOv2 weights...")
-            try:
-                weights_url = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_reg4_pretrain.pth"
-                # Use wget/curl to bypass Python SSL certificate issues in isolated subprocess
-                result = subprocess.run(
-                    ["wget", "-q", "-O", str(weights_file), weights_url],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode != 0:
-                    # Try curl as fallback
-                    result = subprocess.run(
-                        ["curl", "-sL", "-o", str(weights_file), weights_url],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if result.returncode != 0:
-                        raise RuntimeError(f"wget/curl failed: {result.stderr}")
-                print(f"[SAM3DObjects] DINOv2 weights downloaded")
-            except Exception as e:
-                print(f"[SAM3DObjects] Warning: Failed to download DINOv2 weights: {e}")
-        else:
-            print(f"[SAM3DObjects] DINOv2 weights already present")
-
-    @classmethod
-    def _ensure_moge_downloaded(cls):
-        """Download MoGe to ComfyUI models folder.
-
-        SAM-3D was trained on MoGe v1 (Ruicheng/moge-vitl), so we use that.
-        """
-        from huggingface_hub import snapshot_download
-
-        models_dir = get_sam3d_models_path()
-        moge_dir = models_dir / "sam-3d-objects" / "moge-vitl"
-
-        # Check if already downloaded
-        if (moge_dir / "model.pt").exists():
-            print(f"[SAM3DObjects] MoGe already downloaded")
+        if target.exists():
+            log.info("DINOv2 safetensors already present")
             return
 
-        print(f"[SAM3DObjects] Downloading MoGe to {moge_dir}...")
-        try:
-            snapshot_download(
-                "Ruicheng/moge-vitl",
-                local_dir=str(moge_dir),
+        log.info("Downloading DINOv2 safetensors...")
+        hf_hub_download(
+            repo_id=REPO_ID,
+            filename="dinov2_vitl14_reg.safetensors",
+            local_dir=str(models_dir),
+            local_dir_use_symlinks=False,
+        )
+        log.info("DINOv2 safetensors downloaded")
+
+    @classmethod
+    def _ensure_moge_safetensors(cls):
+        """Download MoGe ViT-L weights + config (safetensors) to models folder."""
+        from huggingface_hub import hf_hub_download
+
+        models_dir = get_sam3d_models_path()
+        target = models_dir / "moge_vitl.safetensors"
+
+        if target.exists():
+            log.info("MoGe safetensors already present")
+            return
+
+        log.info("Downloading MoGe safetensors...")
+        for fname in ("moge_vitl.safetensors", "moge_vitl_config.json"):
+            hf_hub_download(
+                repo_id=REPO_ID,
+                filename=fname,
+                local_dir=str(models_dir),
                 local_dir_use_symlinks=False,
             )
-            print(f"[SAM3DObjects] MoGe downloaded successfully")
-        except Exception as e:
-            print(f"[SAM3DObjects] Warning: Failed to download MoGe: {e}")
+        log.info("MoGe safetensors downloaded")

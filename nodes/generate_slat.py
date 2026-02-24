@@ -1,8 +1,11 @@
 """SAM3DGenerateSLAT node - merged Stage 1 + Stage 2 with internal caching."""
 
+import logging
 import os
 import json
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DGenerateSLAT:
     """
@@ -24,7 +27,7 @@ class SAM3DGenerateSLAT:
                 "generator": ("SAM3D_MODEL", {"tooltip": "Generator from LoadSAM3DModel"}),
                 "image": ("IMAGE", {"tooltip": "Input RGB image"}),
                 "mask": ("MASK", {"tooltip": "Binary mask for object"}),
-                "pointmap_path": ("STRING", {"forceInput": True, "tooltip": "Path to pointmap.pt from SAM3DDepthEstimate"}),
+                "pointmap": ("SAM3D_POINTMAP", {"tooltip": "Pointmap tensor from SAM3DDepthEstimate"}),
                 "seed": ("INT", {
                     "default": 42,
                     "min": 0,
@@ -108,10 +111,26 @@ class SAM3DGenerateSLAT:
                 cached.get("cfg") == cfg and
                 cached.get("cfg_pm", 0.0) == cfg_pm):
                 return True
-        except:
-            pass
+        except Exception as e:
+            log.debug("Failed to read SLAT cache metadata: %s", e)
 
         return False
+
+    def _get_next_run_dir(self, base_output_dir: str) -> str:
+        """Find next available sam3d_run_N directory in the output folder."""
+        existing = []
+        if os.path.exists(base_output_dir):
+            for name in os.listdir(base_output_dir):
+                if name.startswith("sam3d_run_") and os.path.isdir(os.path.join(base_output_dir, name)):
+                    try:
+                        num = int(name.split("_")[-1])
+                        existing.append(num)
+                    except ValueError:
+                        pass
+        next_num = max(existing) + 1 if existing else 1
+        run_dir = os.path.join(base_output_dir, f"sam3d_run_{next_num}")
+        os.makedirs(run_dir, exist_ok=True)
+        return run_dir
 
     def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
         """Save Stage 1 params for cache validation."""
@@ -131,7 +150,7 @@ class SAM3DGenerateSLAT:
         generator,
         image,  # torch.Tensor [B, H, W, C]
         mask,   # torch.Tensor [B, H, W] or [H, W]
-        pointmap_path: str,
+        pointmap,
         seed: int,
         stage1_steps: int = 25,
         stage1_cfg: float = 7.5,
@@ -151,17 +170,19 @@ class SAM3DGenerateSLAT:
         # These imports happen in the isolated subprocess
         import os
         import torch
+        import comfy.utils
         import numpy as np
         from pathlib import Path
         from PIL import Image
 
+        import folder_paths
+        import comfy.model_management as mm
         from .utils.stages import run_stage1, run_stage2
-        from .utils.helpers import load_pointmap_from_file
 
-        print(f"[SAM3DObjects] GenerateSLAT: Starting SLAT generation...")
+        log.info("GenerateSLAT: Starting SLAT generation...")
 
-        # Derive output_dir from pointmap_path (same directory created by DepthEstimate)
-        output_dir = os.path.dirname(pointmap_path)
+        # Create per-run output directory
+        output_dir = self._get_next_run_dir(folder_paths.get_output_directory())
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -177,10 +198,10 @@ class SAM3DGenerateSLAT:
         mask_np = (mask_np * 255).astype(np.uint8)
         mask_pil = Image.fromarray(mask_np)
 
-        # Load pointmap
-        print(f"[SAM3DObjects] Loading pointmap from: {pointmap_path}")
-        pointmap = load_pointmap_from_file(pointmap_path)
-        print(f"[SAM3DObjects] Pointmap shape: {pointmap.shape}")
+        # Move pointmap to device
+        device = mm.get_torch_device()
+        pointmap = pointmap.to(device)
+        log.info("Pointmap shape: %s", pointmap.shape)
 
         # Get config path from generator model
         config_path = generator["config_path"]
@@ -192,14 +213,14 @@ class SAM3DGenerateSLAT:
 
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
-            print(f"[SAM3DObjects] Using cached Stage 1 output")
+            log.info("Using cached Stage 1 output")
             stage1_output = torch.load(sparse_path, weights_only=False)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
                 debug_image_path = cached_debug
         else:
-            print(f"[SAM3DObjects] Running Stage 1 (sparse structure)...")
+            log.info("Running Stage 1 (sparse structure)...")
             result = run_stage1(
                 config_path,
                 image_pil,
@@ -210,6 +231,7 @@ class SAM3DGenerateSLAT:
                 cfg_strength=stage1_cfg,
                 cfg_strength_pm=stage1_cfg_pm,
                 output_dir=output_dir,
+                precision=generator.get("precision", "bf16"),
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
@@ -220,10 +242,10 @@ class SAM3DGenerateSLAT:
             if stage1_file != sparse_path:
                 torch.save(stage1_output, sparse_path)
             self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
-            print(f"[SAM3DObjects] Stage 1 complete, saved to: {sparse_path}")
+            log.info("Stage 1 complete, saved to: %s", sparse_path)
 
         # Stage 2: SLAT generation
-        print(f"[SAM3DObjects] Running Stage 2 (SLAT generation)...")
+        log.info("Running Stage 2 (SLAT generation)...")
         stage2_result = run_stage2(
             config_path,
             image_pil,
@@ -233,11 +255,12 @@ class SAM3DGenerateSLAT:
             inference_steps=stage2_steps,
             cfg_strength=stage2_cfg,
             output_dir=output_dir,
+            precision=generator.get("precision", "bf16"),
         )
         # Get SLAT path from stage2 result (already saved by run_stage2_lazy)
         # Note: The saved file contains full dict with stage1_data for pose info
         slat_path = stage2_result["output"]["files"]["slat"]
-        print(f"[SAM3DObjects] Stage 2 complete: {slat_path}")
+        log.info("Stage 2 complete: %s", slat_path)
 
         # Load debug image if available
         debug_image = None
@@ -246,13 +269,13 @@ class SAM3DGenerateSLAT:
                 pil_img = Image.open(debug_image_path).convert("RGB")
                 img_np = np.array(pil_img).astype(np.float32) / 255.0
                 debug_image = torch.from_numpy(img_np).unsqueeze(0)  # [1, H, W, C]
-                print(f"[SAM3DObjects] Debug image loaded: {debug_image.shape}")
+                log.debug("Debug image loaded: %s", debug_image.shape)
             except Exception as e:
-                print(f"[SAM3DObjects] Failed to load debug image: {e}")
+                log.warning("Failed to load debug image: %s", e)
 
         # Create placeholder if no debug image
         if debug_image is None:
             debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
 
-        print(f"[SAM3DObjects] GenerateSLAT completed: {slat_path}")
+        log.info("GenerateSLAT completed: %s", slat_path)
         return (slat_path, debug_image)

@@ -1,9 +1,12 @@
 """SAM3DExportPLY node for exporting Gaussian Splats to PLY format."""
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
 import folder_paths
+
+log = logging.getLogger("sam3dobjects")
 
 
 class SAM3DExportPLY:
@@ -46,7 +49,7 @@ class SAM3DExportPLY:
         Returns:
             Path to saved file
         """
-        print(f"[SAM3DObjects] Exporting Gaussian Splat to PLY...")
+        log.info("Exporting Gaussian Splat to PLY...")
 
         # Determine output directory
         if output_dir and output_dir.strip():
@@ -69,7 +72,7 @@ class SAM3DExportPLY:
 
         # Save PLY file
         try:
-            print(f"[SAM3DObjects] Saving to: {output_path}")
+            log.info("Saving to: %s", output_path)
             gaussian_splat.save_ply(str(output_path))
 
         except Exception as e:
@@ -83,9 +86,9 @@ class SAM3DExportPLY:
         file_size = output_path.stat().st_size
         file_size_mb = file_size / (1024 * 1024)
 
-        print(f"[SAM3DObjects] PLY file saved successfully!")
-        print(f"[SAM3DObjects] - Path: {output_path}")
-        print(f"[SAM3DObjects] - Size: {file_size_mb:.2f} MB")
+        log.info("PLY file saved successfully!")
+        log.info("- Path: %s", output_path)
+        log.info("- Size: %.2f MB", file_size_mb)
 
         return (str(output_path),)
 
@@ -161,7 +164,7 @@ class SAM3DExportPLYBatch:
         filename = f"{prefix}_{index:04d}.ply"
 
         # Use the same export logic
-        print(f"[SAM3DObjects] Exporting batch item {index}...")
+        log.info("Exporting batch item %d...", index)
 
         # Determine output directory
         if output_dir and output_dir.strip():
@@ -182,6 +185,6 @@ class SAM3DExportPLYBatch:
             raise RuntimeError(f"Failed to save PLY file: {e}") from e
 
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
-        print(f"[SAM3DObjects] Saved: {filename} ({file_size_mb:.2f} MB)")
+        log.info("Saved: %s (%.2f MB)", filename, file_size_mb)
 
         return (str(output_path),)

@@ -1,9 +1,12 @@
 """SAM3D_ScenePoseOptimize node - optimize poses for all objects in a scene folder."""
 
+import logging
 import os
 import re
 import json
 from typing import Any, Dict, List, Tuple
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3D_ScenePoseOptimize:
     """
@@ -90,8 +93,8 @@ class SAM3D_ScenePoseOptimize:
                 cached.get("num_objects") == num_objects):
                 # Return cached IoU scores
                 return True, cached.get("iou_scores", [])
-        except:
-            pass
+        except Exception as e:
+            log.debug("Failed to read pose optimization cache metadata: %s", e)
 
         return False, []
 
@@ -130,6 +133,7 @@ class SAM3D_ScenePoseOptimize:
         import pickle
         import base64
         import torch
+        import comfy.utils
         import numpy as np
         import trimesh
         from pathlib import Path
@@ -137,9 +141,9 @@ class SAM3D_ScenePoseOptimize:
         from .utils.pose_optimization import run_pose_optimization_batch
 
         start_time = time.time()
-        print(f"[SAM3DObjects] ScenePoseOptimize: Starting pose optimization")
-        print(f"[SAM3DObjects] ScenePoseOptimize: Mode = {optimization_mode}")
-        print(f"[SAM3DObjects] ScenePoseOptimize: Folder = {output_folder}")
+        log.info("ScenePoseOptimize: Starting pose optimization")
+        log.info("ScenePoseOptimize: Mode = %s", optimization_mode)
+        log.info("ScenePoseOptimize: Folder = %s", output_folder)
 
         # Validate folder exists
         if not os.path.exists(output_folder):
@@ -152,17 +156,17 @@ class SAM3D_ScenePoseOptimize:
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics file not found: {intrinsics_path}. Run SAM3DSceneGenerate first.")
 
-        # Load intrinsics
+        # Load intrinsics (our own intermediate file, may contain numpy arrays)
         intrinsics = torch.load(intrinsics_path, weights_only=False)
-        print(f"[SAM3DObjects] ScenePoseOptimize: Loaded intrinsics from {intrinsics_path}")
+        log.info("ScenePoseOptimize: Loaded intrinsics from %s", intrinsics_path)
 
         # Discover object folders
         object_dirs = self._discover_objects(output_folder)
         if not object_dirs:
-            print(f"[SAM3DObjects] ScenePoseOptimize: No object folders found")
+            log.warning("ScenePoseOptimize: No object folders found")
             return ("", [])
 
-        print(f"[SAM3DObjects] ScenePoseOptimize: Found {len(object_dirs)} object(s)")
+        log.info("ScenePoseOptimize: Found %d object(s)", len(object_dirs))
 
         # Define output folder for pose-optimized meshes
         pose_opt_folder = f"{output_folder}_pose_optimized"
@@ -170,7 +174,7 @@ class SAM3D_ScenePoseOptimize:
         # Check cache - skip if already processed with same settings
         cache_hit, cached_scores = self._check_cache(pose_opt_folder, optimization_mode, len(object_dirs))
         if cache_hit:
-            print(f"[SAM3DObjects] ScenePoseOptimize: Using cached results from {pose_opt_folder}")
+            log.info("ScenePoseOptimize: Using cached results from %s", pose_opt_folder)
             return (pose_opt_folder, cached_scores)
 
         # Determine optimization flags (no manual alignment in any mode)
@@ -179,7 +183,7 @@ class SAM3D_ScenePoseOptimize:
 
         # Create output folder
         os.makedirs(pose_opt_folder, exist_ok=True)
-        print(f"[SAM3DObjects] ScenePoseOptimize: Output folder = {pose_opt_folder}")
+        log.info("ScenePoseOptimize: Output folder = %s", pose_opt_folder)
 
         # Serialize helper
         def serialize_tensor(tensor):
@@ -211,15 +215,27 @@ class SAM3D_ScenePoseOptimize:
         iou_scores = []
 
         for idx, object_dir in enumerate(object_dirs):
-            print(f"\n[SAM3DObjects] ScenePoseOptimize: === Object {idx + 1}/{len(object_dirs)} ===")
+            log.info("ScenePoseOptimize: === Object %d/%d ===", idx + 1, len(object_dirs))
 
-            # Check required files for this object
+            # Check required files for this object (fall back to base dir)
+            base_dir = os.path.dirname(object_dir)
+
             pointmap_path = os.path.join(object_dir, "pointmap.pt")
+            if not os.path.exists(pointmap_path):
+                pointmap_path = os.path.join(base_dir, "pointmap.pt")
+
             mask_path = os.path.join(object_dir, "mask.npy")
+
             mesh_path = os.path.join(object_dir, "mesh.glb")
+            if not os.path.exists(mesh_path):
+                mesh_path = os.path.join(base_dir, f"object_{idx}.glb")
 
             # Check for textured mesh first
             textured_mesh_path = os.path.join(object_dir, "textured_mesh.glb")
+            if not os.path.exists(textured_mesh_path):
+                textured_candidate = os.path.join(base_dir, f"object_{idx}_textured.glb")
+                if os.path.exists(textured_candidate):
+                    textured_mesh_path = textured_candidate
             if os.path.exists(textured_mesh_path):
                 mesh_path = textured_mesh_path
 
@@ -233,7 +249,7 @@ class SAM3D_ScenePoseOptimize:
                 missing.append("mesh.glb")
 
             if missing:
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Missing files: {missing}, skipping")
+                log.warning("ScenePoseOptimize [%d]: Missing files: %s, skipping", idx, missing)
                 iou_scores.append(-1.0)
                 continue
 
@@ -270,13 +286,13 @@ class SAM3D_ScenePoseOptimize:
                     if not isinstance(scale[0], list):
                         scale = [scale]
 
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded pose from sparse_structure.pt")
+                log.info("ScenePoseOptimize [%d]: Loaded pose from sparse_structure.pt", idx)
             else:
                 # Fallback to identity pose if no sparse_structure.pt
                 rotation = [[1, 0, 0, 0]]  # Identity quaternion (wxyz)
                 translation = [[0, 0, 0]]
                 scale = [[1, 1, 1]]
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: No sparse_structure.pt, using identity pose")
+                log.info("ScenePoseOptimize [%d]: No sparse_structure.pt, using identity pose", idx)
 
             # Output path in the pose-optimized folder
             output_glb_path = os.path.join(pose_opt_folder, f"object_{idx}.glb")
@@ -284,7 +300,8 @@ class SAM3D_ScenePoseOptimize:
             # Handle pose_only mode - just apply the pose without optimization
             if optimization_mode == "pose_only":
                 try:
-                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Applying pose directly (no optimization)")
+                    log.info("ScenePoseOptimize [%d]: Applying pose directly (no optimization)", idx)
+                    from .utils.pose_optimization import _apply_and_save_pose
 
                     # Load mesh
                     mesh = trimesh.load(mesh_path)
@@ -294,59 +311,27 @@ class SAM3D_ScenePoseOptimize:
                             raise ValueError("No mesh found in GLB file")
                         mesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
-                    # Convert pose to tensors
-                    from pytorch3d.transforms import quaternion_to_matrix
-
                     rot_np = np.array(rotation).squeeze()
                     trans_np = np.array(translation).squeeze()
                     scale_np = np.array(scale).squeeze()
 
-                    # Ensure scale is 3D
-                    if scale_np.ndim == 0:
-                        scale_np = np.array([float(scale_np)] * 3)
-                    elif scale_np.size == 1:
-                        scale_np = np.array([float(scale_np.flat[0])] * 3)
-                    else:
-                        scale_np = scale_np.flatten()[:3]
+                    response = _apply_and_save_pose(
+                        mesh, rot_np, trans_np, scale_np,
+                        output_glb_path, object_dir, mesh_path,
+                        iou=-1.0, used_icp=False, used_render_opt=False
+                    )
 
-                    # Convert quaternion to rotation matrix
-                    quat_tensor = torch.from_numpy(rot_np).float().unsqueeze(0)
-                    rot_matrix = quaternion_to_matrix(quat_tensor).squeeze(0).numpy()
-
-                    # Z-up to Y-up conversion matrix (SAM3D decoder outputs Z-up)
-                    z_up_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]]).T
-
-                    # Apply transformation: Z-up -> Y-up, then scale, rotate, translate
-                    # Note: PyTorch3D quaternion_to_matrix returns row-vector convention (v @ R)
-                    # Do NOT transpose - that would apply inverse rotation
-                    vertices = mesh.vertices.copy()
-                    vertices_y_up = vertices @ z_up_to_y_up
-                    vertices_scaled = vertices_y_up * scale_np
-                    vertices_rotated = vertices_scaled @ rot_matrix
-                    vertices_transformed = vertices_rotated + trans_np
-
-                    # Flip X and Y axes to match image coordinate convention
-                    # PyTorch3D: X-left, Y-up, Z-inward
-                    # Image coords: X-right, Y-down
-                    vertices_transformed[:, 0] = -vertices_transformed[:, 0]
-                    vertices_transformed[:, 1] = -vertices_transformed[:, 1]
-
-                    mesh.vertices = vertices_transformed
-                    mesh.export(output_glb_path)
-
-                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Saved: {output_glb_path}")
-                    iou_scores.append(1.0)  # No IoU computed in pose_only mode
+                    log.info("ScenePoseOptimize [%d]: Saved: %s", idx, output_glb_path)
+                    iou_scores.append(response.get("iou", -1.0))
 
                 except Exception as e:
-                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Error: {e}")
-                    import traceback
-                    traceback.print_exc()
+                    log.error("ScenePoseOptimize [%d]: Pose-only transform failed", idx, exc_info=True)
                     iou_scores.append(-1.0)
                 continue
 
             # Load mask for optimization modes
             mask = np.load(mask_path)
-            print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Loaded mask {mask.shape}")
+            log.info("ScenePoseOptimize [%d]: Loaded mask %s", idx, mask.shape)
 
             request = {
                 "object_dir": object_dir,
@@ -363,11 +348,11 @@ class SAM3D_ScenePoseOptimize:
             }
 
             try:
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Running optimization...")
+                log.info("ScenePoseOptimize [%d]: Running optimization...", idx)
                 response = run_pose_optimization_batch(request)
 
                 if response.get("status") == "error":
-                    print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Worker error: {response.get('error')}")
+                    log.error("ScenePoseOptimize [%d]: Worker error: %s", idx, response.get('error'))
                     iou_scores.append(-1.0)
                     continue
 
@@ -375,19 +360,17 @@ class SAM3D_ScenePoseOptimize:
                 result_glb_path = response.get("output_glb_path", output_glb_path)
                 iou = response.get("iou", -1.0)
 
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Done (IOU: {iou:.3f})")
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Output: {result_glb_path}")
+                log.info("ScenePoseOptimize [%d]: Done (IOU: %.3f)", idx, iou)
+                log.info("ScenePoseOptimize [%d]: Output: %s", idx, result_glb_path)
 
                 iou_scores.append(float(iou))
 
             except Exception as e:
-                print(f"[SAM3DObjects] ScenePoseOptimize [{idx}]: Error: {e}")
-                import traceback
-                traceback.print_exc()
+                log.error("ScenePoseOptimize [%d]: Pose optimization failed", idx, exc_info=True)
                 iou_scores.append(-1.0)
 
         elapsed = time.time() - start_time
-        print(f"\n[SAM3DObjects] OK Pose optimization done: {elapsed:.0f}s ({len(object_dirs)} objects)")
+        log.info("Pose optimization done: %.0fs (%d objects)", elapsed, len(object_dirs))
 
         # Save cache metadata for future runs
         self._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)

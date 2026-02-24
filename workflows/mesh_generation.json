@@ -104,7 +104,7 @@
           "links": []
         },
         {
-          "name": "pointmap_path",
+          "name": "pointmap",
           "type": "STRING",
           "links": [
             180
@@ -123,7 +123,7 @@
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
-        "ver": "2ed412a6e508b9b21010ef034cc914d9d27679d5",
+        "ver": "db9b5260021fd3e188bbe06908a0f62f24f365af",
         "Node name for S&R": "SAM3D_DepthEstimate",
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
@@ -216,13 +216,14 @@
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "ver": "db9b5260021fd3e188bbe06908a0f62f24f365af",
         "Node name for S&R": "LoadSAM3DModel",
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
       "widgets_values": [
+        "flash_attn",
         false,
-        true,
+        "auto",
         "bfloat16",
         "moge2"
       ]
@@ -264,7 +265,7 @@
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "ver": "db9b5260021fd3e188bbe06908a0f62f24f365af",
         "Node name for S&R": "SAM3DMeshDecode",
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
@@ -382,7 +383,7 @@
           "link": 182
         },
         {
-          "name": "pointmap_path",
+          "name": "pointmap",
           "type": "STRING",
           "link": 180
         }
@@ -403,7 +404,7 @@
       ],
       "properties": {
         "cnr_id": "comfyui-sam3dobjects",
-        "ver": "0a1247b6bc6d16d95ea039b85a9500be7ce4c1fb",
+        "ver": "db9b5260021fd3e188bbe06908a0f62f24f365af",
         "Node name for S&R": "SAM3DGenerateSLAT",
         "aux_id": "PozzettiAndrea/ComfyUI-SAM3DObjects"
       },
@@ -458,7 +459,7 @@
       1,
       61,
       3,
-      "STRING"
+      "SAM3D_POINTMAP"
     ],
     [
       181,

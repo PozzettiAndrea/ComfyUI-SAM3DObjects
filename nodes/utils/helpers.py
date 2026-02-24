@@ -6,12 +6,16 @@ This module contains:
 - File I/O helpers
 """
 
+import logging
 import sys
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 import numpy as np
 import torch
+import comfy.utils
+
+log = logging.getLogger("sam3dobjects")
 
 
 # =============================================================================
@@ -23,16 +27,23 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     Load pointmap from a .pt tensor file.
 
     Args:
-        pointmap_path: Path to .pt file
+        pointmap_path: Path to .pt file (dict format with "pointmap" key)
 
     Returns:
         Pointmap tensor in HWC format (H, W, 3)
     """
-    pointmap = torch.load(pointmap_path, weights_only=False)
-    print(f"[Worker] Loaded pointmap tensor: shape={pointmap.shape}", file=sys.stderr)
+    import comfy.model_management as mm
 
-    if torch.cuda.is_available():
-        pointmap = pointmap.cuda()
+    data = torch.load(pointmap_path, weights_only=False)
+    if isinstance(data, dict):
+        pointmap = data.get("pointmap")
+        if pointmap is None:
+            pointmap = data.get("data")
+    else:
+        pointmap = data
+    log.info("Loaded pointmap tensor: shape=%s", pointmap.shape)
+
+    pointmap = pointmap.to(mm.get_torch_device())
 
     return pointmap
 
@@ -57,7 +68,7 @@ def preprocess_image_lazy(
     Returns:
         dict with preprocessed image, mask, pointmap etc.
     """
-    from sam3d_objects.data.dataset.tdfy.img_and_mask_transforms import get_mask
+    from ..sam3d.transforms import get_mask
 
     # Ensure RGBA format
     assert image_np.ndim == 3, f"Expected 3D image, got {image_np.ndim}D"
@@ -128,7 +139,7 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
     save_dir = Path(output_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[Worker] Saving outputs to: {save_dir}", file=sys.stderr)
+    log.info("Saving outputs to: %s", save_dir)
 
     result = {
         "output_dir": str(save_dir),
@@ -142,14 +153,14 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
         sparse_path = save_dir / "sparse_structure.pt"
         torch.save(output, sparse_path)
         result["files"]["sparse_structure"] = str(sparse_path)
-        print(f"[Worker] Saved sparse structure: {sparse_path}", file=sys.stderr)
+        log.info("Saved sparse structure: %s", sparse_path)
 
     # Save SLAT (Stage 2 intermediate output)
     if "slat" in output:
         slat_path = save_dir / "slat.pt"
         torch.save(output, slat_path)
         result["files"]["slat"] = str(slat_path)
-        print(f"[Worker] Saved SLAT: {slat_path}", file=sys.stderr)
+        log.info("Saved SLAT: %s", slat_path)
 
     # Save GLB file (textured mesh)
     if "glb" in output and output["glb"] is not None:
@@ -162,12 +173,12 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
             glb_bytes = output["glb"].export(file_type="glb")
             with open(glb_path, 'wb') as f:
                 f.write(glb_bytes)
-            print(f"[Worker] Saved GLB: {glb_path} ({len(glb_bytes)} bytes)", file=sys.stderr)
+            log.info("Saved GLB: %s (%d bytes)", glb_path, len(glb_bytes))
         else:
             # Already bytes
             with open(glb_path, 'wb') as f:
                 f.write(output["glb"])
-            print(f"[Worker] Saved GLB: {glb_path} ({len(output['glb'])} bytes)", file=sys.stderr)
+            log.info("Saved GLB: %s (%d bytes)", glb_path, len(output['glb']))
 
         result["files"]["glb"] = str(glb_path)
 
@@ -177,9 +188,9 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
         try:
             output["gs"].save_ply(str(ply_path))
             result["files"]["ply"] = str(ply_path)
-            print(f"[Worker] Saved Gaussian PLY: {ply_path}", file=sys.stderr)
+            log.info("Saved Gaussian PLY: %s", ply_path)
         except Exception as e:
-            print(f"[Worker] Warning: Failed to save Gaussian PLY: {e}", file=sys.stderr)
+            log.warning("Failed to save Gaussian PLY: %s", e)
 
     # Save metadata (simple types only)
     metadata = {}
@@ -197,8 +208,8 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
             try:
                 json.dumps(value)  # Test if it's JSON-serializable
                 metadata[key] = value
-            except:
-                pass
+            except Exception as e:
+                log.debug("Skipping non-serializable metadata key %r: %s", key, e)
 
     if metadata:
         metadata_path = save_dir / "metadata.json"
@@ -214,20 +225,20 @@ def save_output_to_disk(output: Dict[str, Any], output_dir: Path) -> Dict[str, A
 # Model download helpers
 # =============================================================================
 
-# HuggingFace repo for SAM3D checkpoints
-REPO_ID = "jetjodh/sam-3d-objects"
+# HuggingFace repo for SAM3D checkpoints (safetensors format)
+REPO_ID = "apozz/sam-3d-objects-safetensors"
 
-# Decoder files
+# Decoder files (safetensors + yaml configs)
 DECODER_FILES = {
     "gaussian": [
         "slat_decoder_gs.yaml",
-        "slat_decoder_gs.ckpt",
+        "slat_decoder_gs.safetensors",
         "slat_decoder_gs_4.yaml",
-        "slat_decoder_gs_4.ckpt",
+        "slat_decoder_gs_4.safetensors",
     ],
     "mesh": [
         "slat_decoder_mesh.yaml",
-        "slat_decoder_mesh.ckpt",
+        "slat_decoder_mesh.safetensors",
     ],
 }
 
@@ -245,7 +256,7 @@ def ensure_decoder_files(config_path: str, decoder_type: str):
 
     missing = [f for f in files if not (checkpoint_dir / f).exists()]
     if missing:
-        print(f"[SAM3DObjects] Downloading missing {decoder_type} decoder files: {missing}", file=sys.stderr)
+        log.info("Downloading missing %s decoder files: %s", decoder_type, missing)
         _download_decoder_files(checkpoint_dir, missing)
 
 
@@ -265,24 +276,20 @@ def _download_decoder_files(checkpoint_dir: Path, files: list):
             "Please install it: pip install huggingface-hub"
         )
 
-    # target_dir is parent of checkpoints/ for hf_hub_download
-    target_dir = checkpoint_dir.parent
-
-    print(f"[SAM3DObjects] Downloading from HuggingFace: {REPO_ID}", file=sys.stderr)
+    log.info("Downloading from HuggingFace: %s", REPO_ID)
 
     for filename in files:
-        hf_path = f"checkpoints/{filename}"
-        print(f"[SAM3DObjects] Downloading {filename}...", file=sys.stderr)
+        log.info("Downloading %s...", filename)
 
         try:
             hf_hub_download(
                 repo_id=REPO_ID,
-                filename=hf_path,
-                local_dir=str(target_dir),
+                filename=filename,
+                local_dir=str(checkpoint_dir),
                 local_dir_use_symlinks=False,
             )
         except Exception as e:
             raise RuntimeError(f"Failed to download {filename}: {e}") from e
 
-    print(f"[SAM3DObjects] Download complete", file=sys.stderr)
+    log.info("Download complete")
 

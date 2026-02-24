@@ -1,7 +1,10 @@
 """SAM3DTextureBake node for texture baking."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DTextureBake:
     """
@@ -91,7 +94,7 @@ class SAM3DTextureBake:
 
         from .utils.stages import run_texture_bake_direct
 
-        print(f"[SAM3DObjects] TextureBake: Baking textures (mode={texture_mode}, size={texture_size})")
+        log.info("TextureBake: Baking textures (mode=%s, size=%d)", texture_mode, texture_size)
 
         # Validate file paths
         if not glb_path or not ply_path:
@@ -120,5 +123,5 @@ class SAM3DTextureBake:
         if output_glb_path is None:
             raise RuntimeError("GLB file was not generated")
 
-        print(f"[SAM3DObjects] TextureBake completed: {output_glb_path}")
+        log.info("TextureBake completed: %s", output_glb_path)
         return (output_glb_path,)

@@ -1,7 +1,10 @@
 """SAM3DGaussianDecode node for decoding SLAT to Gaussian splats."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DGaussianDecode:
     """
@@ -63,14 +66,19 @@ class SAM3DGaussianDecode:
         # These imports happen in the isolated subprocess
         import os
         import torch
+        import comfy.utils
         from pathlib import Path
 
+        import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
-        print(f"[SAM3DObjects] GaussianDecode: Decoding SLAT to Gaussian...")
+        log.info("GaussianDecode: Decoding SLAT to Gaussian...")
 
-        # Derive output_dir from slat path (same directory)
+        # Resolve path to absolute (handles both absolute and relative inputs)
+        if not os.path.isabs(slat):
+            comfyui_base = os.path.dirname(folder_paths.get_output_directory())
+            slat = os.path.join(comfyui_base, slat)
         output_dir = os.path.dirname(slat)
 
         # Get config path from model
@@ -79,7 +87,7 @@ class SAM3DGaussianDecode:
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "gaussian")
 
-        # Load SLAT
+        # Load SLAT (our own intermediate file, not an untrusted checkpoint)
         slat_data = torch.load(slat, weights_only=False)
 
         # Run Gaussian decoding
@@ -90,6 +98,7 @@ class SAM3DGaussianDecode:
             output_dir=output_dir,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
+            precision=slat_decoder_gs.get("precision", "bf16"),
         )
 
         # Extract PLY path from result
@@ -108,5 +117,5 @@ class SAM3DGaussianDecode:
         if not ply_path:
             raise RuntimeError("PLY file was not generated")
 
-        print(f"[SAM3DObjects] GaussianDecode completed: {ply_path}")
+        log.info("GaussianDecode completed: %s", ply_path)
         return (ply_path,)

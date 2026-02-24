@@ -5,6 +5,7 @@ This module contains pose optimization that can skip manual (height-based) align
 Supports: icp_only, render_only modes (no manual alignment).
 """
 
+import logging
 import sys
 import os
 import base64
@@ -13,6 +14,10 @@ import traceback
 from typing import Any, Dict
 import numpy as np
 import torch
+import comfy.utils
+import comfy.model_management
+
+log = logging.getLogger("sam3dobjects")
 
 
 def depth_edge(depth: np.ndarray, rtol: float = 0.03, mask: np.ndarray = None) -> np.ndarray:
@@ -48,18 +53,11 @@ def depth_edge(depth: np.ndarray, rtol: float = 0.03, mask: np.ndarray = None) -
 def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
     """Run pose optimization using layout_post_optimization."""
     try:
-        from pathlib import Path
-
-        # Setup environment for sam3d_objects imports
-        vendor_path = Path(__file__).parent.parent / "vendor"
-        if str(vendor_path) not in sys.path:
-            sys.path.insert(0, str(vendor_path))
-
         import trimesh
         from pytorch3d.transforms import quaternion_to_matrix
-        from sam3d_objects.pipeline.inference_utils import layout_post_optimization
+        from ..sam3d.pipeline import layout_post_optimization
 
-        print("[Worker] Running pose optimization", file=sys.stderr)
+        log.info("Running pose optimization")
 
         # Extract parameters
         glb_path = request["glb_path"]
@@ -81,7 +79,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         mask_np = pickle.loads(base64.b64decode(request["mask_b64"]))
 
         # Use GPU if available
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
 
         # Convert to tensors
         rotation = torch.from_numpy(rotation_np).float().to(device)
@@ -111,7 +109,9 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         # Load pointmap
         pointmap_data = torch.load(pointmap_path, weights_only=False)
         if isinstance(pointmap_data, dict):
-            pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
+            pointmap_tensor = pointmap_data.get("pointmap")
+            if pointmap_tensor is None:
+                pointmap_tensor = pointmap_data.get("data")
         else:
             pointmap_tensor = pointmap_data
         pointmap_tensor = pointmap_tensor.float().to(device)
@@ -137,7 +137,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
             device=device,
         )
 
-        print(f"[Worker] Optimization complete: IoU={final_iou:.3f}", file=sys.stderr)
+        log.info("Optimization complete: IoU=%.3f", final_iou)
 
         # Convert results to numpy
         quat_np = refined_quat.cpu().numpy() if hasattr(refined_quat, 'cpu') else np.array(refined_quat)
@@ -178,7 +178,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         # 2. Apply refined transform (correct order: scale -> rotate -> translate)
         # This matches the original apply_transform() in layout_post_optimization_utils.py
         vertices_scaled = vertices_y_up * scale_vec  # Per-axis scale
-        vertices_rotated = vertices_scaled @ rot_matrix.T  # Rotate
+        vertices_rotated = vertices_scaled @ rot_matrix  # Rotate
         vertices_transformed = vertices_rotated + trans_np  # Translate
 
         mesh.vertices = vertices_transformed
@@ -189,7 +189,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         output_glb_path = os.path.join(input_dir, f"{input_name}_reposed.glb")
         mesh.export(output_glb_path)
 
-        print(f"[Worker] Saved reposed GLB: {output_glb_path}", file=sys.stderr)
+        log.info("Saved reposed GLB: %s", output_glb_path)
 
         # Serialize refined pose for response
         refined_pose_b64 = {
@@ -208,7 +208,7 @@ def run_pose_optimization(request: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"[Worker] Pose optimization error: {e}", file=sys.stderr)
+        log.error("Pose optimization error: %s", e)
         traceback.print_exc(file=sys.stderr)
         return {
             "status": "error",
@@ -225,19 +225,12 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
     Supports: icp_only, render_only modes.
     """
     try:
-        from pathlib import Path
-
-        # Setup environment for sam3d_objects imports
-        vendor_path = Path(__file__).parent.parent / "vendor"
-        if str(vendor_path) not in sys.path:
-            sys.path.insert(0, str(vendor_path))
-
         import trimesh
         from pytorch3d.structures import Meshes
         from pytorch3d.transforms import quaternion_to_matrix, Transform3d, matrix_to_quaternion
         from pytorch3d.renderer import TexturesVertex
-        from sam3d_objects.data.dataset.tdfy.transforms_3d import compose_transform
-        from sam3d_objects.pipeline.layout_post_optimization_utils import (
+        from ..sam3d.transforms import compose_transform
+        from ..sam3d.pipeline import (
             get_mesh,
             get_mask_renderer,
             compute_iou,
@@ -248,7 +241,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             set_seed,
         )
 
-        print("[Worker] Running batch pose optimization (no manual alignment)", file=sys.stderr)
+        log.info("Running batch pose optimization (no manual alignment)")
 
         # Extract parameters
         object_dir = request.get("object_dir", "")
@@ -258,9 +251,9 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         enable_icp = request.get("enable_icp", False)
         enable_render_opt = request.get("enable_render_opt", False)
 
-        print(f"[Worker] - enable_manual_alignment: {enable_manual_alignment}", file=sys.stderr)
-        print(f"[Worker] - enable_icp: {enable_icp}", file=sys.stderr)
-        print(f"[Worker] - enable_render_opt: {enable_render_opt}", file=sys.stderr)
+        log.debug("enable_manual_alignment: %s", enable_manual_alignment)
+        log.debug("enable_icp: %s", enable_icp)
+        log.debug("enable_render_opt: %s", enable_render_opt)
 
         # Deserialize intrinsics
         intrinsics_np = pickle.loads(base64.b64decode(request["intrinsics_b64"]))
@@ -276,7 +269,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         mask_np = pickle.loads(base64.b64decode(request["mask_b64"]))
 
         # Use GPU if available
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = comfy.model_management.get_torch_device()
 
         # Convert to tensors
         rotation = torch.from_numpy(rotation_np).float().to(device)
@@ -296,7 +289,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             scale = scale.unsqueeze(0)
 
         # Load mesh
-        print(f"[Worker] Loading mesh: {glb_path}", file=sys.stderr)
+        log.info("Loading mesh: %s", glb_path)
         mesh_trimesh = trimesh.load(glb_path)
         if isinstance(mesh_trimesh, trimesh.Scene):
             meshes = [g for g in mesh_trimesh.geometry.values() if isinstance(g, trimesh.Trimesh)]
@@ -305,10 +298,12 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             mesh_trimesh = meshes[0] if len(meshes) == 1 else trimesh.util.concatenate(meshes)
 
         # Load pointmap
-        print(f"[Worker] Loading pointmap: {pointmap_path}", file=sys.stderr)
+        log.info("Loading pointmap: %s", pointmap_path)
         pointmap_data = torch.load(pointmap_path, weights_only=False)
         if isinstance(pointmap_data, dict):
-            pointmap_tensor = pointmap_data.get("pointmap") or pointmap_data.get("data")
+            pointmap_tensor = pointmap_data.get("pointmap")
+            if pointmap_tensor is None:
+                pointmap_tensor = pointmap_data.get("data")
         else:
             pointmap_tensor = pointmap_data
         pointmap_tensor = pointmap_tensor.float().to(device)
@@ -327,7 +322,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # Check occlusion using original full-resolution mask and pointmap
         # (mask_tensor is already at same size as pointmap: 4480x6720)
         if check_occlusion(mask_tensor.cpu().numpy(), pointmap_tensor.cpu().numpy()):
-            print("[Worker] Occluded, skipping optimization", file=sys.stderr)
+            log.info("Occluded, skipping optimization")
             # Return original pose
             return _apply_and_save_pose(
                 mesh_trimesh, rotation_np, translation_np, scale_np,
@@ -339,7 +334,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         rendered = renderer(mesh)
         initial_iou = compute_iou(rendered[..., 3][0][None, None], mask_processed, threshold=0.5)
         final_iou = initial_iou.cpu().item()
-        print(f"[Worker] Initial IoU: {final_iou:.3f}", file=sys.stderr)
+        log.info("Initial IoU: %.3f", final_iou)
 
         # Track transforms
         tfm = tfm_ori
@@ -362,7 +357,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                 source_points = mesh.verts_packed()
 
                 # Run ICP
-                print("[Worker] Running ICP...", file=sys.stderr)
+                log.info("Running ICP...")
                 points_aligned_icp, transformation = run_ICP(
                     mesh, source_points, target_points, threshold=0.05
                 )
@@ -379,7 +374,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                     mesh = mesh_ICP
                     final_iou = icp_iou.cpu().item()
                     used_icp = True
-                    print(f"[Worker] ICP improved IoU: {final_iou:.3f}", file=sys.stderr)
+                    log.info("ICP improved IoU: %.3f", final_iou)
 
                     # Update center and transform
                     T_o3d = torch.tensor(transformation, dtype=torch.float32, device=device)
@@ -397,11 +392,11 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                     )
                     tfm = tfm.compose(tfm2)
                 else:
-                    print(f"[Worker] ICP rejected (IoU: {icp_iou.cpu().item():.3f})", file=sys.stderr)
+                    log.info("ICP rejected (IoU: %.3f)", icp_iou.cpu().item())
 
         # Run render-and-compare optimization
         if enable_render_opt:
-            print("[Worker] Running render optimization...", file=sys.stderr)
+            log.info("Running render optimization...")
             ori_iou = final_iou
 
             quat, trans_opt, scale_opt, R = run_render_compare(
@@ -418,7 +413,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             if optimized_iou > 0.5 and optimized_iou > ori_iou:
                 used_render_opt = True
                 final_iou = optimized_iou.detach().cpu().item()
-                print(f"[Worker] Render optimization improved IoU: {final_iou:.3f}", file=sys.stderr)
+                log.info("Render optimization improved IoU: %.3f", final_iou)
 
                 tfm3 = (
                     Transform3d(device=device)
@@ -430,7 +425,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
                 )
                 tfm = tfm.compose(tfm3)
             else:
-                print(f"[Worker] Render optimization rejected (IoU: {optimized_iou.cpu().item():.3f})", file=sys.stderr)
+                log.info("Render optimization rejected (IoU: %.3f)", optimized_iou.cpu().item())
 
         # Extract final pose from transform
         M = tfm.get_matrix()[0]
@@ -445,7 +440,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         trans_np = T_final.cpu().numpy()
         scale_np_out = scale_final.cpu().numpy()
 
-        print(f"[Worker] Final IoU: {final_iou:.3f}", file=sys.stderr)
+        log.info("Final IoU: %.3f", final_iou)
 
         return _apply_and_save_pose(
             mesh_trimesh, quat_np, trans_np, scale_np_out,
@@ -454,7 +449,7 @@ def run_pose_optimization_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     except Exception as e:
-        print(f"[Worker] Batch pose optimization error: {e}", file=sys.stderr)
+        log.error("Batch pose optimization error: %s", e)
         traceback.print_exc(file=sys.stderr)
         return {
             "status": "error",
@@ -501,7 +496,7 @@ def _apply_and_save_pose(
 
     # 2. Apply transform: scale -> rotate -> translate
     vertices_scaled = vertices_y_up * scale_vec
-    vertices_rotated = vertices_scaled @ rot_matrix.T
+    vertices_rotated = vertices_scaled @ rot_matrix
     vertices_transformed = vertices_rotated + trans_np
 
     mesh_trimesh.vertices = vertices_transformed
@@ -515,7 +510,7 @@ def _apply_and_save_pose(
             output_glb_path = os.path.join(input_dir, "aligned_mesh.glb")
 
     mesh_trimesh.export(output_glb_path)
-    print(f"[Worker] Saved aligned GLB: {output_glb_path}", file=sys.stderr)
+    log.info("Saved aligned GLB: %s", output_glb_path)
 
     return {
         "status": "success",

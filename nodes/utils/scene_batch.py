@@ -10,7 +10,7 @@ This module processes multiple masks efficiently by:
 Each phase loads its own models directly - no shared lazy manager.
 """
 
-import gc
+import logging
 import os
 import sys
 import base64
@@ -25,33 +25,14 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 from PIL import Image
+import comfy.utils
+import comfy.model_management
+from .stages import (
+    _load_config, _resolve_dtype,
+    _get_or_load_generator, _get_or_load_decoder, _get_or_load_condition_embedder,
+)
 
-
-def _load_config(config_path: str):
-    """Load pipeline.yaml and return config + checkpoint_dir."""
-    from omegaconf import OmegaConf
-    config = OmegaConf.load(config_path)
-    checkpoint_dir = Path(config_path).parent
-    return config, checkpoint_dir
-
-
-def _get_dtype(config):
-    """Get torch dtype from config."""
-    dtype_str = getattr(config, 'dtype', 'float16')
-    if dtype_str == 'bfloat16':
-        return torch.bfloat16
-    elif dtype_str == 'float16':
-        return torch.float16
-    return torch.float32
-
-
-def _unload(*models):
-    """Delete models and free VRAM."""
-    for m in models:
-        if m is not None:
-            del m
-    gc.collect()
-    torch.cuda.empty_cache()
+log = logging.getLogger("sam3dobjects")
 
 
 def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -60,7 +41,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
     Each phase loads models directly, processes all objects, then unloads.
     """
-    from .helpers import preprocess_image_lazy, load_pointmap_from_file
+    from .helpers import preprocess_image_lazy
     from .stages import run_texture_bake_direct as texture_bake_impl
 
     # Suppress stdout (used for JSON IPC)
@@ -79,7 +60,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # Extract parameters
         image_b64 = request["image"]
         masks_b64 = request["masks"]
-        pointmap_path = request["pointmap_path"]
+        pointmap = request["pointmap"]
         base_output_dir = request["base_output_dir"]
         config_path = request["config_path"]
         mesh_config_path = request["mesh_config_path"]
@@ -96,9 +77,10 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         add_textures = request.get("add_textures", False)
         texture_mode = request.get("texture_mode", "opt")
         texture_size = request.get("texture_size", 1024)
+        precision = request.get("precision", "bf16")
 
         num_objects = len(masks_b64)
-        print(f"[Worker] Scene batch: Processing {num_objects} object(s)", file=sys.stderr)
+        log.info("Scene batch: Processing %d object(s)", num_objects)
 
         # Deserialize image once
         image_bytes = base64.b64decode(image_b64)
@@ -111,10 +93,8 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
             mask_np = pickle.loads(base64.b64decode(mask_b64))
             masks.append(mask_np)
 
-        # Load pointmap once
-        print(f"[Worker] Loading pointmap from: {pointmap_path}", file=sys.stderr)
-        pointmap = load_pointmap_from_file(pointmap_path)
-        print(f"[Worker] Pointmap shape: {pointmap.shape}", file=sys.stderr)
+        # Pointmap passed directly as tensor
+        log.info("Pointmap shape: %s", pointmap.shape)
 
         # Create object directories
         object_dirs = []
@@ -129,57 +109,57 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         # ============================================================
         # PHASE 1: Stage 1 (Sparse Structure) for ALL masks
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 1: Stage 1 (Sparse Gen) ==========", file=sys.stderr)
+        log.info("========== PHASE 1: Stage 1 (Sparse Gen) ==========")
         phase1_start = time.time()
 
         _run_phase1_stage1(
             config_path, image, masks, pointmap, object_dirs, object_results,
-            seed, stage1_steps, stage1_cfg, stage1_cfg_pm
+            seed, stage1_steps, stage1_cfg, stage1_cfg_pm, precision
         )
 
-        print(f"[Worker] Phase 1 complete: {time.time() - phase1_start:.0f}s", file=sys.stderr)
+        log.info("Phase 1 complete: %.0fs", time.time() - phase1_start)
 
         # ============================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 2: Stage 2 (SLAT Gen) ==========", file=sys.stderr)
+        log.info("========== PHASE 2: Stage 2 (SLAT Gen) ==========")
         phase2_start = time.time()
 
         slat_paths = _run_phase2_stage2(
             config_path, image, masks, object_dirs, object_results,
-            seed, stage2_steps, stage2_cfg
+            seed, stage2_steps, stage2_cfg, precision
         )
 
-        print(f"[Worker] Phase 2 complete: {time.time() - phase2_start:.0f}s", file=sys.stderr)
+        log.info("Phase 2 complete: %.0fs", time.time() - phase2_start)
 
         # ============================================================
         # PHASE 3: Mesh Decode for ALL SLATs
         # ============================================================
-        print(f"\n[Worker] ========== PHASE 3: Mesh Decode ==========", file=sys.stderr)
+        log.info("========== PHASE 3: Mesh Decode ==========")
         phase3_start = time.time()
 
         glb_paths = _run_phase3_mesh_decode(
             mesh_config_path, slat_paths, object_dirs, object_results,
-            with_postprocess, simplify
+            with_postprocess, simplify, precision
         )
 
-        print(f"[Worker] Phase 3 complete: {time.time() - phase3_start:.0f}s", file=sys.stderr)
+        log.info("Phase 3 complete: %.0fs", time.time() - phase3_start)
 
         # ============================================================
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake
         # ============================================================
         if add_textures and gs_config_path:
-            print(f"\n[Worker] ========== PHASE 4: Gaussian + Texture Bake ==========", file=sys.stderr)
+            log.info("========== PHASE 4: Gaussian + Texture Bake ==========")
             phase4_start = time.time()
 
             _run_phase4_texture(
                 gs_config_path, slat_paths, glb_paths, object_dirs, object_results,
-                texture_bake_impl, texture_mode, texture_size
+                texture_bake_impl, texture_mode, texture_size, precision
             )
 
-            print(f"[Worker] Phase 4 complete: {time.time() - phase4_start:.0f}s", file=sys.stderr)
+            log.info("Phase 4 complete: %.0fs", time.time() - phase4_start)
 
-        print(f"\n[Worker] Scene batch complete: {num_objects} object(s)", file=sys.stderr)
+        log.info("Scene batch complete: %d object(s)", num_objects)
 
         return {
             "status": "success",
@@ -189,7 +169,7 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"[Worker] Error in scene_generate_batch: {e}", file=sys.stderr)
+        log.error("Error in scene_generate_batch: %s", e)
         traceback.print_exc(file=sys.stderr)
         return {
             "status": "error",
@@ -210,62 +190,38 @@ def run_scene_generate_batch(request: Dict[str, Any]) -> Dict[str, Any]:
 
 def _run_phase1_stage1(
     config_path, image, masks, pointmap, object_dirs, object_results,
-    seed, stage1_steps, stage1_cfg, stage1_cfg_pm
+    seed, stage1_steps, stage1_cfg, stage1_cfg_pm,
+    precision="bf16"
 ):
-    """Phase 1: Load Stage1 models once, process all masks, unload."""
-    from omegaconf import OmegaConf
+    """Phase 1: Load Stage1 models once, process all masks."""
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
-    from sam3d_objects.pipeline.inference_utils import (
+    from ..sam3d.pipeline import (
         downsample_sparse_structure, prune_sparse_structure, get_pose_decoder
     )
     from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
-    # Load Stage 1 models
-    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
+    # Load Stage 1 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading Stage 1 models...")
+    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
+    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
 
-    # Load ss_generator
-    gen_config_path = checkpoint_dir / config.ss_generator_config_path
-    gen_ckpt_path = checkpoint_dir / config.ss_generator_ckpt_path
-    gen_config = OmegaConf.load(gen_config_path)
-    ss_generator = instantiate(gen_config["module"]["generator"]["backbone"])
-    ss_generator = load_model_from_checkpoint(
-        ss_generator, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
-    ).cuda().to(dtype)
+    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
 
-    # Load ss_decoder
-    dec_config_path = checkpoint_dir / config.ss_decoder_config_path
-    dec_ckpt_path = checkpoint_dir / config.ss_decoder_ckpt_path
-    dec_config = OmegaConf.load(dec_config_path)
-    from sam3d_objects.model.io import remove_prefix_state_dict_fn
-    ss_decoder = instantiate(dec_config)
-    ss_decoder = load_model_from_checkpoint(
-        ss_decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key=None,
-        state_dict_fn=remove_prefix_state_dict_fn("module."),
-    ).cuda()
-
-    # Load ss_embedder
-    embedder_config = gen_config.module.condition_embedder.backbone
-    ss_embedder = instantiate(embedder_config)
-    ss_embedder = load_model_from_checkpoint(
-        ss_embedder, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
-    ).cuda().to(dtype)
+    ss_generator = ss_gen_patcher.model
+    ss_decoder = ss_dec_patcher.model
+    ss_embedder = ss_emb_patcher.model
 
     # Get preprocessor
     preprocessor_config = config.get('ss_preprocessor')
     if preprocessor_config:
         ss_preprocessor = instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        ss_preprocessor = preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        ss_preprocessor = get_default_preprocessor()
 
     # Get pose decoder
     pose_decoder_name = getattr(config, 'pose_decoder_name', 'default')
@@ -282,7 +238,7 @@ def _run_phase1_stage1(
 
     # Process each mask
     for idx, (mask_np, object_dir) in enumerate(zip(masks, object_dirs)):
-        print(f"[Worker] Stage 1 [{idx+1}/{len(masks)}]...", file=sys.stderr)
+        log.info("Stage 1 [%d/%d]...", idx + 1, len(masks))
 
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
         metadata_path = os.path.join(object_dir, "stage1_metadata.json")
@@ -296,11 +252,11 @@ def _run_phase1_stage1(
                 if (cached.get("seed") == seed and cached.get("steps") == stage1_steps and
                     cached.get("cfg") == stage1_cfg and cached.get("cfg_pm", 0.0) == stage1_cfg_pm):
                     use_cache = True
-            except:
-                pass
+            except Exception as e:
+                log.debug("Failed to read stage 1 cache metadata: %s", e)
 
         if use_cache:
-            print(f"[Worker] Stage 1 [{idx+1}]: Using cache", file=sys.stderr)
+            log.info("Stage 1 [%d]: Using cache", idx + 1)
             continue
 
         torch.manual_seed(seed)
@@ -329,8 +285,9 @@ def _run_phase1_stage1(
         pointmap_shift = ss_input_dict.get("pointmap_shift")
 
         # Run generation
+        device = comfy.model_management.get_torch_device()
         with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=dtype):
+            with torch.autocast(device_type=device.type, dtype=dtype):
                 image_tensor = ss_input_dict["image"]
                 bs = image_tensor.shape[0]
 
@@ -397,68 +354,52 @@ def _run_phase1_stage1(
         object_results[idx]["translation"] = translation
         object_results[idx]["scale"] = scale
 
-    # Unload
-    print(f"[Worker] Unloading Stage 1 models...", file=sys.stderr)
-    _unload(ss_generator, ss_decoder, ss_embedder)
-
 
 def _run_phase2_stage2(
     config_path, image, masks, object_dirs, object_results,
-    seed, stage2_steps, stage2_cfg
+    seed, stage2_steps, stage2_cfg,
+    precision="bf16"
 ):
-    """Phase 2: Load Stage2 models once, process all sparse structures, unload."""
-    from omegaconf import OmegaConf
+    """Phase 2: Load Stage2 models once, process all sparse structures."""
     from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
     from .helpers import preprocess_image_lazy
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
-    # Load Stage 2 models
-    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
+    # Load Stage 2 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading Stage 2 models...")
+    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
+    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
 
-    gen_config_path = checkpoint_dir / config.slat_generator_config_path
-    gen_ckpt_path = checkpoint_dir / config.slat_generator_ckpt_path
-    gen_config = OmegaConf.load(gen_config_path)
+    comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
 
-    slat_generator = instantiate(gen_config["module"]["generator"]["backbone"])
-    slat_generator = load_model_from_checkpoint(
-        slat_generator, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
-    ).cuda().to(dtype)
-
-    embedder_config = gen_config.module.condition_embedder.backbone
-    slat_embedder = instantiate(embedder_config)
-    slat_embedder = load_model_from_checkpoint(
-        slat_embedder, str(gen_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
-    ).cuda().to(dtype)
+    slat_generator = slat_gen_patcher.model
+    slat_embedder = slat_emb_patcher.model
 
     # Get preprocessor
     preprocessor_config = config.get('slat_preprocessor')
     if preprocessor_config:
         slat_preprocessor = instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        slat_preprocessor = preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        slat_preprocessor = get_default_preprocessor()
 
     # Configure generator
     slat_generator.no_shortcut = True
     slat_generator.reverse_fn.strength = stage2_cfg
     slat_generator.inference_steps = stage2_steps
 
-    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8)).cuda()
-    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8)).cuda()
+    device = comfy.model_management.get_torch_device()
+    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
+    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8), device=device)
     slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
 
     slat_paths = []
 
     for idx, (mask_np, object_dir) in enumerate(zip(masks, object_dirs)):
-        print(f"[Worker] Stage 2 [{idx+1}/{len(masks)}]...", file=sys.stderr)
+        log.info("Stage 2 [%d/%d]...", idx + 1, len(masks))
 
         torch.manual_seed(seed)
         mask_pil = Image.fromarray(mask_np)
@@ -480,14 +421,14 @@ def _run_phase2_stage2(
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
-        coords = coords.cuda()
+        coords = coords.to(device)
 
         # Preprocess
         slat_input_dict = preprocess_image_lazy(image_np, mask_np, slat_preprocessor)
 
         # Run generation
         with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=dtype):
+            with torch.autocast(device_type=device.type, dtype=dtype):
                 image_tensor = slat_input_dict["image"]
                 DEVICE = image_tensor.device
                 latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
@@ -507,7 +448,7 @@ def _run_phase2_stage2(
                 condition_args = condition_args + (coords.cpu().numpy(),)
                 slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
 
-                slat = sp.SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
+                slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
                 slat = slat * slat_std + slat_mean
 
         # Save
@@ -531,58 +472,43 @@ def _run_phase2_stage2(
             object_results[idx]["translation"] = translation
             object_results[idx]["scale"] = scale
 
-    # Unload
-    print(f"[Worker] Unloading Stage 2 models...", file=sys.stderr)
-    _unload(slat_generator, slat_embedder)
-
     return slat_paths
 
 
 def _run_phase3_mesh_decode(
     mesh_config_path, slat_paths, object_dirs, object_results,
-    with_postprocess, simplify
+    with_postprocess, simplify, precision="bf16"
 ):
-    """Phase 3: Load mesh decoder once, process all SLATs, unload."""
+    """Phase 3: Load mesh decoder once, process all SLATs."""
     import trimesh
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
-    config, checkpoint_dir = _load_config(mesh_config_path)
+    # Load mesh decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading mesh decoder...")
+    dec_patcher = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
+    comfy.model_management.load_models_gpu([dec_patcher])
+    decoder = dec_patcher.model
 
-    # Load mesh decoder
-    print(f"[Worker] Loading mesh decoder...", file=sys.stderr)
-    dec_config_path = checkpoint_dir / config.slat_decoder_mesh_config_path
-    dec_ckpt_path = checkpoint_dir / config.slat_decoder_mesh_ckpt_path
-    dec_config = OmegaConf.load(dec_config_path)
-
-    decoder = instantiate(dec_config)
-    decoder = load_model_from_checkpoint(
-        decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key=None,
-        state_dict_fn=remove_prefix_state_dict_fn("module."),
-    ).cuda()
-
+    device = comfy.model_management.get_torch_device()
     glb_paths = []
 
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
-        print(f"[Worker] Mesh decode [{idx+1}/{len(slat_paths)}]...", file=sys.stderr)
+        log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
         slat_data = torch.load(slat_path, weights_only=False)
 
         # Extract slat
         slat = slat_data.get("slat")
-        if not isinstance(slat, sp.SparseTensor):
+        if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")
             feats = slat.get("feats") if isinstance(slat, dict) else slat_data.get("feats")
             if isinstance(coords, np.ndarray):
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.cuda(), feats=feats.cuda())
+            slat = SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
-            slat = slat.cuda()
+            slat = slat.to(device)
 
         with torch.no_grad():
             output = decoder(slat)
@@ -604,9 +530,13 @@ def _run_phase3_mesh_decode(
 
         # Postprocess if requested
         if with_postprocess:
-            from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
-            vertices, faces = postprocess_mesh(vertices, faces, simplify=True, simplify_ratio=simplify, fill_holes=True, verbose=False)
-            vertex_colors = None
+            from ..sam3d.postprocessing import postprocess_mesh
+            pp_result = postprocess_mesh(vertices, faces, simplify=True, simplify_ratio=simplify, fill_holes=True, verbose=False, vertex_colors=vertex_colors)
+            if len(pp_result) == 3:
+                vertices, faces, vertex_colors = pp_result
+            else:
+                vertices, faces = pp_result
+                vertex_colors = None
 
         # Z-up to Y-up transform
         z_to_y_up = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
@@ -622,56 +552,42 @@ def _run_phase3_mesh_decode(
         glb_paths.append(glb_path)
         object_results[idx]["glb_path"] = glb_path
 
-    # Unload
-    print(f"[Worker] Unloading mesh decoder...", file=sys.stderr)
-    _unload(decoder)
-
     return glb_paths
 
 
 def _run_phase4_texture(
     gs_config_path, slat_paths, glb_paths, object_dirs, object_results,
-    texture_bake_impl, texture_mode, texture_size
+    texture_bake_impl, texture_mode, texture_size,
+    precision="bf16"
 ):
     """Phase 4: Load gaussian decoder once, decode all, then texture bake."""
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
-    config, checkpoint_dir = _load_config(gs_config_path)
+    # Load gaussian decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading gaussian decoder...")
+    dec_patcher = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
+    comfy.model_management.load_models_gpu([dec_patcher])
+    decoder = dec_patcher.model
 
-    # Load gaussian decoder
-    print(f"[Worker] Loading gaussian decoder...", file=sys.stderr)
-    dec_config_path = checkpoint_dir / config.slat_decoder_gs_config_path
-    dec_ckpt_path = checkpoint_dir / config.slat_decoder_gs_ckpt_path
-    dec_config = OmegaConf.load(dec_config_path)
-
-    decoder = instantiate(dec_config)
-    decoder = load_model_from_checkpoint(
-        decoder, str(dec_ckpt_path), strict=False, device="cpu", freeze=True, eval=True,
-        state_dict_key=None,
-        state_dict_fn=remove_prefix_state_dict_fn("module."),
-    ).cuda()
-
+    device = comfy.model_management.get_torch_device()
     ply_paths = []
 
     # Decode all gaussians
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
-        print(f"[Worker] Gaussian decode [{idx+1}/{len(slat_paths)}]...", file=sys.stderr)
+        log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
         slat_data = torch.load(slat_path, weights_only=False)
         slat = slat_data.get("slat")
-        if not isinstance(slat, sp.SparseTensor):
+        if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")
             feats = slat.get("feats") if isinstance(slat, dict) else slat_data.get("feats")
             if isinstance(coords, np.ndarray):
                 coords = torch.from_numpy(coords).int()
             if isinstance(feats, np.ndarray):
                 feats = torch.from_numpy(feats)
-            slat = sp.SparseTensor(coords=coords.cuda(), feats=feats.cuda())
+            slat = SparseTensor(coords=coords.to(device), feats=feats.to(device))
         else:
-            slat = slat.cuda()
+            slat = slat.to(device)
 
         with torch.no_grad():
             output = decoder(slat)
@@ -685,13 +601,9 @@ def _run_phase4_texture(
         ply_paths.append(ply_path)
         object_results[idx]["ply_path"] = ply_path
 
-    # Unload gaussian decoder
-    print(f"[Worker] Unloading gaussian decoder...", file=sys.stderr)
-    _unload(decoder)
-
     # Texture bake all
     for idx, (ply_path, glb_path, object_dir) in enumerate(zip(ply_paths, glb_paths, object_dirs)):
-        print(f"[Worker] Texture bake [{idx+1}/{len(ply_paths)}]...", file=sys.stderr)
+        log.info("Texture bake [%d/%d]...", idx + 1, len(ply_paths))
         try:
             bake_result = texture_bake_impl({
                 "ply_path": ply_path,
@@ -706,4 +618,4 @@ def _run_phase4_texture(
                 if textured_glb:
                     object_results[idx]["textured_glb_path"] = textured_glb
         except Exception as e:
-            print(f"[Worker] Warning: Texture bake failed for object {idx}: {e}", file=sys.stderr)
+            log.warning("Texture bake failed for object %d: %s", idx, e)

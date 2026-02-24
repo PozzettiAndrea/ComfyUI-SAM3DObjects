@@ -1,7 +1,10 @@
 """SAM3DMeshDecode node for decoding SLAT to mesh."""
 
+import logging
 import os
 from typing import Any
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3DMeshDecode:
     """
@@ -79,16 +82,21 @@ class SAM3DMeshDecode:
         # These imports happen in the isolated subprocess
         import os
         import torch
+        import comfy.utils
         from pathlib import Path
 
+        import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
 
-        print(f"[SAM3DObjects] MeshDecode: Decoding SLAT to Mesh...")
+        log.info("MeshDecode: Decoding SLAT to Mesh...")
         if with_postprocess:
-            print(f"[SAM3DObjects] MeshDecode: Will apply postprocessing (simplify={simplify})")
+            log.info("MeshDecode: Will apply postprocessing (simplify=%s)", simplify)
 
-        # Derive output_dir from slat path (same directory)
+        # Resolve path to absolute (handles both absolute and relative inputs)
+        if not os.path.isabs(slat):
+            comfyui_base = os.path.dirname(folder_paths.get_output_directory())
+            slat = os.path.join(comfyui_base, slat)
         output_dir = os.path.dirname(slat)
 
         # Get config path from model
@@ -97,7 +105,7 @@ class SAM3DMeshDecode:
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "mesh")
 
-        # Load SLAT
+        # Load SLAT (our own intermediate file, not an untrusted checkpoint)
         slat_data = torch.load(slat, weights_only=False)
 
         # Run Mesh decoding
@@ -110,6 +118,7 @@ class SAM3DMeshDecode:
             simplify=simplify,
             up_axis=up_axis,
             world_coordinates=world_coordinates,
+            precision=slat_decoder_mesh.get("precision", "bf16"),
         )
 
         # Extract GLB path from result
@@ -128,5 +137,5 @@ class SAM3DMeshDecode:
         if not glb_path:
             raise RuntimeError("GLB file was not generated")
 
-        print(f"[SAM3DObjects] MeshDecode completed: {glb_path}")
+        log.info("MeshDecode completed: %s", glb_path)
         return (glb_path,)

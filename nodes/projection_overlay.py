@@ -1,9 +1,12 @@
 """SAM3D_ProjectionOverlay node - visualize projected meshes over original image."""
 
+import logging
 import os
 import re
 import time
 from typing import Tuple
+
+log = logging.getLogger("sam3dobjects")
 
 class SAM3D_ProjectionOverlay:
     """
@@ -23,8 +26,8 @@ class SAM3D_ProjectionOverlay:
                     "default": "",
                     "tooltip": "Path to pose-optimized folder (output from SAM3D_ScenePoseOptimize)"
                 }),
-                "render_mode": (["mask_colors", "3d_mesh", "3d_mesh_textured"], {
-                    "default": "mask_colors",
+                "render_mode": (["3d_mesh_textured", "3d_mesh", "mask_colors"], {
+                    "default": "3d_mesh_textured",
                     "tooltip": "Rendering mode: mask_colors (colored points), 3d_mesh (solid mesh), 3d_mesh_textured (mesh with textures)"
                 }),
                 "point_size": ("INT", {
@@ -73,12 +76,13 @@ class SAM3D_ProjectionOverlay:
         import re
         import time
         import torch
+        import comfy.utils
         import numpy as np
         import trimesh
         from PIL import Image
 
         start_time = time.time()
-        print(f"[SAM3DObjects] ProjectionOverlay: Creating overlay (mode={render_mode})")
+        log.info("ProjectionOverlay: Creating overlay (mode=%s)", render_mode)
 
         # Validate folder exists
         if not os.path.exists(pose_opt_folder):
@@ -90,7 +94,7 @@ class SAM3D_ProjectionOverlay:
         else:
             # Try to find source folder
             source_folder = pose_opt_folder
-            print(f"[SAM3DObjects] ProjectionOverlay: Warning - folder doesn't end with _pose_optimized")
+            log.warning("ProjectionOverlay: folder doesn't end with _pose_optimized")
 
         # Load original image
         image_path = os.path.join(source_folder, "image.png")
@@ -100,7 +104,7 @@ class SAM3D_ProjectionOverlay:
         orig_img = Image.open(image_path).convert("RGB")
         img_array = np.array(orig_img).astype(np.float32) / 255.0
         H, W = img_array.shape[:2]
-        print(f"[SAM3DObjects] ProjectionOverlay: Loaded image {W}x{H}")
+        log.info("ProjectionOverlay: Loaded image %dx%d", W, H)
 
         # Load intrinsics
         intrinsics_path = os.path.join(source_folder, "intrinsics.pt")
@@ -116,7 +120,7 @@ class SAM3D_ProjectionOverlay:
         K[1, 1] *= H  # fy
         K[0, 2] *= W  # cx
         K[1, 2] *= H  # cy
-        print(f"[SAM3DObjects] ProjectionOverlay: Intrinsics loaded")
+        log.info("ProjectionOverlay: Intrinsics loaded")
 
         # Find all mesh files
         mesh_files = []
@@ -128,10 +132,10 @@ class SAM3D_ProjectionOverlay:
                 mesh_files.append((idx, os.path.join(pose_opt_folder, name)))
 
         mesh_files.sort(key=lambda x: x[0])
-        print(f"[SAM3DObjects] ProjectionOverlay: Found {len(mesh_files)} meshes")
+        log.info("ProjectionOverlay: Found %d meshes", len(mesh_files))
 
         if not mesh_files:
-            print("[SAM3DObjects] ProjectionOverlay: No meshes found, returning original image")
+            log.warning("ProjectionOverlay: No meshes found, returning original image")
             img_tensor = torch.from_numpy(img_array).unsqueeze(0)
             return (img_tensor,)
 
@@ -161,10 +165,10 @@ class SAM3D_ProjectionOverlay:
                     mesh = mesh_list[0] if len(mesh_list) == 1 else trimesh.util.concatenate(mesh_list)
                 loaded_meshes.append((idx, mesh))
             except Exception as e:
-                print(f"[SAM3DObjects] ProjectionOverlay: Error loading object {idx}: {e}")
+                log.error("ProjectionOverlay: Error loading object %d: %s", idx, e)
                 continue
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Loaded {len(loaded_meshes)} meshes")
+        log.info("ProjectionOverlay: Loaded %d meshes", len(loaded_meshes))
 
         # Render based on mode
         if render_mode == "mask_colors":
@@ -181,7 +185,7 @@ class SAM3D_ProjectionOverlay:
         img_tensor = torch.from_numpy(overlay).float().unsqueeze(0)
 
         elapsed = time.time() - start_time
-        print(f"[SAM3DObjects] ProjectionOverlay: OK Done in {elapsed:.1f}s, output shape {img_tensor.shape}")
+        log.info("ProjectionOverlay: Done in %.1fs, output shape %s", elapsed, img_tensor.shape)
         return (img_tensor,)
 
     def _render_mask_colors(self, loaded_meshes, img_array, K, colors, point_size, alpha):
@@ -202,9 +206,11 @@ class SAM3D_ProjectionOverlay:
                 continue
 
             # Project vertices
+            # Mesh is in PyTorch3D convention (X left, Y up, Z into scene)
+            # OpenCV projection expects (X right, Y down), so negate X and Y
             X, Y, Z = v[:, 0], v[:, 1], v[:, 2]
-            x = (K[0, 0] * X / Z + K[0, 2]).astype(int)
-            y = (K[1, 1] * Y / Z + K[1, 2]).astype(int)
+            x = (K[0, 0] * (-X) / Z + K[0, 2]).astype(int)
+            y = (K[1, 1] * (-Y) / Z + K[1, 2]).astype(int)
 
             # Filter points within image bounds
             valid = (x >= 0) & (x < W) & (y >= 0) & (y < H)
@@ -225,7 +231,7 @@ class SAM3D_ProjectionOverlay:
             all_x, all_y = all_x[valid], all_y[valid]
 
             overlay[all_y, all_x] = overlay[all_y, all_x] * (1 - alpha) + color * alpha
-            print(f"[SAM3DObjects] ProjectionOverlay: Object {idx}: {len(x)} points projected")
+            log.info("ProjectionOverlay: Object %d: %d points projected", idx, len(x))
 
         return overlay
 
@@ -235,8 +241,10 @@ class SAM3D_ProjectionOverlay:
         import pyrender
         import os
 
-        # Set offscreen rendering backend
-        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+        # Set offscreen rendering backend (EGL on Linux, Pyglet/WGL on Windows)
+        import sys
+        if sys.platform != 'win32':
+            os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
         overlay = img_array.copy()
 
@@ -267,17 +275,19 @@ class SAM3D_ProjectionOverlay:
             )
 
             # Transform mesh coordinates for pyrender (OpenGL conventions)
-            # Our pose-optimized mesh: X+ = right, Y+ = down, Z+ = forward (CV convention)
-            # pyrender/OpenGL expects: X+ = right, Y+ = up, Z+ = backward (camera looks along -Z)
-            # Transform: keep X, negate Y, negate Z
+            # Our pose-optimized mesh is in PyTorch3D convention:
+            #   X+ = left, Y+ = up, Z+ = into scene
+            # pyrender/OpenGL expects:
+            #   X+ = right, Y+ = up, Z+ = out of scene (camera looks along -Z)
+            # Transform: negate X, keep Y, negate Z
             import trimesh as tr
             mesh_gl = tr.Trimesh(
                 vertices=mesh.vertices.copy(),
                 faces=mesh.faces.copy(),
                 vertex_colors=mesh.visual.vertex_colors if hasattr(mesh.visual, 'vertex_colors') else None,
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
+            mesh_gl.vertices[:, 0] = -mesh_gl.vertices[:, 0]  # X: PT3D left -> OpenGL right
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: PT3D into scene -> OpenGL out
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, material=material)
             scene.add(pyrender_mesh)
@@ -292,7 +302,7 @@ class SAM3D_ProjectionOverlay:
         color_normalized = color_img.astype(np.float32) / 255.0
         overlay[mask] = color_normalized[mask]
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} meshes (3d_mesh)")
+        log.info("ProjectionOverlay: Rendered %d meshes (3d_mesh)", len(loaded_meshes))
         return overlay
 
     def _render_3d_mesh_textured(self, loaded_meshes, img_array, K, alpha, H, W):
@@ -301,8 +311,10 @@ class SAM3D_ProjectionOverlay:
         import pyrender
         import os
 
-        # Set offscreen rendering backend
-        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+        # Set offscreen rendering backend (EGL on Linux, Pyglet/WGL on Windows)
+        import sys
+        if sys.platform != 'win32':
+            os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
         overlay = img_array.copy()
 
@@ -325,15 +337,17 @@ class SAM3D_ProjectionOverlay:
         # Add meshes (pyrender will use vertex colors or textures if available)
         for idx, mesh in loaded_meshes:
             # Transform mesh coordinates for pyrender (OpenGL conventions)
-            # Same as 3d_mesh mode: keep X, negate Y, negate Z
+            # PyTorch3D: X left, Y up, Z into scene
+            # OpenGL: X right, Y up, Z out of scene
+            # Transform: negate X, keep Y, negate Z
             import trimesh as tr
             mesh_gl = tr.Trimesh(
                 vertices=mesh.vertices.copy(),
                 faces=mesh.faces.copy(),
                 visual=mesh.visual,  # Preserve textures/vertex colors
             )
-            mesh_gl.vertices[:, 1] = -mesh_gl.vertices[:, 1]  # Y: CV down -> OpenGL up
-            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: CV forward -> OpenGL backward
+            mesh_gl.vertices[:, 0] = -mesh_gl.vertices[:, 0]  # X: PT3D left -> OpenGL right
+            mesh_gl.vertices[:, 2] = -mesh_gl.vertices[:, 2]  # Z: PT3D into scene -> OpenGL out
 
             pyrender_mesh = pyrender.Mesh.from_trimesh(mesh_gl, smooth=True)
             scene.add(pyrender_mesh)
@@ -348,7 +362,7 @@ class SAM3D_ProjectionOverlay:
         color_normalized = color_img.astype(np.float32) / 255.0
         overlay[mask] = color_normalized[mask]
 
-        print(f"[SAM3DObjects] ProjectionOverlay: Rendered {len(loaded_meshes)} textured meshes")
+        log.info("ProjectionOverlay: Rendered %d textured meshes", len(loaded_meshes))
         return overlay
 
 

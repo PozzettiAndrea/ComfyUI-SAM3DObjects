@@ -11,28 +11,372 @@ Each function loads its own models directly - no shared state.
 """
 
 import gc
+import importlib
+import logging
 import sys
 import base64
 import pickle
+import yaml
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# Add vendor/ to sys.path BEFORE any sam3d_objects imports
-# This ensures all imports resolve through the same path
-_VENDOR_PATH = str(Path(__file__).parent.parent / "vendor")
-if _VENDOR_PATH not in sys.path:
-    sys.path.insert(0, _VENDOR_PATH)
-
-# Pre-import spconv and modules that use it BEFORE hydra runs
-# This prevents double-import crashes (pybind11 can only init once)
-import spconv  # noqa: E402
-import sam3d_objects.model.backbone.tdfy_dit.modules.sparse  # noqa: E402
-import sam3d_objects.model.backbone.tdfy_dit.models  # noqa: E402
+log = logging.getLogger("sam3dobjects")
 
 import numpy as np
 import torch
+import comfy.model_management
+import comfy.model_patcher
+import comfy.utils
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
+
+# Module-level patcher cache: key -> comfy.model_patcher.ModelPatcher
+# ComfyUI manages VRAM placement, per-layer offloading, and cross-model eviction.
+_PATCHER_CACHE = {}
+
+# Inline decoder configs — used as fallback when YAML files are missing.
+# These are small, static configs that never change between releases.
+_DEFAULT_DECODER_CONFIGS = {
+    "slat_decoder_gs": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {
+            "lr": {"_xyz": 1.0, "_features_dc": 1.0, "_opacity": 1.0, "_scaling": 1.0, "_rotation": 0.1},
+            "perturb_offset": True,
+            "voxel_size": 1.5,
+            "num_gaussians": 32,
+            "2d_filter_kernel_size": 0.1,
+            "3d_filter_kernel_size": 0.0009,
+            "scaling_bias": 0.004,
+            "opacity_bias": 0.1,
+            "scaling_activation": "softplus",
+        },
+        "use_fp16": True,
+    },
+    "slat_decoder_gs_4": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {
+            "lr": {"_xyz": 1.0, "_features_dc": 1.0, "_opacity": 1.0, "_scaling": 1.0, "_rotation": 0.1},
+            "perturb_offset": True,
+            "voxel_size": 1.5,
+            "num_gaussians": 4,
+            "2d_filter_kernel_size": 0.1,
+            "3d_filter_kernel_size": 0.0009,
+            "scaling_bias": 0.004,
+            "opacity_bias": 0.1,
+            "scaling_activation": "softplus",
+        },
+        "use_fp16": True,
+    },
+    "slat_decoder_mesh": {
+        "_target_": "sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_mesh.SLatMeshDecoderTdfyWrapper",
+        "resolution": 64,
+        "model_channels": 768,
+        "latent_channels": 8,
+        "num_blocks": 12,
+        "num_heads": 12,
+        "mlp_ratio": 4,
+        "attn_mode": "swin",
+        "window_size": 8,
+        "representation_config": {"use_color": True},
+        "use_fp16": True,
+    },
+}
+
+
+# =============================================================================
+# Hydra Replacement: Config Loading + Recursive Instantiation
+# =============================================================================
+
+class _DotDict(dict):
+    """Dict with attribute access for OmegaConf compatibility."""
+    def __getattr__(self, name):
+        try:
+            val = self[name]
+        except KeyError:
+            raise AttributeError(name)
+        if isinstance(val, dict) and not isinstance(val, _DotDict):
+            val = _DotDict(val)
+            self[name] = val
+        return val
+
+
+# Registry: Hydra _target_ string -> (relative_module, class_name)
+# All modules use relative imports from this package (nodes.utils).
+_NATIVE_CLASS_MAP = {
+    # Flow models
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_flow.SparseStructureFlowModel':
+        ('..sam3d.model', 'SparseStructureFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mot_sparse_structure_flow.MOTSparseStructureFlowModel':
+        ('..sam3d.model', 'MOTSparseStructureFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mot_sparse_structure_flow.SparseStructureFlowTdfyWrapper':
+        ('..sam3d.model', 'MOTSparseStructureFlowTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_flow.SLatFlowModel':
+        ('..sam3d.model', 'SLatFlowModel'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_flow.SLatFlowModelTdfyWrapper':
+        ('..sam3d.model', 'SLatFlowModelTdfyWrapper'),
+    # VAE
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_vae.SparseStructureDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SparseStructureDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.sparse_structure_vae.SparseStructureEncoderTdfyWrapper':
+        ('..sam3d.vae', 'SparseStructureEncoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_gs.SLatGaussianDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatGaussianDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.decoder_mesh.SLatMeshDecoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatMeshDecoderTdfyWrapper'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.structured_latent_vae.encoder.SLatEncoderTdfyWrapper':
+        ('..sam3d.vae', 'SLatEncoderTdfyWrapper'),
+    # Embedders
+    'sam3d_objects.model.backbone.dit.embedder.embedder_fuser.EmbedderFuser':
+        ('..sam3d.model', 'EmbedderFuser'),
+    'sam3d_objects.model.backbone.dit.embedder.dino.Dino':
+        ('..sam3d.model', 'Dino'),
+    'sam3d_objects.model.backbone.dit.embedder.dino.DinoForMasks':
+        ('..sam3d.model', 'DinoForMasks'),
+    'sam3d_objects.model.backbone.dit.embedder.pointmap.PointPatchEmbed':
+        ('..sam3d.model', 'PointPatchEmbed'),
+    # MM Latent
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.Latent':
+        ('..sam3d.model', 'Latent'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.LearntPositionEmbedder':
+        ('..sam3d.model', 'LearntPositionEmbedder'),
+    'sam3d_objects.model.backbone.tdfy_dit.models.mm_latent.ShapePositionEmbedder':
+        ('..sam3d.model', 'ShapePositionEmbedder'),
+    # Generators
+    'sam3d_objects.model.backbone.generator.shortcut.model.ShortCut':
+        ('..sam3d.generators', 'ShortCut'),
+    'sam3d_objects.model.backbone.generator.flow_matching.model.FlowMatching':
+        ('..sam3d.generators', 'FlowMatching'),
+    'sam3d_objects.model.backbone.generator.flow_matching.model.lognorm_sampler':
+        ('..sam3d.generators', 'lognorm_sampler'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.ClassifierFreeGuidance':
+        ('..sam3d.generators', 'ClassifierFreeGuidance'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.ClassifierFreeGuidanceWithExternalUnconditionalProbability':
+        ('..sam3d.generators', 'ClassifierFreeGuidanceWithExternalUnconditionalProbability'),
+    'sam3d_objects.model.backbone.generator.classifier_free_guidance.PointmapCFG':
+        ('..sam3d.generators', 'PointmapCFG'),
+    # Transforms / Preprocessor
+    'sam3d_objects.data.dataset.tdfy.preprocessor.PreProcessor':
+        ('..sam3d.transforms', 'PreProcessor'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.resize_all_to_same_size':
+        ('..sam3d.transforms', 'resize_all_to_same_size'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.crop_around_mask_with_padding':
+        ('..sam3d.transforms', 'crop_around_mask_with_padding'),
+    'sam3d_objects.data.dataset.tdfy.img_and_mask_transforms.ObjectCentricSSI':
+        ('..sam3d.transforms', 'ObjectCentricSSI'),
+    'sam3d_objects.data.dataset.tdfy.img_processing.pad_to_square_centered':
+        ('..sam3d.transforms', 'pad_to_square_centered'),
+    # Pipeline
+    'sam3d_objects.pipeline.depth_models.moge.MoGe':
+        ('..sam3d.pipeline', 'MoGe'),
+    # MoGe
+    'moge.model.v1.MoGeModel.from_pretrained':
+        ('..sam3d.moge', 'MoGeModel.from_pretrained'),
+}
+
+# Prefix-based fallback for any sam3d_objects targets not in the explicit map
+_MODULE_REMAP = [
+    ('sam3d_objects.model.backbone.tdfy_dit.models', '..sam3d.model'),
+    ('sam3d_objects.model.backbone.dit.embedder', '..sam3d.model'),
+    ('sam3d_objects.model.backbone.generator', '..sam3d.generators'),
+    ('sam3d_objects.data.dataset.tdfy', '..sam3d.transforms'),
+    ('sam3d_objects.data.utils', '..sam3d.data_utils'),
+    ('sam3d_objects.pipeline', '..sam3d.pipeline'),
+    ('moge.model', '..sam3d.moge'),
+]
+
+
+def _make_dict(**kwargs):
+    """Replacement for sam3d_objects.config.utils.make_dict."""
+    return dict(**kwargs)
+
+
+def _resolve_class(target: str):
+    """Resolve a _target_ string to a class. Uses relative imports from nodes.utils."""
+    # Special case: make_dict utility
+    if target == 'sam3d_objects.config.utils.make_dict':
+        return _make_dict
+
+    # Explicit map (fast path)
+    if target in _NATIVE_CLASS_MAP:
+        module_path, attr_chain = _NATIVE_CLASS_MAP[target]
+        module = importlib.import_module(module_path, package=__package__)
+        # Handle chained attrs like 'MoGeModel.from_pretrained'
+        obj = module
+        for attr in attr_chain.split('.'):
+            obj = getattr(obj, attr)
+        return obj
+
+    # Prefix-based remapping for vendor targets not in the explicit map
+    class_name = target.rsplit('.', 1)[1]
+    for old_prefix, new_module in _MODULE_REMAP:
+        if target.startswith(old_prefix + '.'):
+            module = importlib.import_module(new_module, package=__package__)
+            return getattr(module, class_name)
+
+    # External classes (torchvision, etc.) — absolute import
+    parts = target.rsplit('.', 1)
+    module = importlib.import_module(parts[0])
+    return getattr(module, parts[1])
+
+
+def _instantiate(config):
+    """Recursively instantiate a Hydra-style config dict (replaces hydra.utils.instantiate).
+
+    Handles:
+    - _target_: fully-qualified class/function path
+    - _partial_: true -> return functools.partial instead of calling
+    - Nested dicts with _target_ are recursively instantiated
+    - Lists are recursively processed
+    """
+    if isinstance(config, dict):
+        if '_target_' in config:
+            target = config['_target_']
+            cls = _resolve_class(target)
+            is_partial = config.get('_partial_', False)
+            kwargs = {}
+            for k, v in config.items():
+                if k.startswith('_'):  # Skip _target_, _recursive_, _partial_, etc.
+                    continue
+                kwargs[k] = _instantiate(v)
+            if is_partial:
+                return partial(cls, **kwargs)
+            return cls(**kwargs)
+        else:
+            return {k: _instantiate(v) for k, v in config.items()}
+    elif isinstance(config, list):
+        return [_instantiate(v) for v in config]
+    else:
+        return config
+
+
+def _filter_and_remove_prefix(sd: dict, prefix: str) -> dict:
+    """Filter state dict to keys starting with prefix, then remove the prefix."""
+    n = len(prefix)
+    return {k[n:]: v for k, v in sd.items() if k.startswith(prefix)}
+
+
+def _remove_prefix(sd: dict, prefix: str) -> dict:
+    """Remove prefix from state dict keys that have it."""
+    n = len(prefix)
+    return {(k[n:] if k.startswith(prefix) else k): v for k, v in sd.items()}
+
+
+def _fix_meta_buffers(model: torch.nn.Module, device):
+    """Reinitialize any buffers left on meta device after assign=True loading."""
+    for name, buf in model.named_buffers():
+        if buf.device.type == "meta":
+            parts = name.split(".")
+            parent = model
+            for p in parts[:-1]:
+                parent = getattr(parent, p)
+            parent._buffers[parts[-1]] = torch.zeros_like(buf, device=device)
+
+
+def _enable_lowvram_cast(model: torch.nn.Module) -> None:
+    """Swap leaf modules to comfy.ops.disable_weight_init versions for lowvram support.
+
+    ComfyUI's ModelPatcher can only partially-load modules that have the
+    `comfy_cast_weights` attribute (from CastWeightBiasOp).  Native ComfyUI models
+    use `comfy.ops.disable_weight_init.*` layers, but third-party models use plain
+    `torch.nn.*`.  This function retroactively swaps __class__ on every leaf module
+    so that ModelPatcher's lowvram layer-streaming works transparently.
+
+    Also installs forward pre-hooks on non-leaf modules that own direct parameters
+    or buffers (e.g. cls_token, pos_embed on ViT) so they get moved to the input
+    device on-the-fly during lowvram inference.
+    """
+    try:
+        from comfy.ops import disable_weight_init
+    except ImportError:
+        return
+
+    _CLASS_MAP = {
+        torch.nn.Linear: disable_weight_init.Linear,
+        torch.nn.Conv1d: disable_weight_init.Conv1d,
+        torch.nn.Conv2d: disable_weight_init.Conv2d,
+        torch.nn.Conv3d: disable_weight_init.Conv3d,
+        torch.nn.GroupNorm: disable_weight_init.GroupNorm,
+        torch.nn.LayerNorm: disable_weight_init.LayerNorm,
+        torch.nn.ConvTranspose2d: disable_weight_init.ConvTranspose2d,
+        torch.nn.ConvTranspose1d: disable_weight_init.ConvTranspose1d,
+        torch.nn.Embedding: disable_weight_init.Embedding,
+    }
+
+    cast_count = 0
+    for _name, module in model.named_modules():
+        comfy_cls = _CLASS_MAP.get(type(module))
+        if comfy_cls is not None:
+            module.__class__ = comfy_cls
+            cast_count += 1
+
+    # Install forward pre-hooks on non-leaf modules that own orphan params/buffers.
+    # These are things like cls_token, pos_embed on ViT — tiny tensors that aren't
+    # inside any leaf layer, so comfy_cast_weights doesn't cover them.
+    hook_count = 0
+    for _name, module in model.named_modules():
+        if hasattr(module, 'comfy_cast_weights'):
+            continue  # Leaf module — handled by cast_weights mechanism
+        direct_params = list(module.named_parameters(recurse=False))
+        direct_bufs = list(module.named_buffers(recurse=False))
+        if not direct_params and not direct_bufs:
+            continue  # No orphan tensors
+
+        def _move_orphans_hook(mod, args, kwargs=None):
+            # Infer target device from first tensor in args or kwargs
+            device = None
+            for a in args:
+                if isinstance(a, torch.Tensor):
+                    device = a.device
+                    break
+                # SparseTensor and similar wrapper types have a .feats tensor
+                if hasattr(a, 'feats') and isinstance(a.feats, torch.Tensor):
+                    device = a.feats.device
+                    break
+            if device is None and kwargs:
+                for v in kwargs.values():
+                    if isinstance(v, torch.Tensor):
+                        device = v.device
+                        break
+                    if hasattr(v, 'feats') and isinstance(v.feats, torch.Tensor):
+                        device = v.feats.device
+                        break
+            if device is None:
+                # Last resort: check if any child already on CUDA
+                for p in mod.parameters():
+                    if p.device.type == 'cuda':
+                        device = p.device
+                        break
+            if device is None:
+                return
+            for _, p in mod.named_parameters(recurse=False):
+                if p.data.device != device:
+                    p.data = p.data.to(device)
+            for _, b in mod.named_buffers(recurse=False):
+                if b.device != device:
+                    b.data = b.data.to(device)
+
+        module.register_forward_pre_hook(_move_orphans_hook, with_kwargs=True)
+        hook_count += 1
+
+    if cast_count or hook_count:
+        log.debug("Enabled lowvram: %d cast modules, %d orphan-param hooks", cast_count, hook_count)
 
 
 # =============================================================================
@@ -41,181 +385,316 @@ from .helpers import preprocess_image_lazy, save_output_to_disk
 
 def _load_config(config_path: str):
     """Load pipeline.yaml and return config + checkpoint_dir."""
-    from omegaconf import OmegaConf
-    config = OmegaConf.load(config_path)
+    with open(config_path, 'r') as f:
+        config = _DotDict(yaml.safe_load(f))
     checkpoint_dir = Path(config_path).parent
     return config, checkpoint_dir
 
 
-def _get_dtype(config):
-    """Get torch dtype from config."""
-    dtype_str = getattr(config, 'dtype', 'float16')
-    if dtype_str == 'bfloat16':
+def _prefer_safetensors(ckpt_path: Path) -> Path:
+    """Prefer .safetensors over .ckpt if available (mmap-friendly, zero-copy loading)."""
+    safetensors_path = ckpt_path.with_suffix('.safetensors')
+    if safetensors_path.exists():
+        return safetensors_path
+    return ckpt_path
+
+
+def _resolve_dtype(precision: str) -> torch.dtype:
+    """Convert precision string to torch dtype.
+
+    Args:
+        precision: One of "bf16", "fp16", "fp32".
+    """
+    if precision == "bf16":
         return torch.bfloat16
-    elif dtype_str == 'float16':
+    if precision == "fp16":
         return torch.float16
     return torch.float32
 
 
-def _load_generator(config_path: str, generator_type: str):
+def _get_or_load_generator(config_path: str, generator_type: str, precision: str = "bf16"):
     """
-    Load a generator model (ss_generator or slat_generator).
+    Load a generator model (ss_generator or slat_generator) wrapped in ModelPatcher.
 
     Args:
         config_path: Path to pipeline.yaml
         generator_type: 'ss' or 'slat'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded generator model on GPU
+        comfy.model_patcher.ModelPatcher wrapping the generator model
     """
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+    cache_key = f"generator:{generator_type}"
+    if cache_key in _PATCHER_CACHE:
+        log.debug("Using cached %s_generator", generator_type)
+        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
     gen_config_path = checkpoint_dir / config[f"{generator_type}_generator_config_path"]
-    gen_ckpt_path = checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"]
+    gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"])
 
-    gen_config = OmegaConf.load(gen_config_path)
+    with open(gen_config_path, 'r') as f:
+        gen_config = yaml.safe_load(f)
     model_config = gen_config["module"]["generator"]["backbone"]
 
-    model = instantiate(model_config)
-    model = load_model_from_checkpoint(
+    offload_device = comfy.model_management.unet_offload_device()
+
+    # Build on meta device (zero memory), then load weights directly
+    with torch.device("meta"):
+        model = _instantiate(model_config)
+
+    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+    # Training checkpoints nest weights under "state_dict"; safetensors are flat
+    if 'state_dict' in sd:
+        sd = sd['state_dict']
+    sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
+    model.load_state_dict(sd, strict=False, assign=True)
+    _fix_meta_buffers(model, offload_device)
+
+    model.eval()
+    model.requires_grad_(False)
+
+    # Native models use manual_cast — dtype is handled by the operations tier.
+    # No convert_to_fp16() needed.
+
+    _enable_lowvram_cast(model)
+    patcher = comfy.model_patcher.ModelPatcher(
         model,
-        str(gen_ckpt_path),
-        strict=False,
-        device="cpu",
-        freeze=True,
-        eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.generator."),
+        load_device=comfy.model_management.get_torch_device(),
+        offload_device=offload_device,
     )
 
-    model = model.cuda().to(_get_dtype(config))
-    return model
+    _PATCHER_CACHE[cache_key] = patcher
+    return patcher
 
 
-def _load_decoder(config_path: str, decoder_type: str):
+def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
     """
-    Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh).
+    Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh) wrapped in ModelPatcher.
 
     Args:
         config_path: Path to pipeline.yaml
         decoder_type: 'ss', 'slat_decoder_gs', 'slat_decoder_mesh'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded decoder model on GPU
+        comfy.model_patcher.ModelPatcher wrapping the decoder model
     """
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, remove_prefix_state_dict_fn
+    cache_key = f"decoder:{decoder_type}"
+    if cache_key in _PATCHER_CACHE:
+        log.debug("Using cached %s", decoder_type)
+        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
     if decoder_type == 'ss':
         dec_config_path = checkpoint_dir / config.ss_decoder_config_path
-        dec_ckpt_path = checkpoint_dir / config.ss_decoder_ckpt_path
+        dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config.ss_decoder_ckpt_path)
     else:
         dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
-        dec_ckpt_path = checkpoint_dir / config[f"{decoder_type}_ckpt_path"]
+        dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{decoder_type}_ckpt_path"])
 
-    dec_config = OmegaConf.load(dec_config_path)
+    if dec_config_path.exists():
+        with open(dec_config_path, 'r') as f:
+            dec_config = yaml.safe_load(f)
+    else:
+        dec_config = _DEFAULT_DECODER_CONFIGS.get(decoder_type)
+        if dec_config is None:
+            raise FileNotFoundError(
+                f"No config file and no inline default for {decoder_type}: {dec_config_path}"
+            )
+        dec_config = dict(dec_config)  # shallow copy to avoid mutating the default
+        log.warning("Config file missing, using inline default: %s", dec_config_path)
+    # Remove pretrained_ckpt_path if present (training artifact)
+    dec_config.pop('pretrained_ckpt_path', None)
 
-    model = instantiate(dec_config)
-    model = load_model_from_checkpoint(
+    offload_device = comfy.model_management.unet_offload_device()
+
+    # Decoders are small (~170-364 MB) and contain utility objects (FlexiCubes,
+    # SparseFeatures2Mesh) that create real data tensors in __init__, so skip
+    # the meta device pattern here — not worth the complexity.
+    model = _instantiate(dec_config)
+
+    sd = comfy.utils.load_torch_file(str(dec_ckpt_path))
+    # Decoder checkpoints have weights at root level with "module." prefix
+    sd = _remove_prefix(sd, "module.")
+    model.load_state_dict(sd, strict=False, assign=True)
+
+    model.eval()
+    model.requires_grad_(False)
+
+    # Cast to requested precision (sageattention requires fp16/bf16)
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        model.to(dtype=dtype)
+
+    # Re-init FlexiCubes / SparseFeatures2Mesh lookup tables on the target device.
+    if hasattr(model, 'mesh_extractor'):
+        from ..sam3d.representations import SparseFeatures2Mesh
+        me = model.mesh_extractor
+        if isinstance(me, SparseFeatures2Mesh):
+            device = str(comfy.model_management.get_torch_device())
+            model.mesh_extractor = SparseFeatures2Mesh(
+                device=device, res=me.res, use_color=me.use_color,
+            )
+            log.info("Re-initialized mesh_extractor on %s", device)
+
+    _enable_lowvram_cast(model)
+    patcher = comfy.model_patcher.ModelPatcher(
         model,
-        str(dec_ckpt_path),
-        strict=False,
-        device="cpu",
-        freeze=True,
-        eval=True,
-        state_dict_key=None,  # Decoder checkpoints have weights at root level
-        state_dict_fn=remove_prefix_state_dict_fn("module."),
+        load_device=comfy.model_management.get_torch_device(),
+        offload_device=offload_device,
     )
 
-    model = model.cuda()
-    return model
+    _PATCHER_CACHE[cache_key] = patcher
+    return patcher
 
 
-def _load_condition_embedder(config_path: str, embedder_type: str):
+def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precision: str = "bf16"):
     """
-    Load a condition embedder (ss or slat).
+    Load a condition embedder (ss or slat) wrapped in ModelPatcher.
 
     Args:
         config_path: Path to pipeline.yaml
         embedder_type: 'ss' or 'slat'
+        precision: "bf16", "fp16", or "fp32"
 
     Returns:
-        Loaded embedder on GPU
+        comfy.model_patcher.ModelPatcher wrapping the embedder model
     """
-    from omegaconf import OmegaConf
-    from hydra.utils import instantiate
-    from sam3d_objects.model.io import load_model_from_checkpoint, filter_and_remove_prefix_state_dict_fn
+    cache_key = f"embedder:{embedder_type}"
+    if cache_key in _PATCHER_CACHE:
+        log.debug("Using cached %s_embedder", embedder_type)
+        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
     gen_config_path = checkpoint_dir / config[f"{embedder_type}_generator_config_path"]
-    gen_ckpt_path = checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"]
+    gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"])
 
-    gen_config = OmegaConf.load(gen_config_path)
-    embedder_config = gen_config.module.condition_embedder.backbone
+    with open(gen_config_path, 'r') as f:
+        gen_config = yaml.safe_load(f)
+    embedder_config = gen_config["module"]["condition_embedder"]["backbone"]
 
-    embedder = instantiate(embedder_config)
-    embedder = load_model_from_checkpoint(
+    offload_device = comfy.model_management.unet_offload_device()
+
+    # Build on meta device (zero memory), then load weights directly
+    with torch.device("meta"):
+        embedder = _instantiate(embedder_config)
+
+    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+    # Training checkpoints nest weights under "state_dict"; safetensors are flat
+    if 'state_dict' in sd:
+        sd = sd['state_dict']
+    sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
+    embedder.load_state_dict(sd, strict=False, assign=True)
+    _fix_meta_buffers(embedder, offload_device)
+
+    embedder.eval()
+    embedder.requires_grad_(False)
+
+    _reinit_dino_buffers(embedder)
+    _share_dino_backbones(embedder)
+    _wrap_dino_attention(embedder)
+
+    _enable_lowvram_cast(embedder)
+    patcher = comfy.model_patcher.ModelPatcher(
         embedder,
-        str(gen_ckpt_path),
-        strict=False,
-        device="cpu",
-        freeze=True,
-        eval=True,
-        state_dict_key="state_dict",
-        state_dict_fn=filter_and_remove_prefix_state_dict_fn("_base_models.condition_embedder."),
+        load_device=comfy.model_management.get_torch_device(),
+        offload_device=offload_device,
     )
 
-    embedder = embedder.cuda().to(_get_dtype(config))
-    return embedder
+    _PATCHER_CACHE[cache_key] = patcher
+    return patcher
 
 
 def _get_preprocessor(config_path: str, preprocessor_type: str):
     """Get preprocessor from config."""
-    from hydra.utils import instantiate
-
     config, _ = _load_config(config_path)
     preprocessor_config = config.get(f'{preprocessor_type}_preprocessor')
 
-    if preprocessor_config:
-        return instantiate(preprocessor_config)
+    if preprocessor_config and isinstance(preprocessor_config, dict) and '_target_' in preprocessor_config:
+        return _instantiate(preprocessor_config)
     else:
-        from sam3d_objects.pipeline import preprocess_utils
-        return preprocess_utils.get_default_preprocessor()
+        from ..sam3d.pipeline import get_default_preprocessor
+        return get_default_preprocessor()
 
 
-def _unload(*models):
-    """Delete models and free VRAM."""
-    for m in models:
-        if m is not None:
-            del m
-    gc.collect()
-    torch.cuda.empty_cache()
+def _reinit_dino_buffers(model):
+    """Reinitialize Dino mean/std buffers after meta-device loading.
+
+    Meta-device init creates these as empty tensors. They need correct
+    ImageNet normalization values for proper preprocessing.
+    """
+    for module in model.modules():
+        if type(module).__name__ == 'Dino' and hasattr(module, 'mean'):
+            device = module.mean.device
+            dtype = module.mean.dtype
+            module.mean = torch.as_tensor([[0.485, 0.456, 0.406]]).view(-1, 1, 1).to(device=device, dtype=dtype)
+            module.std = torch.as_tensor([[0.229, 0.224, 0.225]]).view(-1, 1, 1).to(device=device, dtype=dtype)
+
+
+def _share_dino_backbones(model):
+    """Share frozen DINOv2 backbone between Dino instances. Saves ~1.1GB VRAM.
+
+    The EmbedderFuser has two Dino modules (one for image, one for mask)
+    with identical frozen backbones loaded from the same pretrained weights.
+    """
+    if not hasattr(model, 'module_list'):
+        return
+
+    # Match both native and vendor Dino classes by checking for backbone attribute
+    dino_modules = [
+        m for m in model.module_list
+        if type(m).__name__ in ('Dino', 'DinoForMasks') and hasattr(m, 'backbone')
+    ]
+
+    if len(dino_modules) > 1:
+        shared = dino_modules[0].backbone
+        for dino in dino_modules[1:]:
+            dino.backbone = shared
+        log.info("Shared DINOv2 backbone across %d Dino instances (saved ~1.1GB)", len(dino_modules))
+        gc.collect()
+        comfy.model_management.soft_empty_cache()
+
+
+def _wrap_dino_attention(model):
+    """Wrap DINOv2 attention blocks with ComfyUI's attention dispatch after meta-device loading."""
+    from ..sam3d.model import _wrap_attn_comfy
+    for module in model.modules():
+        if type(module).__name__ == 'Dino' and hasattr(module, 'backbone'):
+            for block in module.backbone.blocks:
+                _wrap_attn_comfy(block.attn)
+            log.info("Wrapped DINOv2 attention blocks (%d blocks)", len(module.backbone.blocks))
+
+
+def clear_model_cache():
+    """Clear all cached patchers and free memory."""
+    global _PATCHER_CACHE
+    _PATCHER_CACHE.clear()
+    comfy.model_management.soft_empty_cache()
 
 
 # =============================================================================
 # Pose Transformation Helpers
 # =============================================================================
 
-def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
+def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device=None):
     """
     Apply pose transformation (rotation, translation, scale) to a Gaussian object.
     """
     from pytorch3d.transforms import quaternion_to_matrix, matrix_to_quaternion, quaternion_multiply, Transform3d
+
+    if device is None:
+        device = comfy.model_management.get_torch_device()
 
     rotation = pose_data.get("rotation")
     translation = pose_data.get("translation")
     scale = pose_data.get("scale")
 
     if rotation is None or translation is None or scale is None:
-        print(f"[Worker] Warning: Missing pose data, skipping Gaussian pose application", file=sys.stderr)
+        log.warning("Missing pose data, skipping Gaussian pose application")
         return gaussian
 
     # Convert to tensors
@@ -271,7 +750,7 @@ def _apply_pose_to_gaussian(gaussian, pose_data: Dict, device="cuda"):
     new_rotations = quaternion_multiply(pose_rotation_quat, current_rotations)
     gaussian.from_rotation(new_rotations)
 
-    print(f"[Worker] Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}", file=sys.stderr)
+    log.info(f"Applied pose to Gaussian: scale={scale_val:.4f}, trans={translation.squeeze().tolist()}")
     return gaussian
 
 
@@ -286,7 +765,7 @@ def _apply_pose_to_vertices(vertices: np.ndarray, pose_data: Dict) -> np.ndarray
     scale = pose_data.get("scale")
 
     if rotation is None or translation is None or scale is None:
-        print(f"[Worker] Warning: Missing pose data, skipping pose application", file=sys.stderr)
+        log.warning("Missing pose data, skipping pose application")
         return vertices
 
     # Convert to numpy arrays
@@ -327,7 +806,8 @@ def run_stage1(
     inference_steps: int = 25,
     cfg_strength: float = 7.0,
     cfg_strength_pm: float = 0.0,
-    output_dir: str = None
+    output_dir: str = None,
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 1 (sparse structure generation).
@@ -335,16 +815,16 @@ def run_stage1(
     Models loaded: ss_generator (~6.7 GB), ss_condition_embedder (~1.2 GB), ss_decoder (~150 MB)
     Peak VRAM: ~8-9 GB
     """
-    from sam3d_objects.pipeline.inference_utils import (
+    from ..sam3d.pipeline import (
         downsample_sparse_structure,
         prune_sparse_structure,
         get_pose_decoder,
     )
 
-    print(f"[Worker] Running Stage 1 (sparse gen)", file=sys.stderr)
+    log.info("Running Stage 1 (sparse gen)")
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
     # Set seed
     torch.manual_seed(seed)
@@ -369,7 +849,7 @@ def run_stage1(
         image_np = np.concatenate([image_np, alpha], axis=-1)
 
     # Get preprocessor and preprocess image
-    print(f"[Worker] Preprocessing image...", file=sys.stderr)
+    log.info("Preprocessing image...")
     ss_preprocessor = _get_preprocessor(config_path, 'ss')
 
     # Convert pointmap to tensor for preprocessing
@@ -395,19 +875,25 @@ def run_stage1(
                 debug_pil = PILImage.fromarray(debug_img_np)
                 debug_image_path = str(Path(output_dir) / "debug_preprocessed_stage1.png")
                 debug_pil.save(debug_image_path)
-                print(f"[Worker] Saved debug image: {debug_image_path}", file=sys.stderr)
+                log.debug("Saved debug image: %s", debug_image_path)
         except Exception as e:
-            print(f"[Worker] Failed to save debug image: {e}", file=sys.stderr)
+            log.warning("Failed to save debug image: %s", e)
 
     # Store pointmap scale/shift for pose decoding
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # Load models
-    print(f"[Worker] Loading Stage 1 models...", file=sys.stderr)
-    ss_generator = _load_generator(config_path, 'ss')
-    ss_decoder = _load_decoder(config_path, 'ss')
-    ss_embedder = _load_condition_embedder(config_path, 'ss')
+    # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading Stage 1 models...")
+    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
+    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
+
+    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
+
+    ss_generator = ss_gen_patcher.model
+    ss_decoder = ss_dec_patcher.model
+    ss_embedder = ss_emb_patcher.model
 
     # Configure generator (match original override_ss_generator_cfg_config)
     ss_generator.no_shortcut = True
@@ -420,12 +906,13 @@ def run_stage1(
     ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
     ss_generator.reverse_fn.unconditional_handling = "add_flag"
 
-    print(f"[Worker] Running sparse structure generation...", file=sys.stderr)
+    log.info("Running sparse structure generation...")
 
     downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
+    device = comfy.model_management.get_torch_device()
 
     with torch.no_grad():
-        with torch.autocast(device_type="cuda", dtype=dtype):
+        with torch.autocast(device_type=device.type, dtype=dtype):
             image_tensor = ss_input_dict["image"]
             bs = image_tensor.shape[0]
 
@@ -457,13 +944,23 @@ def run_stage1(
                 condition_args = (tokens,)
                 condition_kwargs = {}
 
-            # Run generator
-            return_dict = ss_generator(
+            # Run generator with progress reporting
+            steps = ss_generator.inference_steps
+            pbar = comfy.utils.ProgressBar(steps)
+            gen_iter = ss_generator.generate_iter(
                 latent_shape_dict,
                 image_tensor.device,
                 *condition_args,
                 **condition_kwargs,
             )
+            try:
+                from tqdm import tqdm
+                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 1 (sparse structure)")
+            except ImportError:
+                pass
+            for _, xt, _ in gen_iter:
+                pbar.update(1)
+            return_dict = xt
 
             if not has_latent_mapping:
                 return_dict = {"shape": return_dict}
@@ -489,13 +986,13 @@ def run_stage1(
                 )
 
             coords, downsample_factor = downsample_sparse_structure(coords)
-            print(f"[Worker] Downsampled coords from {original_shape[0]} to {coords.shape[0]}", file=sys.stderr)
+            log.debug("Downsampled coords from %d to %d", original_shape[0], coords.shape[0])
 
             return_dict["coords"] = coords
             return_dict["downsample_factor"] = downsample_factor
 
     # Apply pose decoding
-    print(f"[Worker] Decoding pose...", file=sys.stderr)
+    log.info("Decoding pose...")
     pose_decoder_name = getattr(config, 'pose_decoder_name', 'default')
     pose_decoder = get_pose_decoder(pose_decoder_name)
     pose_result = pose_decoder(
@@ -511,11 +1008,7 @@ def run_stage1(
     # Add voxel coordinates
     return_dict["voxel"] = return_dict["coords"][:, 1:] / 64 - 0.5
 
-    # Unload models
-    print(f"[Worker] Unloading Stage 1 models...", file=sys.stderr)
-    _unload(ss_generator, ss_decoder, ss_embedder)
-
-    print(f"[Worker] Stage 1 complete", file=sys.stderr)
+    log.info("Stage 1 complete")
 
     # Save sparse structure
     if output_dir:
@@ -527,7 +1020,7 @@ def run_stage1(
 
     sparse_path = save_dir / "sparse_structure.pt"
     torch.save(return_dict, sparse_path)
-    print(f"[Worker] Saved sparse structure: {sparse_path}", file=sys.stderr)
+    log.info("Saved sparse structure: %s", sparse_path)
 
     saved_output = {
         "output_dir": str(save_dir),
@@ -554,6 +1047,7 @@ def run_stage1(
         "status": "success",
         "stage1_mode": True,
         "output": saved_output,
+        "data": return_dict,
         "rotation": rotation,
         "translation": translation,
         "scale": scale,
@@ -573,7 +1067,8 @@ def run_stage2(
     seed: int = 42,
     inference_steps: int = 25,
     cfg_strength: float = 5.0,
-    output_dir: str = None
+    output_dir: str = None,
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 2 (SLAT generation).
@@ -581,12 +1076,12 @@ def run_stage2(
     Models loaded: slat_generator (~4.9 GB), slat_condition_embedder (~1.2 GB)
     Peak VRAM: ~6-7 GB
     """
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor
 
-    print(f"[Worker] Running Stage 2 (SLAT gen)", file=sys.stderr)
+    log.info("Running Stage 2 (SLAT gen)")
 
     config, checkpoint_dir = _load_config(config_path)
-    dtype = _get_dtype(config)
+    dtype = _resolve_dtype(precision)
 
     # Set seed
     torch.manual_seed(seed)
@@ -611,9 +1106,11 @@ def run_stage2(
         image_np = np.concatenate([image_np, alpha], axis=-1)
 
     # Get preprocessor and preprocess image
-    print(f"[Worker] Preprocessing image for SLAT...", file=sys.stderr)
+    log.info("Preprocessing image for SLAT...")
     slat_preprocessor = _get_preprocessor(config_path, 'slat')
     slat_input_dict = preprocess_image_lazy(image_np, mask_np, slat_preprocessor)
+
+    device = comfy.model_management.get_torch_device()
 
     # Get coords from stage1_output
     coords = stage1_output.get("coords")
@@ -621,12 +1118,17 @@ def run_stage2(
         coords = pickle.loads(base64.b64decode(coords))
     if isinstance(coords, np.ndarray):
         coords = torch.from_numpy(coords).int()
-    coords = coords.cuda()
+    coords = coords.to(device)
 
-    # Load models
-    print(f"[Worker] Loading Stage 2 models...", file=sys.stderr)
-    slat_generator = _load_generator(config_path, 'slat')
-    slat_embedder = _load_condition_embedder(config_path, 'slat')
+    # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
+    log.info("Loading Stage 2 models...")
+    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
+    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
+
+    comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
+
+    slat_generator = slat_gen_patcher.model
+    slat_embedder = slat_emb_patcher.model
 
     # Configure generator (match original override_slat_generator_cfg_config)
     slat_generator.no_shortcut = True
@@ -638,14 +1140,14 @@ def run_stage2(
     slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
     slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
 
-    print(f"[Worker] Running SLAT generation...", file=sys.stderr)
+    log.info("Running SLAT generation...")
 
     # Get SLAT normalization stats
-    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8)).cuda()
-    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8)).cuda()
+    slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
+    slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8), device=device)
 
     with torch.no_grad():
-        with torch.autocast(device_type="cuda", dtype=dtype):
+        with torch.autocast(device_type=device.type, dtype=dtype):
             image_tensor = slat_input_dict["image"]
             DEVICE = image_tensor.device
             latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
@@ -670,13 +1172,23 @@ def run_stage2(
             # Add coords to condition args
             condition_args = condition_args + (coords.cpu().numpy(),)
 
-            # Run generator
-            slat_feats = slat_generator(
+            # Run generator with progress reporting
+            steps = slat_generator.inference_steps
+            pbar = comfy.utils.ProgressBar(steps)
+            gen_iter = slat_generator.generate_iter(
                 latent_shape, DEVICE, *condition_args, **condition_kwargs
             )
+            try:
+                from tqdm import tqdm
+                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 2 (SLAT generation)")
+            except ImportError:
+                pass
+            for _, xt, _ in gen_iter:
+                pbar.update(1)
+            slat_feats = xt
 
             # Create SparseTensor
-            slat = sp.SparseTensor(
+            slat = SparseTensor(
                 coords=coords,
                 feats=slat_feats[0],
             ).to(DEVICE)
@@ -684,11 +1196,7 @@ def run_stage2(
             # Apply mean/std normalization
             slat = slat * slat_std + slat_mean
 
-    # Unload models
-    print(f"[Worker] Unloading Stage 2 models...", file=sys.stderr)
-    _unload(slat_generator, slat_embedder)
-
-    print(f"[Worker] Stage 2 complete", file=sys.stderr)
+    log.info("Stage 2 complete")
 
     # Build output dict with SLAT for saving
     output_dict = {
@@ -714,6 +1222,7 @@ def run_stage2(
         "status": "success",
         "stage2_mode": True,
         "output": saved_output,
+        "data": output_dict,
     }
 
 
@@ -730,6 +1239,7 @@ def run_decode(
     simplify: float = 0.95,
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
+    precision: str = "bf16",
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding).
@@ -738,22 +1248,23 @@ def run_decode(
     Peak VRAM: ~1-2 GB
     """
     import trimesh
-    from sam3d_objects.model.backbone.tdfy_dit.modules import sparse as sp
+    from ..sam3d.sparse import SparseTensor as _SparseTensor
 
-    print(f"[Worker] Running decode ({decode_format})", file=sys.stderr)
+    log.info("Running decode (%s)", decode_format)
+    pbar = comfy.utils.ProgressBar(4)
 
     # Extract slat - handle different input formats
     slat = None
 
-    if isinstance(slat_data, sp.SparseTensor):
+    if isinstance(slat_data, _SparseTensor):
         slat = slat_data
     elif isinstance(slat_data, dict) and "slat" in slat_data:
         slat_inner = slat_data["slat"]
-        if isinstance(slat_inner, sp.SparseTensor):
+        if isinstance(slat_inner, _SparseTensor):
             slat = slat_inner
         elif isinstance(slat_inner, str):
             slat_inner = pickle.loads(base64.b64decode(slat_inner))
-            if isinstance(slat_inner, sp.SparseTensor):
+            if isinstance(slat_inner, _SparseTensor):
                 slat = slat_inner
             else:
                 coords = slat_inner["coords"]
@@ -772,11 +1283,16 @@ def run_decode(
         if isinstance(feats, str):
             feats = pickle.loads(base64.b64decode(feats))
 
-        coords = torch.from_numpy(coords).int().cuda() if isinstance(coords, np.ndarray) else coords.int().cuda()
-        feats = torch.from_numpy(feats).cuda() if isinstance(feats, np.ndarray) else feats.cuda()
-        slat = sp.SparseTensor(coords=coords, feats=feats)
+        device = comfy.model_management.get_torch_device()
+        coords = torch.from_numpy(coords).int().to(device) if isinstance(coords, np.ndarray) else coords.int().to(device)
+        feats = torch.from_numpy(feats).to(device) if isinstance(feats, np.ndarray) else feats.to(device)
+        slat = _SparseTensor(coords=coords, feats=feats)
     else:
-        slat = slat.cuda()
+        device = comfy.model_management.get_torch_device()
+        slat = slat.to(device)
+
+    # Don't cast feats here — the decoder's input_layer is fp32 (not touched by
+    # convert_to_fp16), and the model casts to fp16 internally after input_layer.
 
     # Load decoder
     if decode_format == "gaussian":
@@ -784,19 +1300,34 @@ def run_decode(
     else:
         decoder_name = 'slat_decoder_mesh'
 
-    print(f"[Worker] Loading decoder ({decoder_name})...", file=sys.stderr)
-    decoder = _load_decoder(config_path, decoder_name)
+    pbar.update(1)  # SLAT loaded
+    log.info("Loading decoder (%s)...", decoder_name)
+    dec_patcher = _get_or_load_decoder(config_path, decoder_name, precision)
+    comfy.model_management.load_models_gpu([dec_patcher])
+    decoder = dec_patcher.model
 
-    print(f"[Worker] Running decoder...", file=sys.stderr)
+    log.info("Running decoder... slat.feats.dtype=%s, slat.feats.shape=%s, slat.coords.shape=%s",
+             slat.feats.dtype, slat.feats.shape, slat.coords.shape)
+    log.info("Decoder type: %s, model.dtype=%s", type(decoder).__name__, getattr(decoder, 'dtype', 'N/A'))
+
+    # Log parameter dtypes for debugging
+    param_dtypes = set()
+    for p in decoder.parameters():
+        param_dtypes.add(str(p.dtype))
+    log.info("Decoder parameter dtypes: %s", param_dtypes)
+
+    pbar.update(1)  # Decoder loaded
+
+    # Cast SLAT features to match decoder precision
+    dtype = _resolve_dtype(precision)
+    if slat.feats.dtype != dtype:
+        slat.feats = slat.feats.to(dtype=dtype)
 
     with torch.no_grad():
         output = decoder(slat)
 
-    # Unload decoder
-    print(f"[Worker] Unloading decoder...", file=sys.stderr)
-    _unload(decoder)
-
-    print(f"[Worker] Decode complete", file=sys.stderr)
+    pbar.update(1)  # Decode complete
+    log.info("Decode complete")
 
     # Determine output directory
     if output_dir:
@@ -823,10 +1354,10 @@ def run_decode(
                 }
 
         if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
-            print(f"[Worker] Applying pose transformation to Gaussian...", file=sys.stderr)
+            log.info("Applying pose transformation to Gaussian...")
             gaussian = _apply_pose_to_gaussian(gaussian, pose_data)
         elif not world_coordinates:
-            print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
+            log.info("Skipping pose (world_coordinates=False)")
 
         ply_path = save_dir / "gaussian.ply"
         try:
@@ -835,10 +1366,11 @@ def run_decode(
                 transform = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
             gaussian.save_ply(str(ply_path), transform=transform)
             saved_files["files"]["ply"] = str(ply_path)
-            print(f"[Worker] Saved Gaussian PLY: {ply_path}", file=sys.stderr)
+            log.info("Saved Gaussian PLY: %s", ply_path)
         except Exception as e:
-            print(f"[Worker] Warning: Failed to save Gaussian PLY: {e}", file=sys.stderr)
+            log.warning("Failed to save Gaussian PLY: %s", e)
 
+        pbar.update(1)  # Output saved
         return {
             "status": "success",
             "stage2_mode": True,
@@ -868,18 +1400,23 @@ def run_decode(
 
             # Apply postprocessing if requested
             if with_postprocess:
-                print(f"[Worker] Applying mesh postprocessing (simplify={simplify})...", file=sys.stderr)
-                from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import postprocess_mesh
-                vertices, faces = postprocess_mesh(
+                log.info("Applying mesh postprocessing (simplify=%s)...", simplify)
+                from ..sam3d.postprocessing import postprocess_mesh
+                pp_result = postprocess_mesh(
                     vertices,
                     faces,
                     simplify=True,
                     simplify_ratio=simplify,
                     fill_holes=True,
                     verbose=True,
+                    vertex_colors=original_vertex_colors,
                 )
-                print(f"[Worker] Postprocessing complete: {len(vertices)} vertices, {len(faces)} faces", file=sys.stderr)
-                original_vertex_colors = None
+                if len(pp_result) == 3:
+                    vertices, faces, original_vertex_colors = pp_result
+                else:
+                    vertices, faces = pp_result
+                    original_vertex_colors = None
+                log.info("Postprocessing complete: %d vertices, %d faces", len(vertices), len(faces))
 
             # Process vertex colors if available
             vertex_colors = None
@@ -904,12 +1441,12 @@ def run_decode(
                     }
 
             if world_coordinates and pose_data is not None and pose_data.get("rotation") is not None:
-                print(f"[Worker] Applying pose transformation to world coordinates...", file=sys.stderr)
+                log.info("Applying pose transformation to world coordinates...")
                 vertices = _apply_pose_to_vertices(vertices, pose_data)
             elif not world_coordinates:
-                print(f"[Worker] Skipping pose (world_coordinates=False)", file=sys.stderr)
+                log.info("Skipping pose (world_coordinates=False)")
             else:
-                print(f"[Worker] No pose data found, mesh will be in normalized coordinates", file=sys.stderr)
+                log.info("No pose data found, mesh will be in normalized coordinates")
 
             # Transform from Z-up to Y-up if requested
             if up_axis == "Y-up (standard)":
@@ -930,12 +1467,12 @@ def run_decode(
             with open(glb_path, 'wb') as f:
                 f.write(glb_bytes)
             saved_files["files"]["glb"] = str(glb_path)
-            print(f"[Worker] Saved Mesh GLB: {glb_path}", file=sys.stderr)
+            log.info("Saved Mesh GLB: %s", glb_path)
 
         except Exception as e:
-            print(f"[Worker] Warning: Failed to save Mesh GLB: {e}", file=sys.stderr)
+            log.error("Failed to save Mesh GLB: %s", e)
             import traceback
-            traceback.print_exc(file=sys.stderr)
+            traceback.print_exc()
             mesh_path = save_dir / "mesh.pt"
             mesh_data = {
                 "vertices": mesh.vertices.cpu() if hasattr(mesh.vertices, 'cpu') else mesh.vertices,
@@ -944,6 +1481,7 @@ def run_decode(
             torch.save(mesh_data, mesh_path)
             saved_files["files"]["mesh_pt"] = str(mesh_path)
 
+        pbar.update(1)  # Output saved
         return {
             "status": "success",
             "stage2_mode": True,
@@ -964,7 +1502,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     """
     import trimesh
 
-    print("[Worker] Running direct texture baking", file=sys.stderr)
+    log.info("Running direct texture baking")
 
     # Extract parameters
     ply_path = request["ply_path"]
@@ -974,28 +1512,27 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     texture_size = request.get("texture_size", 1024)
     rendering_engine = request.get("rendering_engine", "nvdiffrast")
 
-    print(f"[Worker] PLY: {ply_path}", file=sys.stderr)
-    print(f"[Worker] GLB: {glb_path}", file=sys.stderr)
-    print(f"[Worker] Mode: {texture_mode}, Size: {texture_size}", file=sys.stderr)
+    log.info("PLY: %s", ply_path)
+    log.info("GLB: %s", glb_path)
+    log.info("Mode: %s, Size: %d", texture_mode, texture_size)
 
-    from sam3d_objects.model.backbone.tdfy_dit.representations.gaussian import Gaussian
-    from sam3d_objects.model.backbone.tdfy_dit.representations.mesh.cube2mesh import MeshExtractResult
-    from sam3d_objects.model.backbone.tdfy_dit.utils.postprocessing_utils import to_glb
+    from ..sam3d.representations import Gaussian, MeshExtractResult
+    from ..sam3d.postprocessing import to_glb
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = comfy.model_management.get_torch_device()
 
     # Load Gaussian from PLY
-    print(f"[Worker] Loading Gaussian from PLY...", file=sys.stderr)
+    log.info("Loading Gaussian from PLY...")
     gaussian = Gaussian(
         aabb=[-1, -1, -1, 2, 2, 2],
         sh_degree=0,
         device=device
     )
     gaussian.load_ply(ply_path)
-    print(f"[Worker] Loaded Gaussian with {gaussian._xyz.shape[0]} points", file=sys.stderr)
+    log.info("Loaded Gaussian with %d points", gaussian._xyz.shape[0])
 
     # Load Mesh from GLB
-    print(f"[Worker] Loading Mesh from GLB...", file=sys.stderr)
+    log.info("Loading Mesh from GLB...")
     loaded = trimesh.load(glb_path)
 
     if isinstance(loaded, trimesh.Scene):
@@ -1006,7 +1543,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     else:
         trimesh_mesh = loaded
 
-    print(f"[Worker] Loaded mesh with {len(trimesh_mesh.vertices)} vertices", file=sys.stderr)
+    log.info("Loaded mesh with %d vertices", len(trimesh_mesh.vertices))
 
     # Convert to MeshExtractResult format
     vertices_np = np.array(trimesh_mesh.vertices)
@@ -1028,7 +1565,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     # Run texture baking
-    print(f"[Worker] Running texture baking...", file=sys.stderr)
+    log.info("Running texture baking...")
     result_mesh = to_glb(
         gaussian,
         mesh,
@@ -1052,10 +1589,7 @@ def run_texture_bake_direct(request: Dict[str, Any]) -> Dict[str, Any]:
     with open(output_path, 'wb') as f:
         f.write(glb_bytes)
 
-    print(f"[Worker] Saved textured GLB: {output_path}", file=sys.stderr)
-
-    # Cleanup
-    _unload(gaussian, mesh)
+    log.info("Saved textured GLB: %s", output_path)
 
     return {
         "status": "success",

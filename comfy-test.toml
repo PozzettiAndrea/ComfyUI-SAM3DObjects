@@ -1,9 +1,8 @@
 [test]
-levels = ["syntax", "install", "registration", "instantiation", "execution"]
-publish = false
+levels = ["install", "registration", "instantiation", "execution"]
+publish = true
 
 [test.workflows]
-timeout = 300
 cpu = []
 gpu = "all"
 
@@ -12,6 +11,6 @@ linux = false
 macos = false
 windows = false
 windows_portable = false
-linux_gpu = false
-windows_gpu = false
-windows_portable_gpu = false
+linux_gpu = true
+windows_gpu = true
+windows_portable_gpu = true
