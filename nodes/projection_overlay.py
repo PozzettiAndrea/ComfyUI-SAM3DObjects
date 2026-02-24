@@ -241,8 +241,10 @@ class SAM3D_ProjectionOverlay:
         import pyrender
         import os
 
-        # Set offscreen rendering backend
-        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+        # Set offscreen rendering backend (EGL on Linux, Pyglet/WGL on Windows)
+        import sys
+        if sys.platform != 'win32':
+            os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
         overlay = img_array.copy()
 
@@ -309,8 +311,10 @@ class SAM3D_ProjectionOverlay:
         import pyrender
         import os
 
-        # Set offscreen rendering backend
-        os.environ['PYOPENGL_PLATFORM'] = 'egl'
+        # Set offscreen rendering backend (EGL on Linux, Pyglet/WGL on Windows)
+        import sys
+        if sys.platform != 'win32':
+            os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
         overlay = img_array.copy()
 
