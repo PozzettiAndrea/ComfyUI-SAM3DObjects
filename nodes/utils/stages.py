@@ -1047,6 +1047,7 @@ def run_stage1(
         "status": "success",
         "stage1_mode": True,
         "output": saved_output,
+        "data": return_dict,
         "rotation": rotation,
         "translation": translation,
         "scale": scale,
@@ -1221,6 +1222,7 @@ def run_stage2(
         "status": "success",
         "stage2_mode": True,
         "output": saved_output,
+        "data": output_dict,
     }
 
 

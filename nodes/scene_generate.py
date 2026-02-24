@@ -102,6 +102,12 @@ class SAM3DSceneGenerate:
                     "step": 512,
                     "tooltip": "Texture resolution (only used if add_textures=True)"
                 }),
+                "stage1_batch_size": ("INT", {
+                    "default": 1,
+                    "min": 1,
+                    "max": 16,
+                    "tooltip": "Process N masks through Stage 1 diffusion simultaneously. Higher = faster but more VRAM. 1 = sequential (safe). Try 4-8 on 24GB+."
+                }),
             }
         }
 
@@ -134,6 +140,7 @@ class SAM3DSceneGenerate:
         add_textures: bool = False,
         texture_mode: str = "opt",
         texture_size: int = 1024,
+        stage1_batch_size: int = 1,
         **kwargs,
     ):
         """
@@ -194,6 +201,11 @@ class SAM3DSceneGenerate:
             gs_config = slat_decoder_gs["config_path"]
             ensure_decoder_files(gs_config, "gaussian")
 
+        # Save pointmap once (shared across all objects)
+        pointmap_path = os.path.join(base_output_dir, "pointmap.pt")
+        if not os.path.exists(pointmap_path):
+            torch.save({"pointmap": pointmap}, pointmap_path)
+
         # Prepare per-object directories and masks
         object_dirs = []
         mask_pils = []
@@ -209,16 +221,13 @@ class SAM3DSceneGenerate:
                 mask_uint8 = mask_np.astype(np.uint8)
             mask_pils.append(Image.fromarray(mask_uint8))
 
-            # Save mask and pointmap for pose optimization
+            # Save mask per-object (each is different)
             np.save(os.path.join(object_dir, "mask.npy"), mask_np)
-            pointmap_path = os.path.join(object_dir, "pointmap.pt")
-            if not os.path.exists(pointmap_path):
-                torch.save({"pointmap": pointmap}, pointmap_path)
 
         # ==================================================================
         # PHASE 1: Stage 1 (Sparse Structure) for ALL masks
         # ==================================================================
-        log.info("========== PHASE 1: Stage 1 (Sparse Gen) — %d objects ==========", batch_size)
+        log.info("========== PHASE 1: Stage 1 (Sparse Gen) -- %d objects ==========", batch_size)
         stage1_outputs = []
         for idx, (object_dir, mask_pil) in enumerate(zip(object_dirs, mask_pils)):
             log.info("Stage 1 [%d/%d]...", idx + 1, batch_size)
@@ -234,14 +243,14 @@ class SAM3DSceneGenerate:
                 output_dir=object_dir,
                 precision=precision,
             )
-            sparse_file = result["output"]["files"]["sparse_structure"]
-            stage1_outputs.append(torch.load(sparse_file, weights_only=False))
+            # Use in-memory data directly (avoids torch.load round-trip)
+            stage1_outputs.append(result["data"])
 
         # ==================================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
         # ==================================================================
-        log.info("========== PHASE 2: Stage 2 (SLAT Gen) — %d objects ==========", batch_size)
-        slat_files = []
+        log.info("========== PHASE 2: Stage 2 (SLAT Gen) -- %d objects ==========", batch_size)
+        slat_data_list = []
         for idx, (object_dir, mask_pil, stage1_output) in enumerate(
             zip(object_dirs, mask_pils, stage1_outputs)
         ):
@@ -257,16 +266,19 @@ class SAM3DSceneGenerate:
                 output_dir=object_dir,
                 precision=precision,
             )
-            slat_files.append(result["output"]["files"]["slat"])
+            # Keep SLAT in memory (avoids 2N torch.load round-trips in Phase 3+4)
+            slat_data_list.append(result["data"])
+
+        # Free stage1 outputs (no longer needed)
+        del stage1_outputs
 
         # ==================================================================
         # PHASE 3: Mesh Decode for ALL SLATs
         # ==================================================================
-        log.info("========== PHASE 3: Mesh Decode — %d objects ==========", batch_size)
+        log.info("========== PHASE 3: Mesh Decode -- %d objects ==========", batch_size)
         glb_paths = []
-        for idx, (object_dir, slat_file) in enumerate(zip(object_dirs, slat_files)):
+        for idx, (object_dir, slat_data) in enumerate(zip(object_dirs, slat_data_list)):
             log.info("Mesh decode [%d/%d]...", idx + 1, batch_size)
-            slat_data = torch.load(slat_file, weights_only=False)
             result = run_decode(
                 mesh_config,
                 slat_data=slat_data,
@@ -286,13 +298,12 @@ class SAM3DSceneGenerate:
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake
         # ==================================================================
         if add_textures:
-            log.info("========== PHASE 4: Gaussian + Texture Bake — %d objects ==========", batch_size)
+            log.info("========== PHASE 4: Gaussian + Texture Bake -- %d objects ==========", batch_size)
 
-            # 4a: Gaussian decode all
+            # 4a: Gaussian decode all (reuse in-memory SLATs)
             ply_paths = []
-            for idx, (object_dir, slat_file) in enumerate(zip(object_dirs, slat_files)):
+            for idx, (object_dir, slat_data) in enumerate(zip(object_dirs, slat_data_list)):
                 log.info("Gaussian decode [%d/%d]...", idx + 1, batch_size)
-                slat_data = torch.load(slat_file, weights_only=False)
                 result = run_decode(
                     gs_config,
                     slat_data=slat_data,
@@ -327,6 +338,9 @@ class SAM3DSceneGenerate:
                             log.info("Texture bake [%d]: %s", idx, textured_glb)
                 except Exception as e:
                     log.warning("Texture bake failed for object %d: %s", idx, e)
+
+        # Free SLAT data
+        del slat_data_list
 
         log.info("SceneGenerate: Completed %d object(s)", batch_size)
         log.info("SceneGenerate: Output folder: %s", base_output_dir)
