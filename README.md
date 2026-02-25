@@ -12,6 +12,8 @@ https://github.com/user-attachments/assets/f8580108-8b59-4938-9339-b3ef8b72039f
 
 ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D Objects](https://github.com/bennyguo/sam-3d-objects).
 
+https://github.com/user-attachments/assets/9872f65a-453b-4020-b11f-11de28683532
+
 ## Installation
 
 Please always install from the ComfyUI Manager
