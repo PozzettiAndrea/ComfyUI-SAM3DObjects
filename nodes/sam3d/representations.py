@@ -1449,32 +1449,35 @@ class FlexiCubes:
     def _normalize_weights(self, beta, alpha, gamma_f, surf_cubes, weight_scale):
         """
         Normalizes the given weights to be non-negative. If input weights are None, it creates and returns a set of weights of ones.
+        Only operates on surface cubes to avoid wasting VRAM on the ~95-99% of cubes that are discarded.
         """
-        n_cubes = surf_cubes.shape[0]
+        n_surf = surf_cubes.sum()
 
         if beta is not None:
-            beta = (torch.tanh(beta) * weight_scale + 1)
+            beta = (torch.tanh(beta[surf_cubes]) * weight_scale + 1)
         else:
-            beta = torch.ones((n_cubes, 12), dtype=torch.float, device=self.device)
+            beta = torch.ones((n_surf, 12), dtype=torch.float, device=self.device)
 
         if alpha is not None:
-            alpha = (torch.tanh(alpha) * weight_scale + 1)
+            alpha = (torch.tanh(alpha[surf_cubes]) * weight_scale + 1)
         else:
-            alpha = torch.ones((n_cubes, 8), dtype=torch.float, device=self.device)
+            alpha = torch.ones((n_surf, 8), dtype=torch.float, device=self.device)
 
         if gamma_f is not None:
-            gamma_f = torch.sigmoid(gamma_f) * weight_scale + (1 - weight_scale) / 2
+            gamma_f = torch.sigmoid(gamma_f[surf_cubes]) * weight_scale + (1 - weight_scale) / 2
         else:
-            gamma_f = torch.ones((n_cubes), dtype=torch.float, device=self.device)
+            gamma_f = torch.ones((n_surf,), dtype=torch.float, device=self.device)
 
-        return beta[surf_cubes], alpha[surf_cubes], gamma_f[surf_cubes]
+        return beta, alpha, gamma_f
 
     @torch.no_grad()
     def _get_case_id(self, occ_fx8, surf_cubes, res):
         """
-        Obtains the ID of topology cases based on cell corner occupancy. This function resolves the 
-        ambiguity in the Dual Marching Cubes (DMC) configurations as described in Section 1.3 of the 
+        Obtains the ID of topology cases based on cell corner occupancy. This function resolves the
+        ambiguity in the Dual Marching Cubes (DMC) configurations as described in Section 1.3 of the
         supplementary material. It should be noted that this function assumes a regular grid.
+
+        Memory-optimized: uses sparse coordinate lookup instead of dense [res³, 5] grid.
         """
         case_ids = (occ_fx8[surf_cubes] * self.cube_corners_idx.to(self.device).unsqueeze(0)).sum(-1)
 
@@ -1484,13 +1487,26 @@ class FlexiCubes:
         if not isinstance(res, (list, tuple)):
             res = [res, res, res]
 
-        # The 'problematic_configs' only contain configurations for surface cubes. Next, we construct a 3D array,
-        # 'problem_config_full', to store configurations for all cubes (with default config for non-surface cubes).
-        # This allows efficient checking on adjacent cubes.
-        problem_config_full = torch.zeros(list(res) + [5], device=self.device, dtype=torch.long)
-        vol_idx = torch.nonzero(problem_config_full[..., 0] == 0)  # N, 3
-        vol_idx_problem = vol_idx[surf_cubes][to_check]
-        problem_config_full[vol_idx_problem[..., 0], vol_idx_problem[..., 1], vol_idx_problem[..., 2]] = problem_config
+        if problem_config.shape[0] == 0:
+            return case_ids
+
+        # Compute 3D coords of problematic surface cubes directly from flat indices
+        # (avoids allocating dense [res³, 3] vol_idx and [res³, 5] problem_config_full)
+        surf_indices = torch.where(surf_cubes)[0]
+        problem_indices = surf_indices[to_check]
+        r1, r2 = res[1], res[2]
+        vol_idx_problem = torch.stack([
+            problem_indices // (r1 * r2),
+            (problem_indices // r2) % r1,
+            problem_indices % r2
+        ], dim=1)
+
+        # Sparse flag tensor: bool [res³] = 16.7 MB instead of long [res³, 5] = 671 MB
+        total_cubes = res[0] * r1 * r2
+        has_problem = torch.zeros(total_cubes, device=self.device, dtype=torch.bool)
+        key_problem = vol_idx_problem[:, 0] * (r1 * r2) + vol_idx_problem[:, 1] * r2 + vol_idx_problem[:, 2]
+        has_problem[key_problem] = True
+
         vol_idx_problem_adj = vol_idx_problem + problem_config[..., 1:4]
 
         within_range = (
@@ -1504,10 +1520,12 @@ class FlexiCubes:
         vol_idx_problem = vol_idx_problem[within_range]
         vol_idx_problem_adj = vol_idx_problem_adj[within_range]
         problem_config = problem_config[within_range]
-        problem_config_adj = problem_config_full[vol_idx_problem_adj[..., 0],
-                                                 vol_idx_problem_adj[..., 1], vol_idx_problem_adj[..., 2]]
+
+        # Check if adjacent cubes also have problematic configs
+        key_adj = vol_idx_problem_adj[:, 0] * (r1 * r2) + vol_idx_problem_adj[:, 1] * r2 + vol_idx_problem_adj[:, 2]
+        to_invert = has_problem[key_adj]
+
         # If two cubes with cases C16 and C19 share an ambiguous face, both cases are inverted.
-        to_invert = (problem_config_adj[..., 0] == 1)
         idx = torch.arange(case_ids.shape[0], device=self.device)[to_check][within_range][to_invert]
         case_ids.index_put_((idx,), problem_config[to_invert][..., -1])
         return case_ids
