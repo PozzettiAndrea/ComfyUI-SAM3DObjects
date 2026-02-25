@@ -115,9 +115,6 @@ class SAM3D_DepthEstimate:
 
             raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
 
-            from .utils.stages import _enable_lowvram_cast
-            _enable_lowvram_cast(raw_model)
-
             _MOGE_PATCHER = comfy.model_patcher.ModelPatcher(
                 raw_model,
                 load_device=mm.get_torch_device(),
@@ -128,6 +125,10 @@ class SAM3D_DepthEstimate:
 
         device = mm.get_torch_device()
         mm.load_models_gpu([_MOGE_PATCHER])
+        # In --novram mode, lowvram hooks only fire on .forward() but MoGe
+        # enters via get_intermediate_layers(), so orphan params (cls_token,
+        # pos_embed, etc.) never get moved.  Force the full model onto GPU.
+        _MOGE_PATCHER.model.to(device)
 
         from .sam3d.pipeline import MoGe
         model = MoGe(_MOGE_PATCHER.model, device=str(device))

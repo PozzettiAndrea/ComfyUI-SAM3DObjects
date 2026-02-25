@@ -1240,6 +1240,7 @@ def run_decode(
     up_axis: str = "Y-up (standard)",
     world_coordinates: bool = False,
     precision: str = "bf16",
+    use_sparse_flexicubes: bool = True,
 ) -> Dict[str, Any]:
     """
     Run Stage 3 (Gaussian or Mesh decoding).
@@ -1316,6 +1317,15 @@ def run_decode(
         param_dtypes.add(str(p.dtype))
     log.info("Decoder parameter dtypes: %s", param_dtypes)
 
+    def _vram_mb():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    def _vram_peak_mb():
+        return torch.cuda.max_memory_allocated() / 1024**2
+
+    torch.cuda.reset_peak_memory_stats()
+    log.info("[VRAM] before decoder forward: %.0f MB (peak %.0f MB)", _vram_mb(), _vram_peak_mb())
+
     pbar.update(1)  # Decoder loaded
 
     # Cast SLAT features to match decoder precision
@@ -1323,9 +1333,15 @@ def run_decode(
     if slat.feats.dtype != dtype:
         slat.feats = slat.feats.to(dtype=dtype)
 
+    # Set sparse/dense FlexiCubes mode if this is a mesh decoder
+    if hasattr(decoder, 'mesh_extractor') and hasattr(decoder.mesh_extractor, 'use_sparse'):
+        decoder.mesh_extractor.use_sparse = use_sparse_flexicubes
+        log.info("FlexiCubes mode: %s", "sparse" if use_sparse_flexicubes else "dense")
+
     with torch.no_grad():
         output = decoder(slat)
 
+    log.info("[VRAM] after decoder forward: %.0f MB (peak %.0f MB)", _vram_mb(), _vram_peak_mb())
     pbar.update(1)  # Decode complete
     log.info("Decode complete")
 

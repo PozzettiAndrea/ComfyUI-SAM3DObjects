@@ -44,6 +44,10 @@ class SAM3DMeshDecode:
                     "default": False,
                     "tooltip": "Output in world coordinates (from depth estimation). Disabled = centered at origin."
                 }),
+                "use_sparse_flexicubes": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Use SparseFlex mesh extraction (saves ~2GB VRAM). Disable for dense grid fallback if you see holes."
+                }),
             }
         }
 
@@ -64,6 +68,7 @@ class SAM3DMeshDecode:
         simplify: float = 0.95,
         up_axis: str = "Y-up (standard)",
         world_coordinates: bool = False,
+        use_sparse_flexicubes: bool = True,
     ):
         """
         Decode SLAT to mesh.
@@ -119,6 +124,7 @@ class SAM3DMeshDecode:
             up_axis=up_axis,
             world_coordinates=world_coordinates,
             precision=slat_decoder_mesh.get("precision", "bf16"),
+            use_sparse_flexicubes=use_sparse_flexicubes,
         )
 
         # Extract GLB path from result

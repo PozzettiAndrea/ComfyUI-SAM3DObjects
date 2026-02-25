@@ -1143,7 +1143,7 @@ class MoGeModelV1(nn.Module):
         resized_height = int(original_height * resize_factor)
         image = F.interpolate(image, (resized_height, resized_width), mode="bicubic", align_corners=False, antialias=True)
 
-        image = (image - self.image_mean) / self.image_std
+        image = (image - self.image_mean.to(image.device, dtype=image.dtype)) / self.image_std.to(image.device, dtype=image.dtype)
         image_14 = F.interpolate(image, (resized_height // 14 * 14, resized_width // 14 * 14), mode="bilinear", align_corners=False, antialias=True)
 
         features = self.backbone.get_intermediate_layers(image_14, self.intermediate_layers, return_class_token=True)

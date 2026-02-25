@@ -819,7 +819,6 @@ class SLatMeshDecoder(SparseTransformerBase):
         ret = []
         for i in range(x.shape[0]):
             xi = x[i]
-            # Mesh extraction is geometric post-processing — run in fp32
             if xi.feats.dtype != torch.float32:
                 xi = xi.replace(xi.feats.float())
             mesh = self.mesh_extractor(xi, training=self.training)
@@ -827,10 +826,21 @@ class SLatMeshDecoder(SparseTransformerBase):
         return ret
 
     def forward(self, x: SparseTensor) -> List:
+        import logging
+        _log = logging.getLogger("sam3dobjects")
+        def _vm():
+            return torch.cuda.memory_allocated() / 1024**2
+        def _vp():
+            return torch.cuda.max_memory_allocated() / 1024**2
+
+        _log.info("[VRAM:decoder] input: %.0f MB (peak %.0f MB) | feats %s coords %s", _vm(), _vp(), x.feats.shape, x.coords.shape)
         h = super().forward(x)
-        for block in self.upsample:
+        _log.info("[VRAM:decoder] after transformer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
+        for i, block in enumerate(self.upsample):
             h = block(h)
+            _log.info("[VRAM:decoder] after upsample[%d]: %.0f MB (peak %.0f MB) | feats %s coords %s", i, _vm(), _vp(), h.feats.shape, h.coords.shape)
         h = self.out_layer(h)
+        _log.info("[VRAM:decoder] after out_layer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
         return self.to_representation(h)
 
 
