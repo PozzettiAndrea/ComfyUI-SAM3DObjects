@@ -276,16 +276,6 @@ def _remove_prefix(sd: dict, prefix: str) -> dict:
     return {(k[n:] if k.startswith(prefix) else k): v for k, v in sd.items()}
 
 
-def _fix_meta_buffers(model: torch.nn.Module, device):
-    """Reinitialize any buffers left on meta device after assign=True loading."""
-    for name, buf in model.named_buffers():
-        if buf.device.type == "meta":
-            parts = name.split(".")
-            parent = model
-            for p in parts[:-1]:
-                parent = getattr(parent, p)
-            parent._buffers[parts[-1]] = torch.zeros_like(buf, device=device)
-
 
 def _enable_lowvram_cast(model: torch.nn.Module) -> None:
     """Swap leaf modules to comfy.ops.disable_weight_init versions for lowvram support.
@@ -434,10 +424,9 @@ def _load_generator(config_path: str, generator_type: str, precision: str = "bf1
 
     offload_device = comfy.model_management.unet_offload_device()
 
-    # Build on meta device (zero memory), then load weights directly
-    vram(f"_load_generator({generator_type}): before meta build")
-    with torch.device("meta"):
-        model = _instantiate(model_config)
+    # Build on CPU (native ComfyUI pattern — no meta device)
+    vram(f"_load_generator({generator_type}): before build")
+    model = _instantiate(model_config)
 
     sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
     # Training checkpoints nest weights under "state_dict"; safetensors are flat
@@ -445,7 +434,6 @@ def _load_generator(config_path: str, generator_type: str, precision: str = "bf1
         sd = sd['state_dict']
     sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
     model.load_state_dict(sd, strict=False, assign=True)
-    _fix_meta_buffers(model, offload_device)
     vram(f"_load_generator({generator_type}): after load_state_dict")
 
     model.eval()
@@ -567,10 +555,9 @@ def _load_condition_embedder(config_path: str, embedder_type: str, precision: st
 
     offload_device = comfy.model_management.unet_offload_device()
 
-    # Build on meta device (zero memory), then load weights directly
-    vram(f"_load_condition_embedder({embedder_type}): before meta build")
-    with torch.device("meta"):
-        embedder = _instantiate(embedder_config)
+    # Build on CPU (native ComfyUI pattern — no meta device)
+    vram(f"_load_condition_embedder({embedder_type}): before build")
+    embedder = _instantiate(embedder_config)
 
     sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
     # Training checkpoints nest weights under "state_dict"; safetensors are flat
@@ -578,7 +565,6 @@ def _load_condition_embedder(config_path: str, embedder_type: str, precision: st
         sd = sd['state_dict']
     sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
     embedder.load_state_dict(sd, strict=False, assign=True)
-    _fix_meta_buffers(embedder, offload_device)
     vram(f"_load_condition_embedder({embedder_type}): after load_state_dict")
 
     embedder.eval()
@@ -611,11 +597,7 @@ def _get_preprocessor(config_path: str, preprocessor_type: str):
 
 
 def _reinit_dino_buffers(model):
-    """Reinitialize Dino mean/std buffers after meta-device loading.
-
-    Meta-device init creates these as empty tensors. They need correct
-    ImageNet normalization values for proper preprocessing.
-    """
+    """Ensure Dino mean/std buffers have correct ImageNet normalization values."""
     for module in model.modules():
         if type(module).__name__ == 'Dino' and hasattr(module, 'mean'):
             device = module.mean.device
@@ -649,7 +631,7 @@ def _share_dino_backbones(model):
 
 
 def _wrap_dino_attention(model):
-    """Wrap DINOv2 attention blocks with ComfyUI's attention dispatch after meta-device loading."""
+    """Wrap DINOv2 attention blocks with ComfyUI's attention dispatch."""
     from ..sam3d.model import _wrap_attn_comfy
     for module in model.modules():
         if type(module).__name__ == 'Dino' and hasattr(module, 'backbone'):
