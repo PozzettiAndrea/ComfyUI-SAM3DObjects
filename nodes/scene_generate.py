@@ -157,6 +157,7 @@ class SAM3DSceneGenerate:
         import folder_paths
         from .utils.stages import run_stage1, run_stage2, run_decode, run_texture_bake_direct
         from .utils.helpers import ensure_decoder_files
+        from .utils.vram_log import vram
 
         # Get batch size from mask tensor [N, H, W]
         if len(masks.shape) == 3:
@@ -166,6 +167,7 @@ class SAM3DSceneGenerate:
             masks = masks.unsqueeze(0)
 
         log.info("SceneGenerate: Processing %d object(s) with phase-based batching", batch_size)
+        vram("SceneGenerate: start")
 
         # Create output directory
         output_root = folder_paths.get_output_directory()
@@ -228,6 +230,7 @@ class SAM3DSceneGenerate:
         # ==================================================================
         # PHASE 1: Stage 1 (Sparse Structure) for ALL masks
         # ==================================================================
+        vram("SceneGenerate: PHASE 1 start")
         log.info("========== PHASE 1: Stage 1 (Sparse Gen) -- %d objects ==========", batch_size)
         stage1_outputs = []
         for idx, (object_dir, mask_pil) in enumerate(zip(object_dirs, mask_pils)):
@@ -250,6 +253,7 @@ class SAM3DSceneGenerate:
         # ==================================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
         # ==================================================================
+        vram("SceneGenerate: PHASE 2 start")
         log.info("========== PHASE 2: Stage 2 (SLAT Gen) -- %d objects ==========", batch_size)
         slat_data_list = []
         for idx, (object_dir, mask_pil, stage1_output) in enumerate(
@@ -276,6 +280,7 @@ class SAM3DSceneGenerate:
         # ==================================================================
         # PHASE 3: Mesh Decode for ALL SLATs
         # ==================================================================
+        vram("SceneGenerate: PHASE 3 start")
         log.info("========== PHASE 3: Mesh Decode -- %d objects ==========", batch_size)
         glb_paths = []
         for idx, (object_dir, slat_data) in enumerate(zip(object_dirs, slat_data_list)):
@@ -305,6 +310,7 @@ class SAM3DSceneGenerate:
         # PHASE 4 (Optional): Gaussian Decode + Texture Bake
         # ==================================================================
         if add_textures:
+            vram("SceneGenerate: PHASE 4 start")
             log.info("========== PHASE 4: Gaussian + Texture Bake -- %d objects ==========", batch_size)
 
             # 4a: Gaussian decode all (reuse in-memory SLATs)
@@ -353,6 +359,7 @@ class SAM3DSceneGenerate:
         # Free SLAT data
         del slat_data_list
 
+        vram("SceneGenerate: done")
         log.info("SceneGenerate: Completed %d object(s)", batch_size)
         log.info("SceneGenerate: Output folder: %s", base_output_dir)
 

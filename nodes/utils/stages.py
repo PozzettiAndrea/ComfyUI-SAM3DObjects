@@ -30,10 +30,8 @@ import comfy.model_patcher
 import comfy.utils
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
+from .vram_log import vram
 
-# Module-level patcher cache: key -> comfy.model_patcher.ModelPatcher
-# ComfyUI manages VRAM placement, per-layer offloading, and cross-model eviction.
-_PATCHER_CACHE = {}
 
 # Inline decoder configs — used as fallback when YAML files are missing.
 # These are small, static configs that never change between releases.
@@ -412,7 +410,7 @@ def _resolve_dtype(precision: str) -> torch.dtype:
     return torch.float32
 
 
-def _get_or_load_generator(config_path: str, generator_type: str, precision: str = "bf16"):
+def _load_generator(config_path: str, generator_type: str, precision: str = "bf16"):
     """
     Load a generator model (ss_generator or slat_generator) wrapped in ModelPatcher.
 
@@ -424,10 +422,6 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
     Returns:
         comfy.model_patcher.ModelPatcher wrapping the generator model
     """
-    cache_key = f"generator:{generator_type}"
-    if cache_key in _PATCHER_CACHE:
-        log.debug("Using cached %s_generator", generator_type)
-        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -441,6 +435,7 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
     offload_device = comfy.model_management.unet_offload_device()
 
     # Build on meta device (zero memory), then load weights directly
+    vram(f"_load_generator({generator_type}): before meta build")
     with torch.device("meta"):
         model = _instantiate(model_config)
 
@@ -451,6 +446,7 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
     sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
     model.load_state_dict(sd, strict=False, assign=True)
     _fix_meta_buffers(model, offload_device)
+    vram(f"_load_generator({generator_type}): after load_state_dict")
 
     model.eval()
     model.requires_grad_(False)
@@ -465,11 +461,10 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
         offload_device=offload_device,
     )
 
-    _PATCHER_CACHE[cache_key] = patcher
     return patcher
 
 
-def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
+def _load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
     """
     Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh) wrapped in ModelPatcher.
 
@@ -481,10 +476,6 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
     Returns:
         comfy.model_patcher.ModelPatcher wrapping the decoder model
     """
-    cache_key = f"decoder:{decoder_type}"
-    if cache_key in _PATCHER_CACHE:
-        log.debug("Using cached %s", decoder_type)
-        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -514,12 +505,14 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
     # Decoders are small (~170-364 MB) and contain utility objects (FlexiCubes,
     # SparseFeatures2Mesh) that create real data tensors in __init__, so skip
     # the meta device pattern here — not worth the complexity.
+    vram(f"_load_decoder({decoder_type}): before instantiate")
     model = _instantiate(dec_config)
 
     sd = comfy.utils.load_torch_file(str(dec_ckpt_path))
     # Decoder checkpoints have weights at root level with "module." prefix
     sd = _remove_prefix(sd, "module.")
     model.load_state_dict(sd, strict=False, assign=True)
+    vram(f"_load_decoder({decoder_type}): after load_state_dict")
 
     model.eval()
     model.requires_grad_(False)
@@ -547,11 +540,10 @@ def _get_or_load_decoder(config_path: str, decoder_type: str, precision: str = "
         offload_device=offload_device,
     )
 
-    _PATCHER_CACHE[cache_key] = patcher
     return patcher
 
 
-def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precision: str = "bf16"):
+def _load_condition_embedder(config_path: str, embedder_type: str, precision: str = "bf16"):
     """
     Load a condition embedder (ss or slat) wrapped in ModelPatcher.
 
@@ -563,10 +555,6 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
     Returns:
         comfy.model_patcher.ModelPatcher wrapping the embedder model
     """
-    cache_key = f"embedder:{embedder_type}"
-    if cache_key in _PATCHER_CACHE:
-        log.debug("Using cached %s_embedder", embedder_type)
-        return _PATCHER_CACHE[cache_key]
 
     config, checkpoint_dir = _load_config(config_path)
 
@@ -580,6 +568,7 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
     offload_device = comfy.model_management.unet_offload_device()
 
     # Build on meta device (zero memory), then load weights directly
+    vram(f"_load_condition_embedder({embedder_type}): before meta build")
     with torch.device("meta"):
         embedder = _instantiate(embedder_config)
 
@@ -590,6 +579,7 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
     sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
     embedder.load_state_dict(sd, strict=False, assign=True)
     _fix_meta_buffers(embedder, offload_device)
+    vram(f"_load_condition_embedder({embedder_type}): after load_state_dict")
 
     embedder.eval()
     embedder.requires_grad_(False)
@@ -605,7 +595,6 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
         offload_device=offload_device,
     )
 
-    _PATCHER_CACHE[cache_key] = patcher
     return patcher
 
 
@@ -668,12 +657,6 @@ def _wrap_dino_attention(model):
                 _wrap_attn_comfy(block.attn)
             log.info("Wrapped DINOv2 attention blocks (%d blocks)", len(module.backbone.blocks))
 
-
-def clear_model_cache():
-    """Clear all cached patchers and free memory."""
-    global _PATCHER_CACHE
-    _PATCHER_CACHE.clear()
-    comfy.model_management.soft_empty_cache()
 
 
 # =============================================================================
@@ -885,11 +868,14 @@ def run_stage1(
 
     # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 1 models...")
-    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
-    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
-    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
+    vram("Stage1: before loading models")
+    ss_gen_patcher = _load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _load_decoder(config_path, 'ss', precision)
+    ss_emb_patcher = _load_condition_embedder(config_path, 'ss', precision)
 
+    vram("Stage1: before load_models_gpu")
     comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
+    vram("Stage1: after load_models_gpu")
 
     ss_generator = ss_gen_patcher.model
     ss_decoder = ss_dec_patcher.model
@@ -907,6 +893,7 @@ def run_stage1(
     ss_generator.reverse_fn.unconditional_handling = "add_flag"
 
     log.info("Running sparse structure generation...")
+    vram("Stage1: before inference")
 
     downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
     device = comfy.model_management.get_torch_device()
@@ -990,6 +977,11 @@ def run_stage1(
 
             return_dict["coords"] = coords
             return_dict["downsample_factor"] = downsample_factor
+
+    vram("Stage1: after inference")
+
+    # Free preprocessing tensors — no longer needed after inference
+    del ss_input_dict
 
     # Apply pose decoding
     log.info("Decoding pose...")
@@ -1120,12 +1112,22 @@ def run_stage2(
         coords = torch.from_numpy(coords).int()
     coords = coords.to(device)
 
+    # Force-evict stale Stage 1 models before loading Stage 2.
+    import gc
+    vram("Stage2: before unload Stage1")
+    comfy.model_management.unload_all_models()
+    gc.collect()
+    comfy.model_management.soft_empty_cache()
+    vram("Stage2: after unload Stage1")
+
     # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 2 models...")
-    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
-    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
+    slat_gen_patcher = _load_generator(config_path, 'slat', precision)
+    slat_emb_patcher = _load_condition_embedder(config_path, 'slat', precision)
 
+    vram("Stage2: before load_models_gpu")
     comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
+    vram("Stage2: after load_models_gpu")
 
     slat_generator = slat_gen_patcher.model
     slat_embedder = slat_emb_patcher.model
@@ -1141,6 +1143,7 @@ def run_stage2(
     slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
 
     log.info("Running SLAT generation...")
+    vram("Stage2: before inference")
 
     # Get SLAT normalization stats
     slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
@@ -1196,12 +1199,18 @@ def run_stage2(
             # Apply mean/std normalization
             slat = slat * slat_std + slat_mean
 
+    vram("Stage2: after inference")
     log.info("Stage 2 complete")
 
-    # Build output dict with SLAT for saving
+    # Build output dict with SLAT for saving.
+    # Only carry pose data forward — decode only needs rotation/translation/scale.
     output_dict = {
         "slat": slat,
-        "stage1_data": stage1_output,
+        "stage1_data": {
+            "rotation": stage1_output.get("rotation"),
+            "translation": stage1_output.get("translation"),
+            "scale": stage1_output.get("scale"),
+        },
     }
 
     # Save output to disk
@@ -1302,9 +1311,12 @@ def run_decode(
         decoder_name = 'slat_decoder_mesh'
 
     pbar.update(1)  # SLAT loaded
+
     log.info("Loading decoder (%s)...", decoder_name)
-    dec_patcher = _get_or_load_decoder(config_path, decoder_name, precision)
+    dec_patcher = _load_decoder(config_path, decoder_name, precision)
+    vram(f"Decode({decode_format}): before load_models_gpu")
     comfy.model_management.load_models_gpu([dec_patcher])
+    vram(f"Decode({decode_format}): after load_models_gpu")
     decoder = dec_patcher.model
 
     log.info("Running decoder... slat.feats.dtype=%s, slat.feats.shape=%s, slat.coords.shape=%s",
@@ -1333,10 +1345,7 @@ def run_decode(
     if slat.feats.dtype != dtype:
         slat.feats = slat.feats.to(dtype=dtype)
 
-    # Set sparse/dense FlexiCubes mode if this is a mesh decoder
-    if hasattr(decoder, 'mesh_extractor') and hasattr(decoder.mesh_extractor, 'use_sparse'):
-        decoder.mesh_extractor.use_sparse = use_sparse_flexicubes
-        log.info("FlexiCubes mode: %s", "sparse" if use_sparse_flexicubes else "dense")
+    # (sparse FlexiCubes is now the only path — no toggle needed)
 
     with torch.no_grad():
         output = decoder(slat)
@@ -1344,6 +1353,13 @@ def run_decode(
     log.info("[VRAM] after decoder forward: %.0f MB (peak %.0f MB)", _vram_mb(), _vram_peak_mb())
     pbar.update(1)  # Decode complete
     log.info("Decode complete")
+
+    # Free decoder + SLAT before saving — same pattern as lines 1307-1314
+    del slat
+    comfy.model_management.unload_all_models()
+    gc.collect()
+    comfy.model_management.soft_empty_cache()
+    vram(f"Decode({decode_format}): after cleanup")
 
     # Determine output directory
     if output_dir:

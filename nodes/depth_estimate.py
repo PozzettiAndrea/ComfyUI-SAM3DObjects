@@ -75,14 +75,18 @@ class SAM3D_DepthEstimate:
         from PIL import Image
         import folder_paths
         import comfy.utils
+        import gc
         import comfy.model_management as mm
         import comfy.model_patcher
         from pytorch3d.renderer import look_at_view_transform
         from pytorch3d.transforms import Transform3d
 
+        from .utils.vram_log import vram
+
         pbar = comfy.utils.ProgressBar(4)
         start_time = time.time()
         log.info("DepthEstimate: Running depth estimation with MoGe...")
+        vram("DepthEstimate: start")
 
         # Convert ComfyUI tensor to PIL Image
         # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
@@ -113,7 +117,9 @@ class SAM3D_DepthEstimate:
             moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
             log.info("Loading MoGe model from %s...", moge_path)
 
+            vram("DepthEstimate: before MoGe from_pretrained")
             raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
+            vram("DepthEstimate: after MoGe from_pretrained")
 
             _MOGE_PATCHER = comfy.model_patcher.ModelPatcher(
                 raw_model,
@@ -124,11 +130,14 @@ class SAM3D_DepthEstimate:
             log.info("MoGe wrapped in ModelPatcher (dtype=%s)", model_dtype)
 
         device = mm.get_torch_device()
+        vram("DepthEstimate: before load_models_gpu (MoGe)")
         mm.load_models_gpu([_MOGE_PATCHER])
+        vram("DepthEstimate: after load_models_gpu (MoGe)")
         # In --novram mode, lowvram hooks only fire on .forward() but MoGe
         # enters via get_intermediate_layers(), so orphan params (cls_token,
         # pos_embed, etc.) never get moved.  Force the full model onto GPU.
         _MOGE_PATCHER.model.to(device)
+        vram("DepthEstimate: after model.to(device)")
 
         from .sam3d.pipeline import MoGe
         model = MoGe(_MOGE_PATCHER.model, device=str(device))
@@ -140,8 +149,17 @@ class SAM3D_DepthEstimate:
 
         # Run depth model — boundary cast to model dtype
         # (native pattern: model_base.py _apply_model casts `xc = xc.to(dtype)`)
+        vram("DepthEstimate: before MoGe inference")
         with torch.no_grad():
             output = model(loaded_image.to(device=device, dtype=model_dtype))
+        vram("DepthEstimate: after MoGe inference")
+
+        # Offload MoGe — downstream nodes don't need it on GPU.
+        # _MOGE_PATCHER cache kept for fast reload on next run.
+        mm.unload_all_models()
+        gc.collect()
+        mm.soft_empty_cache()
+        vram("DepthEstimate: after cleanup")
 
         pointmaps = output["pointmaps"]
         pbar.update(1)  # Inference done
@@ -206,6 +224,7 @@ class SAM3D_DepthEstimate:
 
         pbar.update(1)  # Outputs saved
         elapsed = time.time() - start_time
+        vram("DepthEstimate: done")
         log.info("Depth estimation done: %.0fs", elapsed)
         return (intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
 

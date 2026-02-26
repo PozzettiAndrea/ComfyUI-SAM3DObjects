@@ -93,8 +93,10 @@ class SAM3DMeshDecode:
         import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
+        from .utils.vram_log import vram
 
         log.info("MeshDecode: Decoding SLAT to Mesh...")
+        vram("MeshDecode: start")
         if with_postprocess:
             log.info("MeshDecode: Will apply postprocessing (simplify=%s)", simplify)
 
@@ -143,5 +145,6 @@ class SAM3DMeshDecode:
         if not glb_path:
             raise RuntimeError("GLB file was not generated")
 
+        vram("MeshDecode: done")
         log.info("MeshDecode completed: %s", glb_path)
         return (glb_path,)

@@ -29,7 +29,7 @@ import comfy.utils
 import comfy.model_management
 from .stages import (
     _load_config, _resolve_dtype,
-    _get_or_load_generator, _get_or_load_decoder, _get_or_load_condition_embedder,
+    _load_generator, _load_decoder, _load_condition_embedder,
 )
 
 log = logging.getLogger("sam3dobjects")
@@ -205,9 +205,9 @@ def _run_phase1_stage1(
 
     # Load Stage 1 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 1 models...")
-    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
-    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
-    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
+    ss_gen_patcher = _load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _load_decoder(config_path, 'ss', precision)
+    ss_emb_patcher = _load_condition_embedder(config_path, 'ss', precision)
 
     comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
 
@@ -370,8 +370,8 @@ def _run_phase2_stage2(
 
     # Load Stage 2 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 2 models...")
-    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
-    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
+    slat_gen_patcher = _load_generator(config_path, 'slat', precision)
+    slat_emb_patcher = _load_condition_embedder(config_path, 'slat', precision)
 
     comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
 
@@ -485,7 +485,7 @@ def _run_phase3_mesh_decode(
 
     # Load mesh decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading mesh decoder...")
-    dec_patcher = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
+    dec_patcher = _load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
     comfy.model_management.load_models_gpu([dec_patcher])
     decoder = dec_patcher.model
 
@@ -565,7 +565,7 @@ def _run_phase4_texture(
 
     # Load gaussian decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading gaussian decoder...")
-    dec_patcher = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
+    dec_patcher = _load_decoder(gs_config_path, 'slat_decoder_gs', precision)
     comfy.model_management.load_models_gpu([dec_patcher])
     decoder = dec_patcher.model
 

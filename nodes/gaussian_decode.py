@@ -72,8 +72,10 @@ class SAM3DGaussianDecode:
         import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
+        from .utils.vram_log import vram
 
         log.info("GaussianDecode: Decoding SLAT to Gaussian...")
+        vram("GaussianDecode: start")
 
         # Resolve path to absolute (handles both absolute and relative inputs)
         if not os.path.isabs(slat):
@@ -117,5 +119,6 @@ class SAM3DGaussianDecode:
         if not ply_path:
             raise RuntimeError("PLY file was not generated")
 
+        vram("GaussianDecode: done")
         log.info("GaussianDecode completed: %s", ply_path)
         return (ply_path,)

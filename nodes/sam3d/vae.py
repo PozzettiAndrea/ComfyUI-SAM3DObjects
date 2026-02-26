@@ -813,18 +813,6 @@ class SLatMeshDecoder(SparseTransformerBase):
         ])
         self.out_layer = sparse_operations.SparseLinear(model_channels // 8, self.out_channels, dtype=dtype, device=device)
 
-    def to_representation(self, x: SparseTensor) -> List:
-        """Convert a batch of network outputs to mesh representations."""
-        from .representations import MeshExtractResult
-        ret = []
-        for i in range(x.shape[0]):
-            xi = x[i]
-            if xi.feats.dtype != torch.float32:
-                xi = xi.replace(xi.feats.float())
-            mesh = self.mesh_extractor(xi, training=self.training)
-            ret.append(mesh)
-        return ret
-
     def forward(self, x: SparseTensor) -> List:
         import logging
         _log = logging.getLogger("sam3dobjects")
@@ -835,13 +823,25 @@ class SLatMeshDecoder(SparseTransformerBase):
 
         _log.info("[VRAM:decoder] input: %.0f MB (peak %.0f MB) | feats %s coords %s", _vm(), _vp(), x.feats.shape, x.coords.shape)
         h = super().forward(x)
+        del x  # SLAT input no longer needed after transformer
         _log.info("[VRAM:decoder] after transformer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
         for i, block in enumerate(self.upsample):
             h = block(h)
             _log.info("[VRAM:decoder] after upsample[%d]: %.0f MB (peak %.0f MB) | feats %s coords %s", i, _vm(), _vp(), h.feats.shape, h.coords.shape)
         h = self.out_layer(h)
         _log.info("[VRAM:decoder] after out_layer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
-        return self.to_representation(h)
+
+        # Pass h directly to mesh_extractor — avoids h[0] which creates a
+        # 654 MiB copy via torch.cat. __call__ uses .coords[:, 1:] and .feats,
+        # both work with the batch column present.
+        xi = h
+        if xi.feats.dtype != torch.float32:
+            xi = xi.replace(xi.feats.float())
+        del h  # Only xi holds cubefeats now
+        torch.cuda.empty_cache()
+        _log.info("[VRAM:decoder] after del h + empty_cache: %.0f MB (peak %.0f MB)", _vm(), _vp())
+        mesh = self.mesh_extractor(xi)
+        return [mesh]
 
 
 class SLatMeshDecoderTdfyWrapper(SLatMeshDecoder):

@@ -178,8 +178,10 @@ class SAM3DGenerateSLAT:
         import folder_paths
         import comfy.model_management as mm
         from .utils.stages import run_stage1, run_stage2
+        from .utils.vram_log import vram
 
         log.info("GenerateSLAT: Starting SLAT generation...")
+        vram("GenerateSLAT: start")
 
         # Create per-run output directory
         output_dir = self._get_next_run_dir(folder_paths.get_output_directory())
@@ -277,5 +279,6 @@ class SAM3DGenerateSLAT:
         if debug_image is None:
             debug_image = torch.zeros(1, 64, 64, 3)  # Placeholder
 
+        vram("GenerateSLAT: done")
         log.info("GenerateSLAT completed: %s", slat_path)
         return (slat_path, debug_image)
