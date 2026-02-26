@@ -308,8 +308,9 @@ class SAM3D_DepthEstimate:
         # Save as pointcloud.ply in the inference directory
         filepath = os.path.join(output_dir, "pointcloud.ply")
 
-        # Write PLY file manually (simple ASCII format with colors)
-        with open(filepath, 'w') as f:
+        # Write PLY file — chunked to avoid 7M+ individual write() calls
+        CHUNK = 100_000
+        with open(filepath, 'w', newline='\n') as f:
             f.write("ply\n")
             f.write("format ascii 1.0\n")
             f.write(f"element vertex {len(valid_points)}\n")
@@ -321,9 +322,11 @@ class SAM3D_DepthEstimate:
             f.write("property uchar blue\n")
             f.write("end_header\n")
 
-            for i in range(len(valid_points)):
-                x, y, z = valid_points[i]
-                r, g, b = valid_colors[i]
-                f.write(f"{x} {y} {z} {r} {g} {b}\n")
+            for start in range(0, len(valid_points), CHUNK):
+                end = min(start + CHUNK, len(valid_points))
+                pts = valid_points[start:end]
+                cols = valid_colors[start:end]
+                data = np.column_stack([pts, cols])
+                np.savetxt(f, data, fmt='%g %g %g %d %d %d')
 
         return filepath
