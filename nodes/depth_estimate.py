@@ -6,9 +6,25 @@ from typing import Any
 
 log = logging.getLogger("sam3dobjects")
 
-# Module-level cache for MoGe ModelPatcher (persists across node executions)
-_MOGE_PATCHER = None
-_MOGE_DTYPE = None
+
+def _move_orphans_to_device(model, device):
+    """Move non-leaf params/buffers to device for modules accessed outside __call__.
+
+    MoGe invokes the DINOv2 backbone via get_intermediate_layers() (a regular
+    method, not __call__), so the orphan-param forward pre-hooks installed by
+    _enable_lowvram_cast() never fire.  Similarly, MoGeModelV1.forward() is
+    called from infer() as a method.  Explicitly move their small orphan tensors
+    (cls_token, pos_embed, image_mean, image_std, etc.) to the compute device.
+    """
+    import torch
+    for mod in [model, model.backbone]:
+        for _, p in mod.named_parameters(recurse=False):
+            if p.data.device != device:
+                p.data = p.data.to(device)
+        for _, b in mod.named_buffers(recurse=False):
+            if b.device != device:
+                b.data = b.data.to(device)
+
 
 class SAM3D_DepthEstimate:
     """
@@ -64,10 +80,7 @@ class SAM3D_DepthEstimate:
         Returns:
             Tuple of (intrinsics, pointmap, pointcloud_ply, depth_mask)
         """
-        global _MOGE_PATCHER, _MOGE_DTYPE
-
         # These imports happen in the isolated subprocess
-        import sys
         import time
         import torch
         import numpy as np
@@ -82,6 +95,7 @@ class SAM3D_DepthEstimate:
         from pytorch3d.transforms import Transform3d
 
         from .utils.vram_log import vram
+        from .utils.stages import _enable_lowvram_cast
 
         pbar = comfy.utils.ProgressBar(4)
         start_time = time.time()
@@ -105,42 +119,33 @@ class SAM3D_DepthEstimate:
         else:
             model_dtype = torch.float32
 
-        # Load MoGe depth model (cached in ModelPatcher for VRAM management)
-        # Invalidate cache if dtype changed
-        if _MOGE_PATCHER is not None and _MOGE_DTYPE != model_dtype:
-            log.info("MoGe dtype changed (%s -> %s), reloading", _MOGE_DTYPE, model_dtype)
-            _MOGE_PATCHER = None
+        # Load MoGe depth model (same pattern as _load_generator / _load_decoder in stages.py)
+        from .sam3d.moge import MoGeModel
 
-        if _MOGE_PATCHER is None:
-            from .sam3d.moge import MoGeModel
+        moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
+        log.info("Loading MoGe model from %s...", moge_path)
 
-            moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
-            log.info("Loading MoGe model from %s...", moge_path)
+        vram("DepthEstimate: before MoGe from_pretrained")
+        raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
+        _enable_lowvram_cast(raw_model)
+        vram("DepthEstimate: after MoGe from_pretrained")
 
-            vram("DepthEstimate: before MoGe from_pretrained")
-            raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
-            vram("DepthEstimate: after MoGe from_pretrained")
-
-            _MOGE_PATCHER = comfy.model_patcher.ModelPatcher(
-                raw_model,
-                load_device=mm.get_torch_device(),
-                offload_device=mm.unet_offload_device(),
-            )
-            _MOGE_DTYPE = model_dtype
-            log.info("MoGe wrapped in ModelPatcher (dtype=%s)", model_dtype)
+        patcher = comfy.model_patcher.ModelPatcher(
+            raw_model,
+            load_device=mm.get_torch_device(),
+            offload_device=mm.unet_offload_device(),
+        )
 
         device = mm.get_torch_device()
-        vram("DepthEstimate: before load_models_gpu (MoGe)")
-        mm.load_models_gpu([_MOGE_PATCHER])
-        vram("DepthEstimate: after load_models_gpu (MoGe)")
-        # In --novram mode, lowvram hooks only fire on .forward() but MoGe
-        # enters via get_intermediate_layers(), so orphan params (cls_token,
-        # pos_embed, etc.) never get moved.  Force the full model onto GPU.
-        _MOGE_PATCHER.model.to(device)
-        vram("DepthEstimate: after model.to(device)")
+        vram("DepthEstimate: before load_models_gpu")
+        mm.load_models_gpu([patcher])
+        vram("DepthEstimate: after load_models_gpu")
+
+        # Move orphan params that get_intermediate_layers/infer access outside __call__
+        _move_orphans_to_device(patcher.model, device)
 
         from .sam3d.pipeline import MoGe
-        model = MoGe(_MOGE_PATCHER.model, device=str(device))
+        model = MoGe(patcher.model, device=str(device))
         pbar.update(1)  # Model loaded
 
         # Prepare image tensor
@@ -148,14 +153,12 @@ class SAM3D_DepthEstimate:
         loaded_image = torch.from_numpy(loaded_image).permute(2, 0, 1).contiguous()[:3]  # CHW, RGB
 
         # Run depth model — boundary cast to model dtype
-        # (native pattern: model_base.py _apply_model casts `xc = xc.to(dtype)`)
         vram("DepthEstimate: before MoGe inference")
         with torch.no_grad():
             output = model(loaded_image.to(device=device, dtype=model_dtype))
         vram("DepthEstimate: after MoGe inference")
 
-        # Offload MoGe — downstream nodes don't need it on GPU.
-        # _MOGE_PATCHER cache kept for fast reload on next run.
+        # Offload MoGe — downstream nodes don't need it on GPU
         mm.unload_all_models()
         gc.collect()
         mm.soft_empty_cache()
