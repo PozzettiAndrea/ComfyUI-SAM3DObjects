@@ -827,6 +827,7 @@ class SLatMeshDecoder(SparseTransformerBase):
         _log.info("[VRAM:decoder] after transformer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
         for i, block in enumerate(self.upsample):
             h = block(h)
+            torch.cuda.empty_cache()
             _log.info("[VRAM:decoder] after upsample[%d]: %.0f MB (peak %.0f MB) | feats %s coords %s", i, _vm(), _vp(), h.feats.shape, h.coords.shape)
         h = self.out_layer(h)
         _log.info("[VRAM:decoder] after out_layer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)

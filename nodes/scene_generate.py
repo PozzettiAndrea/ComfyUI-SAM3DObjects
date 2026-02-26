@@ -249,6 +249,8 @@ class SAM3DSceneGenerate:
             )
             # Use in-memory data directly (avoids torch.load round-trip)
             stage1_outputs.append(result["data"])
+            # Prevent reserved pool growth between objects
+            torch.cuda.empty_cache()
 
         # ==================================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures

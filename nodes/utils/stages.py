@@ -945,8 +945,10 @@ def run_stage1(
                 gen_iter = tqdm(gen_iter, total=steps, desc="Stage 1 (sparse structure)")
             except ImportError:
                 pass
-            for _, xt, _ in gen_iter:
+            for step_idx, (_, xt, _) in enumerate(gen_iter):
                 pbar.update(1)
+                if step_idx % 5 == 4:
+                    torch.cuda.empty_cache()
             return_dict = xt
 
             if not has_latent_mapping:
@@ -1186,8 +1188,10 @@ def run_stage2(
                 gen_iter = tqdm(gen_iter, total=steps, desc="Stage 2 (SLAT generation)")
             except ImportError:
                 pass
-            for _, xt, _ in gen_iter:
+            for step_idx, (_, xt, _) in enumerate(gen_iter):
                 pbar.update(1)
+                if step_idx % 5 == 4:
+                    torch.cuda.empty_cache()
             slat_feats = xt
 
             # Create SparseTensor
@@ -1346,6 +1350,8 @@ def run_decode(
         slat.feats = slat.feats.to(dtype=dtype)
 
     # (sparse FlexiCubes is now the only path — no toggle needed)
+
+    torch.cuda.empty_cache()
 
     with torch.no_grad():
         output = decoder(slat)
