@@ -11,7 +11,6 @@ import torch
 import comfy.model_management
 import utils3d
 from PIL import Image
-from tqdm import tqdm
 import trimesh
 import trimesh.visual
 import xatlas
@@ -144,15 +143,7 @@ def render_frames(
         raise ValueError(f"Unsupported sample type: {type(sample)}")
 
     rets = {}
-    for j, (extr, intr) in tqdm(
-        enumerate(zip(extrinsics, intrinsics)),
-        total=len(extrinsics),
-        desc="Rendering views",
-        disable=not verbose,
-        file=sys.stderr,
-        ncols=80,
-        bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
-    ):
+    for j, (extr, intr) in enumerate(zip(extrinsics, intrinsics)):
         if not isinstance(sample, MeshExtractResult):
             res = renderer.render(sample, extr, intr, colors_overwrite=colors_overwrite)
             if "color" not in rets:
@@ -205,9 +196,7 @@ def render_gaussian_color_stay_in_device(
     renderer.pipe.use_mip_gaussian = True
 
     rets = {}
-    for _, (extr, intr) in tqdm(
-        enumerate(zip(extrinsics, intrinsics)), desc="Rendering", disable=not verbose
-    ):
+    for _, (extr, intr) in enumerate(zip(extrinsics, intrinsics)):
         res = renderer.render(sample, extr, intr, colors_overwrite=colors_overwrite)
         color = (res["color"].permute(1, 2, 0) * 255).to(torch.uint8)
         if "color" not in rets:
@@ -352,12 +341,7 @@ def _fill_holes(
     # Rasterize
     visblity = torch.zeros(faces.shape[0], dtype=torch.int32, device=verts.device)
     rastctx = utils3d.torch.RastContext(backend="cuda")
-    for i in tqdm(
-        range(views.shape[0]),
-        total=views.shape[0],
-        disable=not verbose,
-        desc="Rasterizing",
-    ):
+    for i in range(views.shape[0]):
         view = views[i]
         buffers = utils3d.torch.rasterize_triangle_faces(
             rastctx,
@@ -392,7 +376,7 @@ def _fill_holes(
     ## construct inner faces
     inner_face_indices = torch.nonzero(visblity == 0).reshape(-1)
     if verbose:
-        tqdm.write(f"Found {inner_face_indices.shape[0]} invisible faces")
+        print(f"Found {inner_face_indices.shape[0]} invisible faces")
     if inner_face_indices.shape[0] == 0:
         return verts, faces
 
@@ -403,7 +387,7 @@ def _fill_holes(
         verts[dual_edge2edge[:, 0]] - verts[dual_edge2edge[:, 1]], dim=1
     )
     if verbose:
-        tqdm.write(f"Dual graph: {dual_edges.shape[0]} edges")
+        print(f"Dual graph: {dual_edges.shape[0]} edges")
 
     ## solve mincut problem
     ### construct main graph
@@ -444,21 +428,21 @@ def _fill_holes(
         device=faces.device,
     )
     if verbose:
-        tqdm.write(f"Mincut solved, start checking the cut")
+        print(f"Mincut solved, start checking the cut")
 
     ### check if the cut is valid with each connected component
     to_remove_cc = utils3d.torch.compute_connected_components(
         faces[remove_face_indices]
     )
     if debug:
-        tqdm.write(f"Number of connected components of the cut: {len(to_remove_cc)}")
+        print(f"Number of connected components of the cut: {len(to_remove_cc)}")
     valid_remove_cc = []
     cutting_edges = []
     for cc in to_remove_cc:
         #### check if the connected component has low visibility
         visblity_median = visblity[remove_face_indices[cc]].median()
         if debug:
-            tqdm.write(f"visblity_median: {visblity_median}")
+            print(f"visblity_median: {visblity_median}")
         if visblity_median > 0.25:
             continue
 
@@ -495,7 +479,7 @@ def _fill_holes(
                 )
             if debug:
                 cutting_edges.append(cc_new_boundary_edge_indices)
-                tqdm.write(f"Area of the cutting loop: {cc_new_boundary_edges_cc_area}")
+                print(f"Area of the cutting loop: {cc_new_boundary_edges_cc_area}")
             if any([l > max_hole_size for l in cc_new_boundary_edges_cc_area]):
                 continue
 
@@ -527,10 +511,10 @@ def _fill_holes(
         faces = faces[mask]
         faces, verts = utils3d.torch.remove_unreferenced_vertices(faces, verts)
         if verbose:
-            tqdm.write(f"Removed {(~mask).sum()} faces by mincut")
+            print(f"Removed {(~mask).sum()} faces by mincut")
     else:
         if verbose:
-            tqdm.write(f"Removed 0 faces by mincut")
+            print(f"Removed 0 faces by mincut")
 
     mesh = _meshfix.PyTMesh()
     mesh.load_array(verts.cpu().numpy(), faces.cpu().numpy())
@@ -579,7 +563,7 @@ def postprocess_mesh(
     """
 
     if verbose:
-        tqdm.write(
+        print(
             f"Before postprocess: {vertices.shape[0]} vertices, {faces.shape[0]} faces"
         )
 
@@ -595,7 +579,7 @@ def postprocess_mesh(
         if vertex_colors is not None and "colors" in mesh.point_data:
             vertex_colors = mesh.point_data["colors"]
         if verbose:
-            tqdm.write(
+            print(
                 f"After decimate: {vertices.shape[0]} vertices, {faces.shape[0]} faces"
             )
 
@@ -621,7 +605,7 @@ def postprocess_mesh(
         if vertex_colors is not None and len(vertex_colors) != len(vertices):
             vertex_colors = None
         if verbose:
-            tqdm.write(
+            print(
                 f"After remove invisible faces: {vertices.shape[0]} vertices, {faces.shape[0]} faces"
             )
 
@@ -710,19 +694,8 @@ def bake_texture(
             (texture_size * texture_size), dtype=torch.float32
         ).to(device)
         rastctx = utils3d.torch.RastContext(backend=device if device.startswith("cuda") else "cuda")
-        total_views = len(views)
 
-        # Use tqdm with file=sys.stderr for subprocess compatibility
-        pbar = tqdm(
-            enumerate(zip(views, projections)),
-            total=total_views,
-            disable=not verbose,
-            desc="Texture baking (fast)",
-            file=sys.stderr,
-            ncols=80,
-            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
-        )
-        for i, (view, projection) in pbar:
+        for i, (view, projection) in enumerate(zip(views, projections)):
             # Load observation and mask on-demand (saves ~1.2GB VRAM)
             observation = torch.tensor(observations[i] / 255.0).float().to(device)
             obs_mask = torch.tensor(masks[i] > 0).bool().to(device)
@@ -756,7 +729,7 @@ def bake_texture(
             # Free memory periodically
             del observation, obs_mask, rast, uv_map, obs, mask
             if i % 20 == 0:
-                torch.cuda.empty_cache()
+                comfy.model_management.soft_empty_cache()
 
         mask = texture_weights > 0
         texture[mask] /= texture_weights[mask][:, None]
@@ -782,19 +755,8 @@ def bake_texture(
         masks_gpu = [torch.tensor(m > 0).bool().to(device).flip(0) for m in masks]
         _uv = []
         _uv_dr = []
-        total_views = len(views)
 
-        # Use tqdm with file=sys.stderr for subprocess compatibility
-        uv_pbar = tqdm(
-            enumerate(zip(observations_gpu, views, projections)),
-            total=total_views,
-            disable=not verbose,
-            desc="Preparing UV maps",
-            file=sys.stderr,
-            ncols=80,
-            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
-        )
-        for i, (observation, view, projection) in uv_pbar:
+        for i, (observation, view, projection) in enumerate(zip(observations_gpu, views, projections)):
             with torch.no_grad():
                 rast = utils3d.torch.rasterize_triangle_faces(
                     rastctx,
@@ -850,17 +812,7 @@ def bake_texture(
 
         total_steps = 2500
 
-        # Use tqdm with file=sys.stderr for subprocess compatibility
-        pbar = tqdm(
-            range(total_steps),
-            disable=not verbose,
-            desc="Texture baking (opt)",
-            file=sys.stderr,
-            ncols=80,
-            bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{postfix}]'
-        )
-
-        for step in pbar:
+        for step in range(total_steps):
             optimizer.zero_grad()
             selected = np.random.randint(0, len(views))
             uv, uv_dr, observation, mask = (
@@ -887,13 +839,10 @@ def bake_texture(
                 optimizer, step, total_steps, 1e-2, 1e-5
                 )
 
-            # Update progress bar with loss
-            if step % 100 == 0:
-                pbar.set_postfix_str(f"loss={loss.item():.4f}")
 
         # Free GPU memory before final texture processing
         del observations_gpu, masks_gpu, _uv, _uv_dr
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         texture = np.clip(
             texture[0].flip(0).detach().cpu().numpy() * 255, 0, 255
@@ -971,7 +920,7 @@ def to_glb(
 
         # Free GPU memory before texture baking (Gaussian no longer needed)
         # Note: We can't delete app_rep since it's owned by caller, but we can clear cache
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         texture = bake_texture(
             vertices,
@@ -990,7 +939,7 @@ def to_glb(
 
         # Free memory after texture baking
         del observations, masks
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         texture = Image.fromarray(texture)
         material = trimesh.visual.material.PBRMaterial(
@@ -1091,79 +1040,69 @@ def simplify_gs(
     _interval = 10
     num_target = int((1 - simplify) * _zeta.shape[0])
 
-    with tqdm(total=2500, disable=not verbose, desc="Simplifying Gaussian") as pbar:
-        for i in range(2500):
-            # prune
-            if i % 100 == 0:
-                mask = new_gs.get_opacity.squeeze() > 0.05
-                mask = torch.nonzero(mask).squeeze()
-                new_gs._xyz = torch.nn.Parameter(new_gs._xyz[mask])
-                new_gs._rotation = torch.nn.Parameter(new_gs._rotation[mask])
-                new_gs._scaling = torch.nn.Parameter(new_gs._scaling[mask])
-                new_gs._opacity = torch.nn.Parameter(new_gs._opacity[mask])
-                new_gs._features_dc = new_gs._features_dc[mask]
-                new_gs._features_rest = (
-                    new_gs._features_rest[mask]
-                    if new_gs._features_rest is not None
-                    else None
-                )
-                _zeta = _zeta[mask]
-                _lambda = _lambda[mask]
-                # update optimizer state
-                for param_group, new_param in zip(
-                    optimizer.param_groups,
-                    [new_gs._xyz, new_gs._rotation, new_gs._scaling, new_gs._opacity],
-                ):
-                    stored_state = optimizer.state[param_group["params"][0]]
-                    if "exp_avg" in stored_state:
-                        stored_state["exp_avg"] = stored_state["exp_avg"][mask]
-                        stored_state["exp_avg_sq"] = stored_state["exp_avg_sq"][mask]
-                    del optimizer.state[param_group["params"][0]]
-                    param_group["params"][0] = new_param
-                    optimizer.state[param_group["params"][0]] = stored_state
-
-            opacity = new_gs.get_opacity.squeeze()
-
-            # sparisfy
-            if i % _interval == 0:
-                _zeta = _lambda + opacity.detach()
-                if opacity.shape[0] > num_target:
-                    index = _zeta.topk(num_target)[1]
-                    _m = torch.ones_like(_zeta, dtype=torch.bool)
-                    _m[index] = 0
-                    _zeta[_m] = 0
-                _lambda = _lambda + opacity.detach() - _zeta
-
-            # sample a random view
-            view_idx = np.random.randint(len(observations))
-            observation = observations[view_idx]
-            extrinsic = extrinsics[view_idx]
-            intrinsic = intrinsics[view_idx]
-
-            color = renderer.render(new_gs, extrinsic, intrinsic)["color"]
-            rgb_loss = torch.nn.functional.l1_loss(color, observation)
-            loss = rgb_loss + _delta * torch.sum(
-                torch.pow(_lambda + opacity - _zeta, 2)
+    for i in range(2500):
+        # prune
+        if i % 100 == 0:
+            mask = new_gs.get_opacity.squeeze() > 0.05
+            mask = torch.nonzero(mask).squeeze()
+            new_gs._xyz = torch.nn.Parameter(new_gs._xyz[mask])
+            new_gs._rotation = torch.nn.Parameter(new_gs._rotation[mask])
+            new_gs._scaling = torch.nn.Parameter(new_gs._scaling[mask])
+            new_gs._opacity = torch.nn.Parameter(new_gs._opacity[mask])
+            new_gs._features_dc = new_gs._features_dc[mask]
+            new_gs._features_rest = (
+                new_gs._features_rest[mask]
+                if new_gs._features_rest is not None
+                else None
             )
+            _zeta = _zeta[mask]
+            _lambda = _lambda[mask]
+            # update optimizer state
+            for param_group, new_param in zip(
+                optimizer.param_groups,
+                [new_gs._xyz, new_gs._rotation, new_gs._scaling, new_gs._opacity],
+            ):
+                stored_state = optimizer.state[param_group["params"][0]]
+                if "exp_avg" in stored_state:
+                    stored_state["exp_avg"] = stored_state["exp_avg"][mask]
+                    stored_state["exp_avg_sq"] = stored_state["exp_avg_sq"][mask]
+                del optimizer.state[param_group["params"][0]]
+                param_group["params"][0] = new_param
+                optimizer.state[param_group["params"][0]] = stored_state
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        opacity = new_gs.get_opacity.squeeze()
 
-            # update lr
-            for j in range(len(optimizer.param_groups)):
-                optimizer.param_groups[j]["lr"] = cosine_anealing(
-                    optimizer, i, 2500, start_lr[j], end_lr[j]
-                )
+        # sparisfy
+        if i % _interval == 0:
+            _zeta = _lambda + opacity.detach()
+            if opacity.shape[0] > num_target:
+                index = _zeta.topk(num_target)[1]
+                _m = torch.ones_like(_zeta, dtype=torch.bool)
+                _m[index] = 0
+                _zeta[_m] = 0
+            _lambda = _lambda + opacity.detach() - _zeta
 
-            pbar.set_postfix(
-                {
-                    "loss": rgb_loss.item(),
-                    "num": opacity.shape[0],
-                    "lambda": _lambda.mean().item(),
-                }
+        # sample a random view
+        view_idx = np.random.randint(len(observations))
+        observation = observations[view_idx]
+        extrinsic = extrinsics[view_idx]
+        intrinsic = intrinsics[view_idx]
+
+        color = renderer.render(new_gs, extrinsic, intrinsic)["color"]
+        rgb_loss = torch.nn.functional.l1_loss(color, observation)
+        loss = rgb_loss + _delta * torch.sum(
+            torch.pow(_lambda + opacity - _zeta, 2)
+        )
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # update lr
+        for j in range(len(optimizer.param_groups)):
+            optimizer.param_groups[j]["lr"] = cosine_anealing(
+                optimizer, i, 2500, start_lr[j], end_lr[j]
             )
-            pbar.update()
 
     new_gs._xyz = new_gs._xyz.data
     new_gs._rotation = new_gs._rotation.data

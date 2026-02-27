@@ -1784,40 +1784,39 @@ def infer_intrinsics_from_pointmap(
     aspect_ratio = width / height
     
     # Always process the output in fp32 precision
-    with torch.autocast(device_type=device.type, dtype=torch.float32):
-        points, mask, fov_x = map(lambda x: x.float() if isinstance(x, torch.Tensor) else x, [points, mask, fov_x])
+    points, mask, fov_x = map(lambda x: x.float() if isinstance(x, torch.Tensor) else x, [points, mask, fov_x])
 
-        mask_binary = mask > mask_threshold if mask is not None else torch.ones_like(points[..., 0], dtype=torch.bool)
-        
-        # Add finite check to handle NaN and inf values
-        finite_mask = torch.isfinite(points).all(dim=-1)
-        mask_binary = mask_binary & finite_mask
+    mask_binary = mask > mask_threshold if mask is not None else torch.ones_like(points[..., 0], dtype=torch.bool)
 
-        # Get camera-space point map. (Focal here is the focal length relative to half the image diagonal)
-        if fov_x is None:
-            # BUG: Recover focal shift numpy method has flipped outputs: https://github.com/microsoft/MoGe/issues/110
-            shift, focal = recover_focal_shift(points, mask_binary)
-        else:
-            focal = aspect_ratio / (1 + aspect_ratio ** 2) ** 0.5 / torch.tan(torch.deg2rad(torch.as_tensor(fov_x, device=points.device, dtype=points.dtype) / 2))
-            if focal.ndim == 0:
-                focal = focal[None].expand(points.shape[0])
-            _, shift = recover_focal_shift(points, mask_binary, focal=focal)
-        fx = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5 / aspect_ratio
-        fy = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5 
-        intrinsics = utils3d.torch.intrinsics_from_focal_center(fx, fy, 0.5, 0.5)
-        depth = points[..., 2] + shift[..., None, None]
-        
-        # If projection constraint is forced, recompute the point map using the actual depth map
-        if force_projection:
-            points = utils3d.torch.depth_to_points(depth, intrinsics=intrinsics)
-        else:
-            shift_stacked = torch.stack([torch.zeros_like(shift), torch.zeros_like(shift), shift], dim=-1)[..., None, None, :]
-            points = points + shift_stacked
+    # Add finite check to handle NaN and inf values
+    finite_mask = torch.isfinite(points).all(dim=-1)
+    mask_binary = mask_binary & finite_mask
 
-        # Apply mask if needed
-        if apply_mask:
-            points = torch.where(mask_binary[..., None], points, torch.inf)
-            depth = torch.where(mask_binary, depth, torch.inf)
+    # Get camera-space point map. (Focal here is the focal length relative to half the image diagonal)
+    if fov_x is None:
+        # BUG: Recover focal shift numpy method has flipped outputs: https://github.com/microsoft/MoGe/issues/110
+        shift, focal = recover_focal_shift(points, mask_binary)
+    else:
+        focal = aspect_ratio / (1 + aspect_ratio ** 2) ** 0.5 / torch.tan(torch.deg2rad(torch.as_tensor(fov_x, device=points.device, dtype=points.dtype) / 2))
+        if focal.ndim == 0:
+            focal = focal[None].expand(points.shape[0])
+        _, shift = recover_focal_shift(points, mask_binary, focal=focal)
+    fx = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5 / aspect_ratio
+    fy = focal / 2 * (1 + aspect_ratio ** 2) ** 0.5
+    intrinsics = utils3d.torch.intrinsics_from_focal_center(fx, fy, 0.5, 0.5)
+    depth = points[..., 2] + shift[..., None, None]
+
+    # If projection constraint is forced, recompute the point map using the actual depth map
+    if force_projection:
+        points = utils3d.torch.depth_to_points(depth, intrinsics=intrinsics)
+    else:
+        shift_stacked = torch.stack([torch.zeros_like(shift), torch.zeros_like(shift), shift], dim=-1)[..., None, None, :]
+        points = points + shift_stacked
+
+    # Apply mask if needed
+    if apply_mask:
+        points = torch.where(mask_binary[..., None], points, torch.inf)
+        depth = torch.where(mask_binary, depth, torch.inf)
 
     return_dict = {
         'points': points.squeeze(0) if squeeze_batch else points,

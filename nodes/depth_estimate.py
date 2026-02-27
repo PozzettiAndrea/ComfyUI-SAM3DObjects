@@ -4,6 +4,9 @@ import logging
 import os
 from typing import Any
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
 
@@ -26,7 +29,7 @@ def _move_orphans_to_device(model, device):
                 b.data = b.data.to(device)
 
 
-class SAM3D_DepthEstimate:
+class SAM3D_DepthEstimate(io.ComfyNode):
     """
     Depth Estimation using MoGe model.
 
@@ -42,28 +45,27 @@ class SAM3D_DepthEstimate:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "depth_model": ("SAM3D_MODEL", {"tooltip": "Depth model from LoadSAM3DModel"}),
-                "image": ("IMAGE", {"tooltip": "Input RGB image"}),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_DepthEstimate",
+            category="SAM3DObjects",
+            description="Run MoGe depth estimation to get camera intrinsics and point cloud PLY.",
+            inputs=[
+                io.Custom("SAM3D_MODEL").Input("depth_model", tooltip="Depth model from LoadSAM3DModel"),
+                io.Image.Input("image", tooltip="Input RGB image"),
+            ],
+            outputs=[
+                io.Custom("SAM3D_INTRINSICS").Output(display_name="intrinsics", tooltip="Camera intrinsics matrix (3x3)"),
+                io.Custom("SAM3D_POINTMAP").Output(display_name="pointmap", tooltip="Pointmap tensor (H, W, 3) - pass to SAM3DGenerateSLAT"),
+                io.String.Output(display_name="pointcloud_ply", tooltip="Path to PLY file for visualization"),
+                io.Mask.Output(display_name="depth_mask", tooltip="Depth map as mask (normalized 0-1)"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3D_INTRINSICS", "SAM3D_POINTMAP", "STRING", "MASK")
-    RETURN_NAMES = ("intrinsics", "pointmap", "pointcloud_ply", "depth_mask")
-    OUTPUT_TOOLTIPS = (
-        "Camera intrinsics matrix (3x3)",
-        "Pointmap tensor (H, W, 3) - pass to SAM3DGenerateSLAT",
-        "Path to PLY file for visualization",
-        "Depth map as mask (normalized 0-1)"
-    )
-    FUNCTION = "estimate_depth"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Run MoGe depth estimation to get camera intrinsics and point cloud PLY."
-
-    def estimate_depth(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         depth_model: Any,
         image,  # torch.Tensor [B, H, W, C] - arrives deserialized
     ):
@@ -78,7 +80,7 @@ class SAM3D_DepthEstimate:
             image: Input image tensor [B, H, W, C]
 
         Returns:
-            Tuple of (intrinsics, pointmap, pointcloud_ply, depth_mask)
+            NodeOutput of (intrinsics, pointmap, pointcloud_ply, depth_mask)
         """
         # These imports happen in the isolated subprocess
         import time
@@ -199,13 +201,13 @@ class SAM3D_DepthEstimate:
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()
-        inference_dir = self._get_next_inference_dir(base_output_dir)
+        inference_dir = cls._get_next_inference_dir(base_output_dir)
 
         # Convert pointmap to tensor for direct node-to-node transfer
         pointmap_tensor = torch.from_numpy(pointmap_np)
 
         # Save PLY file for visualization
-        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
+        pointcloud_ply = cls._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
 
         # Create depth visualization
         # Pointmap is in HWC format (H, W, 3) where channel 2 is Z (depth)
@@ -229,9 +231,10 @@ class SAM3D_DepthEstimate:
         elapsed = time.time() - start_time
         vram("DepthEstimate: done")
         log.info("Depth estimation done: %.0fs", elapsed)
-        return (intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
+        return io.NodeOutput(intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
 
-    def _get_next_inference_dir(self, base_output_dir: str) -> str:
+    @staticmethod
+    def _get_next_inference_dir(base_output_dir: str) -> str:
         """
         Find the next available sam3d_inference_N directory.
 
@@ -261,7 +264,8 @@ class SAM3D_DepthEstimate:
 
         return inference_dir
 
-    def _save_pointcloud_ply(self, pointmap, image_pil, output_dir: str) -> str:
+    @staticmethod
+    def _save_pointcloud_ply(pointmap, image_pil, output_dir: str) -> str:
         """
         Save pointmap as a PLY file with vertex colors from the image.
 

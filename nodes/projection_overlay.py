@@ -6,9 +6,12 @@ import re
 import time
 from typing import Tuple
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3D_ProjectionOverlay:
+class SAM3D_ProjectionOverlay(io.ComfyNode):
     """
     Projection Overlay - Visualize pose-optimized meshes projected onto the original image.
 
@@ -19,42 +22,43 @@ class SAM3D_ProjectionOverlay:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "pose_opt_folder": ("STRING", {
-                    "default": "",
-                    "tooltip": "Path to pose-optimized folder (output from SAM3D_ScenePoseOptimize)"
-                }),
-                "render_mode": (["3d_mesh_textured", "3d_mesh", "mask_colors"], {
-                    "default": "3d_mesh_textured",
-                    "tooltip": "Rendering mode: mask_colors (colored points), 3d_mesh (solid mesh), 3d_mesh_textured (mesh with textures)"
-                }),
-                "point_size": ("INT", {
-                    "default": 2,
-                    "min": 1,
-                    "max": 10,
-                    "tooltip": "Size of projected points in pixels (only for mask_colors mode)"
-                }),
-                "alpha": ("FLOAT", {
-                    "default": 0.6,
-                    "min": 0.1,
-                    "max": 1.0,
-                    "step": 0.1,
-                    "tooltip": "Opacity of projected mesh"
-                }),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_ProjectionOverlay",
+            category="SAM3DObjects",
+            description="Visualize pose-optimized meshes projected onto the original image.",
+            inputs=[
+                io.String.Input("pose_opt_folder",
+                    default="",
+                    tooltip="Path to pose-optimized folder (output from SAM3D_ScenePoseOptimize)"
+                ),
+                io.Combo.Input("render_mode", options=["3d_mesh_textured", "3d_mesh", "mask_colors"],
+                    default="3d_mesh_textured",
+                    tooltip="Rendering mode: mask_colors (colored points), 3d_mesh (solid mesh), 3d_mesh_textured (mesh with textures)"
+                ),
+                io.Int.Input("point_size",
+                    default=2,
+                    min=1,
+                    max=10,
+                    tooltip="Size of projected points in pixels (only for mask_colors mode)"
+                ),
+                io.Float.Input("alpha",
+                    default=0.6,
+                    min=0.1,
+                    max=1.0,
+                    step=0.1,
+                    tooltip="Opacity of projected mesh"
+                ),
+            ],
+            outputs=[
+                io.Image.Output(display_name="overlay_image", tooltip="Overlay image showing projected meshes on original image"),
+            ],
+        )
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("overlay_image",)
-    OUTPUT_TOOLTIPS = ("Overlay image showing projected meshes on original image",)
-    FUNCTION = "create_overlay"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Visualize pose-optimized meshes projected onto the original image."
-
-    def create_overlay(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         pose_opt_folder: str,
         render_mode: str = "mask_colors",
         point_size: int = 2,
@@ -70,7 +74,7 @@ class SAM3D_ProjectionOverlay:
             alpha: Opacity of mesh overlay
 
         Returns:
-            Tuple containing ComfyUI IMAGE tensor
+            NodeOutput containing ComfyUI IMAGE tensor
         """
         import os
         import re
@@ -111,7 +115,7 @@ class SAM3D_ProjectionOverlay:
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics not found: {intrinsics_path}")
 
-        intrinsics = torch.load(intrinsics_path, weights_only=False)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=True)
         intrinsics = np.array(intrinsics)
 
         # Denormalize intrinsics
@@ -137,7 +141,7 @@ class SAM3D_ProjectionOverlay:
         if not mesh_files:
             log.warning("ProjectionOverlay: No meshes found, returning original image")
             img_tensor = torch.from_numpy(img_array).unsqueeze(0)
-            return (img_tensor,)
+            return io.NodeOutput(img_tensor,)
 
         # Generate distinct colors for each object
         colors = [
@@ -172,11 +176,11 @@ class SAM3D_ProjectionOverlay:
 
         # Render based on mode
         if render_mode == "mask_colors":
-            overlay = self._render_mask_colors(loaded_meshes, img_array, K, colors, point_size, alpha)
+            overlay = cls._render_mask_colors(loaded_meshes, img_array, K, colors, point_size, alpha)
         elif render_mode == "3d_mesh":
-            overlay = self._render_3d_mesh(loaded_meshes, img_array, K, colors, alpha, H, W)
+            overlay = cls._render_3d_mesh(loaded_meshes, img_array, K, colors, alpha, H, W)
         elif render_mode == "3d_mesh_textured":
-            overlay = self._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)
+            overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)
         else:
             raise ValueError(f"Unknown render_mode: {render_mode}")
 
@@ -186,9 +190,10 @@ class SAM3D_ProjectionOverlay:
 
         elapsed = time.time() - start_time
         log.info("ProjectionOverlay: Done in %.1fs, output shape %s", elapsed, img_tensor.shape)
-        return (img_tensor,)
+        return io.NodeOutput(img_tensor,)
 
-    def _render_mask_colors(self, loaded_meshes, img_array, K, colors, point_size, alpha):
+    @staticmethod
+    def _render_mask_colors(loaded_meshes, img_array, K, colors, point_size, alpha):
         """Render colored points based on mask index (original behavior)."""
         import numpy as np
 
@@ -235,7 +240,8 @@ class SAM3D_ProjectionOverlay:
 
         return overlay
 
-    def _render_3d_mesh(self, loaded_meshes, img_array, K, colors, alpha, H, W):
+    @staticmethod
+    def _render_3d_mesh(loaded_meshes, img_array, K, colors, alpha, H, W):
         """Render solid colored meshes with proper depth buffering using pyrender."""
         import numpy as np
         import pyrender
@@ -305,7 +311,8 @@ class SAM3D_ProjectionOverlay:
         log.info("ProjectionOverlay: Rendered %d meshes (3d_mesh)", len(loaded_meshes))
         return overlay
 
-    def _render_3d_mesh_textured(self, loaded_meshes, img_array, K, alpha, H, W):
+    @staticmethod
+    def _render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W):
         """Render textured meshes using pyrender."""
         import numpy as np
         import pyrender

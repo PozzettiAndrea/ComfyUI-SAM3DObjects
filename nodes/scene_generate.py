@@ -6,11 +6,14 @@ import shutil
 from typing import Any
 
 import numpy as np
+import torch
+
+from comfy_api.latest import io
 
 log = logging.getLogger("sam3dobjects")
 
 
-class SAM3DSceneGenerate:
+class SAM3DSceneGenerate(io.ComfyNode):
     """
     Scene Generation - Batch process multiple masks to 3D objects.
 
@@ -25,104 +28,112 @@ class SAM3DSceneGenerate:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "generator": ("SAM3D_MODEL", {"tooltip": "Generator from LoadSAM3DModel"}),
-                "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel (needed if add_textures=True)"}),
-                "slat_decoder_mesh": ("SAM3D_MODEL", {"tooltip": "Mesh decoder from LoadSAM3DModel"}),
-                "image": ("IMAGE", {"tooltip": "Input RGB image"}),
-                "masks": ("MASK", {"tooltip": "Batch of masks [N, H, W] - each becomes a 3D object"}),
-                "intrinsics": ("SAM3D_INTRINSICS", {"tooltip": "Camera intrinsics from SAM3DDepthEstimate"}),
-                "pointmap": ("SAM3D_POINTMAP", {"tooltip": "Pointmap tensor from SAM3DDepthEstimate"}),
-                "seed": ("INT", {
-                    "default": 42,
-                    "min": 0,
-                    "max": 2**31 - 1,
-                    "control_after_generate": "fixed",
-                    "tooltip": "Random seed for generation"
-                }),
-            },
-            "optional": {
-                "stage1_steps": ("INT", {
-                    "default": 12,
-                    "min": 1,
-                    "max": 50,
-                    "tooltip": "Inference steps for Stage 1 (sparse structure). 12 = fast, 25 = quality"
-                }),
-                "stage1_cfg": ("FLOAT", {
-                    "default": 7.5,
-                    "min": 1.0,
-                    "max": 15.0,
-                    "step": 0.5,
-                    "tooltip": "CFG strength for Stage 1"
-                }),
-                "stage1_cfg_pm": ("FLOAT", {
-                    "default": 0.0,
-                    "min": 0.0,
-                    "max": 10.0,
-                    "step": 0.5,
-                    "tooltip": "Pointmap guidance strength for Stage 1"
-                }),
-                "stage2_steps": ("INT", {
-                    "default": 12,
-                    "min": 1,
-                    "max": 50,
-                    "tooltip": "Inference steps for Stage 2 (SLAT). 12 = fast, 25 = quality"
-                }),
-                "stage2_cfg": ("FLOAT", {
-                    "default": 5.0,
-                    "min": 1.0,
-                    "max": 15.0,
-                    "step": 0.5,
-                    "tooltip": "CFG strength for Stage 2"
-                }),
-                "with_postprocess": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Apply mesh simplification + hole filling"
-                }),
-                "simplify": ("FLOAT", {
-                    "default": 0.95,
-                    "min": 0.5,
-                    "max": 0.98,
-                    "step": 0.01,
-                    "tooltip": "Mesh simplification ratio (0.95 = keep 5%)"
-                }),
-                "add_textures": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Enable Gaussian decode + texture baking for higher quality output"
-                }),
-                "texture_mode": (["opt", "fast"], {
-                    "default": "opt",
-                    "tooltip": "Texture baking mode (only used if add_textures=True)"
-                }),
-                "texture_size": ("INT", {
-                    "default": 1024,
-                    "min": 512,
-                    "max": 4096,
-                    "step": 512,
-                    "tooltip": "Texture resolution (only used if add_textures=True)"
-                }),
-                "stage1_batch_size": ("INT", {
-                    "default": 1,
-                    "min": 1,
-                    "max": 16,
-                    "tooltip": "Process N masks through Stage 1 diffusion simultaneously. Higher = faster but more VRAM. 1 = sequential (safe). Try 4-8 on 24GB+."
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DSceneGenerate",
+            category="SAM3DObjects",
+            description="Batch process multiple masks to 3D objects. Each mask becomes a separate GLB mesh.",
+            inputs=[
+                io.Custom("SAM3D_MODEL").Input("generator", tooltip="Generator from LoadSAM3DModel"),
+                io.Custom("SAM3D_MODEL").Input("slat_decoder_gs", tooltip="Gaussian decoder from LoadSAM3DModel (needed if add_textures=True)"),
+                io.Custom("SAM3D_MODEL").Input("slat_decoder_mesh", tooltip="Mesh decoder from LoadSAM3DModel"),
+                io.Image.Input("image", tooltip="Input RGB image"),
+                io.Mask.Input("masks", tooltip="Batch of masks [N, H, W] - each becomes a 3D object"),
+                io.Custom("SAM3D_INTRINSICS").Input("intrinsics", tooltip="Camera intrinsics from SAM3DDepthEstimate"),
+                io.Custom("SAM3D_POINTMAP").Input("pointmap", tooltip="Pointmap tensor from SAM3DDepthEstimate"),
+                io.Int.Input("seed",
+                    default=42,
+                    min=0,
+                    max=2**31 - 1,
+                    control_after_generate="fixed",
+                    tooltip="Random seed for generation"
+                ),
+                io.Int.Input("stage1_steps",
+                    default=12,
+                    min=1,
+                    max=50,
+                    tooltip="Inference steps for Stage 1 (sparse structure). 12 = fast, 25 = quality",
+                    optional=True,
+                ),
+                io.Float.Input("stage1_cfg",
+                    default=7.5,
+                    min=1.0,
+                    max=15.0,
+                    step=0.5,
+                    tooltip="CFG strength for Stage 1",
+                    optional=True,
+                ),
+                io.Float.Input("stage1_cfg_pm",
+                    default=0.0,
+                    min=0.0,
+                    max=10.0,
+                    step=0.5,
+                    tooltip="Pointmap guidance strength for Stage 1",
+                    optional=True,
+                ),
+                io.Int.Input("stage2_steps",
+                    default=12,
+                    min=1,
+                    max=50,
+                    tooltip="Inference steps for Stage 2 (SLAT). 12 = fast, 25 = quality",
+                    optional=True,
+                ),
+                io.Float.Input("stage2_cfg",
+                    default=5.0,
+                    min=1.0,
+                    max=15.0,
+                    step=0.5,
+                    tooltip="CFG strength for Stage 2",
+                    optional=True,
+                ),
+                io.Boolean.Input("with_postprocess",
+                    default=False,
+                    tooltip="Apply mesh simplification + hole filling",
+                    optional=True,
+                ),
+                io.Float.Input("simplify",
+                    default=0.95,
+                    min=0.5,
+                    max=0.98,
+                    step=0.01,
+                    tooltip="Mesh simplification ratio (0.95 = keep 5%)",
+                    optional=True,
+                ),
+                io.Boolean.Input("add_textures",
+                    default=False,
+                    tooltip="Enable Gaussian decode + texture baking for higher quality output",
+                    optional=True,
+                ),
+                io.Combo.Input("texture_mode", options=["opt", "fast"],
+                    default="opt",
+                    tooltip="Texture baking mode (only used if add_textures=True)",
+                    optional=True,
+                ),
+                io.Int.Input("texture_size",
+                    default=1024,
+                    min=512,
+                    max=4096,
+                    step=512,
+                    tooltip="Texture resolution (only used if add_textures=True)",
+                    optional=True,
+                ),
+                io.Int.Input("stage1_batch_size",
+                    default=1,
+                    min=1,
+                    max=16,
+                    tooltip="Process N masks through Stage 1 diffusion simultaneously. Higher = faster but more VRAM. 1 = sequential (safe). Try 4-8 on 24GB+.",
+                    optional=True,
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="output_folder", tooltip="Path to folder containing all generated GLB files (object_0/, object_1/, etc.)"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("output_folder",)
-    OUTPUT_TOOLTIPS = (
-        "Path to folder containing all generated GLB files (object_0/, object_1/, etc.)",
-    )
-    FUNCTION = "generate_scene"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Batch process multiple masks to 3D objects. Each mask becomes a separate GLB mesh."
-
-    def generate_scene(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         generator,
         slat_decoder_gs,
         slat_decoder_mesh,
@@ -155,6 +166,7 @@ class SAM3DSceneGenerate:
         from pathlib import Path
 
         import folder_paths
+        import comfy.model_management
         from .utils.stages import run_stage1, run_stage2, run_decode, run_texture_bake_direct
         from .utils.helpers import ensure_decoder_files
         from .utils.vram_log import vram
@@ -234,6 +246,7 @@ class SAM3DSceneGenerate:
         log.info("========== PHASE 1: Stage 1 (Sparse Gen) -- %d objects ==========", batch_size)
         stage1_outputs = []
         for idx, (object_dir, mask_pil) in enumerate(zip(object_dirs, mask_pils)):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             log.info("Stage 1 [%d/%d]...", idx + 1, batch_size)
             result = run_stage1(
                 config_path,
@@ -250,7 +263,7 @@ class SAM3DSceneGenerate:
             # Use in-memory data directly (avoids torch.load round-trip)
             stage1_outputs.append(result["data"])
             # Prevent reserved pool growth between objects
-            torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
 
         # ==================================================================
         # PHASE 2: Stage 2 (SLAT Gen) for ALL sparse structures
@@ -261,6 +274,7 @@ class SAM3DSceneGenerate:
         for idx, (object_dir, mask_pil, stage1_output) in enumerate(
             zip(object_dirs, mask_pils, stage1_outputs)
         ):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             log.info("Stage 2 [%d/%d]...", idx + 1, batch_size)
             result = run_stage2(
                 config_path,
@@ -286,6 +300,7 @@ class SAM3DSceneGenerate:
         log.info("========== PHASE 3: Mesh Decode -- %d objects ==========", batch_size)
         glb_paths = []
         for idx, (object_dir, slat_data) in enumerate(zip(object_dirs, slat_data_list)):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             log.info("Mesh decode [%d/%d]...", idx + 1, batch_size)
             result = run_decode(
                 mesh_config,
@@ -318,6 +333,7 @@ class SAM3DSceneGenerate:
             # 4a: Gaussian decode all (reuse in-memory SLATs)
             ply_paths = []
             for idx, (object_dir, slat_data) in enumerate(zip(object_dirs, slat_data_list)):
+                comfy.model_management.throw_exception_if_processing_interrupted()
                 log.info("Gaussian decode [%d/%d]...", idx + 1, batch_size)
                 result = run_decode(
                     gs_config,
@@ -335,6 +351,7 @@ class SAM3DSceneGenerate:
             for idx, (object_dir, ply_path, glb_path) in enumerate(
                 zip(object_dirs, ply_paths, glb_paths)
             ):
+                comfy.model_management.throw_exception_if_processing_interrupted()
                 if not ply_path or not glb_path:
                     continue
                 log.info("Texture bake [%d/%d]...", idx + 1, batch_size)
@@ -365,4 +382,4 @@ class SAM3DSceneGenerate:
         log.info("SceneGenerate: Completed %d object(s)", batch_size)
         log.info("SceneGenerate: Output folder: %s", base_output_dir)
 
-        return (base_output_dir,)
+        return io.NodeOutput(base_output_dir,)

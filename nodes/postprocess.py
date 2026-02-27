@@ -4,9 +4,12 @@ import logging
 import os
 from typing import Any
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3DTextureBake:
+class SAM3DTextureBake(io.ComfyNode):
     """
     Texture Baking.
 
@@ -24,50 +27,50 @@ class SAM3DTextureBake:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "glb_path": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "Path to GLB mesh file from SAM3DMeshDecode"
-                }),
-                "ply_path": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "Path to PLY Gaussian file from SAM3DGaussianDecode"
-                }),
-            },
-            "optional": {
-                "texture_mode": (["opt", "fast"], {
-                    "default": "opt",
-                    "tooltip": "Texture baking mode: 'opt' = gradient descent (30-60s, better quality), 'fast' = nearest neighbor (5s)"
-                }),
-                "texture_size": ("INT", {
-                    "default": 1024,
-                    "min": 512,
-                    "max": 4096,
-                    "step": 512,
-                    "tooltip": "Texture resolution. Higher = better quality but more memory"
-                }),
-                "rendering_engine": (["nvdiffrast", "pytorch3d"], {
-                    "default": "nvdiffrast",
-                    "tooltip": "Rendering backend for texture baking. nvdiffrast = faster/better quality, pytorch3d = fallback"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DTextureBake",
+            category="SAM3DObjects",
+            description="Bake Gaussian appearance into mesh UV textures. 'opt' mode: 30-60s, 'fast' mode: ~5s.",
+            inputs=[
+                io.String.Input("glb_path",
+                    default="",
+                    multiline=False,
+                    tooltip="Path to GLB mesh file from SAM3DMeshDecode"
+                ),
+                io.String.Input("ply_path",
+                    default="",
+                    multiline=False,
+                    tooltip="Path to PLY Gaussian file from SAM3DGaussianDecode"
+                ),
+                io.Combo.Input("texture_mode", options=["opt", "fast"],
+                    default="opt",
+                    tooltip="Texture baking mode: 'opt' = gradient descent (30-60s, better quality), 'fast' = nearest neighbor (5s)",
+                    optional=True,
+                ),
+                io.Int.Input("texture_size",
+                    default=1024,
+                    min=512,
+                    max=4096,
+                    step=512,
+                    tooltip="Texture resolution. Higher = better quality but more memory",
+                    optional=True,
+                ),
+                io.Combo.Input("rendering_engine", options=["nvdiffrast", "pytorch3d"],
+                    default="nvdiffrast",
+                    tooltip="Rendering backend for texture baking. nvdiffrast = faster/better quality, pytorch3d = fallback",
+                    optional=True,
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="glb_filepath", tooltip="Path to saved textured GLB mesh file"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("glb_filepath",)
-    OUTPUT_TOOLTIPS = (
-        "Path to saved textured GLB mesh file",
-    )
-    FUNCTION = "bake_texture"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Bake Gaussian appearance into mesh UV textures. 'opt' mode: 30-60s, 'fast' mode: ~5s."
-
-    def bake_texture(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         glb_path: str,
         ply_path: str,
         texture_mode: str = "opt",
@@ -87,7 +90,7 @@ class SAM3DTextureBake:
             rendering_engine: Rendering backend ("pytorch3d" or "nvdiffrast")
 
         Returns:
-            Tuple of (glb_filepath,)
+            NodeOutput of (glb_filepath,)
         """
         # These imports happen in the isolated subprocess
         import os
@@ -124,4 +127,4 @@ class SAM3DTextureBake:
             raise RuntimeError("GLB file was not generated")
 
         log.info("TextureBake completed: %s", output_glb_path)
-        return (output_glb_path,)
+        return io.NodeOutput(output_glb_path,)

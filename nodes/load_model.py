@@ -4,7 +4,9 @@ import logging
 import os
 from pathlib import Path
 
+import torch
 import comfy.model_management as mm
+from comfy_api.latest import io
 
 log = logging.getLogger("sam3dobjects")
 
@@ -54,7 +56,7 @@ EXPECTED_SIZES = {
 ALWAYS_DOWNLOAD = ["pipeline.yaml"]
 
 
-class LoadSAM3DModel:
+class LoadSAM3DModel(io.ComfyNode):
     """
     Load SAM 3D Objects model configuration.
 
@@ -63,38 +65,38 @@ class LoadSAM3DModel:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "attn_backend": (["auto", "flash_attn", "sdpa", "xformers", "torch_flash_attn"], {
-                    "default": "auto",
-                    "tooltip": "Deprecated - attention is now auto-detected by ComfyUI. This setting has no effect."
-                }),
-                "compile": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Enable PyTorch model compilation for faster inference"
-                }),
-                "precision": (["auto", "bf16", "fp16", "fp32"], {
-                    "default": "auto",
-                    "tooltip": "Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
-                }),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="LoadSAM3DModel",
+            display_name="(Down)Load SAM3D Model",
+            category="SAM3DObjects",
+            description="Load SAM 3D Objects model configuration. Downloads checkpoints if needed.",
+            inputs=[
+                io.Combo.Input("attn_backend", options=["auto", "flash_attn", "sdpa", "xformers", "torch_flash_attn"],
+                    default="auto",
+                    tooltip="Deprecated - attention is now auto-detected by ComfyUI. This setting has no effect."
+                ),
+                io.Boolean.Input("compile",
+                    default=False,
+                    tooltip="Enable PyTorch model compilation for faster inference"
+                ),
+                io.Combo.Input("precision", options=["auto", "bf16", "fp16", "fp32"],
+                    default="auto",
+                    tooltip="Model precision. auto: bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older."
+                ),
+            ],
+            outputs=[
+                io.Custom("SAM3D_MODEL").Output(display_name="depth_model", tooltip="Depth estimation model (MoGe) - use with SAM3DDepthEstimate"),
+                io.Custom("SAM3D_MODEL").Output(display_name="generator", tooltip="SLAT generator (Stage 1 + 2) - use with SAM3DGenerateSLAT"),
+                io.Custom("SAM3D_MODEL").Output(display_name="slat_decoder_gs", tooltip="Gaussian decoder - use with SAM3DGaussianDecode"),
+                io.Custom("SAM3D_MODEL").Output(display_name="slat_decoder_mesh", tooltip="Mesh decoder - use with SAM3DMeshDecode"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL", "SAM3D_MODEL")
-    RETURN_NAMES = ("depth_model", "generator", "slat_decoder_gs", "slat_decoder_mesh")
-    OUTPUT_TOOLTIPS = (
-        "Depth estimation model (MoGe) - use with SAM3DDepthEstimate",
-        "SLAT generator (Stage 1 + 2) - use with SAM3DGenerateSLAT",
-        "Gaussian decoder - use with SAM3DGaussianDecode",
-        "Mesh decoder - use with SAM3DMeshDecode",
-    )
-    FUNCTION = "load_model"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Load SAM 3D Objects model configuration. Downloads checkpoints if needed."
-
-    def load_model(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         attn_backend: str,
         compile: bool,
         precision: str = "auto",
@@ -116,15 +118,15 @@ class LoadSAM3DModel:
 
         # Download all checkpoints if needed (always download everything to avoid
         # missing files when outputs are connected/disconnected between runs)
-        checkpoint_path = self._get_or_download_checkpoint()
+        checkpoint_path = cls._get_or_download_checkpoint()
         config_path = str(checkpoint_path / "pipeline.yaml")
 
         if not Path(config_path).exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
 
         # Download MoGe / DINOv2 safetensors to ComfyUI/models/sam3d/sam-3d-objects/
-        self._ensure_dinov2_safetensors()
-        self._ensure_moge_safetensors()
+        cls._ensure_dinov2_safetensors()
+        cls._ensure_moge_safetensors()
 
         log.info("Model loaded successfully")
 
@@ -134,10 +136,10 @@ class LoadSAM3DModel:
             "compile": compile,
             "precision": precision,
         }
-        return (model, model, model, model)
+        return io.NodeOutput(model, model, model, model)
 
-    @classmethod
-    def _get_or_download_checkpoint(cls) -> Path:
+    @staticmethod
+    def _get_or_download_checkpoint() -> Path:
         """Get checkpoint path, downloading all required files if necessary."""
         models_dir = get_sam3d_models_path()
 
@@ -150,19 +152,19 @@ class LoadSAM3DModel:
         missing_files = []
         for filename in required_files:
             filepath = models_dir / filename
-            if not cls._verify_checkpoint(filepath, filename):
+            if not LoadSAM3DModel._verify_checkpoint(filepath, filename):
                 missing_files.append(filename)
 
         if missing_files:
             log.info("Need to download %d file(s)...", len(missing_files))
-            cls._download_files(models_dir, missing_files)
+            LoadSAM3DModel._download_files(models_dir, missing_files)
         else:
             log.info("All required checkpoints present")
 
         return models_dir
 
-    @classmethod
-    def _verify_checkpoint(cls, filepath: Path, filename: str) -> bool:
+    @staticmethod
+    def _verify_checkpoint(filepath: Path, filename: str) -> bool:
         """Verify a checkpoint file exists and has expected size."""
         if not filepath.exists():
             return False
@@ -178,8 +180,8 @@ class LoadSAM3DModel:
 
         return True
 
-    @classmethod
-    def _download_files(cls, target_dir: Path, files: list):
+    @staticmethod
+    def _download_files(target_dir: Path, files: list):
         """Download specific files from HuggingFace."""
         target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -201,8 +203,8 @@ class LoadSAM3DModel:
 
         log.info("Download complete")
 
-    @classmethod
-    def _ensure_dinov2_safetensors(cls):
+    @staticmethod
+    def _ensure_dinov2_safetensors():
         """Download DINOv2 ViT-L/14 register weights (safetensors) to models folder."""
         from huggingface_hub import hf_hub_download
 
@@ -222,8 +224,8 @@ class LoadSAM3DModel:
         )
         log.info("DINOv2 safetensors downloaded")
 
-    @classmethod
-    def _ensure_moge_safetensors(cls):
+    @staticmethod
+    def _ensure_moge_safetensors():
         """Download MoGe ViT-L weights + config (safetensors) to models folder."""
         from huggingface_hub import hf_hub_download
 

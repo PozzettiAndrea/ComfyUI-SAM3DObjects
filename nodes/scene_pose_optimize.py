@@ -6,9 +6,12 @@ import re
 import json
 from typing import Any, Dict, List, Tuple
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3D_ScenePoseOptimize:
+class SAM3D_ScenePoseOptimize(io.ComfyNode):
     """
     Scene Pose Optimization - Apply/refine poses for all objects in a scene folder.
 
@@ -24,32 +27,30 @@ class SAM3D_ScenePoseOptimize:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "output_folder": ("STRING", {
-                    "default": "",
-                    "tooltip": "Output folder containing object_N/ subdirectories (from SAM3DSceneGenerate or manual path)"
-                }),
-                "optimization_mode": (["pose_only", "icp_only", "render_only"], {
-                    "default": "pose_only",
-                    "tooltip": "Optimization mode: pose_only (just apply predicted pose), icp_only (+ ICP refinement), render_only (+ render-and-compare optimization)"
-                }),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_ScenePoseOptimize",
+            category="SAM3DObjects",
+            description="Optimize poses for all objects in a scene folder using alignment algorithms.",
+            inputs=[
+                io.String.Input("output_folder",
+                    default="",
+                    tooltip="Output folder containing object_N/ subdirectories (from SAM3DSceneGenerate or manual path)"
+                ),
+                io.Combo.Input("optimization_mode", options=["pose_only", "icp_only", "render_only"],
+                    default="pose_only",
+                    tooltip="Optimization mode: pose_only (just apply predicted pose), icp_only (+ ICP refinement), render_only (+ render-and-compare optimization)"
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="output_folder", tooltip="Path to folder containing aligned GLB files (object_0.glb, object_1.glb, ...)"),
+                io.Float.Output(display_name="iou_scores", tooltip="List of IOU scores (quality metric, -1 if optimization failed or skipped)"),
+            ],
+            output_is_list=(False, True),
+        )
 
-    RETURN_TYPES = ("STRING", "FLOAT")
-    RETURN_NAMES = ("output_folder", "iou_scores")
-    OUTPUT_IS_LIST = (False, True)
-    OUTPUT_TOOLTIPS = (
-        "Path to folder containing aligned GLB files (object_0.glb, object_1.glb, ...)",
-        "List of IOU scores (quality metric, -1 if optimization failed or skipped)"
-    )
-    FUNCTION = "optimize_poses"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Optimize poses for all objects in a scene folder using alignment algorithms."
-
-    def _discover_objects(self, output_folder: str) -> List[str]:
+    @staticmethod
+    def _discover_objects(output_folder: str) -> List[str]:
         """Discover all object_N/ folders in sorted order."""
         import os
         import re
@@ -72,7 +73,8 @@ class SAM3D_ScenePoseOptimize:
         object_dirs.sort(key=lambda x: x[0])
         return [path for _, path in object_dirs]
 
-    def _check_cache(self, pose_opt_folder: str, optimization_mode: str, num_objects: int) -> Tuple[bool, List[float]]:
+    @staticmethod
+    def _check_cache(pose_opt_folder: str, optimization_mode: str, num_objects: int) -> Tuple[bool, List[float]]:
         """Check if cached results exist with matching params."""
         import os
         import json
@@ -98,7 +100,8 @@ class SAM3D_ScenePoseOptimize:
 
         return False, []
 
-    def _save_cache_metadata(self, pose_opt_folder: str, optimization_mode: str, num_objects: int, iou_scores: List[float]):
+    @staticmethod
+    def _save_cache_metadata(pose_opt_folder: str, optimization_mode: str, num_objects: int, iou_scores: List[float]):
         """Save metadata for cache validation."""
         import json
 
@@ -110,8 +113,10 @@ class SAM3D_ScenePoseOptimize:
                 "iou_scores": iou_scores,
             }, f)
 
-    def optimize_poses(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         output_folder: str,
         optimization_mode: str = "manual_icp_render",
     ) -> Tuple[str, List[float]]:
@@ -125,7 +130,7 @@ class SAM3D_ScenePoseOptimize:
             optimization_mode: One of "pose_only", "manual_only", "manual_icp", "manual_icp_render"
 
         Returns:
-            Tuple of (path to output folder, list of IOU scores)
+            NodeOutput of (path to output folder, list of IOU scores)
         """
         # These imports happen in the isolated subprocess
         import os
@@ -134,6 +139,7 @@ class SAM3D_ScenePoseOptimize:
         import base64
         import torch
         import comfy.utils
+        import comfy.model_management
         import numpy as np
         import trimesh
         from pathlib import Path
@@ -157,14 +163,14 @@ class SAM3D_ScenePoseOptimize:
             raise ValueError(f"Intrinsics file not found: {intrinsics_path}. Run SAM3DSceneGenerate first.")
 
         # Load intrinsics (our own intermediate file, may contain numpy arrays)
-        intrinsics = torch.load(intrinsics_path, weights_only=False)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=True)
         log.info("ScenePoseOptimize: Loaded intrinsics from %s", intrinsics_path)
 
         # Discover object folders
-        object_dirs = self._discover_objects(output_folder)
+        object_dirs = cls._discover_objects(output_folder)
         if not object_dirs:
             log.warning("ScenePoseOptimize: No object folders found")
-            return ("", [])
+            return io.NodeOutput("", [])
 
         log.info("ScenePoseOptimize: Found %d object(s)", len(object_dirs))
 
@@ -172,10 +178,10 @@ class SAM3D_ScenePoseOptimize:
         pose_opt_folder = f"{output_folder}_pose_optimized"
 
         # Check cache - skip if already processed with same settings
-        cache_hit, cached_scores = self._check_cache(pose_opt_folder, optimization_mode, len(object_dirs))
+        cache_hit, cached_scores = cls._check_cache(pose_opt_folder, optimization_mode, len(object_dirs))
         if cache_hit:
             log.info("ScenePoseOptimize: Using cached results from %s", pose_opt_folder)
-            return (pose_opt_folder, cached_scores)
+            return io.NodeOutput(pose_opt_folder, cached_scores)
 
         # Determine optimization flags (no manual alignment in any mode)
         enable_icp = optimization_mode == "icp_only"
@@ -215,6 +221,7 @@ class SAM3D_ScenePoseOptimize:
         iou_scores = []
 
         for idx, object_dir in enumerate(object_dirs):
+            comfy.model_management.throw_exception_if_processing_interrupted()
             log.info("ScenePoseOptimize: === Object %d/%d ===", idx + 1, len(object_dirs))
 
             # Check required files for this object (fall back to base dir)
@@ -256,7 +263,7 @@ class SAM3D_ScenePoseOptimize:
             # Load initial pose from sparse_structure.pt (computed in Stage 1)
             sparse_path = os.path.join(object_dir, "sparse_structure.pt")
             if os.path.exists(sparse_path):
-                sparse_data = torch.load(sparse_path, weights_only=False)
+                sparse_data = comfy.utils.load_torch_file(sparse_path, safe_load=True)
                 rotation = sparse_data.get("rotation")
                 translation = sparse_data.get("translation")
                 scale = sparse_data.get("scale")
@@ -373,9 +380,9 @@ class SAM3D_ScenePoseOptimize:
         log.info("Pose optimization done: %.0fs (%d objects)", elapsed, len(object_dirs))
 
         # Save cache metadata for future runs
-        self._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)
+        cls._save_cache_metadata(pose_opt_folder, optimization_mode, len(object_dirs), iou_scores)
 
-        return (pose_opt_folder, iou_scores)
+        return io.NodeOutput(pose_opt_folder, iou_scores)
 
 
 # Node mappings

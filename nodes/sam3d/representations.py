@@ -1976,7 +1976,7 @@ class SparseFeatures2Mesh:
         # Free input tensor + all extracted views — dilated copies are independent
         cubefeats.data = None  # Break caller's reference to feats (~654 MiB)
         del cubefeats, feats, coords, sdf, deform, color, weights, v_pos, v_attrs
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
         _log.warning("[VRAM:mesh] after get_sparse_attrs + del: %.0f MiB | verts %d cubes %d", _vm(), len(v_pos_dilate), len(coords_dilate))
 
         # Dilate cube set by 1 voxel to add boundary cubes
@@ -1992,7 +1992,7 @@ class SparseFeatures2Mesh:
 
         x_nx3 = get_defomed_verts(v_pos_dilate, deform_d, self.res)
         del deform_d
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         # Append sentinel vertex/sdf for out-of-bounds searchsorted lookups
         x_nx3 = torch.cat((x_nx3, torch.ones((1, 3), dtype=x_nx3.dtype, device=device) * 0.5))
@@ -2000,12 +2000,12 @@ class SparseFeatures2Mesh:
         if colors_d is not None:
             colors_d = torch.cat((colors_d, torch.zeros((1, colors_d.shape[-1]), dtype=colors_d.dtype, device=device)))
         del v_attrs_d
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
 
         # Build sparse cube index via searchsorted
         mask_reg_c_sparse = (v_pos_dilate[..., 0] * res_v + v_pos_dilate[..., 1]) * res_v + v_pos_dilate[..., 2]
         del v_pos_dilate
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
         reg_c_sparse = (coords_dilate[..., 0] * res_v + coords_dilate[..., 1]) * res_v + coords_dilate[..., 2]
         cube_corners_bias = (cube_corners[:, 0] * res_v + cube_corners[:, 1]) * res_v + cube_corners[:, 2]
         reg_c_value = (reg_c_sparse.unsqueeze(1) + cube_corners_bias.unsqueeze(0).to(device)).reshape(-1)
@@ -2014,7 +2014,7 @@ class SparseFeatures2Mesh:
         reg_c = reg_c.clamp(max=len(mask_reg_c_sparse) - 1)
         reg_c[mask_reg_c_sparse[reg_c] != reg_c_value] = len(mask_reg_c_sparse)
         del reg_c_value, mask_reg_c_sparse
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
         reg_c = reg_c.reshape(-1, 8)
         _log.warning("[VRAM:mesh] after searchsorted: %.0f MiB | reg_c %s", _vm(), reg_c.shape)
 

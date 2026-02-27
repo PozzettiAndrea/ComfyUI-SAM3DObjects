@@ -18,6 +18,7 @@ import math
 from typing import *
 import numpy as np
 import torch
+import comfy.model_management
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -827,7 +828,7 @@ class SLatMeshDecoder(SparseTransformerBase):
         _log.info("[VRAM:decoder] after transformer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
         for i, block in enumerate(self.upsample):
             h = block(h)
-            torch.cuda.empty_cache()
+            comfy.model_management.soft_empty_cache()
             _log.info("[VRAM:decoder] after upsample[%d]: %.0f MB (peak %.0f MB) | feats %s coords %s", i, _vm(), _vp(), h.feats.shape, h.coords.shape)
         h = self.out_layer(h)
         _log.info("[VRAM:decoder] after out_layer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
@@ -839,7 +840,7 @@ class SLatMeshDecoder(SparseTransformerBase):
         if xi.feats.dtype != torch.float32:
             xi = xi.replace(xi.feats.float())
         del h  # Only xi holds cubefeats now
-        torch.cuda.empty_cache()
+        comfy.model_management.soft_empty_cache()
         _log.info("[VRAM:decoder] after del h + empty_cache: %.0f MB (peak %.0f MB)", _vm(), _vp())
         mesh = self.mesh_extractor(xi)
         return [mesh]

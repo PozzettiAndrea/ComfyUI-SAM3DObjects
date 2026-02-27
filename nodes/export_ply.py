@@ -6,10 +6,13 @@ from pathlib import Path
 from typing import Any
 import folder_paths
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
 
-class SAM3DExportPLY:
+class SAM3DExportPLY(io.ComfyNode):
     """
     Export 3D Gaussian Splat to PLY file format.
 
@@ -18,22 +21,24 @@ class SAM3DExportPLY:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "gaussian_splat": ("SAM3D_GAUSSIAN",),
-                "filename": ("STRING", {"default": "output", "multiline": False}),
-                "output_dir": ("STRING", {"default": "", "multiline": False}),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DExportPLY",
+            category="SAM3DObjects",
+            inputs=[
+                io.Custom("SAM3D_GAUSSIAN").Input("gaussian_splat"),
+                io.String.Input("filename", default="output", multiline=False),
+                io.String.Input("output_dir", default="", multiline=False),
+            ],
+            outputs=[
+                io.String.Output(display_name="filepath"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("filepath",)
-    FUNCTION = "export_ply"
-    CATEGORY = "SAM3DObjects"
-
-    def export_ply(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         gaussian_splat: Any,
         filename: str,
         output_dir: str,
@@ -90,7 +95,7 @@ class SAM3DExportPLY:
         log.info("- Path: %s", output_path)
         log.info("- Size: %.2f MB", file_size_mb)
 
-        return (str(output_path),)
+        return io.NodeOutput(str(output_path),)
 
     @staticmethod
     def _sanitize_filename(filename: str) -> str:
@@ -118,7 +123,7 @@ class SAM3DExportPLY:
         return filename
 
 
-class SAM3DExportPLYBatch:
+class SAM3DExportPLYBatch(io.ComfyNode):
     """
     Export multiple Gaussian Splats to PLY files with automatic numbering.
 
@@ -126,23 +131,25 @@ class SAM3DExportPLYBatch:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "gaussian_splat": ("SAM3D_GAUSSIAN",),
-                "prefix": ("STRING", {"default": "object", "multiline": False}),
-                "index": ("INT", {"default": 0, "min": 0, "max": 9999}),
-                "output_dir": ("STRING", {"default": "", "multiline": False}),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DExportPLYBatch",
+            category="SAM3DObjects",
+            inputs=[
+                io.Custom("SAM3D_GAUSSIAN").Input("gaussian_splat"),
+                io.String.Input("prefix", default="object", multiline=False),
+                io.Int.Input("index", default=0, min=0, max=9999),
+                io.String.Input("output_dir", default="", multiline=False),
+            ],
+            outputs=[
+                io.String.Output(display_name="filepath"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("filepath",)
-    FUNCTION = "export_ply_batch"
-    CATEGORY = "SAM3DObjects"
-
-    def export_ply_batch(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         gaussian_splat: Any,
         prefix: str,
         index: int,
@@ -187,4 +194,4 @@ class SAM3DExportPLYBatch:
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
         log.info("Saved: %s (%.2f MB)", filename, file_size_mb)
 
-        return (str(output_path),)
+        return io.NodeOutput(str(output_path),)

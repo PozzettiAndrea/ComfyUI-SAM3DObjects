@@ -287,46 +287,45 @@ def _run_phase1_stage1(
         # Run generation
         device = comfy.model_management.get_torch_device()
         with torch.no_grad():
-            with torch.autocast(device_type=device.type, dtype=dtype):
-                image_tensor = ss_input_dict["image"]
-                bs = image_tensor.shape[0]
+            image_tensor = ss_input_dict["image"]
+            bs = image_tensor.shape[0]
 
-                has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
-                if has_latent_mapping:
-                    latent_shape_dict = {
-                        k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
-                        for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
-                    }
-                else:
-                    latent_shape_dict = (bs,) + (4096, 8)
+            has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
+            if has_latent_mapping:
+                latent_shape_dict = {
+                    k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
+                    for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
+                }
+            else:
+                latent_shape_dict = (bs,) + (4096, 8)
 
-                condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
-                condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
+            condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
+            condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
 
-                if ss_embedder is not None and len(condition_args) > 0:
-                    tokens = ss_embedder(*condition_args, **condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
-                elif ss_embedder is not None:
-                    tokens = ss_embedder(**condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
+            if ss_embedder is not None and len(condition_args) > 0:
+                tokens = ss_embedder(*condition_args, **condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
+            elif ss_embedder is not None:
+                tokens = ss_embedder(**condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
 
-                return_dict = ss_generator(latent_shape_dict, image_tensor.device, *condition_args, **condition_kwargs)
+            return_dict = ss_generator(latent_shape_dict, image_tensor.device, *condition_args, **condition_kwargs)
 
-                if not has_latent_mapping:
-                    return_dict = {"shape": return_dict}
+            if not has_latent_mapping:
+                return_dict = {"shape": return_dict}
 
-                shape_latent = return_dict["shape"]
-                ss = ss_decoder(shape_latent.permute(0, 2, 1).contiguous().view(shape_latent.shape[0], 8, 16, 16, 16))
-                coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
+            shape_latent = return_dict["shape"]
+            ss = ss_decoder(shape_latent.permute(0, 2, 1).contiguous().view(shape_latent.shape[0], 8, 16, 16, 16))
+            coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
 
-                return_dict["coords_original"] = coords
-                if downsample_ss_dist > 0:
-                    coords = prune_sparse_structure(coords, max_neighbor_axes_dist=downsample_ss_dist)
-                coords, downsample_factor = downsample_sparse_structure(coords)
-                return_dict["coords"] = coords
-                return_dict["downsample_factor"] = downsample_factor
+            return_dict["coords_original"] = coords
+            if downsample_ss_dist > 0:
+                coords = prune_sparse_structure(coords, max_neighbor_axes_dist=downsample_ss_dist)
+            coords, downsample_factor = downsample_sparse_structure(coords)
+            return_dict["coords"] = coords
+            return_dict["downsample_factor"] = downsample_factor
 
         # Pose decoding
         pose_result = pose_decoder(return_dict, scene_scale=pointmap_scale, scene_shift=pointmap_shift)
@@ -417,7 +416,7 @@ def _run_phase2_stage2(
 
         # Load sparse structure
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
-        stage1_output = torch.load(sparse_path, weights_only=False)
+        stage1_output = comfy.utils.load_torch_file(sparse_path, safe_load=True)
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
@@ -428,28 +427,27 @@ def _run_phase2_stage2(
 
         # Run generation
         with torch.no_grad():
-            with torch.autocast(device_type=device.type, dtype=dtype):
-                image_tensor = slat_input_dict["image"]
-                DEVICE = image_tensor.device
-                latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
+            image_tensor = slat_input_dict["image"]
+            DEVICE = image_tensor.device
+            latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
 
-                condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
-                condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
+            condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
+            condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
 
-                if slat_embedder is not None and len(condition_args) > 0:
-                    tokens = slat_embedder(*condition_args, **condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
-                elif slat_embedder is not None:
-                    tokens = slat_embedder(**condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
+            if slat_embedder is not None and len(condition_args) > 0:
+                tokens = slat_embedder(*condition_args, **condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
+            elif slat_embedder is not None:
+                tokens = slat_embedder(**condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
 
-                condition_args = condition_args + (coords.cpu().numpy(),)
-                slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
+            condition_args = condition_args + (coords.cpu().numpy(),)
+            slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
 
-                slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
-                slat = slat * slat_std + slat_mean
+            slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
+            slat = slat * slat_std + slat_mean
 
         # Save
         slat_path = os.path.join(object_dir, "slat.pt")
@@ -495,7 +493,7 @@ def _run_phase3_mesh_decode(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=True)
 
         # Extract slat
         slat = slat_data.get("slat")
@@ -576,7 +574,7 @@ def _run_phase4_texture(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=True)
         slat = slat_data.get("slat")
         if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")

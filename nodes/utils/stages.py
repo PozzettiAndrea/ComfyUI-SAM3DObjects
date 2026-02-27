@@ -881,86 +881,80 @@ def run_stage1(
     device = comfy.model_management.get_torch_device()
 
     with torch.no_grad():
-        with torch.autocast(device_type=device.type, dtype=dtype):
-            image_tensor = ss_input_dict["image"]
-            bs = image_tensor.shape[0]
+        image_tensor = ss_input_dict["image"]
+        bs = image_tensor.shape[0]
 
-            # Check if MM-DiT architecture
-            has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
+        # Check if MM-DiT architecture
+        has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
 
-            if has_latent_mapping:
-                latent_shape_dict = {
-                    k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
-                    for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
-                }
-            else:
-                latent_shape_dict = (bs,) + (4096, 8)
+        if has_latent_mapping:
+            latent_shape_dict = {
+                k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
+                for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
+            }
+        else:
+            latent_shape_dict = (bs,) + (4096, 8)
 
-            # Get condition input mapping from config
-            ss_condition_input_mapping = getattr(config, 'ss_condition_input_mapping', ['image'])
+        # Get condition input mapping from config
+        ss_condition_input_mapping = getattr(config, 'ss_condition_input_mapping', ['image'])
 
-            # Get condition embeddings
-            condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
-            condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
+        # Get condition embeddings
+        condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
+        condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
 
-            # Embed conditions
-            if ss_embedder is not None and len(condition_args) > 0:
-                tokens = ss_embedder(*condition_args, **condition_kwargs)
-                condition_args = (tokens,)
-                condition_kwargs = {}
-            elif ss_embedder is not None:
-                tokens = ss_embedder(**condition_kwargs)
-                condition_args = (tokens,)
-                condition_kwargs = {}
+        # Embed conditions
+        if ss_embedder is not None and len(condition_args) > 0:
+            tokens = ss_embedder(*condition_args, **condition_kwargs)
+            condition_args = (tokens,)
+            condition_kwargs = {}
+        elif ss_embedder is not None:
+            tokens = ss_embedder(**condition_kwargs)
+            condition_args = (tokens,)
+            condition_kwargs = {}
 
-            # Run generator with progress reporting
-            steps = ss_generator.inference_steps
-            pbar = comfy.utils.ProgressBar(steps)
-            gen_iter = ss_generator.generate_iter(
-                latent_shape_dict,
-                image_tensor.device,
-                *condition_args,
-                **condition_kwargs,
+        # Run generator with progress reporting
+        steps = ss_generator.inference_steps
+        pbar = comfy.utils.ProgressBar(steps)
+        gen_iter = ss_generator.generate_iter(
+            latent_shape_dict,
+            image_tensor.device,
+            *condition_args,
+            **condition_kwargs,
+        )
+        for step_idx, (_, xt, _) in enumerate(gen_iter):
+            pbar.update(1)
+            if step_idx % 5 == 4:
+                comfy.model_management.soft_empty_cache()
+        return_dict = xt
+
+        if not has_latent_mapping:
+            return_dict = {"shape": return_dict}
+
+        shape_latent = return_dict["shape"]
+
+        # Decode sparse structure
+        ss = ss_decoder(
+            shape_latent.permute(0, 2, 1)
+            .contiguous()
+            .view(shape_latent.shape[0], 8, 16, 16, 16)
+        )
+        coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
+
+        # Downsample output
+        return_dict["coords_original"] = coords
+        original_shape = coords.shape
+
+        if downsample_ss_dist > 0:
+            coords = prune_sparse_structure(
+                coords,
+                max_neighbor_axes_dist=downsample_ss_dist,
             )
-            try:
-                from tqdm import tqdm
-                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 1 (sparse structure)")
-            except ImportError:
-                pass
-            for step_idx, (_, xt, _) in enumerate(gen_iter):
-                pbar.update(1)
-                if step_idx % 5 == 4:
-                    torch.cuda.empty_cache()
-            return_dict = xt
 
-            if not has_latent_mapping:
-                return_dict = {"shape": return_dict}
+        coords, downsample_factor = downsample_sparse_structure(coords)
+        log.debug("Downsampled coords from %d to %d", original_shape[0], coords.shape[0])
 
-            shape_latent = return_dict["shape"]
-
-            # Decode sparse structure
-            ss = ss_decoder(
-                shape_latent.permute(0, 2, 1)
-                .contiguous()
-                .view(shape_latent.shape[0], 8, 16, 16, 16)
-            )
-            coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
-
-            # Downsample output
-            return_dict["coords_original"] = coords
-            original_shape = coords.shape
-
-            if downsample_ss_dist > 0:
-                coords = prune_sparse_structure(
-                    coords,
-                    max_neighbor_axes_dist=downsample_ss_dist,
-                )
-
-            coords, downsample_factor = downsample_sparse_structure(coords)
-            log.debug("Downsampled coords from %d to %d", original_shape[0], coords.shape[0])
-
-            return_dict["coords"] = coords
-            return_dict["downsample_factor"] = downsample_factor
+        return_dict["coords"] = coords
+        return_dict["downsample_factor"] = downsample_factor
 
     vram("Stage1: after inference")
 
@@ -1134,56 +1128,50 @@ def run_stage2(
     slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8), device=device)
 
     with torch.no_grad():
-        with torch.autocast(device_type=device.type, dtype=dtype):
-            image_tensor = slat_input_dict["image"]
-            DEVICE = image_tensor.device
-            latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
+        image_tensor = slat_input_dict["image"]
+        DEVICE = image_tensor.device
+        latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
 
-            # Get condition input mapping from config
-            slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
+        # Get condition input mapping from config
+        slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
 
-            # Get condition embeddings
-            condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
-            condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
+        # Get condition embeddings
+        condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
+        condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
 
-            # Embed conditions
-            if slat_embedder is not None and len(condition_args) > 0:
-                tokens = slat_embedder(*condition_args, **condition_kwargs)
-                condition_args = (tokens,)
-                condition_kwargs = {}
-            elif slat_embedder is not None:
-                tokens = slat_embedder(**condition_kwargs)
-                condition_args = (tokens,)
-                condition_kwargs = {}
+        # Embed conditions
+        if slat_embedder is not None and len(condition_args) > 0:
+            tokens = slat_embedder(*condition_args, **condition_kwargs)
+            condition_args = (tokens,)
+            condition_kwargs = {}
+        elif slat_embedder is not None:
+            tokens = slat_embedder(**condition_kwargs)
+            condition_args = (tokens,)
+            condition_kwargs = {}
 
-            # Add coords to condition args
-            condition_args = condition_args + (coords.cpu().numpy(),)
+        # Add coords to condition args
+        condition_args = condition_args + (coords.cpu().numpy(),)
 
-            # Run generator with progress reporting
-            steps = slat_generator.inference_steps
-            pbar = comfy.utils.ProgressBar(steps)
-            gen_iter = slat_generator.generate_iter(
-                latent_shape, DEVICE, *condition_args, **condition_kwargs
-            )
-            try:
-                from tqdm import tqdm
-                gen_iter = tqdm(gen_iter, total=steps, desc="Stage 2 (SLAT generation)")
-            except ImportError:
-                pass
-            for step_idx, (_, xt, _) in enumerate(gen_iter):
-                pbar.update(1)
-                if step_idx % 5 == 4:
-                    torch.cuda.empty_cache()
-            slat_feats = xt
+        # Run generator with progress reporting
+        steps = slat_generator.inference_steps
+        pbar = comfy.utils.ProgressBar(steps)
+        gen_iter = slat_generator.generate_iter(
+            latent_shape, DEVICE, *condition_args, **condition_kwargs
+        )
+        for step_idx, (_, xt, _) in enumerate(gen_iter):
+            pbar.update(1)
+            if step_idx % 5 == 4:
+                comfy.model_management.soft_empty_cache()
+        slat_feats = xt
 
-            # Create SparseTensor
-            slat = SparseTensor(
-                coords=coords,
-                feats=slat_feats[0],
-            ).to(DEVICE)
+        # Create SparseTensor
+        slat = SparseTensor(
+            coords=coords,
+            feats=slat_feats[0],
+        ).to(DEVICE)
 
-            # Apply mean/std normalization
-            slat = slat * slat_std + slat_mean
+        # Apply mean/std normalization
+        slat = slat * slat_std + slat_mean
 
     vram("Stage2: after inference")
     log.info("Stage 2 complete")
@@ -1333,7 +1321,7 @@ def run_decode(
 
     # (sparse FlexiCubes is now the only path — no toggle needed)
 
-    torch.cuda.empty_cache()
+    comfy.model_management.soft_empty_cache()
 
     with torch.no_grad():
         output = decoder(slat)

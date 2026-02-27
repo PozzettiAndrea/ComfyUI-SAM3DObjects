@@ -5,9 +5,12 @@ import os
 import json
 from typing import Any
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3DGenerateSLAT:
+class SAM3DGenerateSLAT(io.ComfyNode):
     """
     Generate SLAT (Structured Latent).
 
@@ -21,73 +24,75 @@ class SAM3DGenerateSLAT:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "generator": ("SAM3D_MODEL", {"tooltip": "Generator from LoadSAM3DModel"}),
-                "image": ("IMAGE", {"tooltip": "Input RGB image"}),
-                "mask": ("MASK", {"tooltip": "Binary mask for object"}),
-                "pointmap": ("SAM3D_POINTMAP", {"tooltip": "Pointmap tensor from SAM3DDepthEstimate"}),
-                "seed": ("INT", {
-                    "default": 42,
-                    "min": 0,
-                    "max": 2**31 - 1,
-                    "control_after_generate": "fixed",
-                    "tooltip": "Random seed for generation"
-                }),
-            },
-            "optional": {
-                "stage1_steps": ("INT", {
-                    "default": 25,
-                    "min": 1,
-                    "max": 50,
-                    "tooltip": "Inference steps for Stage 1 (sparse structure). 25 = quality (original default)"
-                }),
-                "stage1_cfg": ("FLOAT", {
-                    "default": 7.5,
-                    "min": 1.0,
-                    "max": 15.0,
-                    "step": 0.5,
-                    "tooltip": "CFG strength for Stage 1"
-                }),
-                "stage1_cfg_pm": ("FLOAT", {
-                    "default": 0.0,
-                    "min": 0.0,
-                    "max": 10.0,
-                    "step": 0.5,
-                    "tooltip": "Pointmap guidance strength for Stage 1. Higher = more depth influence on structure"
-                }),
-                "stage2_steps": ("INT", {
-                    "default": 25,
-                    "min": 1,
-                    "max": 50,
-                    "tooltip": "Inference steps for Stage 2 (SLAT). 25 = quality (original default)"
-                }),
-                "stage2_cfg": ("FLOAT", {
-                    "default": 5.0,
-                    "min": 1.0,
-                    "max": 15.0,
-                    "step": 0.5,
-                    "tooltip": "CFG strength for Stage 2"
-                }),
-                "use_distillation": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Use distilled models for faster generation (less quality)"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DGenerateSLAT",
+            category="SAM3DObjects",
+            description="Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate.",
+            inputs=[
+                io.Custom("SAM3D_MODEL").Input("generator", tooltip="Generator from LoadSAM3DModel"),
+                io.Image.Input("image", tooltip="Input RGB image"),
+                io.Mask.Input("mask", tooltip="Binary mask for object"),
+                io.Custom("SAM3D_POINTMAP").Input("pointmap", tooltip="Pointmap tensor from SAM3DDepthEstimate"),
+                io.Int.Input("seed",
+                    default=42,
+                    min=0,
+                    max=2**31 - 1,
+                    control_after_generate="fixed",
+                    tooltip="Random seed for generation"
+                ),
+                io.Int.Input("stage1_steps",
+                    default=25,
+                    min=1,
+                    max=50,
+                    tooltip="Inference steps for Stage 1 (sparse structure). 25 = quality (original default)",
+                    optional=True,
+                ),
+                io.Float.Input("stage1_cfg",
+                    default=7.5,
+                    min=1.0,
+                    max=15.0,
+                    step=0.5,
+                    tooltip="CFG strength for Stage 1",
+                    optional=True,
+                ),
+                io.Float.Input("stage1_cfg_pm",
+                    default=0.0,
+                    min=0.0,
+                    max=10.0,
+                    step=0.5,
+                    tooltip="Pointmap guidance strength for Stage 1. Higher = more depth influence on structure",
+                    optional=True,
+                ),
+                io.Int.Input("stage2_steps",
+                    default=25,
+                    min=1,
+                    max=50,
+                    tooltip="Inference steps for Stage 2 (SLAT). 25 = quality (original default)",
+                    optional=True,
+                ),
+                io.Float.Input("stage2_cfg",
+                    default=5.0,
+                    min=1.0,
+                    max=15.0,
+                    step=0.5,
+                    tooltip="CFG strength for Stage 2",
+                    optional=True,
+                ),
+                io.Boolean.Input("use_distillation",
+                    default=False,
+                    tooltip="Use distilled models for faster generation (less quality)",
+                    optional=True,
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="slat_path", tooltip="Path to SLAT file. Pass to GaussianDecode and MeshDecode"),
+                io.Image.Output(display_name="debug_preprocessed", tooltip="Debug: The exact 518x518 cropped image fed to DINO embedder (crop around mask bbox)"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING", "IMAGE")
-    RETURN_NAMES = ("slat_path", "debug_preprocessed")
-    OUTPUT_TOOLTIPS = (
-        "Path to SLAT file. Pass to GaussianDecode and MeshDecode",
-        "Debug: The exact 518x518 cropped image fed to DINO embedder (crop around mask bbox)",
-    )
-    FUNCTION = "generate_slat"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Generate SLAT from image+mask+depth. For batch processing, use SAM3DSceneGenerate."
-
-    def _check_stage1_cache(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
+    @staticmethod
+    def _check_stage1_cache(output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float) -> bool:
         """Check if Stage 1 output exists with matching params."""
         import os
         import json
@@ -116,7 +121,8 @@ class SAM3DGenerateSLAT:
 
         return False
 
-    def _get_next_run_dir(self, base_output_dir: str) -> str:
+    @staticmethod
+    def _get_next_run_dir(base_output_dir: str) -> str:
         """Find next available sam3d_run_N directory in the output folder."""
         existing = []
         if os.path.exists(base_output_dir):
@@ -132,7 +138,8 @@ class SAM3DGenerateSLAT:
         os.makedirs(run_dir, exist_ok=True)
         return run_dir
 
-    def _save_stage1_metadata(self, output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
+    @staticmethod
+    def _save_stage1_metadata(output_dir: str, seed: int, steps: int, cfg: float, cfg_pm: float):
         """Save Stage 1 params for cache validation."""
         import json
 
@@ -145,8 +152,10 @@ class SAM3DGenerateSLAT:
                 "cfg_pm": cfg_pm,
             }, f)
 
-    def generate_slat(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         generator,
         image,  # torch.Tensor [B, H, W, C]
         mask,   # torch.Tensor [B, H, W] or [H, W]
@@ -184,7 +193,7 @@ class SAM3DGenerateSLAT:
         vram("GenerateSLAT: start")
 
         # Create per-run output directory
-        output_dir = self._get_next_run_dir(folder_paths.get_output_directory())
+        output_dir = cls._get_next_run_dir(folder_paths.get_output_directory())
 
         # Convert ComfyUI IMAGE to PIL
         if image.dim() == 4:
@@ -209,14 +218,14 @@ class SAM3DGenerateSLAT:
         config_path = generator["config_path"]
 
         # Check Stage 1 cache
-        use_cached_stage1 = self._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
+        use_cached_stage1 = cls._check_stage1_cache(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
         sparse_path = os.path.join(output_dir, "sparse_structure.pt")
         debug_image_path = None
 
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
             log.info("Using cached Stage 1 output")
-            stage1_output = torch.load(sparse_path, weights_only=False)
+            stage1_output = comfy.utils.load_torch_file(sparse_path, safe_load=True)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
@@ -237,13 +246,13 @@ class SAM3DGenerateSLAT:
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
-            stage1_output = torch.load(stage1_file, weights_only=False)
+            stage1_output = comfy.utils.load_torch_file(stage1_file, safe_load=True)
             debug_image_path = result.get("debug_image")
 
             # Copy to expected location if different
             if stage1_file != sparse_path:
                 torch.save(stage1_output, sparse_path)
-            self._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
+            cls._save_stage1_metadata(output_dir, seed, stage1_steps, stage1_cfg, stage1_cfg_pm)
             log.info("Stage 1 complete, saved to: %s", sparse_path)
 
         # Stage 2: SLAT generation
@@ -281,4 +290,4 @@ class SAM3DGenerateSLAT:
 
         vram("GenerateSLAT: done")
         log.info("GenerateSLAT completed: %s", slat_path)
-        return (slat_path, debug_image)
+        return io.NodeOutput(slat_path, debug_image)
