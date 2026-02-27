@@ -1,0 +1,897 @@
+Capturing execution frames: scene_generation.json
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+  [Console-warning] WARNING: Multiple instances of Three.js being imported.
+  [Console-error] [vite:preloadError] Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:41891/assets/systemStatsStore-D9aNY5gT.js:1:5552)
+    at Proxy.wrappedAction (http://127.0.0.1:41891/assets/vendor-vue-core-X6q-rGJs.js:2:90540)
+    at Object.registerExtension (http://127.0.0.1:41891/assets/dialogService-Cqui0UMO.js:3:162873)
+    at ComfyApp.registerExtension (http://127.0.0.1:41891/assets/dialogService-Cqui0UMO.js:177:20566)
+    at http://127.0.0.1:41891/extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js:13:5
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+  [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+  [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+  [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+  [Console-error] Error loading model: HttpError: fetch for "http://127.0.0.1:41891/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_10&filename=mesh.glb" responded with 403: Forbidden
+    at http://127.0.0.1:41891/assets/vendor-three-CHi1XwmR.js:3824:116004
+  [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+  [Console-error] Error loading model: HttpError: fetch for "http://127.0.0.1:41891/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_10&filename=mesh.glb" responded with 403: Forbidden
+    at http://127.0.0.1:41891/assets/vendor-three-CHi1XwmR.js:3824:116004
+  [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+  [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+  [Console-error] No input!
+  Frame 1 saved (frame_000.jpg, t=0.0s)
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  Queuing workflow for execution...
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 13 nodes
+  [ComfyUI]   Node 59: SAM3D_DepthEstimate
+  [ComfyUI]     Inputs: {"depth_model": ["74", 0], "image": ["77", 0]}
+  [ComfyUI]   Node 74: LoadSAM3DModel
+  [ComfyUI]     Inputs: {"attn_backend": "flash_attn", "compile": true, "precision": "auto"}
+  [ComfyUI]   Node 75: MultibandLoad
+  [ComfyUI]     Inputs: {"image": "scene_multiband.npz", "normalize": true}
+  [ComfyUI]   Node 77: MultibandToImage
+  [ComfyUI]     Inputs: {"channels": "0,1,2", "multiband": ["75", 0]}
+  [ComfyUI]   Node 78: MultibandToMasks
+  [ComfyUI]     Inputs: {"channels": "", "auto_detect_masks": true, "multiband": ["75", 0]}
+  [ComfyUI]   Node 80: SAM3DSceneGenerate
+  [ComfyUI]     Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "with_postprocess": false, "simplify": 0.95, "add_textures": false, "texture_mode": "fast",
+  [ComfyUI]   Node 82: SAM3D_ScenePoseOptimize
+  [ComfyUI]     Inputs: {"output_folder": ["80", 0], "optimization_mode": "pose_only"}
+  [ComfyUI]   Node 85: GeomPackPreviewMeshVTK
+  [ComfyUI]     Inputs: {"mode": "texture", "preview_vtk": "{\"show_edges\":false,\"camera_state\":\"{\\\"position\\\":[1.1789228144992419,1.3637070517428993,-0.6859388036148804],\\\"focalPoint\\\":[-0.29605234414339066,0.01
+  [ComfyUI]   Node 87: GeomPackCombineMeshesBatch
+  [ComfyUI]     Inputs: {"report_panel": "false", "meshes": ["106", 0]}
+  [ComfyUI]   Node 99: PreviewImage
+  [ComfyUI]     Inputs: {"images": ["77", 0]}
+  [ComfyUI]   Node 100: SAM3D_ProjectionOverlay
+  [ComfyUI]     Inputs: {"pose_opt_folder": ["82", 0], "render_mode": "3d_mesh_textured", "point_size": 2, "alpha": 0.6}
+  [ComfyUI]   Node 106: GeomPackLoadMeshBatch
+  [ComfyUI]     Inputs: {"folder_path": ["82", 0], "start_index": 0, "max_meshes": -1}
+  [ComfyUI]   Node 108: SaveImage
+  [ComfyUI]     Inputs: {"filename_prefix": "overlay", "images": ["100", 0]}
+  [ComfyUI] Generated prompt_id: 4c825753-8bee-4d88-abce-7290e66083b9
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  [ComfyUI] got prompt
+  Frame 2 saved (frame_001.jpg, t=2.4s)
+  [capture-periodic] freeze=3ms shot=136ms unfreeze=7ms saved=True
+  [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.load_model
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3DObjects] Socket unhealthy, restarting worker...
+  Node executed (1 total), capturing...
+  [ComfyUI] LoadMultibandImage: Loaded /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/input/scene_multiband.npz
+  [ComfyUI]   Shape: (1, 10, 2240, 3360)
+  [ComfyUI]   Channels: 10
+  [ComfyUI]   Names: img_01_r,img_01_g,img_01_b,mask_01,mask_02,mask_03,mask_04,mask_05,mask_06,mask_07
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=False, python=/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python', '/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py', 'unix:///dev/shm/comfy_worker_bc2423fb4eb8.sock']...
+  [ComfyUI] [SubprocessWorker] PATH has 8 entries:
+  [ComfyUI] [SubprocessWorker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [SubprocessWorker]   [4] /usr/local/bin
+  [ComfyUI] [SubprocessWorker]   [5] /usr/bin
+  [ComfyUI] [SubprocessWorker]   [6] /bin
+  [ComfyUI] [SubprocessWorker]   [7] /snap/bin
+  [ComfyUI] [worker] PATH has 8 entries:
+  [ComfyUI] [worker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [worker]   [4] /usr/local/bin
+  [ComfyUI] [worker]   [5] /usr/bin
+  [ComfyUI] [worker]   [6] /bin
+  [ComfyUI] [worker]   [7] /snap/bin
+  Frame 3 saved (frame_002.jpg, t=3.8s)
+  [capture-node] freeze=83ms shot=316ms unfreeze=5ms saved=True
+  Frame 4 saved (frame_003.jpg, t=6.2s)
+  [capture-periodic] freeze=4ms shot=167ms unfreeze=7ms saved=True
+  [capture-loop] iter=50 t=6.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] ERROR: Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.estimate_depth
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 2240, 3360, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 2240, 3360, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 2240, 3360, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: No comfy kitchen, using old apply_rope functions.
+  Frame 5 saved (frame_004.jpg, t=8.5s)
+  [capture-periodic] freeze=3ms shot=173ms unfreeze=5ms saved=True
+  [ComfyUI] /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py:1049: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
+  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 49.91GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 49.91GB
+  [capture-loop] iter=100 t=12.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  Frame 6 saved (frame_005.jpg, t=17.3s)
+  [capture-periodic] freeze=3ms shot=156ms unfreeze=3ms saved=True
+  [capture-loop] iter=150 t=18.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  Frame 7 saved (frame_006.jpg, t=19.5s)
+  [capture-periodic] freeze=3ms shot=167ms unfreeze=3ms saved=True
+  [capture-loop] iter=200 t=23.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=250 t=29.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=300 t=35.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=350 t=41.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=400 t=47.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=450 t=52.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [capture-loop] iter=500 t=58.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
+  [ComfyUI] === WATCHDOG TICK 1 ===
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Current thread 0x00007c41cd67d640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 42 in _watchdog
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00007c41ce10b740 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 304 in _save_pointcloud_ply
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 186 in estimate_depth
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1143 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1174 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
+  [ComfyUI] 
+  [capture-loop] iter=550 t=64.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=600 t=70.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [capture-loop] iter=650 t=75.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5
+  [ComfyUI] [SubprocessWorker] call_method: nodes.scene_generate.SAM3DSceneGenerate.generate_scene
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 2240, 3360, 3])
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'masks' shape: torch.Size([7, 2240, 3360])
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'intrinsics' shape: (3, 3)
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'pointmap' shape: torch.Size([2240, 3360, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 2240, 3360, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 2240, 3360, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[7, 2240, 3360]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([7, 2240, 3360])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[3, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([3, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[2240, 3360, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([2240, 3360, 3])
+  Frame 8 saved (frame_007.jpg, t=77.4s)
+  [capture-periodic] freeze=3ms shot=173ms unfreeze=3ms saved=True
+  [ComfyUI] 2026-02-25 07:59:46.699 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [capture-loop] iter=700 t=81.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 49.19GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 49.19GB
+  [capture-loop] iter=750 t=87.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:06,  1.82it/s]
+  Frame 9 saved (frame_008.jpg, t=90.8s)
+  [capture-periodic] freeze=3ms shot=185ms unfreeze=7ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.89it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.98it/s]
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  2.02it/s]
+  [capture-loop] iter=800 t=93.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:02,  2.01it/s]
+  Frame 10 saved (frame_009.jpg, t=93.1s)
+  [capture-periodic] freeze=2ms shot=171ms unfreeze=4ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  2.03it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:01,  2.03it/s]
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  2.05it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:04<00:00,  2.04it/s]
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.40it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.76it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.19it/s]
+  [ComfyUI] 2026-02-25 08:00:00.954 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 11 saved (frame_010.jpg, t=95.4s)
+  [capture-periodic] freeze=8ms shot=189ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.97GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.97GB
+  [ComfyUI] 
+  [capture-loop] iter=850 t=99.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  Frame 12 saved (frame_011.jpg, t=99.9s)
+  [capture-periodic] freeze=3ms shot=165ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  1.93it/s]
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.99it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  2.00it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.98it/s]
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  2.01it/s]
+  Frame 13 saved (frame_012.jpg, t=102.1s)
+  [capture-periodic] freeze=3ms shot=162ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:02<00:02,  2.01it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  2.04it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:03<00:01,  2.03it/s]
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  2.02it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:04<00:00,  2.00it/s]
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.35it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.71it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.19it/s]
+  Frame 14 saved (frame_013.jpg, t=104.4s)
+  [capture-periodic] freeze=3ms shot=186ms unfreeze=3ms saved=True
+  [ComfyUI] 2026-02-25 08:00:10.113 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [capture-loop] iter=900 t=105.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  Frame 15 saved (frame_014.jpg, t=106.7s)
+  [capture-periodic] freeze=2ms shot=153ms unfreeze=4ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.98GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.98GB
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  1.94it/s]
+  Frame 16 saved (frame_015.jpg, t=109.0s)
+  [capture-periodic] freeze=3ms shot=173ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.96it/s]
+  [capture-loop] iter=950 t=110.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  1.96it/s]
+  Frame 17 saved (frame_016.jpg, t=111.2s)
+  [capture-periodic] freeze=2ms shot=196ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:03,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:02,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  1.96it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:05<00:01,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.32it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.65it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.14it/s]
+  Frame 18 saved (frame_017.jpg, t=113.6s)
+  [capture-periodic] freeze=3ms shot=168ms unfreeze=3ms saved=True
+  [ComfyUI] 2026-02-25 08:00:19.237 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 19 saved (frame_018.jpg, t=115.8s)
+  [capture-periodic] freeze=3ms shot=165ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.88GB
+  [capture-loop] iter=1000 t=116.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.88GB
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  2.05it/s]
+  Frame 20 saved (frame_019.jpg, t=118.2s)
+  [capture-periodic] freeze=12ms shot=172ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  1.96it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  1.94it/s]
+  Frame 21 saved (frame_020.jpg, t=120.5s)
+  [capture-periodic] freeze=3ms shot=163ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:03,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  1.94it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:02,  1.93it/s]
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  1.94it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:05<00:01,  1.94it/s]
+  [capture-loop] iter=1050 t=122.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.30it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.65it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.13it/s]
+  Frame 22 saved (frame_021.jpg, t=122.8s)
+  [capture-periodic] freeze=3ms shot=156ms unfreeze=3ms saved=True
+  [ComfyUI] 2026-02-25 08:00:28.342 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
+  [ComfyUI] === WATCHDOG TICK 2 ===
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007c4048cf5640 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Current thread 0x00007c41cd67d640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 42 in _watchdog
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00007c41ce10b740 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages/pytorch3d/transforms/transform3d.py", line 881 in _broadcast_bmm
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages/pytorch3d/transforms/transform3d.py", line 397 in transform_points
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/transforms.py", line 1126 in _apply_metric_to_ssi
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/transforms.py", line 937 in normalize
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/transforms.py", line 1381 in _normalize_pointmap
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/transforms.py", line 1389 in _process_image_mask_pointmap_mess
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/helpers.py", line 93 in preprocess_image_lazy
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 862 in run_stage1
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/scene_generate.py", line 235 in generate_scene
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1143 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1174 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
+  [ComfyUI] 
+  Frame 23 saved (frame_022.jpg, t=125.0s)
+  [capture-periodic] freeze=3ms shot=166ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.88GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.88GB
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  1.89it/s]
+  Frame 24 saved (frame_023.jpg, t=127.2s)
+  [capture-periodic] freeze=3ms shot=180ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.94it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  1.94it/s]
+  [capture-loop] iter=1100 t=128.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.88it/s]
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  1.86it/s]
+  Frame 25 saved (frame_024.jpg, t=129.5s)
+  [capture-periodic] freeze=3ms shot=193ms unfreeze=8ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:03,  1.87it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  1.89it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:02,  1.89it/s]
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  1.83it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:05<00:01,  1.83it/s]
+  Frame 26 saved (frame_025.jpg, t=131.8s)
+  [capture-periodic] freeze=2ms shot=198ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.18it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.52it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.04it/s]
+  [ComfyUI] 2026-02-25 08:00:37.709 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 27 saved (frame_026.jpg, t=134.0s)
+  [capture-periodic] freeze=3ms shot=180ms unfreeze=3ms saved=True
+  [capture-loop] iter=1150 t=134.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.84GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.84GB
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  Frame 28 saved (frame_027.jpg, t=136.3s)
+  [capture-periodic] freeze=2ms shot=181ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  1.93it/s]
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.86it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:05,  1.77it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.77it/s]
+  Frame 29 saved (frame_028.jpg, t=138.5s)
+  [capture-periodic] freeze=3ms shot=202ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  1.77it/s]
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:03,  1.77it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  1.81it/s]
+  [capture-loop] iter=1200 t=140.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:02,  1.88it/s]
+  Frame 30 saved (frame_029.jpg, t=140.8s)
+  [capture-periodic] freeze=3ms shot=183ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  1.92it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:05<00:01,  1.96it/s]
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.33it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.66it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.05it/s]
+  [ComfyUI] 2026-02-25 08:00:47.111 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 31 saved (frame_030.jpg, t=143.1s)
+  [capture-periodic] freeze=3ms shot=173ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 6.54GB, free before eviction: 42.85GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 42.85GB
+  [ComfyUI] 
+  [ComfyUI] Stage 1 (sparse structure):   0%|                                                                                                                             | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 1 (sparse structure):   8%|█████████▊                                                                                                           | 1/12 [00:00<00:05,  1.91it/s]
+  [capture-loop] iter=1250 t=146.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 1 (sparse structure):  17%|███████████████████▌                                                                                                 | 2/12 [00:01<00:05,  1.92it/s]
+  [ComfyUI] Stage 1 (sparse structure):  25%|█████████████████████████████▎                                                                                       | 3/12 [00:01<00:04,  1.94it/s]
+  [ComfyUI] Stage 1 (sparse structure):  33%|███████████████████████████████████████                                                                              | 4/12 [00:02<00:04,  1.93it/s]
+  Frame 32 saved (frame_031.jpg, t=147.5s)
+  [capture-periodic] freeze=3ms shot=170ms unfreeze=7ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  42%|████████████████████████████████████████████████▊                                                                    | 5/12 [00:02<00:03,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  50%|██████████████████████████████████████████████████████████▌                                                          | 6/12 [00:03<00:03,  1.95it/s]
+  [ComfyUI] Stage 1 (sparse structure):  58%|████████████████████████████████████████████████████████████████████▎                                                | 7/12 [00:03<00:02,  1.97it/s]
+  [ComfyUI] Stage 1 (sparse structure):  67%|██████████████████████████████████████████████████████████████████████████████                                       | 8/12 [00:04<00:02,  2.00it/s]
+  Frame 33 saved (frame_032.jpg, t=149.7s)
+  [capture-periodic] freeze=4ms shot=170ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 1 (sparse structure):  75%|███████████████████████████████████████████████████████████████████████████████████████▊                             | 9/12 [00:04<00:01,  2.00it/s]
+  [ComfyUI] Stage 1 (sparse structure):  83%|████████████████████████████████████████████████████████████████████████████████████████████████▋                   | 10/12 [00:05<00:00,  2.02it/s]
+  [ComfyUI] Stage 1 (sparse structure):  92%|██████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.38it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.72it/s]
+  [ComfyUI] Stage 1 (sparse structure): 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:05<00:00,  2.16it/s]
+  [ComfyUI] 2026-02-25 08:00:56.109 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 34 saved (frame_033.jpg, t=152.0s)
+  [capture-periodic] freeze=3ms shot=171ms unfreeze=3ms saved=True
+  [capture-loop] iter=1300 t=152.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [capture-loop] iter=1350 t=158.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 43.75GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 43.75GB
+  [capture-loop] iter=1400 t=164.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s][worker:ComfyUI-SAM3DObjects] [33m[comfy-attn] Varlen attention: sage2[0m
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:02<00:26,  2.36s/it]
+  Frame 35 saved (frame_034.jpg, t=167.6s)
+  [capture-periodic] freeze=3ms shot=196ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:02<00:13,  1.31s/it]
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:03<00:08,  1.06it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:03<00:06,  1.28it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:04<00:04,  1.45it/s]
+  [capture-loop] iter=1450 t=169.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  Frame 36 saved (frame_035.jpg, t=169.8s)
+  [capture-periodic] freeze=3ms shot=171ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:05<00:03,  1.59it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:05<00:02,  1.68it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:05<00:01,  2.04it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:06<00:01,  2.23it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:06<00:00,  2.55it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:06<00:00,  2.85it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  3.11it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  1.73it/s]
+  [ComfyUI] 2026-02-25 08:01:17.046 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 37 saved (frame_036.jpg, t=172.1s)
+  [capture-periodic] freeze=3ms shot=163ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.21GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.21GB
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:07,  1.46it/s]
+  Frame 38 saved (frame_037.jpg, t=174.3s)
+  [capture-periodic] freeze=3ms shot=175ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:01<00:06,  1.45it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:02<00:06,  1.45it/s]
+  [capture-loop] iter=1500 t=175.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:02<00:05,  1.45it/s]
+  Frame 39 saved (frame_038.jpg, t=176.6s)
+  [capture-periodic] freeze=3ms shot=167ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:03<00:04,  1.45it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:04<00:04,  1.44it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:04<00:03,  1.44it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:05<00:02,  1.72it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:05<00:01,  1.96it/s]
+  Frame 40 saved (frame_039.jpg, t=178.8s)
+  [capture-periodic] freeze=3ms shot=164ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:05<00:00,  2.18it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:06<00:00,  2.35it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  2.49it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  1.82it/s]
+  [ComfyUI] 2026-02-25 08:01:24.884 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.02GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.02GB
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  Frame 41 saved (frame_040.jpg, t=181.1s)
+  [capture-periodic] freeze=14ms shot=177ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:04,  2.21it/s]
+  [capture-loop] iter=1550 t=181.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:00<00:04,  2.18it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:01<00:04,  2.12it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:01<00:03,  2.12it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:02<00:03,  2.16it/s]
+  Frame 42 saved (frame_041.jpg, t=183.4s)
+  [capture-periodic] freeze=3ms shot=156ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:02<00:02,  2.17it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:03<00:02,  2.18it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:03<00:01,  2.58it/s][worker:ComfyUI-SAM3DObjects]
+  [ComfyUI] === WATCHDOG TICK 3 ===
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007c4048cf5640 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Current thread 0x00007c41cd67d640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 42 in _watchdog
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00007c41ce10b740 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages/sageattention/triton/quant_per_block_varlen.py", line 61 in per_block_int8
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages/sageattention/core.py", line 437 in sageattn_varlen
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages/comfy_sparse_attn/varlen.py", line 134 in dispatch_varlen_attention
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/attention.py", line 229 in sparse_scaled_dot_product_attention
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 612 in forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784 in _call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773 in _wrapped_call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1129 in _forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1141 in forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784 in _call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773 in _wrapped_call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1696 in _forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/comfy/patcher_extension.py", line 112 in execute
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1650 in forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1742 in forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784 in _call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773 in _wrapped_call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 662 in inner_forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 694 in forward
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784 in _call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773 in _wrapped_call_impl
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 422 in _generate_dynamics
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 132 in step
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 120 in solve_iter
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 406 in generate_iter
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.12/site-packages/tqdm/std.py", line 1181 in __iter__
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 1186 in run_stage2
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/scene_generate.py", line 259 in generate_scene
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1143 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py", line 1174 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
+  [ComfyUI] 
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:03<00:01,  2.99it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:03<00:00,  3.29it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:04<00:00,  3.55it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  3.80it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  2.74it/s]
+  [ComfyUI] 2026-02-25 08:01:30.474 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 43 saved (frame_042.jpg, t=185.6s)
+  [capture-periodic] freeze=2ms shot=167ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.64GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.64GB
+  [ComfyUI] 
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:06,  1.58it/s]
+  [capture-loop] iter=1600 t=187.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:01<00:06,  1.58it/s]
+  Frame 44 saved (frame_043.jpg, t=188.0s)
+  [capture-periodic] freeze=2ms shot=179ms unfreeze=14ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:01<00:05,  1.57it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:02<00:05,  1.58it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:03<00:04,  1.57it/s]
+  Frame 45 saved (frame_044.jpg, t=190.3s)
+  [capture-periodic] freeze=3ms shot=167ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:03<00:03,  1.58it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:04<00:03,  1.58it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:04<00:02,  1.87it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:05<00:01,  2.13it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:05<00:00,  2.36it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:05<00:00,  2.52it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  2.67it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:06<00:00,  1.98it/s]
+  [ComfyUI] 2026-02-25 08:01:37.724 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 46 saved (frame_045.jpg, t=192.6s)
+  [capture-periodic] freeze=3ms shot=280ms unfreeze=4ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.17GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.17GB
+  [ComfyUI] 
+  [capture-loop] iter=1650 t=193.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:05,  1.91it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:01<00:05,  1.94it/s]
+  Frame 47 saved (frame_046.jpg, t=195.1s)
+  [capture-periodic] freeze=2ms shot=196ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:01<00:04,  1.93it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:02<00:04,  1.94it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:02<00:03,  1.94it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:03<00:03,  1.93it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:03<00:02,  1.93it/s]
+  Frame 48 saved (frame_047.jpg, t=197.3s)
+  [capture-periodic] freeze=3ms shot=192ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:03<00:01,  2.29it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:04<00:01,  2.61it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:04<00:00,  2.88it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:04<00:00,  3.10it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  3.29it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  2.43it/s]
+  [ComfyUI] 2026-02-25 08:01:43.878 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.22GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.22GB
+  [capture-loop] iter=1700 t=199.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] 
+  Frame 49 saved (frame_048.jpg, t=199.6s)
+  [capture-periodic] freeze=2ms shot=174ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:04,  2.26it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:00<00:04,  2.23it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:01<00:03,  2.25it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:01<00:03,  2.23it/s]
+  Frame 50 saved (frame_049.jpg, t=201.9s)
+  [capture-periodic] freeze=2ms shot=197ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:02<00:03,  2.23it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:02<00:02,  2.18it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:03<00:02,  2.16it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:03<00:01,  2.52it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:03<00:01,  2.92it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:03<00:00,  3.22it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:04<00:00,  3.48it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  3.68it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  2.74it/s]
+  [ComfyUI] 2026-02-25 08:01:49.402 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  Frame 51 saved (frame_050.jpg, t=204.2s)
+  [capture-periodic] freeze=5ms shot=165ms unfreeze=3ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 4.91GB, free before eviction: 39.85GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 39.85GB
+  [ComfyUI] 
+  [capture-loop] iter=1750 t=205.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] Stage 2 (SLAT generation):   0%|                                                                                                                              | 0/12 [00:00<?, ?it/s]
+  [ComfyUI] Stage 2 (SLAT generation):   8%|█████████▊                                                                                                            | 1/12 [00:00<00:05,  2.15it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  17%|███████████████████▋                                                                                                  | 2/12 [00:00<00:04,  2.09it/s]
+  Frame 52 saved (frame_051.jpg, t=206.4s)
+  [capture-periodic] freeze=2ms shot=168ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  25%|█████████████████████████████▌                                                                                        | 3/12 [00:01<00:04,  2.07it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  33%|███████████████████████████████████████▎                                                                              | 4/12 [00:01<00:03,  2.11it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  42%|█████████████████████████████████████████████████▏                                                                    | 5/12 [00:02<00:03,  2.14it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  50%|███████████████████████████████████████████████████████████                                                           | 6/12 [00:02<00:02,  2.13it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  58%|████████████████████████████████████████████████████████████████████▊                                                 | 7/12 [00:03<00:02,  2.15it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  67%|██████████████████████████████████████████████████████████████████████████████▋                                       | 8/12 [00:03<00:01,  2.55it/s]
+  Frame 53 saved (frame_052.jpg, t=208.8s)
+  [capture-periodic] freeze=2ms shot=166ms unfreeze=3ms saved=True
+  [ComfyUI] Stage 2 (SLAT generation):  75%|████████████████████████████████████████████████████████████████████████████████████████▌                             | 9/12 [00:03<00:01,  2.91it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  83%|█████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 10/12 [00:03<00:00,  3.26it/s]
+  [ComfyUI] Stage 2 (SLAT generation):  92%|███████████████████████████████████████████████████████████████████████████████████████████████████████████▎         | 11/12 [00:04<00:00,  3.53it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  3.72it/s]
+  [ComfyUI] Stage 2 (SLAT generation): 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 12/12 [00:04<00:00,  2.70it/s]
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 36.53GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 36.53GB
+  [capture-loop] iter=1800 t=211.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  Frame 54 saved (frame_053.jpg, t=211.1s)
+  [capture-periodic] freeze=3ms shot=150ms unfreeze=4ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 33.14GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 33.14GB
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 32.26GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 32.26GB
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 33.71GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 33.71GB
+  Frame 55 saved (frame_054.jpg, t=215.6s)
+  [capture-periodic] freeze=3ms shot=204ms unfreeze=5ms saved=True
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 32.67GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 32.67GB
+  [capture-loop] iter=1850 t=217.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 32.70GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 32.70GB
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 34.15GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 34.15GB
+  Frame 56 saved (frame_055.jpg, t=217.9s)
+  [capture-periodic] freeze=2ms shot=175ms unfreeze=15ms saved=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [SubprocessWorker] call_method: nodes.scene_pose_optimize.SAM3D_ScenePoseOptimize.optimize_poses
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] MultibandToMasks: Auto-detected 7 mask channels: ['mask_01', 'mask_02', 'mask_03', 'mask_04', 'mask_05', 'mask_06', 'mask_07']
+  [ComfyUI] [SubprocessWorker] call_method: nodes.main.io.load_mesh_batch.LoadMeshBatch.load_mesh_batch
+  [ComfyUI] [comfy-env] SubprocessWorker: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/bin/python
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [comfy-env] env_vars: {'KMP_DUPLICATE_LIB_OK': 'TRUE', 'OMP_NUM_THREADS': '1', 'COMFYUI_BASE': '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI'}
+  [ComfyUI] [ComfyUI-GeometryPack] python: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/bin/python
+  [ComfyUI] [ComfyUI-GeometryPack] sys_path sent to worker: ['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack']
+  [ComfyUI] [SubprocessWorker] is_pixi=False, python=/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/bin/python', '/tmp/comfyui_pvenv_lxjszdb4/persistent_worker.py', 'unix:///dev/shm/comfy_worker_6a5a6d2ccd88.sock']...
+  [ComfyUI] [SubprocessWorker] PATH has 8 entries:
+  [ComfyUI] [SubprocessWorker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [SubprocessWorker]   [4] /usr/local/bin
+  [ComfyUI] [SubprocessWorker]   [5] /usr/bin
+  [ComfyUI] [SubprocessWorker]   [6] /bin
+  [ComfyUI] [SubprocessWorker]   [7] /snap/bin
+  [ComfyUI] [worker] PATH has 8 entries:
+  [ComfyUI] [worker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [worker]   [4] /usr/local/bin
+  [ComfyUI] [worker]   [5] /usr/bin
+  [ComfyUI] [worker]   [6] /bin
+  [ComfyUI] [worker]   [7] /snap/bin
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  Frame 57 saved (frame_056.jpg, t=220.2s)
+  [capture-periodic] freeze=3ms shot=258ms unfreeze=3ms saved=True
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] Found folder relative to ComfyUI root: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] Found 7 mesh files
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_0.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 495910 vertices, 991816 faces
+  [capture-loop] iter=1900 t=223.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=6
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Cleanup: 495910->495909 vertices, 991816->991814 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file]   Removed: 1 duplicate vertices, 2 bad faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 495909 vertices, 991814 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [1/7] Loaded object_0.glb: 495909 vertices, 991814 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_1.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 763352 vertices, 1526812 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 763352 vertices, 1526812 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [2/7] Loaded object_1.glb: 763352 vertices, 1526812 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_2.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 278638 vertices, 557324 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Cleanup: 278638->278632 vertices, 557324->557310 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file]   Removed: 6 duplicate vertices, 14 bad faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 278632 vertices, 557310 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [3/7] Loaded object_2.glb: 278632 vertices, 557310 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_3.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 827154 vertices, 1654276 faces
+  [capture-loop] iter=1950 t=228.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Cleanup: 827154->827154 vertices, 1654276->1654272 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file]   Removed: 0 duplicate vertices, 4 bad faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 827154 vertices, 1654272 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [4/7] Loaded object_3.glb: 827154 vertices, 1654272 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_4.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 503914 vertices, 1007680 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Cleanup: 503914->503911 vertices, 1007680->1007674 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file]   Removed: 3 duplicate vertices, 6 bad faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 503911 vertices, 1007674 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [5/7] Loaded object_4.glb: 503911 vertices, 1007674 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_5.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 144350 vertices, 288696 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 144350 vertices, 288696 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [6/7] Loaded object_5.glb: 144350 vertices, 288696 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loading: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/sam3d_scene_1_pose_optimized/object_6.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Loaded type: Scene
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Converting Scene to single mesh (scene has 1 geometries)
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Initial mesh: 366424 vertices, 732856 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Cleanup: 366424->366423 vertices, 732856->732854 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file]   Removed: 1 duplicate vertices, 2 bad faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [load_mesh_file] Successfully loaded: 366423 vertices, 732854 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] [7/7] Loaded object_6.glb: 366423 vertices, 732854 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [LoadMeshBatch] Successfully loaded 7 meshes
+  [capture-loop] iter=2000 t=234.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [SubprocessWorker] call_method: nodes.main.combine.combine_meshes_batch.CombineMeshesBatchNode.combine
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-GeometryPack] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-GeometryPack] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  Frame 58 saved (frame_057.jpg, t=238.1s)
+  [capture-periodic] freeze=2ms shot=173ms unfreeze=3ms saved=True
+  [ComfyUI] [SubprocessWorker] created 7 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [capture-loop] iter=2050 t=240.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=6
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Combining 7 meshes
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 1: 495909 vertices, 991814 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 2: 763352 vertices, 1526812 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 3: 278632 vertices, 557310 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 4: 827154 vertices, 1654272 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 5: 503911 vertices, 1007674 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 6: 144350 vertices, 288696 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Mesh 7: 366423 vertices, 732854 faces
+  [capture-loop] iter=2100 t=246.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=2150 t=252.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [CombineMeshesBatch] Result: 3379731 vertices, 6759432 faces
+  [capture-loop] iter=2200 t=258.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [SubprocessWorker] call_method: nodes.main.visualization.preview_mesh_vtk.PreviewMeshVTKNode.preview_mesh_vtk
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-GeometryPack] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-GeometryPack] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  Node executed (2 total), capturing...
+  Frame 59 saved (frame_058.jpg, t=259.8s)
+  [capture-node] freeze=3ms shot=171ms unfreeze=3ms saved=True
+  [ComfyUI] [SubprocessWorker] created 1 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Preparing preview: Mesh - 3379731 vertices, 6759432 faces
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - hasattr vertex_attributes: True
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - hasattr face_attributes: True
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - vertex_attributes: {}
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - len(vertex_attributes): 0
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - face_attributes: {}
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - len(face_attributes): 0
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - has_vertex_attrs: False
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - has_face_attrs: False
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] DEBUG - has_fields: False
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Mode: texture
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Visual data - has_visual: True, kind: vertex, texture: False, vertex_colors: True
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Using texture mode - GLB export
+  [capture-loop] iter=2250 t=264.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=2300 t=270.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4
+  [capture-loop] iter=2350 t=276.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Exported GLB to: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/output/preview_vtk_73c7036b.glb
+  [ComfyUI] [worker:ComfyUI-GeometryPack]
+  [ComfyUI] === WATCHDOG TICK 1 ===
+  [ComfyUI] [worker:ComfyUI-GeometryPack] Current thread 0x00007a44c8764640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_lxjszdb4/persistent_worker.py", line 42 in _watchdog
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00007a44c91e9740 (most recent call first):
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages/trimesh/grouping.py", line 219 in hashable_rows
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages/trimesh/grouping.py", line 577 in group_rows
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages/trimesh/graph.py", line 887 in is_watertight
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages/trimesh/base.py", line 1666 in is_watertight
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/_env_12709f/lib/python3.1/site-packages/trimesh/caching.py", line 139 in get_cached
+  [ComfyUI]   File "/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-GeometryPack/nodes/main/visualization/preview_mesh_vtk.py", line 200 in preview_mesh_vtk
+  [ComfyUI]   File "/tmp/comfyui_pvenv_lxjszdb4/persistent_worker.py", line 1143 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_lxjszdb4/persistent_worker.py", line 1174 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-GeometryPack] === END ===
+  [ComfyUI] 
+  [capture-loop] iter=2400 t=282.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3
+  [ComfyUI] [worker:ComfyUI-GeometryPack] [PreviewMeshVTK] Texture mode info: watertight=False, volume=None, area=2.9966328459480778, texture=False, vertex_colors=True
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [SubprocessWorker] call_method: nodes.projection_overlay.SAM3D_ProjectionOverlay.create_overlay
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: failed
+  [ComfyUI] [ComfyUI-SAM3DObjects] Socket unhealthy, restarting worker...
+  [Console-error] No input!
+  Node executed (3 total), capturing...
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: /home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/lib/python3.1/site-packages', '/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=False, python=/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/home/shadeform/workspaces/SAM3DObjects-0742/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/_env_f30563/bin/python', '/tmp/comfyui_pvenv_pmr18v_d/persistent_worker.py', 'unix:///dev/shm/comfy_worker_8afd0ac7920a.sock']...
+  [ComfyUI] [SubprocessWorker] PATH has 8 entries:
+  [ComfyUI] [SubprocessWorker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [SubprocessWorker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [SubprocessWorker]   [4] /usr/local/bin
+  [ComfyUI] [SubprocessWorker]   [5] /usr/bin
+  [ComfyUI] [SubprocessWorker]   [6] /bin
+  [ComfyUI] [SubprocessWorker]   [7] /snap/bin
+  [ComfyUI] [worker] PATH has 8 entries:
+  [ComfyUI] [worker]   [0] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [1] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [2] /home/shadeform/.local/bin
+  [ComfyUI] [worker]   [3] /home/shadeform/.venv/bin
+  [ComfyUI] [worker]   [4] /usr/local/bin
+  [ComfyUI] [worker]   [5] /usr/bin
+  [ComfyUI] [worker]   [6] /bin
+  [ComfyUI] [worker]   [7] /snap/bin
+  [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+  Frame 60 saved (frame_059.jpg, t=285.2s)
+  [capture-node] freeze=349ms shot=648ms unfreeze=44ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] ERROR: Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  Frame 61 saved (frame_060.jpg, t=294.6s)
+  [capture-periodic] freeze=19ms shot=979ms unfreeze=4ms saved=True
+  [capture-loop] iter=2450 t=296.9s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=2500 t=302.8s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=3
+  [ComfyUI] [SubprocessWorker] got response: ok
+  Frame 62 saved (frame_061.jpg, t=306.5s)
+  [capture-periodic] freeze=2ms shot=181ms unfreeze=5ms saved=True
+  [ComfyUI] Prompt executed in 308.11 seconds
+  [capture-loop] iter=2550 t=308.5s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=3
+  Node executed (4 total), capturing...
+  Frame 63 saved (frame_062.jpg, t=309.4s)
+  [capture-node] freeze=79ms shot=239ms unfreeze=0ms saved=True
+  Execution complete (t=309.4s)
+  [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+  [3d-wait] Phase 1 done in 0.0s
+  [3d-wait] Phase 2: iframes=1
+  [3d-wait] iframe viewer_ready=False (matched 0 console logs)
+  [3d-wait] Waiting for 'Loaded successfully' console message (timeout=60s)...
+  [3d-wait] iframe wait exception: Timeout 60000ms exceeded while waiting for event "console"
+=========================== logs ===========================
+waiting for event "console"
+============================================================
+  [3d-wait] Total 3D wait: 60.1s
+  Captured 63 unique frames over 369.81s
+  [debug] iframes: 1
+  [debug]   iframe[0]: src=http://127.0.0.1:41891/extensions/ComfyUI-GeometryPack/viewer_vtk_textured.html?, canvas=588x525, rafFrozen=True
+  [timing] trigger_3d_previews: 0.0s
+  Saved high-quality screenshot: scene_generation_executed.png
+  [timing] final_screenshot: 1.9s
+    Captured 64 video frames

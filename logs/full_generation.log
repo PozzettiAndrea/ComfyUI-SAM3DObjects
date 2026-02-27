@@ -1,0 +1,152 @@
+Capturing execution frames: full_generation.json
+  Validating workflow...
+  [ComfyUI] === /validate endpoint called ===
+  [ComfyUI] Received JSON with keys: ['prompt']
+  [ComfyUI] Prompt has 11 nodes
+  [ComfyUI]   Node 4: LoadImage
+  [ComfyUI]     Inputs: {"image": "elephant.png"}
+  [ComfyUI]   Node 28: InvertMask
+  [ComfyUI]     Inputs: {"mask": ["4", 1]}
+  [ComfyUI]   Node 48: Preview3D
+  [ComfyUI]     Inputs: {"model_file": ["73", 0], "image": ""}
+  [ComfyUI]   Node 53: MaskPreview
+  [ComfyUI]     Inputs: {"mask": ["28", 0]}
+  [ComfyUI]   Node 54: SAM3D_PreviewPointCloud
+  [ComfyUI]     Inputs: {"file_path": ["59", 2], "preview": ""}
+  [ComfyUI]   Node 59: SAM3D_DepthEstimate
+  [ComfyUI]     Inputs: {"depth_model": ["74", 0], "image": ["4", 0]}
+  [ComfyUI]   Node 70: SAM3DGenerateSLAT
+  [ComfyUI]     Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "use_distillation": false, "generator": ["74", 1], "image": ["4", 0], "mask": ["28", 0], "p
+  [ComfyUI]   Node 71: SAM3DGaussianDecode
+  [ComfyUI]     Inputs: {"up_axis": "Y-up (standard)", "world_coordinates": false, "slat_decoder_gs": ["74", 2], "slat": ["70", 0]}
+  [ComfyUI]   Node 72: SAM3DMeshDecode
+  [ComfyUI]     Inputs: {"with_postprocess": true, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "slat_decoder_mesh": ["74", 3], "slat": ["70", 0]}
+  [ComfyUI]   Node 73: SAM3DTextureBake
+  [ComfyUI]     Inputs: {"glb_path": ["72", 0], "ply_path": ["71", 0], "texture_mode": "fast", "texture_size": 1024, "rendering_engine": "nvdiffrast"}
+  [ComfyUI]   Node 74: LoadSAM3DModel
+  [ComfyUI]     Inputs: {"compile": false, "use_gpu_cache": false, "dtype": "bfloat16", "depth_backend": "moge2"}
+  [ComfyUI] Generated prompt_id: bd6bcecb-8c12-44c8-8fc9-fb4cfafe2a8a
+  [ComfyUI] Calling execution.validate_prompt()...
+  [ComfyUI] Validation result: valid=True
+  [ComfyUI] === Validation PASSED ===
+  Queuing workflow for execution...
+  [ComfyUI] got prompt
+  [ComfyUI]   [Worker] Running depth estimation (backend=moge2)
+  [ComfyUI]   [LazyManager] Loading depth model (backend=moge2)...
+  [ComfyUI] !!! Exception during processing !!! Error in call to target 'sam3d_objects.pipeline.depth_models.moge.MoGe':
+  [ComfyUI] RuntimeError('Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx')
+  [ComfyUI] 
+  [ComfyUI] Worker traceback:
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 92, in _call_target
+  [ComfyUI]     return _target_(*args, **kwargs)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/vendor/sam3d_objects/pipeline/depth_models/base.py", line 9, in __init__
+  [ComfyUI]     self.model.to(self.device)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1369, in to
+  [ComfyUI]     return self._apply(convert)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   [Previous line repeated 1 more time]
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 955, in _apply
+  [ComfyUI]     param_applied = fn(param)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1355, in convert
+  [ComfyUI]     return t.to(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/cuda/__init__.py", line 412, in _lazy_init
+  [ComfyUI]     torch._C._cuda_init()
+  [ComfyUI] RuntimeError: Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx
+  [ComfyUI] 
+  [ComfyUI] The above exception was the direct cause of the following exception:
+  [ComfyUI] 
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_7x2cg5gy/persistent_worker.py", line 155, in main
+  [ComfyUI]     result = method(**inputs)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 89, in estimate_depth
+  [ComfyUI]     result = run_depth_only(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 859, in run_depth_only
+  [ComfyUI]     depth_model = model_manager.load_depth_model(backend=depth_backend)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/lazy_manager.py", line 178, in load_depth_model
+  [ComfyUI]     self.depth_model = instantiate(depth_config)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 226, in instantiate
+  [ComfyUI]     return instantiate_node(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 347, in instantiate_node
+  [ComfyUI]     return _call_target(_target_, partial, args, kwargs, full_key)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 97, in _call_target
+  [ComfyUI]     raise InstantiationException(msg) from e
+  [ComfyUI] hydra.errors.InstantiationException: Error in call to target 'sam3d_objects.pipeline.depth_models.moge.MoGe':
+  [ComfyUI] RuntimeError('Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx')
+  [ComfyUI] 
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 518, in execute
+  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 329, in get_output_data
+  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 303, in _async_map_node_over_list
+  [ComfyUI]     await process_inputs(input_dict, i)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 291, in process_inputs
+  [ComfyUI]     result = f(**inputs)
+  [ComfyUI]              ^^^^^^^^^^^
+  [ComfyUI]   File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/comfy_env/decorator.py", line 409, in proxy
+  [ComfyUI]     result = worker.call_method(
+  [ComfyUI]              ^^^^^^^^^^^^^^^^^^^
+  [ComfyUI]   File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/comfy_env/workers/venv.py", line 1012, in call_method
+  [ComfyUI]     raise WorkerError(
+  [ComfyUI] comfy_env.workers.base.WorkerError: Error in call to target 'sam3d_objects.pipeline.depth_models.moge.MoGe':
+  [ComfyUI] RuntimeError('Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx')
+  [ComfyUI] 
+  [ComfyUI] Worker traceback:
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 92, in _call_target
+  [ComfyUI]     return _target_(*args, **kwargs)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/vendor/sam3d_objects/pipeline/depth_models/base.py", line 9, in __init__
+  [ComfyUI]     self.model.to(self.device)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1369, in to
+  [ComfyUI]     return self._apply(convert)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply
+  [ComfyUI]     module._apply(fn)
+  [ComfyUI]   [Previous line repeated 1 more time]
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 955, in _apply
+  [ComfyUI]     param_applied = fn(param)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1355, in convert
+  [ComfyUI]     return t.to(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/cuda/__init__.py", line 412, in _lazy_init
+  [ComfyUI]     torch._C._cuda_init()
+  [ComfyUI] RuntimeError: Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx
+  [ComfyUI] 
+  [ComfyUI] The above exception was the direct cause of the following exception:
+  [ComfyUI] 
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_7x2cg5gy/persistent_worker.py", line 155, in main
+  [ComfyUI]     result = method(**inputs)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 89, in estimate_depth
+  [ComfyUI]     result = run_depth_only(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 859, in run_depth_only
+  [ComfyUI]     depth_model = model_manager.load_depth_model(backend=depth_backend)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/lazy_manager.py", line 178, in load_depth_model
+  [ComfyUI]     self.depth_model = instantiate(depth_config)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 226, in instantiate
+  [ComfyUI]     return instantiate_node(
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 347, in instantiate_node
+  [ComfyUI]     return _call_target(_target_, partial, args, kwargs, full_key)
+  [ComfyUI]   File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 97, in _call_target
+  [ComfyUI]     raise InstantiationException(msg) from e
+  [ComfyUI] hydra.errors.InstantiationException: Error in call to target 'sam3d_objects.pipeline.depth_models.moge.MoGe':
+  [ComfyUI] RuntimeError('Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx')
+  [ComfyUI] 
+  [ComfyUI] 
+  [ComfyUI] Prompt executed in 6.93 seconds
+  Execution error: {'prompt_id': '9f27d7e1-03a4-4161-9ec4-407063546a24', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['4', '74', '28', '53'], 'exception_message': 'Error in call to target \'sam3d_objects.pipeline.depth_models.moge.MoGe\':\nRuntimeError(\'Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx\')\n\nWorker traceback:\nTraceback (most recent call last):\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 92, in _call_target\n    return _target_(*args, **kwargs)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/vendor/sam3d_objects/pipeline/depth_models/base.py", line 9, in __init__\n    self.model.to(self.device)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1369, in to\n    return self._apply(convert)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply\n    module._apply(fn)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply\n    module._apply(fn)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 928, in _apply\n    module._apply(fn)\n  [Previous line repeated 1 more time]\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 955, in _apply\n    param_applied = fn(param)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1355, in convert\n    return t.to(\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/torch/cuda/__init__.py", line 412, in _lazy_init\n    torch._C._cuda_init()\nRuntimeError: Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File "/tmp/comfyui_pvenv_7x2cg5gy/persistent_worker.py", line 155, in main\n    result = method(**inputs)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 89, in estimate_depth\n    result = run_depth_only(\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 859, in run_depth_only\n    depth_model = model_manager.load_depth_model(backend=depth_backend)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/nodes/utils/lazy_manager.py", line 178, in load_depth_model\n    self.depth_model = instantiate(depth_config)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 226, in instantiate\n    return instantiate_node(\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 347, in instantiate_node\n    return _call_target(_target_, partial, args, kwargs, full_key)\n  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/_env_sam3dobjects/lib/python3.10/site-packages/hydra/_internal/instantiate/_instantiate2.py", line 97, in _call_target\n    raise InstantiationException(msg) from e\nhydra.errors.InstantiationException: Error in call to target \'sam3d_objects.pipeline.depth_models.moge.MoGe\':\nRuntimeError(\'Found no NVIDIA driver on your system. Please check that you have an NVIDIA GPU and installed a driver from http://www.nvidia.com/Download/index.aspx\')\n\n', 'exception_type': 'comfy_env.workers.base.WorkerError', 'traceback': ['  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 518, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 329, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 303, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/execution.py", line 291, in process_inputs\n    result = f(**inputs)\n             ^^^^^^^^^^^\n', '  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/comfy_env/decorator.py", line 409, in proxy\n    result = worker.call_method(\n             ^^^^^^^^^^^^^^^^^^^\n', '  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/comfy_env/workers/venv.py", line 1012, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'depth_model': ['SAM3DModelConfig(config=/home/runner/work/ComfyUI-SAM3DObjects/ComfyUI-SAM3DObjects/.comfy-test-env/ComfyUI/models/sam3d/sam-3d-objects/checkpoints/pipeline.yaml, compile=False, use_gpu_cache=False, depth_backend=moge2)'], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['48', '28', '54', '70', '74', '53', '4', '72', '73', '71', '59'], 'timestamp': 1769296644989}
+  Captured 48 frames over 8.74s
+  6 unique frames saved as WebP
+  Waiting 5000ms for previews to render...
+  Saved high-quality screenshot: full_generation_executed.png
+    Captured 7 video frames

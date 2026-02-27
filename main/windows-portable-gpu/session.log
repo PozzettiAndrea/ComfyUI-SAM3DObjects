@@ -1,0 +1,1302 @@
+[00:00] Crash dump logging enabled: C:\github-runners\PozzettiAndrea-ComfyUI-SAM3DObjects-portable\_work\ComfyUI-SAM3DObjects\ComfyUI-SAM3DObjects\comfy-test-logs\SAM3DObjects-0633\windows_portable-gpu\crash_dump.log
+[00:00] 
+[00:00] [1/3] REGISTRATION
+[00:00] ----------------------------------------
+[00:00] [DEBUG] server=None, server_url=http://127.0.0.1:8188, api=None
+[00:00] 
+Connecting to existing server at http://127.0.0.1:8188...
+[00:00] Connecting to existing server at http://127.0.0.1:8188...
+[00:00] Connected to server! (attempt 1, 0.0s)
+[00:00] Checking for import errors in server logs...
+[00:00] No import errors detected
+[00:00] Found 698 registered nodes
+[00:00] [REGISTRATION] PASSED
+[00:00] 
+[00:00] [2/3] INSTANTIATION
+[00:00] ----------------------------------------
+[00:00] [DEBUG] server=<comfy_test.comfyui.server.ExternalComfyUIServer object at 0x000002A6BB684EC0>, server_url=http://127.0.0.1:8188, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x000002A6BB685010>
+[00:00] Testing node constructors...
+[00:16] All 13 node(s) instantiated successfully!
+[00:16] [INSTANTIATION] PASSED
+[00:16] 
+[00:16] [3/3] EXECUTION
+[00:16] ----------------------------------------
+[00:16] [DEBUG] server=<comfy_test.comfyui.server.ExternalComfyUIServer object at 0x000002A6BB684EC0>, server_url=http://127.0.0.1:8188, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x000002A6BB685010>
+[00:16] GPU runner - will execute 5 workflow(s)
+[00:16] Running 5 workflow(s) (all with videos)...
+[00:16] Starting headless browser...
+[00:25]   GPU + Vulkan detected — using ANGLE/Vulkan rendering
+[00:32] Capturing execution frames: debug_large_image_results.json
+[00:34]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[00:34]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[00:39]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[00:39]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[00:39]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[00:41]   [Console-warning] WARNING: Multiple instances of Three.js being imported.
+[00:42]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+[00:42]   [Console-error] Error loading extension /extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:83:1634)
+    at Proxy.wrappedAction (http://127.0.0.1:8188/assets/vendor-vue-DaLZjKA7.js:8:5819)
+    at Object.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:86:51130)
+    at ComfyApp.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:280:21199)
+    at http://127.0.0.1:8188/extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js:13:5
+[00:43]   [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+[00:45]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+[00:45]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+[00:54]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[00:54]   Validating workflow...
+[00:54]   Queuing workflow for execution...
+[00:57]   Frame 2 saved (frame_001.jpg, t=3.6s)
+[00:57]   [capture-periodic] freeze=21ms shot=451ms unfreeze=21ms saved=True
+[00:59]   Node executed (1 total), capturing...
+[01:01]   Frame 3 saved (frame_002.jpg, t=6.5s)
+[01:01]   [capture-node] freeze=125ms shot=574ms unfreeze=260ms saved=True
+[01:01]   Node executed (2 total), capturing...
+[01:01]   Frame 4 saved (frame_003.jpg, t=7.8s)
+[01:01]   [capture-node] freeze=22ms shot=403ms unfreeze=20ms saved=True
+[01:05]   [capture-loop] iter=50 t=11.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[01:15]   [capture-loop] iter=100 t=22.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=57
+[01:43]   [capture-loop] iter=150 t=49.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2241
+[02:30]   [capture-loop] iter=200 t=96.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=55
+[02:45]   [capture-loop] iter=250 t=111.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=29
+[02:57]   [capture-loop] iter=300 t=123.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[03:06]   [capture-loop] iter=350 t=133.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=30
+[03:16]   [capture-loop] iter=400 t=142.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=30
+[03:24]   [capture-loop] iter=450 t=151.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=37
+[03:34]   [capture-loop] iter=500 t=160.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[03:43]   [capture-loop] iter=550 t=170.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[03:53]   [capture-loop] iter=600 t=179.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[04:03]   [capture-loop] iter=650 t=189.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[04:13]   [capture-loop] iter=700 t=200.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[04:23]   [capture-loop] iter=750 t=209.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[05:43]   [capture-loop] iter=800 t=290.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=81
+[06:03]   [capture-loop] iter=850 t=309.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=41
+[06:14]   [capture-loop] iter=900 t=320.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=35
+[06:24]   [capture-loop] iter=950 t=331.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=45
+[06:41]   [capture-loop] iter=1000 t=348.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=75
+[07:18]   [capture-loop] iter=1050 t=385.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=178
+[07:41]   [capture-loop] iter=1100 t=408.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=28
+[07:55]   [capture-loop] iter=1150 t=422.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=31
+[08:05]   [capture-loop] iter=1200 t=431.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[08:14]   [capture-loop] iter=1250 t=440.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[08:24]   [capture-loop] iter=1300 t=450.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[08:40]   [capture-loop] iter=1350 t=467.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[08:49]   [capture-loop] iter=1400 t=476.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=30
+[09:08]   [capture-loop] iter=1450 t=495.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=8
+[09:17]   [capture-loop] iter=1500 t=504.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[09:18]   Frame 5 saved (frame_004.jpg, t=504.7s)
+[09:18]   [capture-periodic] freeze=17ms shot=404ms unfreeze=21ms saved=True
+[09:26]   [capture-loop] iter=1550 t=513.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[09:35]   [capture-loop] iter=1600 t=521.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[09:44]   [capture-loop] iter=1650 t=530.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[09:53]   [capture-loop] iter=1700 t=539.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[10:00]   Frame 6 saved (frame_005.jpg, t=545.9s)
+[10:00]   [capture-periodic] freeze=17ms shot=406ms unfreeze=25ms saved=True
+[10:01]   [capture-loop] iter=1750 t=548.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=30
+[10:11]   [capture-loop] iter=1800 t=557.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[10:12]   Frame 7 saved (frame_006.jpg, t=558.8s)
+[10:12]   [capture-periodic] freeze=19ms shot=483ms unfreeze=26ms saved=True
+[10:15]   Frame 8 saved (frame_007.jpg, t=561.5s)
+[10:15]   [capture-periodic] freeze=19ms shot=413ms unfreeze=19ms saved=True
+[10:19]   [capture-loop] iter=1850 t=566.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[10:28]   [capture-loop] iter=1900 t=575.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[10:37]   [capture-loop] iter=1950 t=583.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[10:46]   [capture-loop] iter=2000 t=592.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[10:54]   [capture-loop] iter=2050 t=600.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[11:02]   [capture-loop] iter=2100 t=609.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[11:11]   [capture-loop] iter=2150 t=618.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[11:20]   [capture-loop] iter=2200 t=626.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[11:28]   [capture-loop] iter=2250 t=635.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[11:37]   [capture-loop] iter=2300 t=643.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[11:45]   [capture-loop] iter=2350 t=652.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[11:54]   [capture-loop] iter=2400 t=661.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[12:03]   [capture-loop] iter=2450 t=669.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[12:11]   [capture-loop] iter=2500 t=678.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[12:20]   [capture-loop] iter=2550 t=687.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[12:28]   [capture-loop] iter=2600 t=695.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[12:37]   [capture-loop] iter=2650 t=703.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[12:46]   [capture-loop] iter=2700 t=712.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[12:54]   [capture-loop] iter=2750 t=721.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[13:03]   [capture-loop] iter=2800 t=729.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[13:11]   [capture-loop] iter=2850 t=738.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[13:20]   [capture-loop] iter=2900 t=746.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[13:28]   [capture-loop] iter=2950 t=755.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[13:37]   [capture-loop] iter=3000 t=763.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[13:45]   [capture-loop] iter=3050 t=772.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[13:54]   [capture-loop] iter=3100 t=780.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[13:58]   Frame 9 saved (frame_008.jpg, t=784.8s)
+[13:58]   [capture-periodic] freeze=22ms shot=431ms unfreeze=22ms saved=True
+[14:02]   [capture-loop] iter=3150 t=789.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[14:12]   [capture-loop] iter=3200 t=798.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[14:20]   [capture-loop] iter=3250 t=807.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[14:29]   [capture-loop] iter=3300 t=816.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[14:38]   [capture-loop] iter=3350 t=825.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[14:48]   [capture-loop] iter=3400 t=834.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[14:56]   [capture-loop] iter=3450 t=843.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[15:05]   [capture-loop] iter=3500 t=852.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[15:14]   [capture-loop] iter=3550 t=860.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[15:23]   [capture-loop] iter=3600 t=869.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[15:32]   [capture-loop] iter=3650 t=878.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[15:41]   [capture-loop] iter=3700 t=887.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[15:50]   [capture-loop] iter=3750 t=896.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[15:59]   [capture-loop] iter=3800 t=906.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[16:01]   Frame 10 saved (frame_009.jpg, t=907.5s)
+[16:01]   [capture-periodic] freeze=21ms shot=478ms unfreeze=22ms saved=True
+[16:07]   Frame 11 saved (frame_010.jpg, t=912.8s)
+[16:07]   [capture-periodic] freeze=34ms shot=612ms unfreeze=21ms saved=True
+[16:08]   [capture-loop] iter=3850 t=915.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=210
+[16:09]   Frame 12 saved (frame_011.jpg, t=915.6s)
+[16:09]   [capture-periodic] freeze=19ms shot=412ms unfreeze=18ms saved=True
+[16:12]   Frame 13 saved (frame_012.jpg, t=918.1s)
+[16:12]   [capture-periodic] freeze=22ms shot=487ms unfreeze=20ms saved=True
+[16:17]   Frame 14 saved (frame_013.jpg, t=923.5s)
+[16:17]   [capture-periodic] freeze=18ms shot=483ms unfreeze=39ms saved=True
+[16:18]   [capture-loop] iter=3900 t=925.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[16:22]   Frame 15 saved (frame_014.jpg, t=926.2s)
+[16:22]   [capture-periodic] freeze=18ms shot=2406ms unfreeze=22ms saved=True
+[16:25]   Frame 16 saved (frame_015.jpg, t=930.8s)
+[16:25]   [capture-periodic] freeze=19ms shot=1314ms unfreeze=19ms saved=True
+[16:29]   Frame 17 saved (frame_016.jpg, t=934.4s)
+[16:29]   [capture-periodic] freeze=16ms shot=1000ms unfreeze=21ms saved=True
+[16:31]   [capture-loop] iter=3950 t=937.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[16:36]   Frame 18 saved (frame_017.jpg, t=940.6s)
+[16:36]   [capture-periodic] freeze=19ms shot=1808ms unfreeze=19ms saved=True
+[16:38]   Frame 19 saved (frame_018.jpg, t=944.7s)
+[16:38]   [capture-periodic] freeze=17ms shot=479ms unfreeze=24ms saved=True
+[16:42]   [capture-loop] iter=4000 t=948.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[16:51]   [capture-loop] iter=4050 t=957.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[16:59]   [capture-loop] iter=4100 t=966.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=16
+[17:08]   [capture-loop] iter=4150 t=974.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[17:17]   [capture-loop] iter=4200 t=983.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[17:25]   [capture-loop] iter=4250 t=992.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[17:35]   [capture-loop] iter=4300 t=1001.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[17:44]   [capture-loop] iter=4350 t=1010.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[17:53]   [capture-loop] iter=4400 t=1019.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[18:02]   [capture-loop] iter=4450 t=1028.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[18:11]   [capture-loop] iter=4500 t=1037.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[18:20]   [capture-loop] iter=4550 t=1046.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[18:28]   [capture-loop] iter=4600 t=1055.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[18:38]   [capture-loop] iter=4650 t=1064.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[18:45]   Frame 20 saved (frame_019.jpg, t=1071.3s)
+[18:45]   [capture-periodic] freeze=18ms shot=524ms unfreeze=23ms saved=True
+[18:46]   [capture-loop] iter=4700 t=1073.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[18:48]   Frame 21 saved (frame_020.jpg, t=1074.1s)
+[18:48]   [capture-periodic] freeze=20ms shot=570ms unfreeze=27ms saved=True
+[18:50]   Frame 22 saved (frame_021.jpg, t=1076.9s)
+[18:50]   [capture-periodic] freeze=20ms shot=362ms unfreeze=20ms saved=True
+[18:53]   Frame 23 saved (frame_022.jpg, t=1079.5s)
+[18:53]   [capture-periodic] freeze=19ms shot=549ms unfreeze=19ms saved=True
+[18:56]   Frame 24 saved (frame_023.jpg, t=1082.2s)
+[18:56]   [capture-periodic] freeze=19ms shot=419ms unfreeze=28ms saved=True
+[18:56]   [capture-loop] iter=4750 t=1083.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[18:58]   Frame 25 saved (frame_024.jpg, t=1084.8s)
+[18:58]   [capture-periodic] freeze=17ms shot=419ms unfreeze=19ms saved=True
+[19:01]   Frame 26 saved (frame_025.jpg, t=1087.5s)
+[19:01]   [capture-periodic] freeze=19ms shot=421ms unfreeze=23ms saved=True
+[19:04]   Frame 27 saved (frame_026.jpg, t=1090.2s)
+[19:04]   [capture-periodic] freeze=20ms shot=417ms unfreeze=20ms saved=True
+[19:05]   [capture-loop] iter=4800 t=1091.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[19:06]   Frame 28 saved (frame_027.jpg, t=1092.8s)
+[19:06]   [capture-periodic] freeze=19ms shot=417ms unfreeze=21ms saved=True
+[19:09]   Frame 29 saved (frame_028.jpg, t=1095.4s)
+[19:09]   [capture-periodic] freeze=18ms shot=506ms unfreeze=23ms saved=True
+[19:29]   Frame 30 saved (frame_029.jpg, t=1108.7s)
+[19:29]   [capture-periodic] freeze=20ms shot=6732ms unfreeze=23ms saved=True
+[19:32]   [capture-loop] iter=4850 t=1118.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[19:46]   [capture-loop] iter=4900 t=1132.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[20:01]   [capture-loop] iter=4950 t=1147.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[20:10]   [capture-loop] iter=5000 t=1157.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[20:14]   Frame 31 saved (frame_030.jpg, t=1160.4s)
+[20:14]   [capture-periodic] freeze=30ms shot=567ms unfreeze=31ms saved=True
+[20:21]   [capture-loop] iter=5050 t=1168.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[20:33]   [capture-loop] iter=5100 t=1179.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[21:54]   [capture-loop] iter=5150 t=1260.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[23:05]   [capture-loop] iter=5200 t=1331.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[23:14]   [capture-loop] iter=5250 t=1340.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[24:39]   [capture-loop] iter=5300 t=1425.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[24:48]   [capture-loop] iter=5350 t=1434.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[24:57]   Frame 32 saved (frame_031.jpg, t=1442.9s)
+[24:57]   [capture-periodic] freeze=28ms shot=1053ms unfreeze=23ms saved=True
+[24:57]   Node executed (3 total), capturing...
+[24:58]   Frame 33 saved (frame_032.jpg, t=1444.4s)
+[24:58]   [capture-node] freeze=47ms shot=785ms unfreeze=0ms saved=True
+[24:58]   Execution complete (t=1444.4s)
+[24:58]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[25:59]   [3d-wait] Phase 1 exception after 60.1s: Page.wait_for_function: Timeout 60000ms exceeded.
+[25:59]   [3d-wait] Phase 2: iframes=0
+[25:59]   [3d-wait] Total 3D wait: 60.2s
+[25:59]   Captured 33 unique frames over 1505.58s
+[25:59]   [debug] iframes: 0
+[25:59]   [timing] trigger_3d_previews: 0.0s
+[26:04]   Saved high-quality screenshot: debug_large_image_results_executed.png
+[26:04]   [timing] final_screenshot: 2.9s
+[26:05] Capturing execution frames: full_generation.json
+[26:06]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[26:06]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[26:08]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[26:08]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[26:09]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[26:11]   [Console-warning] WARNING: Multiple instances of Three.js being imported.
+[26:11]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+[26:12]   [Console-error] Error loading extension /extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:83:1634)
+    at Proxy.wrappedAction (http://127.0.0.1:8188/assets/vendor-vue-DaLZjKA7.js:8:5819)
+    at Object.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:86:51130)
+    at ComfyApp.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:280:21199)
+    at http://127.0.0.1:8188/extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js:13:5
+[26:12]   [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+[26:14]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+[26:14]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+[26:21]   [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+[26:21]   [Console-error] Error loading model: zy: fetch for "http://127.0.0.1:8188/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_15&filename=mesh_textured.glb" responded with 403: Forbidden
+    at http://127.0.0.1:8188/assets/vendor-three-DH0o8VQ7.js:3824:114758
+[26:21]   [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+[26:21]   [Console-error] Error loading model: zy: fetch for "http://127.0.0.1:8188/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_15&filename=mesh_textured.glb" responded with 403: Forbidden
+    at http://127.0.0.1:8188/assets/vendor-three-DH0o8VQ7.js:3824:114758
+[26:23]   [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+[26:23]   [Console-error] No input!
+[26:23]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[26:23]   Validating workflow...
+[26:24]   Queuing workflow for execution...
+[26:24]   Node executed (1 total), capturing...
+[26:25]   Frame 2 saved (frame_001.jpg, t=1.5s)
+[26:25]   [capture-node] freeze=30ms shot=487ms unfreeze=24ms saved=True
+[26:34]   [capture-loop] iter=50 t=10.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[26:42]   [capture-loop] iter=100 t=19.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[26:43]   Frame 3 saved (frame_002.jpg, t=19.6s)
+[26:43]   [capture-periodic] freeze=23ms shot=581ms unfreeze=24ms saved=True
+[26:52]   [capture-loop] iter=150 t=28.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[27:00]   [capture-loop] iter=200 t=37.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=30
+[27:10]   [capture-loop] iter=250 t=46.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[27:19]   [capture-loop] iter=300 t=55.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[27:27]   Frame 4 saved (frame_003.jpg, t=63.9s)
+[27:27]   [capture-periodic] freeze=26ms shot=461ms unfreeze=26ms saved=True
+[27:28]   [capture-loop] iter=350 t=65.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=29
+[27:30]   Frame 5 saved (frame_004.jpg, t=66.5s)
+[27:30]   [capture-periodic] freeze=21ms shot=477ms unfreeze=22ms saved=True
+[27:37]   [capture-loop] iter=400 t=74.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[27:46]   Frame 6 saved (frame_005.jpg, t=82.3s)
+[27:46]   [capture-periodic] freeze=21ms shot=646ms unfreeze=74ms saved=True
+[27:46]   Node executed (2 total), capturing...
+[27:47]   Frame 7 saved (frame_006.jpg, t=83.4s)
+[27:47]   [capture-node] freeze=27ms shot=619ms unfreeze=33ms saved=True
+[27:51]   Frame 8 saved (frame_007.jpg, t=87.2s)
+[27:51]   [capture-periodic] freeze=24ms shot=554ms unfreeze=25ms saved=True
+[27:51]   [capture-loop] iter=450 t=88.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=28
+[28:01]   [capture-loop] iter=500 t=97.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=30
+[28:10]   [capture-loop] iter=550 t=107.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[28:21]   [capture-loop] iter=600 t=117.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[28:30]   [capture-loop] iter=650 t=127.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[28:39]   [capture-loop] iter=700 t=136.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=29
+[28:49]   [capture-loop] iter=750 t=145.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[28:59]   [capture-loop] iter=800 t=155.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=31
+[29:08]   [capture-loop] iter=850 t=165.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[29:15]   Frame 9 saved (frame_008.jpg, t=171.0s)
+[29:15]   [capture-periodic] freeze=18ms shot=734ms unfreeze=22ms saved=True
+[29:18]   Frame 10 saved (frame_009.jpg, t=174.1s)
+[29:18]   [capture-periodic] freeze=18ms shot=784ms unfreeze=33ms saved=True
+[29:19]   [capture-loop] iter=900 t=176.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[29:21]   Frame 11 saved (frame_010.jpg, t=177.1s)
+[29:21]   [capture-periodic] freeze=19ms shot=546ms unfreeze=26ms saved=True
+[29:24]   Frame 12 saved (frame_011.jpg, t=180.0s)
+[29:24]   [capture-periodic] freeze=20ms shot=774ms unfreeze=32ms saved=True
+[29:27]   Frame 13 saved (frame_012.jpg, t=183.0s)
+[29:27]   [capture-periodic] freeze=23ms shot=539ms unfreeze=23ms saved=True
+[29:29]   Frame 14 saved (frame_013.jpg, t=185.8s)
+[29:29]   [capture-periodic] freeze=19ms shot=499ms unfreeze=23ms saved=True
+[29:30]   [capture-loop] iter=950 t=186.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[29:32]   Frame 15 saved (frame_014.jpg, t=188.5s)
+[29:32]   [capture-periodic] freeze=28ms shot=496ms unfreeze=24ms saved=True
+[29:35]   Frame 16 saved (frame_015.jpg, t=191.2s)
+[29:35]   [capture-periodic] freeze=22ms shot=477ms unfreeze=25ms saved=True
+[29:37]   Frame 17 saved (frame_016.jpg, t=193.9s)
+[29:37]   [capture-periodic] freeze=19ms shot=498ms unfreeze=24ms saved=True
+[29:39]   [capture-loop] iter=1000 t=195.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[29:40]   Frame 18 saved (frame_017.jpg, t=196.5s)
+[29:40]   [capture-periodic] freeze=35ms shot=500ms unfreeze=39ms saved=True
+[29:43]   Frame 19 saved (frame_018.jpg, t=199.3s)
+[29:43]   [capture-periodic] freeze=19ms shot=574ms unfreeze=24ms saved=True
+[29:48]   [capture-loop] iter=1050 t=205.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[29:57]   [capture-loop] iter=1100 t=214.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[30:06]   [capture-loop] iter=1150 t=223.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=34
+[30:16]   [capture-loop] iter=1200 t=233.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[30:26]   [capture-loop] iter=1250 t=242.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[30:35]   [capture-loop] iter=1300 t=251.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[30:44]   [capture-loop] iter=1350 t=260.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[30:53]   [capture-loop] iter=1400 t=270.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[31:02]   [capture-loop] iter=1450 t=278.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[31:11]   [capture-loop] iter=1500 t=288.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[31:20]   [capture-loop] iter=1550 t=297.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[31:20]   Frame 20 saved (frame_019.jpg, t=297.0s)
+[31:20]   [capture-periodic] freeze=22ms shot=461ms unfreeze=21ms saved=True
+[31:23]   Frame 21 saved (frame_020.jpg, t=299.6s)
+[31:23]   [capture-periodic] freeze=32ms shot=460ms unfreeze=59ms saved=True
+[31:26]   Frame 22 saved (frame_021.jpg, t=302.2s)
+[31:26]   [capture-periodic] freeze=19ms shot=446ms unfreeze=23ms saved=True
+[31:28]   Frame 23 saved (frame_022.jpg, t=304.9s)
+[31:28]   [capture-periodic] freeze=14ms shot=449ms unfreeze=23ms saved=True
+[31:29]   [capture-loop] iter=1600 t=306.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[31:31]   Frame 24 saved (frame_023.jpg, t=307.5s)
+[31:31]   [capture-periodic] freeze=30ms shot=439ms unfreeze=23ms saved=True
+[31:34]   Frame 25 saved (frame_024.jpg, t=310.1s)
+[31:34]   [capture-periodic] freeze=43ms shot=474ms unfreeze=20ms saved=True
+[31:36]   Frame 26 saved (frame_025.jpg, t=312.9s)
+[31:36]   [capture-periodic] freeze=19ms shot=455ms unfreeze=48ms saved=True
+[31:38]   [capture-loop] iter=1650 t=315.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[31:39]   Frame 27 saved (frame_026.jpg, t=315.6s)
+[31:39]   [capture-periodic] freeze=17ms shot=454ms unfreeze=47ms saved=True
+[31:47]   Frame 28 saved (frame_027.jpg, t=323.6s)
+[31:47]   [capture-periodic] freeze=20ms shot=462ms unfreeze=21ms saved=True
+[31:48]   [capture-loop] iter=1700 t=324.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[31:56]   [capture-loop] iter=1750 t=333.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[32:05]   [capture-loop] iter=1800 t=341.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[32:14]   [capture-loop] iter=1850 t=350.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[32:22]   [capture-loop] iter=1900 t=359.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[32:36]   [capture-loop] iter=1950 t=373.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[32:47]   [capture-loop] iter=2000 t=383.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=27
+[33:01]   [capture-loop] iter=2050 t=397.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=38
+[33:10]   [capture-loop] iter=2100 t=407.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[33:20]   [capture-loop] iter=2150 t=417.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[33:30]   [capture-loop] iter=2200 t=427.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[33:34]   Frame 29 saved (frame_028.jpg, t=428.6s)
+[33:34]   [capture-periodic] freeze=19ms shot=1997ms unfreeze=21ms saved=True
+[33:50]   [capture-loop] iter=2250 t=446.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[34:07]   [capture-loop] iter=2300 t=463.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[34:21]   [capture-loop] iter=2350 t=477.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[34:30]   [capture-loop] iter=2400 t=487.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[34:39]   [capture-loop] iter=2450 t=495.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[34:51]   [capture-loop] iter=2500 t=508.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[35:07]   [capture-loop] iter=2550 t=523.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[35:15]   [capture-loop] iter=2600 t=532.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[35:25]   [capture-loop] iter=2650 t=541.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[35:33]   [capture-loop] iter=2700 t=550.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[35:43]   [capture-loop] iter=2750 t=560.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[35:52]   [capture-loop] iter=2800 t=568.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[36:01]   [capture-loop] iter=2850 t=577.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[36:10]   [capture-loop] iter=2900 t=587.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[36:19]   [capture-loop] iter=2950 t=595.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[36:28]   [capture-loop] iter=3000 t=604.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[36:37]   [capture-loop] iter=3050 t=614.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[36:46]   [capture-loop] iter=3100 t=622.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[36:55]   [capture-loop] iter=3150 t=631.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=16
+[37:04]   [capture-loop] iter=3200 t=640.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[37:13]   [capture-loop] iter=3250 t=649.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[37:22]   [capture-loop] iter=3300 t=658.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[37:31]   [capture-loop] iter=3350 t=668.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[37:40]   [capture-loop] iter=3400 t=677.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[37:49]   [capture-loop] iter=3450 t=686.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[37:59]   [capture-loop] iter=3500 t=695.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[38:08]   [capture-loop] iter=3550 t=704.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[38:17]   [capture-loop] iter=3600 t=713.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[38:26]   [capture-loop] iter=3650 t=723.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[38:35]   [capture-loop] iter=3700 t=732.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[38:45]   [capture-loop] iter=3750 t=741.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[38:54]   [capture-loop] iter=3800 t=750.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[39:03]   [capture-loop] iter=3850 t=759.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=32
+[39:12]   [capture-loop] iter=3900 t=769.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[39:21]   [capture-loop] iter=3950 t=778.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[39:30]   [capture-loop] iter=4000 t=787.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[39:40]   [capture-loop] iter=4050 t=796.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[39:49]   [capture-loop] iter=4100 t=805.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[39:58]   [capture-loop] iter=4150 t=815.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[40:07]   [capture-loop] iter=4200 t=824.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[40:16]   [capture-loop] iter=4250 t=833.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[40:26]   [capture-loop] iter=4300 t=842.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[40:35]   [capture-loop] iter=4350 t=851.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[40:43]   [capture-loop] iter=4400 t=860.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[40:53]   [capture-loop] iter=4450 t=870.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[41:02]   [capture-loop] iter=4500 t=879.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[41:11]   [capture-loop] iter=4550 t=888.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[41:21]   [capture-loop] iter=4600 t=897.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[41:30]   [capture-loop] iter=4650 t=906.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[41:38]   [capture-loop] iter=4700 t=915.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[41:48]   [capture-loop] iter=4750 t=925.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=23
+[41:57]   [capture-loop] iter=4800 t=933.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[42:06]   [capture-loop] iter=4850 t=942.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[42:15]   [capture-loop] iter=4900 t=952.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[42:24]   [capture-loop] iter=4950 t=961.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[42:33]   [capture-loop] iter=5000 t=969.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[42:42]   [capture-loop] iter=5050 t=979.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=17
+[42:51]   [capture-loop] iter=5100 t=988.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[43:00]   [capture-loop] iter=5150 t=997.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[43:10]   [capture-loop] iter=5200 t=1006.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[43:18]   [capture-loop] iter=5250 t=1015.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[43:27]   [capture-loop] iter=5300 t=1023.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[43:36]   [capture-loop] iter=5350 t=1033.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[43:45]   [capture-loop] iter=5400 t=1042.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[43:54]   [capture-loop] iter=5450 t=1051.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[45:09]   [capture-loop] iter=5500 t=1125.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[45:18]   [capture-loop] iter=5550 t=1134.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[45:21]   Frame 30 saved (frame_029.jpg, t=1138.0s)
+[45:21]   [capture-periodic] freeze=22ms shot=437ms unfreeze=20ms saved=True
+[45:27]   Frame 31 saved (frame_030.jpg, t=1143.3s)
+[45:27]   [capture-periodic] freeze=21ms shot=436ms unfreeze=21ms saved=True
+[45:27]   [capture-loop] iter=5600 t=1144.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[45:36]   [capture-loop] iter=5650 t=1153.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=21
+[45:46]   [capture-loop] iter=5700 t=1163.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=22
+[45:55]   [capture-loop] iter=5750 t=1172.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[46:05]   [capture-loop] iter=5800 t=1181.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[46:14]   Frame 32 saved (frame_031.jpg, t=1190.3s)
+[46:14]   [capture-periodic] freeze=16ms shot=466ms unfreeze=18ms saved=True
+[46:14]   [capture-loop] iter=5850 t=1191.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=18
+[46:22]   [capture-loop] iter=5900 t=1199.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[46:31]   [capture-loop] iter=5950 t=1207.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=24
+[46:40]   [capture-loop] iter=6000 t=1217.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=42
+[46:48]   [capture-loop] iter=6050 t=1225.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=16
+[46:58]   [capture-loop] iter=6100 t=1234.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=20
+[47:06]   [capture-loop] iter=6150 t=1243.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=25
+[47:16]   [capture-loop] iter=6200 t=1253.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=19
+[47:25]   [capture-loop] iter=6250 t=1261.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=26
+[47:32]   Frame 33 saved (frame_032.jpg, t=1267.7s)
+[47:32]   [capture-periodic] freeze=21ms shot=1114ms unfreeze=28ms saved=True
+[47:32]   Node executed (3 total), capturing...
+[47:34]   Frame 34 saved (frame_033.jpg, t=1269.3s)
+[47:34]   [capture-node] freeze=177ms shot=1109ms unfreeze=0ms saved=True
+[47:34]   Execution complete (t=1269.3s)
+[47:34]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[48:34]   [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
+[48:34]   [3d-wait] Phase 2: iframes=1
+[48:34]   [3d-wait] iframe viewer_ready=False (matched 0 console logs)
+[48:34]   [3d-wait] Waiting for 'Loaded successfully' console message (timeout=60s)...
+[49:34]   [3d-wait] iframe wait exception: Timeout 60000ms exceeded while waiting for event "console"
+=========================== logs ===========================
+waiting for event "console"
+============================================================
+[49:34]   [3d-wait] Total 3D wait: 120.2s
+[49:34]   Captured 34 unique frames over 1390.98s
+[49:34]   [debug] iframes: 1
+[49:34]   [debug]   iframe[0]: src=http://127.0.0.1:8188/extensions/ComfyUI-GeometryPack/viewer_vtk.html?v=17719380, canvas=588x545, rafFrozen=True
+[49:34]   [timing] trigger_3d_previews: 0.0s
+[49:39]   Saved high-quality screenshot: full_generation_executed.png
+[49:39]   [timing] final_screenshot: 2.8s
+[49:39] Capturing execution frames: gaussian_generation.json
+[49:40]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[49:40]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[49:43]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[49:43]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[49:43]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[49:44]   [Console-warning] WARNING: Multiple instances of Three.js being imported.
+[49:45]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+[49:46]   [Console-error] Error loading extension /extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:83:1634)
+    at Proxy.wrappedAction (http://127.0.0.1:8188/assets/vendor-vue-DaLZjKA7.js:8:5819)
+    at Object.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:86:51130)
+    at ComfyApp.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:280:21199)
+    at http://127.0.0.1:8188/extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js:13:5
+[49:46]   [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+[49:49]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+[49:49]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+[49:57]   [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+[49:57]   [Console-error] No input!
+[49:58]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[49:58]   Validating workflow...
+[49:58]   Queuing workflow for execution...
+[49:58]   Node executed (1 total), capturing...
+[49:59]   Frame 2 saved (frame_001.jpg, t=1.6s)
+[49:59]   [capture-node] freeze=27ms shot=519ms unfreeze=22ms saved=True
+[50:08]   [capture-loop] iter=50 t=10.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[50:16]   [capture-loop] iter=100 t=19.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[50:22]   Frame 3 saved (frame_002.jpg, t=24.5s)
+[50:22]   [capture-periodic] freeze=25ms shot=485ms unfreeze=21ms saved=True
+[50:25]   [capture-loop] iter=150 t=28.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[50:34]   [capture-loop] iter=200 t=37.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[50:43]   [capture-loop] iter=250 t=46.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=33
+[50:52]   [capture-loop] iter=300 t=55.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=32
+[51:01]   [capture-loop] iter=350 t=64.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[51:08]   Frame 4 saved (frame_003.jpg, t=70.2s)
+[51:08]   [capture-periodic] freeze=25ms shot=520ms unfreeze=19ms saved=True
+[51:10]   [capture-loop] iter=400 t=72.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[51:10]   Frame 5 saved (frame_004.jpg, t=72.9s)
+[51:10]   [capture-periodic] freeze=21ms shot=454ms unfreeze=21ms saved=True
+[51:19]   [capture-loop] iter=450 t=81.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[51:23]   Frame 6 saved (frame_005.jpg, t=85.5s)
+[51:23]   [capture-periodic] freeze=26ms shot=385ms unfreeze=19ms saved=True
+[51:27]   [capture-loop] iter=500 t=90.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[51:36]   [capture-loop] iter=550 t=99.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[51:45]   [capture-loop] iter=600 t=107.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[51:54]   [capture-loop] iter=650 t=116.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[52:02]   [capture-loop] iter=700 t=125.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[52:11]   [capture-loop] iter=750 t=134.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[52:20]   [capture-loop] iter=800 t=143.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[52:29]   [capture-loop] iter=850 t=152.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[52:38]   [capture-loop] iter=900 t=160.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[52:46]   [capture-loop] iter=950 t=169.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[52:55]   Frame 7 saved (frame_006.jpg, t=177.2s)
+[52:55]   [capture-periodic] freeze=30ms shot=503ms unfreeze=29ms saved=True
+[52:56]   [capture-loop] iter=1000 t=178.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[52:57]   Frame 8 saved (frame_007.jpg, t=179.9s)
+[52:57]   [capture-periodic] freeze=18ms shot=398ms unfreeze=19ms saved=True
+[53:00]   Frame 9 saved (frame_008.jpg, t=182.5s)
+[53:00]   [capture-periodic] freeze=19ms shot=412ms unfreeze=20ms saved=True
+[53:03]   Frame 10 saved (frame_009.jpg, t=185.2s)
+[53:03]   [capture-periodic] freeze=16ms shot=448ms unfreeze=22ms saved=True
+[53:04]   [capture-loop] iter=1050 t=187.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[53:05]   Frame 11 saved (frame_010.jpg, t=187.9s)
+[53:05]   [capture-periodic] freeze=20ms shot=419ms unfreeze=21ms saved=True
+[53:08]   Frame 12 saved (frame_011.jpg, t=190.6s)
+[53:08]   [capture-periodic] freeze=23ms shot=382ms unfreeze=22ms saved=True
+[53:11]   Frame 13 saved (frame_012.jpg, t=193.2s)
+[53:11]   [capture-periodic] freeze=17ms shot=410ms unfreeze=35ms saved=True
+[53:13]   Frame 14 saved (frame_013.jpg, t=195.9s)
+[53:13]   [capture-periodic] freeze=18ms shot=456ms unfreeze=19ms saved=True
+[53:14]   [capture-loop] iter=1100 t=196.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=37
+[53:16]   Frame 15 saved (frame_014.jpg, t=198.6s)
+[53:16]   [capture-periodic] freeze=17ms shot=396ms unfreeze=18ms saved=True
+[53:19]   Frame 16 saved (frame_015.jpg, t=201.2s)
+[53:19]   [capture-periodic] freeze=17ms shot=333ms unfreeze=17ms saved=True
+[53:21]   Frame 17 saved (frame_016.jpg, t=203.8s)
+[53:21]   [capture-periodic] freeze=20ms shot=413ms unfreeze=20ms saved=True
+[53:22]   [capture-loop] iter=1150 t=205.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[53:31]   [capture-loop] iter=1200 t=214.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[53:40]   [capture-loop] iter=1250 t=222.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[53:48]   [capture-loop] iter=1300 t=231.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[53:57]   [capture-loop] iter=1350 t=240.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[54:06]   [capture-loop] iter=1400 t=248.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[54:15]   [capture-loop] iter=1450 t=257.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[54:23]   [capture-loop] iter=1500 t=266.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[54:32]   [capture-loop] iter=1550 t=275.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[54:40]   [capture-loop] iter=1600 t=283.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=28
+[54:49]   [capture-loop] iter=1650 t=292.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[54:57]   Frame 18 saved (frame_017.jpg, t=299.5s)
+[54:57]   [capture-periodic] freeze=23ms shot=409ms unfreeze=22ms saved=True
+[54:58]   [capture-loop] iter=1700 t=301.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[55:00]   Frame 19 saved (frame_018.jpg, t=302.1s)
+[55:00]   [capture-periodic] freeze=16ms shot=398ms unfreeze=20ms saved=True
+[55:02]   Frame 20 saved (frame_019.jpg, t=304.8s)
+[55:02]   [capture-periodic] freeze=21ms shot=398ms unfreeze=23ms saved=True
+[55:05]   Frame 21 saved (frame_020.jpg, t=307.4s)
+[55:05]   [capture-periodic] freeze=1ms shot=520ms unfreeze=22ms saved=True
+[55:07]   Frame 22 saved (frame_021.jpg, t=310.0s)
+[55:07]   [capture-periodic] freeze=27ms shot=347ms unfreeze=21ms saved=True
+[55:08]   [capture-loop] iter=1750 t=310.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=27
+[55:10]   Frame 23 saved (frame_022.jpg, t=312.6s)
+[55:10]   [capture-periodic] freeze=17ms shot=434ms unfreeze=23ms saved=True
+[55:13]   Frame 24 saved (frame_023.jpg, t=315.2s)
+[55:13]   [capture-periodic] freeze=20ms shot=461ms unfreeze=20ms saved=True
+[55:15]   Frame 25 saved (frame_024.jpg, t=317.9s)
+[55:15]   [capture-periodic] freeze=23ms shot=398ms unfreeze=39ms saved=True
+[55:17]   [capture-loop] iter=1800 t=319.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[55:23]   Frame 26 saved (frame_025.jpg, t=325.4s)
+[55:23]   [capture-periodic] freeze=19ms shot=454ms unfreeze=35ms saved=True
+[55:25]   Frame 27 saved (frame_026.jpg, t=328.0s)
+[55:25]   [capture-periodic] freeze=17ms shot=387ms unfreeze=21ms saved=True
+[55:26]   [capture-loop] iter=1850 t=328.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[55:34]   [capture-loop] iter=1900 t=337.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[55:43]   [capture-loop] iter=1950 t=345.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[55:52]   [capture-loop] iter=2000 t=354.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[56:00]   [capture-loop] iter=2050 t=363.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[56:09]   [capture-loop] iter=2100 t=372.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[56:17]   [capture-loop] iter=2150 t=380.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[56:26]   [capture-loop] iter=2200 t=389.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[56:35]   [capture-loop] iter=2250 t=398.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[56:44]   [capture-loop] iter=2300 t=406.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[56:53]   [capture-loop] iter=2350 t=415.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[57:00]   Node executed (2 total), capturing...
+[57:01]   Frame 28 saved (frame_027.jpg, t=423.5s)
+[57:01]   [capture-node] freeze=18ms shot=419ms unfreeze=0ms saved=True
+[57:01]   Execution complete (t=423.5s)
+[57:01]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[57:01]   [3d-wait] Phase 1 done in 0.1s
+[57:01]   [3d-wait] Phase 2: iframes=1
+[57:01]   [3d-wait] iframe viewer_ready=False (matched 0 console logs)
+[57:01]   [3d-wait] Waiting for 'Loaded successfully' console message (timeout=60s)...
+[58:01]   [3d-wait] iframe wait exception: Timeout 60000ms exceeded while waiting for event "console"
+=========================== logs ===========================
+waiting for event "console"
+============================================================
+[58:01]   [3d-wait] Total 3D wait: 60.2s
+[58:01]   Captured 28 unique frames over 484.29s
+[58:01]   [debug] iframes: 1
+[58:01]   [debug]   iframe[0]: src=http://127.0.0.1:8188/extensions/ComfyUI-GeometryPack/viewer_vtk.html?v=17719394, canvas=588x545, rafFrozen=True
+[58:01]   [timing] trigger_3d_previews: 0.0s
+[58:06]   Saved high-quality screenshot: gaussian_generation_executed.png
+[58:06]   [timing] final_screenshot: 2.4s
+[58:07] Capturing execution frames: mesh_generation.json
+[58:07]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[58:07]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[58:10]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[58:10]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[58:10]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[58:11]   [Console-warning] WARNING: Multiple instances of Three.js being imported.
+[58:12]   [Console-error] Error loading extension /extensions/ComfyUI-GeometryPack/js/pointcloud_preview_vtk.js Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:83:1634)
+    at Proxy.wrappedAction (http://127.0.0.1:8188/assets/vendor-vue-DaLZjKA7.js:8:5819)
+    at Object.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:86:51130)
+    at ComfyApp.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:280:21199)
+    at http://127.0.0.1:8188/extensions/ComfyUI-GeometryPack/js/pointcloud_preview_vtk.js:13:5
+[58:12]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+[58:13]   [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+[58:15]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+[58:15]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+[58:21]   [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+[58:21]   [Console-error] Error loading model: zy: fetch for "http://127.0.0.1:8188/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_10&filename=mesh.glb" responded with 403: Forbidden
+    at http://127.0.0.1:8188/assets/vendor-three-DH0o8VQ7.js:3824:114758
+[58:21]   [Console-error] Failed to load resource: the server responded with a status of 403 (Forbidden)
+[58:21]   [Console-error] Error loading model: zy: fetch for "http://127.0.0.1:8188/api/view?type=output&subfolder=%2Fhome%2Fshadeform%2Fsam3dobjects%2FComfyUI%2Foutput%2Fsam3d_inference_10&filename=mesh.glb" responded with 403: Forbidden
+    at http://127.0.0.1:8188/assets/vendor-three-DH0o8VQ7.js:3824:114758
+[58:22]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[58:22]   Validating workflow...
+[58:22]   Queuing workflow for execution...
+[58:23]   Node executed (1 total), capturing...
+[58:24]   Frame 2 saved (frame_001.jpg, t=1.8s)
+[58:24]   [capture-node] freeze=25ms shot=404ms unfreeze=21ms saved=True
+[58:32]   [capture-loop] iter=50 t=10.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[58:41]   [capture-loop] iter=100 t=19.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[58:45]   Frame 3 saved (frame_002.jpg, t=22.3s)
+[58:45]   [capture-periodic] freeze=32ms shot=420ms unfreeze=23ms saved=True
+[58:50]   [capture-loop] iter=150 t=28.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[58:59]   [capture-loop] iter=200 t=37.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[59:08]   [capture-loop] iter=250 t=46.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[59:17]   [capture-loop] iter=300 t=55.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[59:26]   [capture-loop] iter=350 t=64.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[59:28]   Frame 4 saved (frame_003.jpg, t=66.1s)
+[59:28]   [capture-periodic] freeze=17ms shot=448ms unfreeze=22ms saved=True
+[59:31]   Frame 5 saved (frame_004.jpg, t=68.8s)
+[59:31]   [capture-periodic] freeze=23ms shot=677ms unfreeze=40ms saved=True
+[59:34]   Frame 6 saved (frame_005.jpg, t=71.8s)
+[59:34]   [capture-periodic] freeze=20ms shot=438ms unfreeze=4ms saved=True
+[59:35]   [capture-loop] iter=400 t=73.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[59:44]   [capture-loop] iter=450 t=81.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[59:44]   Frame 7 saved (frame_006.jpg, t=82.1s)
+[59:44]   [capture-periodic] freeze=19ms shot=540ms unfreeze=20ms saved=True
+[59:47]   Frame 8 saved (frame_007.jpg, t=84.8s)
+[59:47]   [capture-periodic] freeze=20ms shot=428ms unfreeze=23ms saved=True
+[59:53]   [capture-loop] iter=500 t=91.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[60:02]   [capture-loop] iter=550 t=99.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[60:11]   [capture-loop] iter=600 t=108.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=29
+[60:19]   [capture-loop] iter=650 t=117.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[60:28]   [capture-loop] iter=700 t=126.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[60:37]   [capture-loop] iter=750 t=135.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[60:45]   [capture-loop] iter=800 t=143.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[60:54]   [capture-loop] iter=850 t=152.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[61:03]   [capture-loop] iter=900 t=161.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[61:12]   [capture-loop] iter=950 t=170.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[61:21]   [capture-loop] iter=1000 t=178.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=15
+[61:24]   Frame 9 saved (frame_008.jpg, t=181.6s)
+[61:24]   [capture-periodic] freeze=18ms shot=507ms unfreeze=27ms saved=True
+[61:27]   Frame 10 saved (frame_009.jpg, t=184.4s)
+[61:27]   [capture-periodic] freeze=26ms shot=450ms unfreeze=23ms saved=True
+[61:29]   Frame 11 saved (frame_010.jpg, t=187.0s)
+[61:29]   [capture-periodic] freeze=17ms shot=417ms unfreeze=23ms saved=True
+[61:30]   [capture-loop] iter=1050 t=188.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[61:32]   Frame 12 saved (frame_011.jpg, t=189.6s)
+[61:32]   [capture-periodic] freeze=74ms shot=471ms unfreeze=20ms saved=True
+[61:35]   Frame 13 saved (frame_012.jpg, t=192.4s)
+[61:35]   [capture-periodic] freeze=19ms shot=422ms unfreeze=23ms saved=True
+[61:37]   Frame 14 saved (frame_013.jpg, t=195.0s)
+[61:37]   [capture-periodic] freeze=19ms shot=457ms unfreeze=28ms saved=True
+[61:39]   [capture-loop] iter=1100 t=197.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[61:40]   Frame 15 saved (frame_014.jpg, t=197.7s)
+[61:40]   [capture-periodic] freeze=19ms shot=418ms unfreeze=20ms saved=True
+[61:43]   Frame 16 saved (frame_015.jpg, t=200.3s)
+[61:43]   [capture-periodic] freeze=17ms shot=448ms unfreeze=66ms saved=True
+[61:45]   Frame 17 saved (frame_016.jpg, t=202.9s)
+[61:45]   [capture-periodic] freeze=18ms shot=404ms unfreeze=24ms saved=True
+[61:48]   Frame 18 saved (frame_017.jpg, t=205.5s)
+[61:48]   [capture-periodic] freeze=19ms shot=425ms unfreeze=21ms saved=True
+[61:49]   [capture-loop] iter=1150 t=206.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[61:50]   Frame 19 saved (frame_018.jpg, t=208.1s)
+[61:50]   [capture-periodic] freeze=8ms shot=393ms unfreeze=22ms saved=True
+[61:57]   [capture-loop] iter=1200 t=215.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[62:06]   [capture-loop] iter=1250 t=224.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[62:15]   [capture-loop] iter=1300 t=233.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[62:24]   [capture-loop] iter=1350 t=242.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[62:32]   [capture-loop] iter=1400 t=250.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[62:41]   [capture-loop] iter=1450 t=259.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[62:50]   [capture-loop] iter=1500 t=268.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[62:59]   [capture-loop] iter=1550 t=277.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=35
+[63:08]   Frame 20 saved (frame_019.jpg, t=285.5s)
+[63:08]   [capture-periodic] freeze=22ms shot=577ms unfreeze=20ms saved=True
+[63:09]   [capture-loop] iter=1600 t=286.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[63:11]   Frame 21 saved (frame_020.jpg, t=288.3s)
+[63:11]   [capture-periodic] freeze=18ms shot=455ms unfreeze=20ms saved=True
+[63:13]   Frame 22 saved (frame_021.jpg, t=291.0s)
+[63:13]   [capture-periodic] freeze=19ms shot=464ms unfreeze=23ms saved=True
+[63:16]   Frame 23 saved (frame_022.jpg, t=293.6s)
+[63:16]   [capture-periodic] freeze=22ms shot=348ms unfreeze=33ms saved=True
+[63:18]   [capture-loop] iter=1650 t=295.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[63:18]   Frame 24 saved (frame_023.jpg, t=296.1s)
+[63:18]   [capture-periodic] freeze=21ms shot=365ms unfreeze=19ms saved=True
+[63:21]   Frame 25 saved (frame_024.jpg, t=298.6s)
+[63:21]   [capture-periodic] freeze=19ms shot=439ms unfreeze=30ms saved=True
+[63:24]   Frame 26 saved (frame_025.jpg, t=301.3s)
+[63:24]   [capture-periodic] freeze=26ms shot=405ms unfreeze=18ms saved=True
+[63:26]   Frame 27 saved (frame_026.jpg, t=304.0s)
+[63:26]   [capture-periodic] freeze=57ms shot=418ms unfreeze=20ms saved=True
+[63:27]   [capture-loop] iter=1700 t=305.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[63:29]   Frame 28 saved (frame_027.jpg, t=306.7s)
+[63:29]   [capture-periodic] freeze=18ms shot=418ms unfreeze=19ms saved=True
+[63:36]   [capture-loop] iter=1750 t=313.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[63:37]   Frame 29 saved (frame_028.jpg, t=314.4s)
+[63:37]   [capture-periodic] freeze=24ms shot=451ms unfreeze=30ms saved=True
+[63:49]   [capture-loop] iter=1800 t=327.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[64:01]   [capture-loop] iter=1850 t=339.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[64:14]   [capture-loop] iter=1900 t=352.0s state={'complete': True, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=202
+[64:14]   Node executed (2 total), capturing...
+[64:14]   Frame 30 saved (frame_029.jpg, t=352.2s)
+[64:14]   [capture-node] freeze=19ms shot=463ms unfreeze=0ms saved=True
+[64:14]   Execution complete (t=352.2s)
+[64:15]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[65:15]   [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
+[65:15]   [3d-wait] Phase 2: iframes=0
+[65:15]   [3d-wait] Total 3D wait: 60.1s
+[65:15]   Captured 30 unique frames over 412.96s
+[65:15]   [debug] iframes: 0
+[65:15]   [timing] trigger_3d_previews: 0.0s
+[65:19]   Saved high-quality screenshot: mesh_generation_executed.png
+[65:19]   [timing] final_screenshot: 2.4s
+[65:20] Capturing execution frames: scene_generation.json
+[65:22]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[65:22]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[65:24]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[65:24]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[65:24]   [Console-error] Failed to load resource: the server responded with a status of 404 (Not Found)
+[65:25]   [Console-warning] WARNING: Multiple instances of Three.js being imported.
+[65:26]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui.js" is deprecated and will be removed in v1.34.
+[65:27]   [Console-error] Error loading extension /extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js Error: Extension named 'comfy3d.pointcloud.vtk' already registered.
+    at Proxy.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:83:1634)
+    at Proxy.wrappedAction (http://127.0.0.1:8188/assets/vendor-vue-DaLZjKA7.js:8:5819)
+    at Object.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:86:51130)
+    at ComfyApp.registerExtension (http://127.0.0.1:8188/assets/index-BFHZsBkN.js:280:21199)
+    at http://127.0.0.1:8188/extensions/ComfyUI-SAM3DObjects/js/pointcloud_preview_vtk.js:13:5
+[65:27]   [Console-warning] [MaskEditor] ComfyApp.open_maskeditor is deprecated. Plugins should migrate to using the command system or direct node context menu integration.
+[65:29]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/buttonGroup.js" is deprecated and will be removed in v1.34.
+[65:29]   [Console-warning] [ComfyUI Deprecated] Importing from "scripts/ui/components/button.js" is deprecated and will be removed in v1.34.
+[65:36]   [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+[65:36]   [Console-error] No input!
+[65:37]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[65:37]   Validating workflow...
+[65:37]   Queuing workflow for execution...
+[65:40]   Frame 2 saved (frame_001.jpg, t=3.0s)
+[65:40]   [capture-periodic] freeze=21ms shot=485ms unfreeze=26ms saved=True
+[65:43]   Frame 3 saved (frame_002.jpg, t=5.8s)
+[65:43]   [capture-periodic] freeze=22ms shot=384ms unfreeze=21ms saved=True
+[65:43]   Node executed (1 total), capturing...
+[65:45]   Frame 4 saved (frame_003.jpg, t=6.8s)
+[65:45]   [capture-node] freeze=191ms shot=671ms unfreeze=19ms saved=True
+[65:47]   Frame 5 saved (frame_004.jpg, t=9.9s)
+[65:47]   [capture-periodic] freeze=22ms shot=440ms unfreeze=23ms saved=True
+[65:48]   [capture-loop] iter=50 t=11.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[65:57]   [capture-loop] iter=100 t=19.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[66:00]   Frame 6 saved (frame_005.jpg, t=22.6s)
+[66:00]   [capture-periodic] freeze=19ms shot=458ms unfreeze=25ms saved=True
+[66:06]   [capture-loop] iter=150 t=28.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[66:14]   [capture-loop] iter=200 t=37.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[66:23]   [capture-loop] iter=250 t=45.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[66:28]   Frame 7 saved (frame_006.jpg, t=51.0s)
+[66:28]   [capture-periodic] freeze=29ms shot=472ms unfreeze=24ms saved=True
+[66:32]   [capture-loop] iter=300 t=55.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=28
+[66:34]   Frame 8 saved (frame_007.jpg, t=56.2s)
+[66:34]   [capture-periodic] freeze=25ms shot=1107ms unfreeze=29ms saved=True
+[66:37]   Frame 9 saved (frame_008.jpg, t=59.6s)
+[66:37]   [capture-periodic] freeze=27ms shot=483ms unfreeze=24ms saved=True
+[66:42]   [capture-loop] iter=350 t=65.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[66:51]   [capture-loop] iter=400 t=74.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[67:00]   [capture-loop] iter=450 t=83.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[67:09]   [capture-loop] iter=500 t=92.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[67:18]   [capture-loop] iter=550 t=100.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[67:27]   [capture-loop] iter=600 t=110.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[67:36]   [capture-loop] iter=650 t=118.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[67:45]   [capture-loop] iter=700 t=128.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[67:54]   [capture-loop] iter=750 t=136.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=27
+[68:03]   [capture-loop] iter=800 t=145.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[68:11]   [capture-loop] iter=850 t=154.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[68:20]   [capture-loop] iter=900 t=162.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[68:29]   [capture-loop] iter=950 t=172.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[68:38]   [capture-loop] iter=1000 t=180.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=32
+[68:47]   [capture-loop] iter=1050 t=189.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[68:55]   [capture-loop] iter=1100 t=198.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[69:04]   [capture-loop] iter=1150 t=207.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[69:13]   [capture-loop] iter=1200 t=216.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[69:22]   [capture-loop] iter=1250 t=224.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[69:31]   [capture-loop] iter=1300 t=234.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[69:40]   [capture-loop] iter=1350 t=242.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[69:49]   [capture-loop] iter=1400 t=252.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[69:57]   [capture-loop] iter=1450 t=260.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[70:07]   [capture-loop] iter=1500 t=269.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[70:15]   [capture-loop] iter=1550 t=278.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[70:24]   Frame 10 saved (frame_009.jpg, t=286.8s)
+[70:24]   [capture-periodic] freeze=21ms shot=452ms unfreeze=26ms saved=True
+[70:24]   [capture-loop] iter=1600 t=287.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[70:27]   Frame 11 saved (frame_010.jpg, t=289.4s)
+[70:27]   [capture-periodic] freeze=22ms shot=473ms unfreeze=28ms saved=True
+[70:33]   [capture-loop] iter=1650 t=296.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[70:42]   [capture-loop] iter=1700 t=305.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[70:51]   [capture-loop] iter=1750 t=314.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[71:00]   [capture-loop] iter=1800 t=323.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[71:09]   [capture-loop] iter=1850 t=332.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[71:18]   [capture-loop] iter=1900 t=341.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[71:28]   [capture-loop] iter=1950 t=350.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[71:36]   [capture-loop] iter=2000 t=359.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[71:46]   [capture-loop] iter=2050 t=369.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[71:55]   [capture-loop] iter=2100 t=378.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=29
+[72:05]   [capture-loop] iter=2150 t=387.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[72:14]   [capture-loop] iter=2200 t=396.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[72:23]   [capture-loop] iter=2250 t=406.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[72:32]   [capture-loop] iter=2300 t=415.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=157
+[72:37]   Frame 12 saved (frame_011.jpg, t=419.2s)
+[72:37]   [capture-periodic] freeze=17ms shot=719ms unfreeze=21ms saved=True
+[72:40]   Frame 13 saved (frame_012.jpg, t=422.1s)
+[72:40]   [capture-periodic] freeze=18ms shot=655ms unfreeze=26ms saved=True
+[72:43]   Frame 14 saved (frame_013.jpg, t=425.0s)
+[72:43]   [capture-periodic] freeze=16ms shot=1349ms unfreeze=28ms saved=True
+[72:44]   [capture-loop] iter=2350 t=427.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[72:51]   Frame 15 saved (frame_014.jpg, t=428.6s)
+[72:51]   [capture-periodic] freeze=19ms shot=5388ms unfreeze=20ms saved=True
+[72:54]   Frame 16 saved (frame_015.jpg, t=436.1s)
+[72:54]   [capture-periodic] freeze=19ms shot=603ms unfreeze=22ms saved=True
+[72:56]   Frame 17 saved (frame_016.jpg, t=438.9s)
+[72:56]   [capture-periodic] freeze=22ms shot=536ms unfreeze=22ms saved=True
+[72:58]   [capture-loop] iter=2400 t=441.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[72:59]   Frame 18 saved (frame_017.jpg, t=441.5s)
+[72:59]   [capture-periodic] freeze=38ms shot=576ms unfreeze=20ms saved=True
+[73:02]   Frame 19 saved (frame_018.jpg, t=444.3s)
+[73:02]   [capture-periodic] freeze=22ms shot=509ms unfreeze=25ms saved=True
+[73:04]   Frame 20 saved (frame_019.jpg, t=446.9s)
+[73:04]   [capture-periodic] freeze=22ms shot=436ms unfreeze=20ms saved=True
+[73:07]   Frame 21 saved (frame_020.jpg, t=449.6s)
+[73:07]   [capture-periodic] freeze=28ms shot=434ms unfreeze=19ms saved=True
+[73:08]   [capture-loop] iter=2450 t=451.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[73:10]   Frame 22 saved (frame_021.jpg, t=452.3s)
+[73:10]   [capture-periodic] freeze=24ms shot=421ms unfreeze=21ms saved=True
+[73:17]   [capture-loop] iter=2500 t=459.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[73:25]   Frame 23 saved (frame_022.jpg, t=468.0s)
+[73:25]   [capture-periodic] freeze=20ms shot=519ms unfreeze=25ms saved=True
+[73:26]   [capture-loop] iter=2550 t=469.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[73:28]   Frame 24 saved (frame_023.jpg, t=470.7s)
+[73:28]   [capture-periodic] freeze=19ms shot=591ms unfreeze=18ms saved=True
+[73:31]   Frame 25 saved (frame_024.jpg, t=473.6s)
+[73:31]   [capture-periodic] freeze=43ms shot=485ms unfreeze=26ms saved=True
+[73:34]   Frame 26 saved (frame_025.jpg, t=476.4s)
+[73:34]   [capture-periodic] freeze=22ms shot=568ms unfreeze=25ms saved=True
+[73:35]   [capture-loop] iter=2600 t=478.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[73:36]   Frame 27 saved (frame_026.jpg, t=479.1s)
+[73:36]   [capture-periodic] freeze=37ms shot=450ms unfreeze=22ms saved=True
+[73:39]   Frame 28 saved (frame_027.jpg, t=481.8s)
+[73:39]   [capture-periodic] freeze=19ms shot=511ms unfreeze=21ms saved=True
+[73:42]   Frame 29 saved (frame_028.jpg, t=484.6s)
+[73:42]   [capture-periodic] freeze=21ms shot=511ms unfreeze=21ms saved=True
+[73:45]   [capture-loop] iter=2650 t=488.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[73:47]   Frame 30 saved (frame_029.jpg, t=490.0s)
+[73:47]   [capture-periodic] freeze=24ms shot=572ms unfreeze=19ms saved=True
+[73:50]   Frame 31 saved (frame_030.jpg, t=492.7s)
+[73:50]   [capture-periodic] freeze=30ms shot=462ms unfreeze=22ms saved=True
+[73:53]   Frame 32 saved (frame_031.jpg, t=495.4s)
+[73:53]   [capture-periodic] freeze=21ms shot=461ms unfreeze=23ms saved=True
+[73:54]   [capture-loop] iter=2700 t=497.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[73:55]   Frame 33 saved (frame_032.jpg, t=498.0s)
+[73:55]   [capture-periodic] freeze=20ms shot=459ms unfreeze=23ms saved=True
+[74:04]   [capture-loop] iter=2750 t=506.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[74:09]   Frame 34 saved (frame_033.jpg, t=511.1s)
+[74:09]   [capture-periodic] freeze=18ms shot=564ms unfreeze=26ms saved=True
+[74:11]   Frame 35 saved (frame_034.jpg, t=513.9s)
+[74:11]   [capture-periodic] freeze=22ms shot=418ms unfreeze=20ms saved=True
+[74:13]   [capture-loop] iter=2800 t=516.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=33
+[74:14]   Frame 36 saved (frame_035.jpg, t=516.5s)
+[74:14]   [capture-periodic] freeze=20ms shot=501ms unfreeze=16ms saved=True
+[74:17]   Frame 37 saved (frame_036.jpg, t=519.1s)
+[74:17]   [capture-periodic] freeze=19ms shot=482ms unfreeze=21ms saved=True
+[74:19]   Frame 38 saved (frame_037.jpg, t=521.8s)
+[74:19]   [capture-periodic] freeze=22ms shot=501ms unfreeze=19ms saved=True
+[74:22]   Frame 39 saved (frame_038.jpg, t=524.5s)
+[74:22]   [capture-periodic] freeze=20ms shot=475ms unfreeze=28ms saved=True
+[74:23]   [capture-loop] iter=2850 t=525.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[74:25]   Frame 40 saved (frame_039.jpg, t=527.1s)
+[74:25]   [capture-periodic] freeze=28ms shot=539ms unfreeze=18ms saved=True
+[74:27]   Frame 41 saved (frame_040.jpg, t=529.8s)
+[74:27]   [capture-periodic] freeze=18ms shot=508ms unfreeze=24ms saved=True
+[74:32]   [capture-loop] iter=2900 t=534.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[74:33]   Frame 42 saved (frame_041.jpg, t=535.1s)
+[74:33]   [capture-periodic] freeze=22ms shot=515ms unfreeze=24ms saved=True
+[74:35]   Frame 43 saved (frame_042.jpg, t=537.9s)
+[74:35]   [capture-periodic] freeze=31ms shot=653ms unfreeze=4ms saved=True
+[74:38]   Frame 44 saved (frame_043.jpg, t=540.7s)
+[74:38]   [capture-periodic] freeze=21ms shot=457ms unfreeze=27ms saved=True
+[74:41]   [capture-loop] iter=2950 t=544.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[74:50]   [capture-loop] iter=3000 t=553.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[74:52]   Frame 45 saved (frame_044.jpg, t=553.8s)
+[74:52]   [capture-periodic] freeze=27ms shot=848ms unfreeze=26ms saved=True
+[74:54]   Frame 46 saved (frame_045.jpg, t=556.8s)
+[74:54]   [capture-periodic] freeze=27ms shot=494ms unfreeze=9ms saved=True
+[74:57]   Frame 47 saved (frame_046.jpg, t=559.5s)
+[74:57]   [capture-periodic] freeze=20ms shot=455ms unfreeze=20ms saved=True
+[75:00]   [capture-loop] iter=3050 t=563.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[75:02]   Frame 48 saved (frame_047.jpg, t=565.0s)
+[75:02]   [capture-periodic] freeze=16ms shot=522ms unfreeze=41ms saved=True
+[75:05]   Frame 49 saved (frame_048.jpg, t=568.0s)
+[75:05]   [capture-periodic] freeze=19ms shot=621ms unfreeze=27ms saved=True
+[75:08]   Frame 50 saved (frame_049.jpg, t=570.8s)
+[75:08]   [capture-periodic] freeze=36ms shot=484ms unfreeze=20ms saved=True
+[75:10]   [capture-loop] iter=3100 t=573.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[75:11]   Frame 51 saved (frame_050.jpg, t=573.5s)
+[75:11]   [capture-periodic] freeze=21ms shot=469ms unfreeze=22ms saved=True
+[75:14]   Frame 52 saved (frame_051.jpg, t=576.3s)
+[75:14]   [capture-periodic] freeze=25ms shot=1119ms unfreeze=24ms saved=True
+[75:17]   Frame 53 saved (frame_052.jpg, t=579.6s)
+[75:17]   [capture-periodic] freeze=20ms shot=680ms unfreeze=22ms saved=True
+[75:20]   [capture-loop] iter=3150 t=583.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[75:23]   Frame 54 saved (frame_053.jpg, t=585.3s)
+[75:23]   [capture-periodic] freeze=28ms shot=469ms unfreeze=20ms saved=True
+[75:25]   Frame 55 saved (frame_054.jpg, t=587.9s)
+[75:25]   [capture-periodic] freeze=20ms shot=463ms unfreeze=25ms saved=True
+[75:29]   [capture-loop] iter=3200 t=592.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[75:36]   Frame 56 saved (frame_055.jpg, t=598.5s)
+[75:36]   [capture-periodic] freeze=21ms shot=749ms unfreeze=24ms saved=True
+[75:39]   Frame 57 saved (frame_056.jpg, t=601.5s)
+[75:39]   [capture-periodic] freeze=28ms shot=679ms unfreeze=21ms saved=True
+[75:39]   [capture-loop] iter=3250 t=602.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[75:42]   Frame 58 saved (frame_057.jpg, t=604.5s)
+[75:42]   [capture-periodic] freeze=32ms shot=506ms unfreeze=19ms saved=True
+[75:47]   Frame 59 saved (frame_058.jpg, t=609.8s)
+[75:47]   [capture-periodic] freeze=18ms shot=435ms unfreeze=25ms saved=True
+[75:49]   [capture-loop] iter=3300 t=611.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[75:50]   Frame 60 saved (frame_059.jpg, t=612.5s)
+[75:50]   [capture-periodic] freeze=17ms shot=665ms unfreeze=20ms saved=True
+[75:53]   Frame 61 saved (frame_060.jpg, t=615.4s)
+[75:53]   [capture-periodic] freeze=25ms shot=779ms unfreeze=20ms saved=True
+[75:56]   Frame 62 saved (frame_061.jpg, t=618.4s)
+[75:56]   [capture-periodic] freeze=18ms shot=523ms unfreeze=19ms saved=True
+[75:59]   [capture-loop] iter=3350 t=622.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[76:02]   Frame 63 saved (frame_062.jpg, t=624.1s)
+[76:02]   [capture-periodic] freeze=34ms shot=487ms unfreeze=20ms saved=True
+[76:08]   Frame 64 saved (frame_063.jpg, t=629.6s)
+[76:08]   [capture-periodic] freeze=19ms shot=1451ms unfreeze=22ms saved=True
+[76:09]   [capture-loop] iter=3400 t=632.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[76:11]   Frame 65 saved (frame_064.jpg, t=633.4s)
+[76:11]   [capture-periodic] freeze=24ms shot=438ms unfreeze=23ms saved=True
+[76:19]   [capture-loop] iter=3450 t=642.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[76:21]   Frame 66 saved (frame_065.jpg, t=644.0s)
+[76:21]   [capture-periodic] freeze=18ms shot=455ms unfreeze=20ms saved=True
+[76:25]   Frame 67 saved (frame_066.jpg, t=646.6s)
+[76:25]   [capture-periodic] freeze=18ms shot=1694ms unfreeze=20ms saved=True
+[76:29]   Frame 68 saved (frame_067.jpg, t=650.6s)
+[76:29]   [capture-periodic] freeze=22ms shot=1095ms unfreeze=21ms saved=True
+[76:30]   [capture-loop] iter=3500 t=653.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=15
+[76:32]   Frame 69 saved (frame_068.jpg, t=654.0s)
+[76:32]   [capture-periodic] freeze=19ms shot=1651ms unfreeze=21ms saved=True
+[76:35]   Frame 70 saved (frame_069.jpg, t=657.8s)
+[76:35]   [capture-periodic] freeze=33ms shot=410ms unfreeze=20ms saved=True
+[76:41]   Frame 71 saved (frame_070.jpg, t=663.1s)
+[76:41]   [capture-periodic] freeze=18ms shot=726ms unfreeze=26ms saved=True
+[76:41]   [capture-loop] iter=3550 t=664.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[76:43]   Frame 72 saved (frame_071.jpg, t=666.0s)
+[76:43]   [capture-periodic] freeze=20ms shot=481ms unfreeze=21ms saved=True
+[76:46]   Frame 73 saved (frame_072.jpg, t=668.6s)
+[76:46]   [capture-periodic] freeze=21ms shot=448ms unfreeze=28ms saved=True
+[76:49]   Frame 74 saved (frame_073.jpg, t=671.3s)
+[76:49]   [capture-periodic] freeze=28ms shot=401ms unfreeze=20ms saved=True
+[76:50]   [capture-loop] iter=3600 t=673.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[76:55]   Frame 75 saved (frame_074.jpg, t=676.8s)
+[76:55]   [capture-periodic] freeze=21ms shot=978ms unfreeze=21ms saved=True
+[76:57]   Frame 76 saved (frame_075.jpg, t=680.0s)
+[76:57]   [capture-periodic] freeze=26ms shot=485ms unfreeze=33ms saved=True
+[76:59]   [capture-loop] iter=3650 t=682.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[77:09]   Frame 77 saved (frame_076.jpg, t=691.8s)
+[77:09]   [capture-periodic] freeze=18ms shot=496ms unfreeze=20ms saved=True
+[77:10]   [capture-loop] iter=3700 t=693.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[77:12]   Frame 78 saved (frame_077.jpg, t=694.5s)
+[77:12]   [capture-periodic] freeze=18ms shot=792ms unfreeze=21ms saved=True
+[77:15]   Frame 79 saved (frame_078.jpg, t=697.5s)
+[77:15]   [capture-periodic] freeze=25ms shot=529ms unfreeze=20ms saved=True
+[77:20]   Frame 80 saved (frame_079.jpg, t=702.7s)
+[77:20]   [capture-periodic] freeze=17ms shot=731ms unfreeze=18ms saved=True
+[77:21]   [capture-loop] iter=3750 t=703.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[77:28]   Frame 81 saved (frame_080.jpg, t=706.0s)
+[77:28]   [capture-periodic] freeze=168ms shot=4111ms unfreeze=994ms saved=True
+[77:31]   Frame 82 saved (frame_081.jpg, t=713.4s)
+[77:31]   [capture-periodic] freeze=18ms shot=454ms unfreeze=49ms saved=True
+[77:34]   Frame 83 saved (frame_082.jpg, t=716.1s)
+[77:34]   [capture-periodic] freeze=17ms shot=601ms unfreeze=22ms saved=True
+[77:35]   [capture-loop] iter=3800 t=718.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[77:36]   Frame 84 saved (frame_083.jpg, t=719.0s)
+[77:36]   [capture-periodic] freeze=20ms shot=438ms unfreeze=20ms saved=True
+[77:39]   Frame 85 saved (frame_084.jpg, t=721.6s)
+[77:39]   [capture-periodic] freeze=23ms shot=465ms unfreeze=23ms saved=True
+[77:42]   Frame 86 saved (frame_085.jpg, t=724.4s)
+[77:42]   [capture-periodic] freeze=20ms shot=815ms unfreeze=21ms saved=True
+[77:45]   [capture-loop] iter=3850 t=728.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[77:54]   [capture-loop] iter=3900 t=737.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[78:03]   [capture-loop] iter=3950 t=746.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[78:12]   [capture-loop] iter=4000 t=755.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[78:22]   [capture-loop] iter=4050 t=765.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[78:31]   [capture-loop] iter=4100 t=773.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[78:40]   [capture-loop] iter=4150 t=783.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[78:53]   [capture-loop] iter=4200 t=796.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[79:13]   [capture-loop] iter=4250 t=816.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[79:34]   [capture-loop] iter=4300 t=836.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[80:00]   [capture-loop] iter=4350 t=863.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[80:09]   [capture-loop] iter=4400 t=872.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[80:18]   [capture-loop] iter=4450 t=881.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[80:29]   [capture-loop] iter=4500 t=892.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=394
+[80:38]   [capture-loop] iter=4550 t=901.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[80:48]   [capture-loop] iter=4600 t=911.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[80:57]   [capture-loop] iter=4650 t=920.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[81:06]   [capture-loop] iter=4700 t=929.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[81:15]   [capture-loop] iter=4750 t=938.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[83:14]   [capture-loop] iter=4800 t=1057.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=11
+[83:20]   Frame 87 saved (frame_086.jpg, t=1062.8s)
+[83:20]   [capture-periodic] freeze=22ms shot=458ms unfreeze=21ms saved=True
+[83:23]   Frame 88 saved (frame_087.jpg, t=1065.4s)
+[83:23]   [capture-periodic] freeze=30ms shot=528ms unfreeze=86ms saved=True
+[83:24]   [capture-loop] iter=4850 t=1066.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=36
+[83:26]   Frame 89 saved (frame_088.jpg, t=1068.2s)
+[83:26]   [capture-periodic] freeze=26ms shot=531ms unfreeze=26ms saved=True
+[83:28]   Frame 90 saved (frame_089.jpg, t=1070.9s)
+[83:28]   [capture-periodic] freeze=23ms shot=651ms unfreeze=32ms saved=True
+[83:31]   Frame 91 saved (frame_090.jpg, t=1073.7s)
+[83:31]   [capture-periodic] freeze=25ms shot=418ms unfreeze=26ms saved=True
+[83:33]   [capture-loop] iter=4900 t=1076.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[83:34]   Frame 92 saved (frame_091.jpg, t=1076.3s)
+[83:34]   [capture-periodic] freeze=33ms shot=441ms unfreeze=21ms saved=True
+[83:36]   Frame 93 saved (frame_092.jpg, t=1079.0s)
+[83:36]   [capture-periodic] freeze=21ms shot=495ms unfreeze=24ms saved=True
+[83:39]   Frame 94 saved (frame_093.jpg, t=1081.8s)
+[83:39]   [capture-periodic] freeze=26ms shot=563ms unfreeze=38ms saved=True
+[83:42]   Frame 95 saved (frame_094.jpg, t=1084.5s)
+[83:42]   [capture-periodic] freeze=21ms shot=616ms unfreeze=49ms saved=True
+[83:43]   [capture-loop] iter=4950 t=1086.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[83:50]   Frame 96 saved (frame_095.jpg, t=1092.3s)
+[83:50]   [capture-periodic] freeze=33ms shot=550ms unfreeze=50ms saved=True
+[83:52]   Frame 97 saved (frame_096.jpg, t=1095.1s)
+[83:53]   [capture-periodic] freeze=20ms shot=484ms unfreeze=22ms saved=True
+[83:53]   [capture-loop] iter=5000 t=1096.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[83:55]   Frame 98 saved (frame_097.jpg, t=1097.8s)
+[83:55]   [capture-periodic] freeze=26ms shot=413ms unfreeze=19ms saved=True
+[83:58]   Frame 99 saved (frame_098.jpg, t=1100.5s)
+[83:58]   [capture-periodic] freeze=29ms shot=373ms unfreeze=20ms saved=True
+[84:00]   Frame 100 saved (frame_099.jpg, t=1103.0s)
+[84:00]   [capture-periodic] freeze=20ms shot=461ms unfreeze=21ms saved=True
+[84:02]   [capture-loop] iter=5050 t=1104.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[84:03]   Frame 101 saved (frame_100.jpg, t=1105.7s)
+[84:03]   [capture-periodic] freeze=20ms shot=530ms unfreeze=25ms saved=True
+[84:06]   Frame 102 saved (frame_101.jpg, t=1108.4s)
+[84:06]   [capture-periodic] freeze=17ms shot=405ms unfreeze=30ms saved=True
+[84:08]   Frame 103 saved (frame_102.jpg, t=1111.0s)
+[84:08]   [capture-periodic] freeze=18ms shot=418ms unfreeze=21ms saved=True
+[84:11]   Frame 104 saved (frame_103.jpg, t=1113.6s)
+[84:11]   [capture-periodic] freeze=19ms shot=447ms unfreeze=21ms saved=True
+[84:11]   [capture-loop] iter=5100 t=1114.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[84:14]   Frame 105 saved (frame_104.jpg, t=1116.2s)
+[84:14]   [capture-periodic] freeze=21ms shot=506ms unfreeze=23ms saved=True
+[84:19]   Frame 106 saved (frame_105.jpg, t=1121.5s)
+[84:19]   [capture-periodic] freeze=19ms shot=458ms unfreeze=40ms saved=True
+[84:20]   [capture-loop] iter=5150 t=1123.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[84:21]   Frame 107 saved (frame_106.jpg, t=1124.2s)
+[84:21]   [capture-periodic] freeze=15ms shot=405ms unfreeze=19ms saved=True
+[84:24]   Frame 108 saved (frame_107.jpg, t=1126.8s)
+[84:24]   [capture-periodic] freeze=22ms shot=404ms unfreeze=19ms saved=True
+[84:27]   Frame 109 saved (frame_108.jpg, t=1129.5s)
+[84:27]   [capture-periodic] freeze=19ms shot=521ms unfreeze=19ms saved=True
+[84:29]   Frame 110 saved (frame_109.jpg, t=1132.2s)
+[84:29]   [capture-periodic] freeze=39ms shot=423ms unfreeze=30ms saved=True
+[84:30]   [capture-loop] iter=5200 t=1133.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=30
+[84:32]   Frame 111 saved (frame_110.jpg, t=1134.8s)
+[84:32]   [capture-periodic] freeze=23ms shot=401ms unfreeze=21ms saved=True
+[84:35]   Frame 112 saved (frame_111.jpg, t=1137.5s)
+[84:35]   [capture-periodic] freeze=19ms shot=482ms unfreeze=32ms saved=True
+[84:38]   Frame 113 saved (frame_112.jpg, t=1140.2s)
+[84:38]   [capture-periodic] freeze=30ms shot=624ms unfreeze=21ms saved=True
+[84:39]   [capture-loop] iter=5250 t=1142.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[84:40]   Frame 114 saved (frame_113.jpg, t=1143.0s)
+[84:40]   [capture-periodic] freeze=18ms shot=414ms unfreeze=19ms saved=True
+[84:43]   Frame 115 saved (frame_114.jpg, t=1145.6s)
+[84:43]   [capture-periodic] freeze=18ms shot=425ms unfreeze=21ms saved=True
+[84:46]   Frame 116 saved (frame_115.jpg, t=1148.3s)
+[84:46]   [capture-periodic] freeze=8ms shot=396ms unfreeze=24ms saved=True
+[84:48]   [capture-loop] iter=5300 t=1150.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=36
+[84:48]   Frame 117 saved (frame_116.jpg, t=1150.9s)
+[84:48]   [capture-periodic] freeze=15ms shot=421ms unfreeze=20ms saved=True
+[84:51]   Frame 118 saved (frame_117.jpg, t=1153.6s)
+[84:51]   [capture-periodic] freeze=18ms shot=463ms unfreeze=24ms saved=True
+[84:54]   Frame 119 saved (frame_118.jpg, t=1156.3s)
+[84:54]   [capture-periodic] freeze=17ms shot=431ms unfreeze=22ms saved=True
+[84:56]   Frame 120 saved (frame_119.jpg, t=1159.0s)
+[84:56]   [capture-periodic] freeze=15ms shot=384ms unfreeze=19ms saved=True
+[84:57]   [capture-loop] iter=5350 t=1160.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[84:59]   Frame 121 saved (frame_120.jpg, t=1161.5s)
+[84:59]   [capture-periodic] freeze=21ms shot=444ms unfreeze=20ms saved=True
+[85:04]   Frame 122 saved (frame_121.jpg, t=1166.8s)
+[85:04]   [capture-periodic] freeze=17ms shot=452ms unfreeze=17ms saved=True
+[85:06]   [capture-loop] iter=5400 t=1169.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[85:07]   Frame 123 saved (frame_122.jpg, t=1169.4s)
+[85:07]   [capture-periodic] freeze=16ms shot=409ms unfreeze=32ms saved=True
+[85:09]   Frame 124 saved (frame_123.jpg, t=1172.0s)
+[85:09]   [capture-periodic] freeze=18ms shot=410ms unfreeze=25ms saved=True
+[85:12]   Frame 125 saved (frame_124.jpg, t=1174.6s)
+[85:12]   [capture-periodic] freeze=19ms shot=492ms unfreeze=20ms saved=True
+[85:15]   Frame 126 saved (frame_125.jpg, t=1177.2s)
+[85:15]   [capture-periodic] freeze=18ms shot=421ms unfreeze=19ms saved=True
+[85:15]   [capture-loop] iter=5450 t=1178.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[85:17]   Frame 127 saved (frame_126.jpg, t=1179.9s)
+[85:17]   [capture-periodic] freeze=18ms shot=394ms unfreeze=72ms saved=True
+[85:20]   Frame 128 saved (frame_127.jpg, t=1182.6s)
+[85:20]   [capture-periodic] freeze=17ms shot=385ms unfreeze=19ms saved=True
+[85:22]   Frame 129 saved (frame_128.jpg, t=1185.2s)
+[85:22]   [capture-periodic] freeze=18ms shot=374ms unfreeze=18ms saved=True
+[85:24]   [capture-loop] iter=5500 t=1187.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[85:28]   Frame 130 saved (frame_129.jpg, t=1190.3s)
+[85:28]   [capture-periodic] freeze=19ms shot=404ms unfreeze=21ms saved=True
+[85:30]   Frame 131 saved (frame_130.jpg, t=1193.0s)
+[85:30]   [capture-periodic] freeze=19ms shot=431ms unfreeze=19ms saved=True
+[85:32]   [capture-loop] iter=5550 t=1195.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[85:33]   Frame 132 saved (frame_131.jpg, t=1195.6s)
+[85:33]   [capture-periodic] freeze=20ms shot=400ms unfreeze=19ms saved=True
+[85:36]   Frame 133 saved (frame_132.jpg, t=1198.2s)
+[85:36]   [capture-periodic] freeze=18ms shot=442ms unfreeze=20ms saved=True
+[85:38]   Frame 134 saved (frame_133.jpg, t=1200.8s)
+[85:38]   [capture-periodic] freeze=15ms shot=448ms unfreeze=19ms saved=True
+[85:41]   Frame 135 saved (frame_134.jpg, t=1203.5s)
+[85:41]   [capture-periodic] freeze=16ms shot=463ms unfreeze=21ms saved=True
+[85:42]   [capture-loop] iter=5600 t=1205.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=40
+[85:44]   Frame 136 saved (frame_135.jpg, t=1206.3s)
+[85:44]   [capture-periodic] freeze=32ms shot=426ms unfreeze=21ms saved=True
+[85:46]   Frame 137 saved (frame_136.jpg, t=1208.9s)
+[85:46]   [capture-periodic] freeze=18ms shot=404ms unfreeze=19ms saved=True
+[85:51]   [capture-loop] iter=5650 t=1213.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[85:51]   Frame 138 saved (frame_137.jpg, t=1214.1s)
+[85:51]   [capture-periodic] freeze=20ms shot=438ms unfreeze=22ms saved=True
+[85:54]   Frame 139 saved (frame_138.jpg, t=1216.7s)
+[85:54]   [capture-periodic] freeze=20ms shot=370ms unfreeze=23ms saved=True
+[85:57]   Frame 140 saved (frame_139.jpg, t=1219.3s)
+[85:57]   [capture-periodic] freeze=22ms shot=465ms unfreeze=20ms saved=True
+[85:59]   Frame 141 saved (frame_140.jpg, t=1222.0s)
+[85:59]   [capture-periodic] freeze=22ms shot=425ms unfreeze=32ms saved=True
+[86:00]   [capture-loop] iter=5700 t=1223.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[86:02]   Frame 142 saved (frame_141.jpg, t=1224.7s)
+[86:02]   [capture-periodic] freeze=17ms shot=521ms unfreeze=20ms saved=True
+[86:05]   Frame 143 saved (frame_142.jpg, t=1227.5s)
+[86:05]   [capture-periodic] freeze=18ms shot=476ms unfreeze=23ms saved=True
+[86:08]   Frame 144 saved (frame_143.jpg, t=1230.2s)
+[86:08]   [capture-periodic] freeze=18ms shot=418ms unfreeze=26ms saved=True
+[86:09]   [capture-loop] iter=5750 t=1232.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[86:10]   Frame 145 saved (frame_144.jpg, t=1232.8s)
+[86:10]   [capture-periodic] freeze=26ms shot=433ms unfreeze=19ms saved=True
+[86:13]   Frame 146 saved (frame_145.jpg, t=1235.5s)
+[86:13]   [capture-periodic] freeze=23ms shot=478ms unfreeze=20ms saved=True
+[86:18]   [capture-loop] iter=5800 t=1241.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[86:21]   Frame 147 saved (frame_146.jpg, t=1243.3s)
+[86:21]   [capture-periodic] freeze=8ms shot=426ms unfreeze=18ms saved=True
+[86:26]   [capture-loop] iter=5850 t=1249.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[86:28]   Frame 148 saved (frame_147.jpg, t=1250.8s)
+[86:28]   [capture-periodic] freeze=24ms shot=681ms unfreeze=23ms saved=True
+[86:31]   Frame 149 saved (frame_148.jpg, t=1253.7s)
+[86:31]   [capture-periodic] freeze=23ms shot=548ms unfreeze=25ms saved=True
+[86:36]   [capture-loop] iter=5900 t=1258.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[86:45]   [capture-loop] iter=5950 t=1267.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[86:53]   [capture-loop] iter=6000 t=1276.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[87:01]   [capture-loop] iter=6050 t=1284.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[87:11]   [capture-loop] iter=6100 t=1294.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[87:19]   [capture-loop] iter=6150 t=1302.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[87:29]   [capture-loop] iter=6200 t=1312.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[87:38]   [capture-loop] iter=6250 t=1321.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[87:47]   Frame 150 saved (frame_149.jpg, t=1330.1s)
+[87:47]   [capture-periodic] freeze=18ms shot=424ms unfreeze=19ms saved=True
+[87:48]   [capture-loop] iter=6300 t=1331.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[87:50]   Frame 151 saved (frame_150.jpg, t=1332.8s)
+[87:50]   [capture-periodic] freeze=22ms shot=466ms unfreeze=27ms saved=True
+[87:53]   Frame 152 saved (frame_151.jpg, t=1335.6s)
+[87:53]   [capture-periodic] freeze=17ms shot=401ms unfreeze=17ms saved=True
+[87:56]   [capture-loop] iter=6350 t=1339.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[88:05]   [capture-loop] iter=6400 t=1348.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=21
+[88:14]   [capture-loop] iter=6450 t=1357.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[88:22]   [capture-loop] iter=6500 t=1365.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[88:31]   [capture-loop] iter=6550 t=1373.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[88:40]   [capture-loop] iter=6600 t=1383.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[88:49]   [capture-loop] iter=6650 t=1392.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[88:59]   [capture-loop] iter=6700 t=1402.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[89:08]   [capture-loop] iter=6750 t=1411.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[89:18]   [capture-loop] iter=6800 t=1421.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[89:27]   Frame 153 saved (frame_152.jpg, t=1429.6s)
+[89:27]   [capture-periodic] freeze=17ms shot=417ms unfreeze=27ms saved=True
+[89:27]   [capture-loop] iter=6850 t=1430.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[89:30]   Frame 154 saved (frame_153.jpg, t=1432.3s)
+[89:30]   [capture-periodic] freeze=18ms shot=435ms unfreeze=24ms saved=True
+[89:36]   [capture-loop] iter=6900 t=1439.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[89:44]   [capture-loop] iter=6950 t=1447.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[89:54]   [capture-loop] iter=7000 t=1457.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=30
+[90:03]   [capture-loop] iter=7050 t=1466.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[90:13]   [capture-loop] iter=7100 t=1475.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[90:21]   Frame 155 saved (frame_154.jpg, t=1483.3s)
+[90:21]   [capture-periodic] freeze=16ms shot=432ms unfreeze=25ms saved=True
+[90:22]   [capture-loop] iter=7150 t=1484.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[90:23]   Frame 156 saved (frame_155.jpg, t=1486.0s)
+[90:23]   [capture-periodic] freeze=20ms shot=384ms unfreeze=25ms saved=True
+[90:30]   [capture-loop] iter=7200 t=1493.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[90:39]   [capture-loop] iter=7250 t=1502.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[90:48]   [capture-loop] iter=7300 t=1510.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[90:56]   [capture-loop] iter=7350 t=1519.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[91:05]   [capture-loop] iter=7400 t=1528.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[91:14]   [capture-loop] iter=7450 t=1537.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[91:24]   [capture-loop] iter=7500 t=1547.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[91:33]   [capture-loop] iter=7550 t=1556.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[91:41]   [capture-loop] iter=7600 t=1564.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[91:51]   [capture-loop] iter=7650 t=1574.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[92:00]   [capture-loop] iter=7700 t=1583.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=24
+[92:01]   Frame 157 saved (frame_156.jpg, t=1583.7s)
+[92:01]   [capture-periodic] freeze=37ms shot=446ms unfreeze=19ms saved=True
+[92:04]   Frame 158 saved (frame_157.jpg, t=1586.4s)
+[92:04]   [capture-periodic] freeze=17ms shot=429ms unfreeze=23ms saved=True
+[92:09]   [capture-loop] iter=7750 t=1592.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[92:18]   [capture-loop] iter=7800 t=1600.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[92:26]   [capture-loop] iter=7850 t=1609.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=19
+[92:36]   [capture-loop] iter=7900 t=1619.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[92:44]   [capture-loop] iter=7950 t=1627.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[92:54]   [capture-loop] iter=8000 t=1637.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[93:03]   [capture-loop] iter=8050 t=1646.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[93:12]   [capture-loop] iter=8100 t=1655.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=17
+[93:18]   Frame 159 saved (frame_158.jpg, t=1660.8s)
+[93:18]   [capture-periodic] freeze=32ms shot=447ms unfreeze=22ms saved=True
+[93:21]   Frame 160 saved (frame_159.jpg, t=1663.5s)
+[93:21]   [capture-periodic] freeze=17ms shot=422ms unfreeze=20ms saved=True
+[93:22]   [capture-loop] iter=8150 t=1664.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[93:31]   [capture-loop] iter=8200 t=1673.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[93:40]   [capture-loop] iter=8250 t=1683.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[93:49]   [capture-loop] iter=8300 t=1692.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[93:58]   [capture-loop] iter=8350 t=1701.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=26
+[93:58]   Frame 161 saved (frame_160.jpg, t=1701.0s)
+[93:58]   [capture-periodic] freeze=21ms shot=391ms unfreeze=20ms saved=True
+[94:01]   Frame 162 saved (frame_161.jpg, t=1703.6s)
+[94:01]   [capture-periodic] freeze=16ms shot=406ms unfreeze=17ms saved=True
+[94:07]   [capture-loop] iter=8400 t=1710.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=20
+[94:15]   [capture-loop] iter=8450 t=1718.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=22
+[94:25]   [capture-loop] iter=8500 t=1728.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[94:34]   [capture-loop] iter=8550 t=1737.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=30
+[94:43]   [capture-loop] iter=8600 t=1746.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=23
+[94:53]   [capture-loop] iter=8650 t=1755.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=16
+[94:57]   Frame 163 saved (frame_162.jpg, t=1759.9s)
+[94:57]   [capture-periodic] freeze=18ms shot=421ms unfreeze=41ms saved=True
+[95:00]   Frame 164 saved (frame_163.jpg, t=1762.5s)
+[95:00]   [capture-periodic] freeze=18ms shot=606ms unfreeze=20ms saved=True
+[95:02]   [capture-loop] iter=8700 t=1765.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=18
+[95:11]   [capture-loop] iter=8750 t=1774.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=25
+[95:20]   [capture-loop] iter=8800 t=1782.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=36
+[95:29]   [capture-loop] iter=8850 t=1792.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=29
+[95:31]   Frame 165 saved (frame_164.jpg, t=1793.6s)
+[95:31]   [capture-periodic] freeze=17ms shot=459ms unfreeze=55ms saved=True
+[95:31]   Node executed (2 total), capturing...
+[95:32]   [Console-error] No input!
+[95:32]   Frame 166 saved (frame_165.jpg, t=1794.5s)
+[95:32]   [capture-node] freeze=19ms shot=538ms unfreeze=13ms saved=True
+[95:32]   Node executed (3 total), capturing...
+[95:33]   [Console-warning] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+[95:35]   Frame 167 saved (frame_166.jpg, t=1795.6s)
+[95:35]   [capture-node] freeze=543ms shot=1763ms unfreeze=14ms saved=True
+[95:37]   Frame 168 saved (frame_167.jpg, t=1800.1s)
+[95:37]   [capture-periodic] freeze=17ms shot=457ms unfreeze=19ms saved=True
+[95:41]   [capture-loop] iter=8900 t=1804.4s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=21
+[95:50]   [capture-loop] iter=8950 t=1813.3s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=19
+[95:58]   [capture-loop] iter=9000 t=1821.5s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=19
+[96:07]   [capture-loop] iter=9050 t=1829.9s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=24
+[96:11]   Execution complete (t=1834.3s)
+[96:11]   Execution error: {'prompt_id': '74489756-c51b-4023-85a1-6b578e94e77d', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['78', '99', '80', '87', '77', '59', '82', '106', '85', '74', '75'], 'exception_message': '(\'Unable to load EGL library\', "Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 67, in EGL\n    return ctypesloader.loadLibrary(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\ctypesloader.py", line 45, in loadLibrary\n    return dllType( name, mode )\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\ctypes\\__init__.py", line 379, in __init__\n    self._handle = _dlopen(self._name, mode)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: ("Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File "C:\\WINDOWS\\TEMP\\comfyui_pvenv_qn0909n8\\persistent_worker.py", line 1143, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\projection_overlay.py", line 179, in create_overlay\n    overlay = self._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\projection_overlay.py", line 352, in _render_3d_mesh_textured\n    renderer = pyrender.OffscreenRenderer(W, H)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\offscreen.py", line 31, in __init__\n    self._create()\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\offscreen.py", line 135, in _create\n    from pyrender.platforms import egl\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\platforms\\egl.py", line 25, in <module>\n    _ensure_egl_loaded()\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\platforms\\egl.py", line 22, in _ensure_egl_loaded\n    plugin.install(vars(OpenGL.platform))\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 92, in install\n    namespace[ name ] = getattr(self,name,None)\n                        ^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 14, in __get__\n    value = self.fget( obj )\n            ^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 93, in GetCurrentContext\n    return self.EGL.eglGetCurrentContext\n           ^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 14, in __get__\n    value = self.fget( obj )\n            ^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 73, in EGL\n    raise ImportError("Unable to load EGL library", *err.args)\nImportError: (\'Unable to load EGL library\', "Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 527, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 331, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 305, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 293, in process_inputs\n    result = f(**inputs)\n', '  File "E:\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 352, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "E:\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 2376, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'pose_opt_folder': ['E:\\ComfyUI_windows_portable\\ComfyUI\\output\\sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['78', '99', '80', '87', '108', '59', '77', '82', '85', '106', '74', '75', '100'], 'timestamp': 1771942201041}
+[96:13] Results saved to C:\github-runners\PozzettiAndrea-ComfyUI-SAM3DObjects-portable\_work\ComfyUI-SAM3DObjects\ComfyUI-SAM3DObjects\comfy-test-logs\SAM3DObjects-0633\windows_portable-gpu\results.json
+[96:13] Model report: 41 files, 13.9 GB -> C:\github-runners\PozzettiAndrea-ComfyUI-SAM3DObjects-portable\_work\ComfyUI-SAM3DObjects\ComfyUI-SAM3DObjects\comfy-test-logs\SAM3DObjects-0633\windows_portable-gpu\models.json
+[96:14] Saved: C:\github-runners\PozzettiAndrea-ComfyUI-SAM3DObjects-portable\_work\ComfyUI-SAM3DObjects\ComfyUI-SAM3DObjects\comfy-test-logs\SAM3DObjects-0633\windows_portable-gpu\index.html
+[96:14] 
+windows_portable: FAILED
+[96:14] Error: Workflow execution failed (1 error(s))
+[96:14] Details: scene_generation.json: Workflow execution failed: {'prompt_id': '74489756-c51b-4023-85a1-6b578e94e77d', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['78', '99', '80', '87', '77', '59', '82', '106', '85', '74', '75'], 'exception_message': '(\'Unable to load EGL library\', "Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 67, in EGL\n    return ctypesloader.loadLibrary(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\ctypesloader.py", line 45, in loadLibrary\n    return dllType( name, mode )\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\ctypes\\__init__.py", line 379, in __init__\n    self._handle = _dlopen(self._name, mode)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: ("Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File "C:\\WINDOWS\\TEMP\\comfyui_pvenv_qn0909n8\\persistent_worker.py", line 1143, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\projection_overlay.py", line 179, in create_overlay\n    overlay = self._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\projection_overlay.py", line 352, in _render_3d_mesh_textured\n    renderer = pyrender.OffscreenRenderer(W, H)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\offscreen.py", line 31, in __init__\n    self._create()\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\offscreen.py", line 135, in _create\n    from pyrender.platforms import egl\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\platforms\\egl.py", line 25, in <module>\n    _ensure_egl_loaded()\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\pyrender\\platforms\\egl.py", line 22, in _ensure_egl_loaded\n    plugin.install(vars(OpenGL.platform))\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 92, in install\n    namespace[ name ] = getattr(self,name,None)\n                        ^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 14, in __get__\n    value = self.fget( obj )\n            ^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 93, in GetCurrentContext\n    return self.EGL.eglGetCurrentContext\n           ^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\baseplatform.py", line 14, in __get__\n    value = self.fget( obj )\n            ^^^^^^^^^^^^^^^^\n  File "C:\\ce\\_env_e1841e\\.pixi\\envs\\default\\Lib\\site-packages\\OpenGL\\platform\\egl.py", line 73, in EGL\n    raise ImportError("Unable to load EGL library", *err.args)\nImportError: (\'Unable to load EGL library\', "Could not find module \'EGL\' (or one of its dependencies). Try using the full path with constructor syntax.", \'EGL\', None)\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 527, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 331, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 305, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "E:\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 293, in process_inputs\n    result = f(**inputs)\n', '  File "E:\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 352, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "E:\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 2376, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'pose_opt_folder': ['E:\\ComfyUI_windows_portable\\ComfyUI\\output\\sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['78', '99', '80', '87', '108', '59', '77', '82', '85', '106', '74', '75', '100'], 'timestamp': 1771942201041}
+
+Details:
+Workflow: E:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\workflows\scene_generation.json
+Node error: SAM3D_ProjectionOverlay
