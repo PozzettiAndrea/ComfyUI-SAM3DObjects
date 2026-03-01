@@ -1498,7 +1498,7 @@ class MoGeModelV2(nn.Module):
                 repo_id=pretrained_model_name_or_path, repo_type="model",
                 filename="model.pt", **hf_kwargs
             )
-        checkpoint = comfy.utils.load_torch_file(checkpoint_path, safe_load=True)
+        checkpoint = comfy.utils.load_torch_file(checkpoint_path, safe_load=False)
         model_config = checkpoint['model_config']
         if model_kwargs is not None:
             model_config.update(model_kwargs)

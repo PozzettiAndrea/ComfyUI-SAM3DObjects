@@ -115,7 +115,7 @@ class SAM3D_ProjectionOverlay(io.ComfyNode):
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics not found: {intrinsics_path}")
 
-        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=True)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=False)
         intrinsics = np.array(intrinsics)
 
         # Denormalize intrinsics

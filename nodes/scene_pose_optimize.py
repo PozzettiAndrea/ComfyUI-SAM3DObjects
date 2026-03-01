@@ -162,7 +162,7 @@ class SAM3D_ScenePoseOptimize(io.ComfyNode):
             raise ValueError(f"Intrinsics file not found: {intrinsics_path}. Run SAM3DSceneGenerate first.")
 
         # Load intrinsics (our own intermediate file, may contain numpy arrays)
-        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=True)
+        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=False)
         log.info("ScenePoseOptimize: Loaded intrinsics from %s", intrinsics_path)
 
         # Discover object folders
@@ -262,7 +262,7 @@ class SAM3D_ScenePoseOptimize(io.ComfyNode):
             # Load initial pose from sparse_structure.pt (computed in Stage 1)
             sparse_path = os.path.join(object_dir, "sparse_structure.pt")
             if os.path.exists(sparse_path):
-                sparse_data = comfy.utils.load_torch_file(sparse_path, safe_load=True)
+                sparse_data = comfy.utils.load_torch_file(sparse_path, safe_load=False)
                 rotation = sparse_data.get("rotation")
                 translation = sparse_data.get("translation")
                 scale = sparse_data.get("scale")

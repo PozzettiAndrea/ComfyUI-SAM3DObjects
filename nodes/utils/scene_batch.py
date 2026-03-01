@@ -416,7 +416,7 @@ def _run_phase2_stage2(
 
         # Load sparse structure
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
-        stage1_output = comfy.utils.load_torch_file(sparse_path, safe_load=True)
+        stage1_output = comfy.utils.load_torch_file(sparse_path, safe_load=False)
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
@@ -493,7 +493,7 @@ def _run_phase3_mesh_decode(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=True)
+        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=False)
 
         # Extract slat
         slat = slat_data.get("slat")
@@ -574,7 +574,7 @@ def _run_phase4_texture(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=True)
+        slat_data = comfy.utils.load_torch_file(slat_path, safe_load=False)
         slat = slat_data.get("slat")
         if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")

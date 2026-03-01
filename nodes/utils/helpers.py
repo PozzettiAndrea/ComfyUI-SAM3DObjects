@@ -34,7 +34,7 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     """
     import comfy.model_management as mm
 
-    data = comfy.utils.load_torch_file(pointmap_path, safe_load=True)
+    data = comfy.utils.load_torch_file(pointmap_path, safe_load=False)
     if isinstance(data, dict):
         pointmap = data.get("pointmap")
         if pointmap is None:
