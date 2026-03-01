@@ -28,7 +28,7 @@ class SAM3DMeshDecode(io.ComfyNode):
             description="Decode SLAT to mesh (~15 seconds). Optionally simplify + fill holes.",
             inputs=[
                 io.Custom("SAM3D_MODEL").Input("slat_decoder_mesh", tooltip="Mesh decoder from LoadSAM3DModel"),
-                io.String.Input("slat", forceInput=True, tooltip="Path to SLAT from SAM3DGenerateSLAT"),
+                io.String.Input("slat", force_input=True, tooltip="Path to SLAT from SAM3DGenerateSLAT"),
                 io.Boolean.Input("with_postprocess",
                     default=False,
                     tooltip="Apply mesh simplification + hole filling. Reduces poly count for faster downstream processing.",

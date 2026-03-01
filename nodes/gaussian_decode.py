@@ -27,7 +27,7 @@ class SAM3DGaussianDecode(io.ComfyNode):
             description="Decode SLAT to Gaussian splats (~15 seconds).",
             inputs=[
                 io.Custom("SAM3D_MODEL").Input("slat_decoder_gs", tooltip="Gaussian decoder from LoadSAM3DModel"),
-                io.String.Input("slat", forceInput=True, tooltip="Path to SLAT from SAM3DGenerateSLAT"),
+                io.String.Input("slat", force_input=True, tooltip="Path to SLAT from SAM3DGenerateSLAT"),
                 io.Combo.Input("up_axis", options=["Y-up (standard)", "Z-up"],
                     default="Y-up (standard)",
                     tooltip="Coordinate system for PLY output. Y-up is common for viewers.",

@@ -44,9 +44,8 @@ class SAM3D_ScenePoseOptimize(io.ComfyNode):
             ],
             outputs=[
                 io.String.Output(display_name="output_folder", tooltip="Path to folder containing aligned GLB files (object_0.glb, object_1.glb, ...)"),
-                io.Float.Output(display_name="iou_scores", tooltip="List of IOU scores (quality metric, -1 if optimization failed or skipped)"),
+                io.Float.Output(display_name="iou_scores", tooltip="List of IOU scores (quality metric, -1 if optimization failed or skipped)", is_output_list=True),
             ],
-            output_is_list=(False, True),
         )
 
     @staticmethod
