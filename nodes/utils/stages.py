@@ -449,8 +449,9 @@ def _get_or_load_generator(config_path: str, generator_type: str, precision: str
     if 'state_dict' in sd:
         sd = sd['state_dict']
     sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
-    model.load_state_dict(sd, strict=False, assign=True)
-    _fix_meta_buffers(model, offload_device)
+    model = model.to_empty(device=offload_device)
+    model.load_state_dict(sd, strict=False, assign=False)
+
 
     model.eval()
     model.requires_grad_(False)
@@ -588,8 +589,8 @@ def _get_or_load_condition_embedder(config_path: str, embedder_type: str, precis
     if 'state_dict' in sd:
         sd = sd['state_dict']
     sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
-    embedder.load_state_dict(sd, strict=False, assign=True)
-    _fix_meta_buffers(embedder, offload_device)
+    embedder = embedder.to_empty(device=offload_device)
+    embedder.load_state_dict(sd, strict=False, assign=False)
 
     embedder.eval()
     embedder.requires_grad_(False)
