@@ -8,6 +8,8 @@ from typing import Any
 import torch
 from comfy_api.latest import io
 
+from .utils.helpers import load_trusted_pt
+
 log = logging.getLogger("sam3dobjects")
 
 class SAM3DGenerateSLAT(io.ComfyNode):
@@ -225,7 +227,7 @@ class SAM3DGenerateSLAT(io.ComfyNode):
         # Stage 1: Sparse structure generation
         if use_cached_stage1 and os.path.exists(sparse_path):
             log.info("Using cached Stage 1 output")
-            stage1_output = comfy.utils.load_torch_file(sparse_path, safe_load=False)
+            stage1_output = load_trusted_pt(sparse_path)
             # Check for cached debug image
             cached_debug = os.path.join(output_dir, "debug_preprocessed_stage1.png")
             if os.path.exists(cached_debug):
@@ -246,7 +248,7 @@ class SAM3DGenerateSLAT(io.ComfyNode):
             )
             # Load sparse structure from saved file
             stage1_file = result["output"]["files"]["sparse_structure"]
-            stage1_output = comfy.utils.load_torch_file(stage1_file, safe_load=False)
+            stage1_output = load_trusted_pt(stage1_file)
             debug_image_path = result.get("debug_image")
 
             # Copy to expected location if different

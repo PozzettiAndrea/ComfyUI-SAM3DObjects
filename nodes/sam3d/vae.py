@@ -25,6 +25,7 @@ import torch.nn.functional as F
 import comfy.ops
 import comfy.utils
 
+from ..utils.helpers import load_trusted_pt
 from . import ops_sparse
 from .model import (
     GroupNorm32,
@@ -331,7 +332,7 @@ class SparseStructureDecoderTdfyWrapper(SparseStructureDecoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=False)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -346,7 +347,7 @@ class SparseStructureEncoderTdfyWrapper(SparseStructureEncoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=False)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -520,7 +521,7 @@ class SLatEncoderTdfyWrapper(SLatEncoder):
         super().__init__(*args, **kwargs)
         if pretrained_ckpt_path is not None and os.path.exists(pretrained_ckpt_path):
             self.load_state_dict(
-                comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=False)
+                load_trusted_pt(pretrained_ckpt_path)
             )
 
 
@@ -668,7 +669,7 @@ class SLatGaussianDecoderTdfyWrapper(SLatGaussianDecoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=False)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -852,7 +853,7 @@ class SLatMeshDecoderTdfyWrapper(SLatMeshDecoder):
         super().__init__(*args, **kwargs)
         if pretrained_ckpt_path is not None and os.path.exists(pretrained_ckpt_path):
             self.load_state_dict(
-                comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=False)
+                load_trusted_pt(pretrained_ckpt_path)
             )
 
 

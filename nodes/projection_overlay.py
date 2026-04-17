@@ -9,6 +9,8 @@ from typing import Tuple
 import torch
 from comfy_api.latest import io
 
+from .utils.helpers import load_trusted_pt
+
 log = logging.getLogger("sam3dobjects")
 
 class SAM3D_ProjectionOverlay(io.ComfyNode):
@@ -115,7 +117,7 @@ class SAM3D_ProjectionOverlay(io.ComfyNode):
         if not os.path.exists(intrinsics_path):
             raise ValueError(f"Intrinsics not found: {intrinsics_path}")
 
-        intrinsics = comfy.utils.load_torch_file(intrinsics_path, safe_load=False)
+        intrinsics = load_trusted_pt(intrinsics_path)
         intrinsics = np.array(intrinsics)
 
         # Denormalize intrinsics

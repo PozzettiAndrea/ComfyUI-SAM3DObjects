@@ -815,6 +815,9 @@ def _make_dinov2_model(
         interpolate_antialias=interpolate_antialias, interpolate_offset=interpolate_offset,
     )
     vit_kwargs.update(**kwargs)
+    # Strip hub-style kwargs that the underlying ViT class doesn't accept.
+    # Weights are loaded separately via safetensors, so `pretrained` is a no-op here.
+    vit_kwargs.pop("pretrained", None)
     return _ARCH_REGISTRY[arch_name](dtype=dtype, device=device, operations=operations, **vit_kwargs)
 
 
@@ -827,6 +830,9 @@ def dinov2_vitb14(*, dtype=None, device=None, operations=ops, **kwargs):
 def dinov2_vitl14(*, dtype=None, device=None, operations=ops, **kwargs):
     return _make_dinov2_model(arch_name="vit_large", dtype=dtype, device=device, operations=operations, **kwargs)
 
+def dinov2_vitl14_reg(*, dtype=None, device=None, operations=ops, **kwargs):
+    return _make_dinov2_model(arch_name="vit_large", num_register_tokens=4, dtype=dtype, device=device, operations=operations, **kwargs)
+
 def dinov2_vitg14(*, dtype=None, device=None, operations=ops, **kwargs):
     return _make_dinov2_model(arch_name="vit_giant2", ffn_layer="swiglufused", dtype=dtype, device=device, operations=operations, **kwargs)
 
@@ -835,6 +841,7 @@ _HUB_REGISTRY = {
     "dinov2_vits14": dinov2_vits14,
     "dinov2_vitb14": dinov2_vitb14,
     "dinov2_vitl14": dinov2_vitl14,
+    "dinov2_vitl14_reg": dinov2_vitl14_reg,
     "dinov2_vitg14": dinov2_vitg14,
 }
 

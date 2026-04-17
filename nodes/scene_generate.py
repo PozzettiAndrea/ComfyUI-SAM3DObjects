@@ -219,7 +219,7 @@ class SAM3DSceneGenerate(io.ComfyNode):
         # Save pointmap once (shared across all objects)
         pointmap_path = os.path.join(base_output_dir, "pointmap.pt")
         if not os.path.exists(pointmap_path):
-            torch.save({"pointmap": pointmap}, pointmap_path)
+            torch.save({"pointmap": pointmap.clone()}, pointmap_path)
 
         # Prepare per-object directories and masks
         object_dirs = []

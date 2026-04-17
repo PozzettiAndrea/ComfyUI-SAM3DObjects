@@ -7,6 +7,8 @@ from typing import Any
 import torch
 from comfy_api.latest import io
 
+from .utils.helpers import load_trusted_pt
+
 log = logging.getLogger("sam3dobjects")
 
 class SAM3DMeshDecode(io.ComfyNode):
@@ -118,7 +120,7 @@ class SAM3DMeshDecode(io.ComfyNode):
         ensure_decoder_files(config_path, "mesh")
 
         # SLAT files are our own intermediate outputs — not untrusted checkpoints
-        slat_data = comfy.utils.load_torch_file(slat, safe_load=False)
+        slat_data = load_trusted_pt(slat)
 
         # Run Mesh decoding
         result = run_decode(
