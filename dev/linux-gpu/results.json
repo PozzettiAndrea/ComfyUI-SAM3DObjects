@@ -1,131 +1,131 @@
 {
-  "timestamp": "2026-02-26T05:41:31.502504+00:00",
+  "timestamp": "2026-04-23T23:28:27.024382+00:00",
   "platform": "linux",
   "hardware": {
-    "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-    "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-    "gpu": "NVIDIA RTX A6000"
+    "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+    "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+    "gpu": "NVIDIA GeForce RTX 2060 SUPER"
   },
-  "commit_hash": "36cbb0da28965c4f45e88acf63d0417d236a61f2",
-  "success": true,
+  "commit_hash": "9dcd605ec4aa51f4b15e24b8cec7e7d1ebc1929c",
+  "success": false,
   "summary": {
     "total": 5,
-    "passed": 5,
-    "failed": 0
+    "passed": 0,
+    "failed": 5
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
-      "status": "pass",
-      "duration_seconds": 156.53,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 183.86,
+      "error": "Workflow execution failed: {'prompt_id': '3f47f7de-1526-4398-9910-e6b2e5a397cd', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['74', '75', '95', '88', '78', '77'], 'exception_message': \"No module named 'pytorch3d'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/latest/_io.py\", line 1789, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/ComfyUI/custom_nodes/node/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/node-2322/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'fp16'}\"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9253, 0.8433, 0.7373],\\n          ...,\\n          [0.8037, 0.6587, 0.4863],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9136, 0.8315, 0.7256],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7959, 0.6509, 0.4785],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9214, 0.8276, 0.7178],\\n          [0.9253, 0.8433, 0.7373],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7920, 0.6470, 0.4746],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         ...,\\n\\n         [[0.8745, 0.6860, 0.4980],\\n          [0.8745, 0.6860, 0.4980],\\n          [0.8667, 0.6782, 0.4902],\\n          ...,\\n          [0.6392, 0.4353, 0.2471],\\n          [0.6431, 0.4392, 0.2510],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8667, 0.6782, 0.4902],\\n          [0.8706, 0.6821, 0.4941],\\n          [0.8706, 0.6821, 0.4941],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6470, 0.4431, 0.2549],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8628, 0.6743, 0.4863],\\n          [0.8784, 0.6904, 0.5020],\\n          [0.8784, 0.6904, 0.5020],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6353, 0.4314, 0.2432],\\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['74', '94', '59', '93', '75', '88', '95', '78', '92', '77'], 'timestamp': 1776986864879}\n\nDetails:\nWorkflow: /node/workflows/debug_large_image_results.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
-        "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-        "gpu": "NVIDIA RTX A6000"
+        "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+        "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "gpu": "NVIDIA GeForce RTX 2060 SUPER"
       },
       "resources": {
         "ram": {
-          "peak": 10.53,
-          "avg": 5.05
+          "peak": 4.6,
+          "avg": 3.29
         },
-        "total_ram_gb": 62.9,
-        "samples": 152,
+        "total_ram_gb": 31.2,
+        "samples": 179,
         "vram": {
-          "peak": 4.14,
-          "avg": 1.57
+          "peak": 0.14,
+          "avg": 0.14
         }
       }
     },
     {
       "name": "full_generation",
-      "status": "pass",
-      "duration_seconds": 143.12,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 9.84,
+      "error": "Workflow execution failed: {'prompt_id': '5d71e941-ca7a-4ab4-b6f3-dac2418513ea', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['74', '4', '28', '53'], 'exception_message': \"No module named 'pytorch3d'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/latest/_io.py\", line 1789, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/ComfyUI/custom_nodes/node/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/node-2322/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'fp16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['48', '74', '73', '59', '70', '71', '54', '4', '28', '53', '72'], 'timestamp': 1776986874731}\n\nDetails:\nWorkflow: /node/workflows/full_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
-        "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-        "gpu": "NVIDIA RTX A6000"
+        "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+        "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "gpu": "NVIDIA GeForce RTX 2060 SUPER"
       },
       "resources": {
         "ram": {
-          "peak": 10.03,
-          "avg": 5.98
+          "peak": 3.38,
+          "avg": 3.33
         },
-        "total_ram_gb": 62.9,
-        "samples": 139,
+        "total_ram_gb": 31.2,
+        "samples": 10,
         "vram": {
-          "peak": 2.85,
-          "avg": 1.54
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "gaussian_generation",
-      "status": "pass",
-      "duration_seconds": 136.9,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 9.25,
+      "error": "Workflow execution failed: {'prompt_id': '8272acb0-7ee5-46b2-b49d-a91b9d758075', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['4', '28', '53', '60'], 'exception_message': \"No module named 'pytorch3d'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/latest/_io.py\", line 1789, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/ComfyUI/custom_nodes/node/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/node-2322/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'fp16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '59', '61', '4', '28', '53', '63', '62'], 'timestamp': 1776986884433}\n\nDetails:\nWorkflow: /node/workflows/gaussian_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
-        "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-        "gpu": "NVIDIA RTX A6000"
+        "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+        "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "gpu": "NVIDIA GeForce RTX 2060 SUPER"
       },
       "resources": {
         "ram": {
-          "peak": 8.81,
-          "avg": 4.73
+          "peak": 3.32,
+          "avg": 3.32
         },
-        "total_ram_gb": 62.9,
-        "samples": 133,
+        "total_ram_gb": 31.2,
+        "samples": 9,
         "vram": {
-          "peak": 5.49,
-          "avg": 2.05
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "mesh_generation",
-      "status": "pass",
-      "duration_seconds": 63.1,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 9.05,
+      "error": "Workflow execution failed: {'prompt_id': '144b470b-3c18-4b2e-84e2-c0f2f2f96d43', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['4', '28', '53', '60'], 'exception_message': \"No module named 'pytorch3d'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/latest/_io.py\", line 1789, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/ComfyUI/custom_nodes/node/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/node-2322/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'fp16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '59', '61', '65', '64', '4', '28', '53'], 'timestamp': 1776986893823}\n\nDetails:\nWorkflow: /node/workflows/mesh_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
-        "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-        "gpu": "NVIDIA RTX A6000"
+        "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+        "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "gpu": "NVIDIA GeForce RTX 2060 SUPER"
       },
       "resources": {
         "ram": {
-          "peak": 8.78,
-          "avg": 5.34
+          "peak": 3.37,
+          "avg": 3.33
         },
-        "total_ram_gb": 62.9,
-        "samples": 62,
+        "total_ram_gb": 31.2,
+        "samples": 9,
         "vram": {
-          "peak": 6.46,
-          "avg": 4.4
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "pass",
-      "duration_seconds": 436.34,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 11.9,
+      "error": "Workflow execution failed: {'prompt_id': 'ff6cbc01-f622-4e8e-b7fc-d26ebb6329fe', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['77', '74', '75', '99'], 'exception_message': \"No module named 'pytorch3d'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/node-2322/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/node-2322/ComfyUI/comfy_api/latest/_io.py\", line 1789, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/node-2322/ComfyUI/custom_nodes/node/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/node-2322/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': True, 'precision': 'fp16'}\"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9253, 0.8433, 0.7373],\\n          ...,\\n          [0.8037, 0.6587, 0.4863],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9136, 0.8315, 0.7256],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7959, 0.6509, 0.4785],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9214, 0.8276, 0.7178],\\n          [0.9253, 0.8433, 0.7373],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7920, 0.6470, 0.4746],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         ...,\\n\\n         [[0.8745, 0.6860, 0.4980],\\n          [0.8745, 0.6860, 0.4980],\\n          [0.8667, 0.6782, 0.4902],\\n          ...,\\n          [0.6392, 0.4353, 0.2471],\\n          [0.6431, 0.4392, 0.2510],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8667, 0.6782, 0.4902],\\n          [0.8706, 0.6821, 0.4941],\\n          [0.8706, 0.6821, 0.4941],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6470, 0.4431, 0.2549],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8628, 0.6743, 0.4863],\\n          [0.8784, 0.6904, 0.5020],\\n          [0.8784, 0.6904, 0.5020],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6353, 0.4314, 0.2432],\\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['74', '99', '59', '80', '75', '85', '100', '78', '77', '106', '87', '82', '108'], 'timestamp': 1776986905531}\n\nDetails:\nWorkflow: /node/workflows/scene_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
-        "os": "Linux-6.8.0-90-generic-x86_64-with-glibc2.35",
-        "cpu": "Intel(R) Xeon(R) Gold 6238R CPU @ 2.20GHz",
-        "gpu": "NVIDIA RTX A6000"
+        "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+        "cpu": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "gpu": "NVIDIA GeForce RTX 2060 SUPER"
       },
       "resources": {
         "ram": {
-          "peak": 13.97,
-          "avg": 8.12
+          "peak": 3.82,
+          "avg": 3.42
         },
-        "total_ram_gb": 62.9,
-        "samples": 422,
+        "total_ram_gb": 31.2,
+        "samples": 12,
         "vram": {
-          "peak": 6.46,
-          "avg": 2.32
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     }
