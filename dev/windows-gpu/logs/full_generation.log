@@ -1,10 +1,15 @@
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'MoGeModelV1_1' (599 MB) -> cpu: 1156 / 16379 MB
 Capturing execution frames: full_generation.json
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] call_id=4 sending model_to_device
+  [ComfyUI] [comfy-env] [VRAM] After offload 'MoGeModelV1_1' (599 MB): 1156 / 16379 MB
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
-  Queuing workflow for execution...
   [ComfyUI] === /validate endpoint called ===
   [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 11 nodes
+  Queuing workflow for execution...
   [ComfyUI]   Node 4: LoadImage
   [ComfyUI]     Inputs: {"image": "elephant.png"}
   [ComfyUI]   Node 28: InvertMask
@@ -27,7 +32,7 @@ Capturing execution frames: full_generation.json
   [ComfyUI]     Inputs: {"glb_path": ["72", 0], "ply_path": ["71", 0], "texture_mode": "fast", "texture_size": 1024, "rendering_engine": "nvdiffrast"}
   [ComfyUI]   Node 74: LoadSAM3DModel
   [ComfyUI]     Inputs: {"attn_backend": "flash_attn", "compile": false, "precision": "auto"}
-  [ComfyUI] Generated prompt_id: b740ea92-43c2-439c-841b-eae12a67f38d
+  [ComfyUI] Generated prompt_id: 537f87c0-df35-4031-af60-37ef6fe7fd46
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
@@ -35,7 +40,6 @@ Capturing execution frames: full_generation.json
   [ComfyUI] [comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
   [ComfyUI] [VRAM] Before LoadSAM3DModel: 1156 / 16379 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
-  Node executed (1 total), capturing...
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
@@ -43,9 +47,9 @@ Capturing execution frames: full_generation.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=3 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=5 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3DModel done (0.12s): result: NodeOutput
+  [ComfyUI] [comfy-env] LoadSAM3DModel done (0.02s): result: NodeOutput
   [ComfyUI] [VRAM] After LoadSAM3DModel: 1156 / 16379 MB
   [ComfyUI] [comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
   [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 1156 / 16379 MB
@@ -58,65 +62,206 @@ Capturing execution frames: full_generation.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=4 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=6 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
-  [ComfyUI] [SubprocessWorker] got response: error
-  [ComfyUI] !!! Exception during processing !!! No module named 'pytorch3d'
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_f8chcdbs\persistent_worker.py", line 1587, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]              ^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\comfy_api\latest\_io.py", line 1826, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 124, in decorate_context
-  [ComfyUI]     return func(*args, **kwargs)
-  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 96, in execute
-  [ComfyUI]     from pytorch3d.renderer import look_at_view_transform
-  [ComfyUI] ModuleNotFoundError: No module named 'pytorch3d'
-  [ComfyUI] 
-  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=8603MiB alloc, 8800MiB reserved | gpu=10044MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=8603MiB alloc, 8800MiB reserved | gpu=10044MiB/16379MiB used
+  [ComfyUI] C:\workspaces\SAM3DObjects-0138\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\sam3d\moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
+  Node executed (1 total), capturing...
   Frame 2 saved (frame_001.jpg, t=0.5s)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\execution.py", line 534, in execute
-  [capture-node] freeze=2ms shot=105ms unfreeze=4ms saved=True
-  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\execution.py", line 334, in get_output_data
-  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\execution.py", line 308, in _async_map_node_over_list
-  [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\execution.py", line 296, in process_inputs
-  [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\.venv\lib\site-packages\comfy_env\isolation\metadata.py", line 531, in proxy
-  [ComfyUI]     result = worker.call_method(
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3259, in call_method
-  [ComfyUI]     raise WorkerError(
-  [ComfyUI] comfy_env.isolation.workers.base.WorkerError: No module named 'pytorch3d'
-  [ComfyUI] 
-  [ComfyUI] Worker traceback:
+  [capture-node] freeze=2ms shot=92ms unfreeze=2ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=8603MiB alloc, 8800MiB reserved | gpu=10044MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=8603MiB alloc, 8800MiB reserved | gpu=10044MiB/16379MiB used
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=6
+  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 15.96GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 15.96GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model FlowMatching. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model ShortCut. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model SparseStructureDecoderTdfyWrapper. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model FlowMatching. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model ShortCut. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model SparseStructureDecoderTdfyWrapper. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +207MB (now 8907MB) reserved=8960MB peak=8907MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=9202MiB alloc, 9216MiB reserved | gpu=10460MiB/16379MiB used
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=6
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=9202MiB alloc, 9216MiB reserved | gpu=10460MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe inference: torch=9236MiB alloc, 9632MiB reserved | gpu=10876MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model FlowMatching. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model ShortCut. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model EmbedderFuser. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING, memory leak with model SparseStructureDecoderTdfyWrapper. Please make sure it is not being referenced from somewhere.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after cleanup: torch=8637MiB alloc, 8800MiB reserved | gpu=10044MiB/16379MiB used
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=6
+  Frame 3 saved (frame_002.jpg, t=2.7s)
+  [capture-periodic] freeze=2ms shot=74ms unfreeze=2ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -251MB (now 8657MB) reserved=8864MB peak=9366MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=6
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: done: torch=8657MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] Created 1 model patchers: ['MoGeModelV1_7']
+  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (3.48s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3D_DepthEstimate: 1156 / 16379 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
+  [ComfyUI] [comfy-env] Running SAM3D_PreviewPointCloud: file_path: 'C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\output\\sam3...
+  [ComfyUI] [VRAM] Before SAM3D_PreviewPointCloud: 1156 / 16379 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
+  [ComfyUI] [SubprocessWorker] call_method: nodes.preview_nodes.SAM3D_PreviewPointCloud.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=7 sending call_method
+  [ComfyUI] [SubprocessWorker] got response: ok
+  [ComfyUI] [comfy-env] SAM3D_PreviewPointCloud done (0.02s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3D_PreviewPointCloud: 1156 / 16379 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
+  [ComfyUI] [comfy-env] Running SAM3DGenerateSLAT: seed: 42, stage1_steps: 12, stage1_cfg: 7.5, stage1_cfg_pm: 0.0, stage2_steps: 12, stage2_cfg: 5.0, use_distillation: False, generator: dict, image: torch.float32 [1,1062,1600,3] cpu, mask: torch.float32 [1,1062,1600] cpu, pointmap: torch.float32 [1062,1600,3] cpu
+  [ComfyUI] [VRAM] Before SAM3DGenerateSLAT: 1156 / 16379 MB
+  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
+  [ComfyUI] [SubprocessWorker] call_method: nodes.generate_slat.SAM3DGenerateSLAT.EXECUTE_NORMALIZED
+  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [SubprocessWorker] worker started/confirmed
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 1062, 1600, 3])
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'mask' shape: torch.Size([1, 1062, 1600])
+  [ComfyUI] [comfy-env] PRE-SERIALIZE 'pointmap' shape: torch.Size([1062, 1600, 3])
+  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [ComfyUI] [SubprocessWorker] created 0 shm blocks
+  [ComfyUI] [SubprocessWorker] sending request via socket...
+  [ComfyUI] [SubprocessWorker] call_id=8 sending call_method
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: start: torch=8603MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  Node executed (2 total), capturing...
+  [ComfyUI] 2026-05-01 01:48:32.246 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before loading models: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): before build: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'MoGeModelV1_1' (599 MB) -> cpu: 1156 / 16379 MB
+  [ComfyUI] Exception ignored in: <function ModelPatcher.__del__ at 0x000002855E4967A0>
   [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_f8chcdbs\persistent_worker.py", line 1587, in main
-  [ComfyUI]     result = method(**inputs)
-  [ComfyUI]              ^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\comfy_api\latest\_io.py", line 1826, in EXECUTE_NORMALIZED
-  [ComfyUI]     to_return = cls.execute(*args, **kwargs)
-  [ComfyUI]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 124, in decorate_context
-  [ComfyUI]     return func(*args, **kwargs)
-  [ComfyUI]            ^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0105\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 96, in execute
-  [ComfyUI]     from pytorch3d.renderer import look_at_view_transform
-  [ComfyUI] ModuleNotFoundError: No module named 'pytorch3d'
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\comfy\model_patcher.py", line 1472, in __del__
+  [ComfyUI]     self.detach(unpatch_all=False)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 158, in detach
+  [ComfyUI]     self.unpatch_model(self.offload_device)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 138, in unpatch_model
+  [ComfyUI]     self._send_device_command(str(device_to))
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 100, in _send_device_command
+  [ComfyUI]     self._check_worker()
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 93, in _check_worker
+  [ComfyUI]     raise RuntimeError(
+  [ComfyUI] RuntimeError: Subprocess worker died; model 'MoGeModelV1_1' is no longer available. Please reload the model node.
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'MoGeModelV1_7' (599 MB) -> cpu: 1156 / 16379 MB
+  [ComfyUI] Exception ignored in: <function ModelPatcher.__del__ at 0x000002855E4967A0>
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\comfy\model_patcher.py", line 1472, in __del__
+  [ComfyUI]     self.detach(unpatch_all=False)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 158, in detach
+  [ComfyUI]     self.unpatch_model(self.offload_device)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 138, in unpatch_model
+  [ComfyUI]     self._send_device_command(str(device_to))
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 100, in _send_device_command
+  [ComfyUI]     self._check_worker()
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\model_patcher.py", line 93, in _check_worker
+  [ComfyUI]     raise RuntimeError(
+  [ComfyUI] RuntimeError: Subprocess worker died; model 'MoGeModelV1_7' is no longer available. Please reload the model node.
+  [ComfyUI] !!! Exception during processing !!! ComfyUI-SAM3DObjects: Socket closed but worker process still running.
+  [ComfyUI]   exit code: None
+  [ComfyUI]   worker log (C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_worker_debug.log, last 20 lines):
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]
+  [ComfyUI]     01:48:32 [_from_shm] mask: TensorRef deserialized shape=torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [print] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI]     01:48:32 [_from_shm] pointmap: TensorRef tensor_size=[1062, 1600, 3]
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]
+  [ComfyUI]     01:48:32 [_from_shm] pointmap: TensorRef deserialized shape=torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Inputs ready: ['seed', 'stage1_steps', 'stage1_cfg', 'stage1_cfg_pm', 'stage2_steps', 'stage2_cfg', 'use_distillation', 'generator', 'image', 'mask', 'pointmap']
+  [ComfyUI]     01:48:32 [worker] Input 'image' shape: torch.Size([1, 1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Input 'mask' shape: torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [worker] Input 'pointmap' shape: torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Importing module nodes.generate_slat...
+  [ComfyUI]     01:48:32 [worker] Module imported
+  [ComfyUI]     01:48:32 [worker] Getting class SAM3DGenerateSLAT...
+  [ComfyUI]     01:48:32 [worker] Creating instance...
+  [ComfyUI]     01:48:32 [worker] Calling EXECUTE_NORMALIZED...
+  [ComfyUI]     01:48:32 [print] [VRAM] GenerateSLAT: start: torch=8603MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI]     01:48:32 [print] [VRAM] Stage1: before loading models: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI]     01:48:32 [print] [VRAM] _load_generator(ss): before build: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3374, in _send_request
+  [ComfyUI]     response = self._transport.recv(timeout=timeout)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 168, in recv
+  [ComfyUI]     raw_len = self._recvall(4)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 193, in _recvall
+  [ComfyUI]     chunk = self._sock.recv(n - len(data))
+  [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
   [ComfyUI] 
+  [ComfyUI] The above exception was the direct cause of the following exception:
   [ComfyUI] 
-  [ComfyUI] Prompt executed in 0.41 seconds
-  Execution complete (t=0.8s)
-  Execution error: {'prompt_id': '9b37dfad-b11f-4864-b492-3721104f2364', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '4', '74', '53'], 'exception_message': 'No module named \'pytorch3d\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_f8chcdbs\\persistent_worker.py", line 1587, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\.ce\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 96, in execute\n    from pytorch3d.renderer import look_at_view_transform\nModuleNotFoundError: No module named \'pytorch3d\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 531, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3259, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0105\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['72', '70', '71', '48', '73', '59', '28', '4', '53', '74', '54'], 'timestamp': 1777418218079}
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\execution.py", line 534, in execute
+  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\execution.py", line 334, in get_output_data
+  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\execution.py", line 308, in _async_map_node_over_list
+  [ComfyUI]     await process_inputs(input_dict, i)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\ComfyUI\execution.py", line 296, in process_inputs
+  [ComfyUI]     result = f(**inputs)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\metadata.py", line 528, in proxy
+  [ComfyUI]     result = worker.call_method(
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3485, in call_method
+  [ComfyUI]     response = self._send_request(request, timeout)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0138\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3405, in _send_request
+  [ComfyUI]     raise RuntimeError(
+  [ComfyUI] RuntimeError: ComfyUI-SAM3DObjects: Socket closed but worker process still running.
+  [ComfyUI]   exit code: None
+  [ComfyUI]   worker log (C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_worker_debug.log, last 20 lines):
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]
+  [ComfyUI]     01:48:32 [_from_shm] mask: TensorRef deserialized shape=torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [print] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+  [ComfyUI]     01:48:32 [_from_shm] pointmap: TensorRef tensor_size=[1062, 1600, 3]
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]
+  [ComfyUI]     01:48:32 [_from_shm] pointmap: TensorRef deserialized shape=torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Inputs ready: ['seed', 'stage1_steps', 'stage1_cfg', 'stage1_cfg_pm', 'stage2_steps', 'stage2_cfg', 'use_distillation', 'generator', 'image', 'mask', 'pointmap']
+  [ComfyUI]     01:48:32 [worker] Input 'image' shape: torch.Size([1, 1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Input 'mask' shape: torch.Size([1, 1062, 1600])
+  [ComfyUI]     01:48:32 [worker] Input 'pointmap' shape: torch.Size([1062, 1600, 3])
+  [ComfyUI]     01:48:32 [worker] Importing module nodes.generate_slat...
+  [ComfyUI]     01:48:32 [worker] Module imported
+  [ComfyUI]     01:48:32 [worker] Getting class SAM3DGenerateSLAT...
+  [ComfyUI]     01:48:32 [worker] Creating instance...
+  [ComfyUI]     01:48:32 [worker] Calling EXECUTE_NORMALIZED...
+  [ComfyUI]     01:48:32 [print] [VRAM] GenerateSLAT: start: torch=8603MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI]     01:48:32 [print] [VRAM] Stage1: before loading models: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI]     01:48:32 [print] [VRAM] _load_generator(ss): before build: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used
+  [ComfyUI] 
+  [ComfyUI] Prompt executed in 4.10 seconds
+  Frame 4 saved (frame_003.jpg, t=4.0s)
+  [capture-node] freeze=390ms shot=125ms unfreeze=2ms saved=True
+  Execution complete (t=4.7s)
+  Execution error: {'prompt_id': '19025305-d40c-4687-bafc-737965f0dbe6', 'node_id': '70', 'node_type': 'SAM3DGenerateSLAT', 'executed': ['53', '4', '74', '54', '59', '28'], 'exception_message': "ComfyUI-SAM3DObjects: Socket closed but worker process still running.\n  exit code: None\n  worker log (C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfy_worker_debug.log, last 20 lines):\n    01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]\n    01:48:32 [_from_shm] mask: TensorRef deserialized shape=torch.Size([1, 1062, 1600])\n    01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])\n    01:48:32 [print] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']\n    01:48:32 [_from_shm] pointmap: TensorRef tensor_size=[1062, 1600, 3]\n    01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]\n    01:48:32 [_from_shm] pointmap: TensorRef deserialized shape=torch.Size([1062, 1600, 3])\n    01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])\n    01:48:32 [worker] Inputs ready: ['seed', 'stage1_steps', 'stage1_cfg', 'stage1_cfg_pm', 'stage2_steps', 'stage2_cfg', 'use_distillation', 'generator', 'image', 'mask', 'pointmap']\n    01:48:32 [worker] Input 'image' shape: torch.Size([1, 1062, 1600, 3])\n    01:48:32 [worker] Input 'mask' shape: torch.Size([1, 1062, 1600])\n    01:48:32 [worker] Input 'pointmap' shape: torch.Size([1062, 1600, 3])\n    01:48:32 [worker] Importing module nodes.generate_slat...\n    01:48:32 [worker] Module imported\n    01:48:32 [worker] Getting class SAM3DGenerateSLAT...\n    01:48:32 [worker] Creating instance...\n    01:48:32 [worker] Calling EXECUTE_NORMALIZED...\n    01:48:32 [print] [VRAM] GenerateSLAT: start: torch=8603MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n    01:48:32 [print] [VRAM] Stage1: before loading models: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n    01:48:32 [print] [VRAM] _load_generator(ss): before build: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n", 'exception_type': 'RuntimeError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3485, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3405, in _send_request\n    raise RuntimeError(\n'], 'current_inputs': {'seed': [42], 'stage1_steps': [12], 'stage1_cfg': [7.5], 'stage1_cfg_pm': [0], 'stage2_steps': [12], 'stage2_cfg': [5], 'use_distillation': [False], 'generator': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0138\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])'], 'mask': ['tensor([[[0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         ...,\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.]]])'], 'pointmap': ['tensor([[[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        ...,\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]]])']}, 'current_outputs': ['53', '70', '4', '71', '73', '48', '28', '74', '59', '54', '72'], 'timestamp': 1777592912583}
     Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': '9b37dfad-b11f-4864-b492-3721104f2364', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '4', '74', '53'], 'exception_message': 'No module named \'pytorch3d\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_f8chcdbs\\persistent_worker.py", line 1587, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\comfy_api\\latest\\_io.py", line 1826, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\.ce\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 96, in execute\n    from pytorch3d.renderer import look_at_view_transform\nModuleNotFoundError: No module named \'pytorch3d\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 531, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0105\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3259, in call_method\n    raise WorkerError(\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0105\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['72', '70', '71', '48', '73', '59', '28', '4', '53', '74', '54'], 'timestamp': 1777418218079}
+    Error: Workflow execution failed: {'prompt_id': '19025305-d40c-4687-bafc-737965f0dbe6', 'node_id': '70', 'node_type': 'SAM3DGenerateSLAT', 'executed': ['53', '4', '74', '54', '59', '28'], 'exception_message': "ComfyUI-SAM3DObjects: Socket closed but worker process still running.\n  exit code: None\n  worker log (C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfy_worker_debug.log, last 20 lines):\n    01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]\n    01:48:32 [_from_shm] mask: TensorRef deserialized shape=torch.Size([1, 1062, 1600])\n    01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])\n    01:48:32 [print] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']\n    01:48:32 [_from_shm] pointmap: TensorRef tensor_size=[1062, 1600, 3]\n    01:48:32 [print] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]\n    01:48:32 [_from_shm] pointmap: TensorRef deserialized shape=torch.Size([1062, 1600, 3])\n    01:48:32 [print] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])\n    01:48:32 [worker] Inputs ready: ['seed', 'stage1_steps', 'stage1_cfg', 'stage1_cfg_pm', 'stage2_steps', 'stage2_cfg', 'use_distillation', 'generator', 'image', 'mask', 'pointmap']\n    01:48:32 [worker] Input 'image' shape: torch.Size([1, 1062, 1600, 3])\n    01:48:32 [worker] Input 'mask' shape: torch.Size([1, 1062, 1600])\n    01:48:32 [worker] Input 'pointmap' shape: torch.Size([1062, 1600, 3])\n    01:48:32 [worker] Importing module nodes.generate_slat...\n    01:48:32 [worker] Module imported\n    01:48:32 [worker] Getting class SAM3DGenerateSLAT...\n    01:48:32 [worker] Creating instance...\n    01:48:32 [worker] Calling EXECUTE_NORMALIZED...\n    01:48:32 [print] [VRAM] GenerateSLAT: start: torch=8603MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n    01:48:32 [print] [VRAM] Stage1: before loading models: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n    01:48:32 [print] [VRAM] _load_generator(ss): before build: torch=8637MiB alloc, 8864MiB reserved | gpu=10108MiB/16379MiB used\n", 'exception_type': 'RuntimeError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 534, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 334, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 308, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\ComfyUI\\execution.py", line 296, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3485, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0138\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3405, in _send_request\n    raise RuntimeError(\n'], 'current_inputs': {'seed': [42], 'stage1_steps': [12], 'stage1_cfg': [7.5], 'stage1_cfg_pm': [0], 'stage2_steps': [12], 'stage2_cfg': [5], 'use_distillation': [False], 'generator': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0138\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])'], 'mask': ['tensor([[[0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         ...,\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.],\n         [0., 0., 0.,  ..., 0., 0., 0.]]])'], 'pointmap': ['tensor([[[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        ...,\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]],\n\n        [[nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan],\n         ...,\n         [nan, nan, nan],\n         [nan, nan, nan],\n         [nan, nan, nan]]])']}, 'current_outputs': ['53', '70', '4', '71', '73', '48', '28', '74', '59', '54', '72'], 'timestamp': 1777592912583}
     Details: Workflow: C:\ComfyUI-SAM3DObjects\workflows\full_generation.json
-Node error: SAM3D_DepthEstimate
+Node error: SAM3DGenerateSLAT
