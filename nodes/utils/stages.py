@@ -12,6 +12,7 @@ Each function loads its own models directly - no shared state.
 
 import gc
 import importlib
+import os
 import logging
 import sys
 import base64
@@ -31,6 +32,8 @@ import comfy.utils
 
 from .helpers import preprocess_image_lazy, save_output_to_disk
 from .vram_log import vram
+
+_DTYPE_DBG = os.environ.get("SAM3DOBJECTS_DTYPE_DBG", "").lower() in ("1", "true", "yes")
 
 
 # Inline decoder configs — used as fallback when YAML files are missing.
@@ -291,20 +294,20 @@ def _enable_lowvram_cast(model: torch.nn.Module) -> None:
     device on-the-fly during lowvram inference.
     """
     try:
-        from comfy.ops import disable_weight_init
+        from comfy.ops import manual_cast
     except ImportError:
         return
 
     _CLASS_MAP = {
-        torch.nn.Linear: disable_weight_init.Linear,
-        torch.nn.Conv1d: disable_weight_init.Conv1d,
-        torch.nn.Conv2d: disable_weight_init.Conv2d,
-        torch.nn.Conv3d: disable_weight_init.Conv3d,
-        torch.nn.GroupNorm: disable_weight_init.GroupNorm,
-        torch.nn.LayerNorm: disable_weight_init.LayerNorm,
-        torch.nn.ConvTranspose2d: disable_weight_init.ConvTranspose2d,
-        torch.nn.ConvTranspose1d: disable_weight_init.ConvTranspose1d,
-        torch.nn.Embedding: disable_weight_init.Embedding,
+        torch.nn.Linear: manual_cast.Linear,
+        torch.nn.Conv1d: manual_cast.Conv1d,
+        torch.nn.Conv2d: manual_cast.Conv2d,
+        torch.nn.Conv3d: manual_cast.Conv3d,
+        torch.nn.GroupNorm: manual_cast.GroupNorm,
+        torch.nn.LayerNorm: manual_cast.LayerNorm,
+        torch.nn.ConvTranspose2d: manual_cast.ConvTranspose2d,
+        torch.nn.ConvTranspose1d: manual_cast.ConvTranspose1d,
+        torch.nn.Embedding: manual_cast.Embedding,
     }
 
     cast_count = 0
@@ -449,6 +452,13 @@ def _load_generator(config_path: str, generator_type: str, precision: str = "bf1
         offload_device=offload_device,
     )
 
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        patcher.set_model_compute_dtype(dtype)
+    if _DTYPE_DBG:
+        log.info("[DTYPE_DBG] _load_generator(%s): precision=%s dtype=%s force_cast=%s",
+                 generator_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
+
     return patcher
 
 
@@ -528,6 +538,13 @@ def _load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
         offload_device=offload_device,
     )
 
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        patcher.set_model_compute_dtype(dtype)
+    if _DTYPE_DBG:
+        log.info("[DTYPE_DBG] _load_decoder(%s): precision=%s dtype=%s force_cast=%s",
+                 decoder_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
+
     return patcher
 
 
@@ -580,6 +597,13 @@ def _load_condition_embedder(config_path: str, embedder_type: str, precision: st
         load_device=comfy.model_management.get_torch_device(),
         offload_device=offload_device,
     )
+
+    dtype = _resolve_dtype(precision)
+    if dtype != torch.float32:
+        patcher.set_model_compute_dtype(dtype)
+    if _DTYPE_DBG:
+        log.info("[DTYPE_DBG] _load_condition_embedder(%s): precision=%s dtype=%s force_cast=%s",
+                 embedder_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
 
     return patcher
 
@@ -863,6 +887,10 @@ def run_stage1(
     ss_decoder = ss_dec_patcher.model
     ss_embedder = ss_emb_patcher.model
 
+    # Set compute dtype on generator for noise creation
+    ss_generator._compute_dtype = _resolve_dtype(precision)
+    print(f"[DTYPE_DBG] run_stage1: set ss_generator._compute_dtype={ss_generator._compute_dtype}", flush=True)
+
     # Configure generator (match original override_ss_generator_cfg_config)
     ss_generator.no_shortcut = True
     ss_generator.reverse_fn.strength = cfg_strength
@@ -902,6 +930,19 @@ def run_stage1(
         condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
         condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
 
+        # Cast inputs to compute dtype before embedding (embedder uses attention internally)
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            condition_args = [
+                a.to(dtype=dtype) if isinstance(a, torch.Tensor) and a.is_floating_point() else a
+                for a in condition_args
+            ]
+            condition_kwargs = {
+                k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
+                for k, v in condition_kwargs.items()
+            }
+            print(f"[DTYPE_DBG] run_stage1: cast embedder inputs to {dtype}", flush=True)
+
         # Embed conditions
         if ss_embedder is not None and len(condition_args) > 0:
             tokens = ss_embedder(*condition_args, **condition_kwargs)
@@ -911,6 +952,19 @@ def run_stage1(
             tokens = ss_embedder(**condition_kwargs)
             condition_args = (tokens,)
             condition_kwargs = {}
+
+        # Cast inputs to compute dtype (mirrors BaseModel._apply_model xc.to(dtype))
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            condition_args = tuple(
+                a.to(dtype=dtype) if isinstance(a, torch.Tensor) and a.is_floating_point() else a
+                for a in condition_args
+            )
+            condition_kwargs = {
+                k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
+                for k, v in condition_kwargs.items()
+            }
+            print(f"[DTYPE_DBG] run_stage1: cast condition_args to {dtype}, types={[type(a).__name__ for a in condition_args]}, dtypes={[a.dtype if hasattr(a,'dtype') else 'N/A' for a in condition_args]}", flush=True)
 
         # Run generator with progress reporting
         steps = ss_generator.inference_steps
@@ -1110,6 +1164,9 @@ def run_stage2(
     slat_generator = slat_gen_patcher.model
     slat_embedder = slat_emb_patcher.model
 
+    # Set compute dtype on generator for noise creation
+    slat_generator._compute_dtype = _resolve_dtype(precision)
+
     # Configure generator (match original override_slat_generator_cfg_config)
     slat_generator.no_shortcut = True
     # Read cfg_strength from config if available (config may override the default)
@@ -1139,6 +1196,19 @@ def run_stage2(
         condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
         condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
 
+        # Cast inputs to compute dtype before embedding (embedder uses attention internally)
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            condition_args = [
+                a.to(dtype=dtype) if isinstance(a, torch.Tensor) and a.is_floating_point() else a
+                for a in condition_args
+            ]
+            condition_kwargs = {
+                k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
+                for k, v in condition_kwargs.items()
+            }
+            print(f"[DTYPE_DBG] run_stage2: cast embedder inputs to {dtype}", flush=True)
+
         # Embed conditions
         if slat_embedder is not None and len(condition_args) > 0:
             tokens = slat_embedder(*condition_args, **condition_kwargs)
@@ -1151,6 +1221,20 @@ def run_stage2(
 
         # Add coords to condition args
         condition_args = condition_args + (coords.cpu().numpy(),)
+
+        # Cast inputs to compute dtype (mirrors BaseModel._apply_model xc.to(dtype))
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            condition_args = tuple(
+                a.to(dtype=dtype) if isinstance(a, torch.Tensor) and a.is_floating_point() else a
+                for a in condition_args
+            )
+            condition_kwargs = {
+                k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
+                for k, v in condition_kwargs.items()
+            }
+            if _DTYPE_DBG:
+                log.info("[DTYPE_DBG] run_stage2: cast inputs to %s", dtype)
 
         # Run generator with progress reporting
         steps = slat_generator.inference_steps

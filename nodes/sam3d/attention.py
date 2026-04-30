@@ -17,6 +17,7 @@ from comfy.attention_sparse import dispatch_varlen_attention
 
 from .sparse import SparseTensor, DEBUG
 
+
 __all__ = [
     "scaled_dot_product_attention",
     "sparse_scaled_dot_product_attention",
@@ -62,6 +63,13 @@ def scaled_dot_product_attention(*args, **kwargs):
         k = args[1] if len(args) > 1 else kwargs["k"]
         v = args[2] if len(args) > 2 else kwargs["v"]
 
+    # Cast to bf16 for sage attention compatibility, preserve original dtype for output
+    orig_dtype = q.dtype
+    if q.dtype == torch.float32:
+        q, k, v = q.bfloat16(), k.bfloat16(), v.bfloat16()
+    elif k.dtype != q.dtype:
+        k, v = k.to(q.dtype), v.to(q.dtype)
+
     # q, k, v: [N, L, H, C] -> [N, H, L, C] for ComfyUI optimized_attention
     q = q.permute(0, 2, 1, 3)
     k = k.permute(0, 2, 1, 3)
@@ -70,8 +78,8 @@ def scaled_dot_product_attention(*args, **kwargs):
     attn_fn = optimized_attention_for_device(q.device)
     out = attn_fn(q, k, v, heads=q.shape[1], skip_reshape=True, skip_output_reshape=True)
 
-    # [N, H, L, C] -> [N, L, H, C]
-    return out.permute(0, 2, 1, 3)
+    # [N, H, L, C] -> [N, L, H, C], restore original dtype
+    return out.permute(0, 2, 1, 3).to(orig_dtype)
 
 
 # ==========================================================================

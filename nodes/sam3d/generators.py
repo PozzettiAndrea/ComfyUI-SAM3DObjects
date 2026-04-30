@@ -3,6 +3,7 @@
 
 import copy
 import math
+import os
 import random
 from functools import partial
 from numbers import Number
@@ -284,10 +285,13 @@ class FlowMatching(Base):
         return solver_method, solver
 
     def _generate_noise_tensor(self, x_shape, x_device):
+        dtype = getattr(self, '_compute_dtype', None)
+        print(f"[DTYPE_DBG] _generate_noise_tensor: _compute_dtype={dtype} shape={x_shape} device={x_device}", flush=True)
         return torch.randn(
             x_shape,
             # generator=self.random_generator,
             device=x_device,
+            dtype=dtype,
         )
 
     def _generate_noise(self, x_shape, x_device):

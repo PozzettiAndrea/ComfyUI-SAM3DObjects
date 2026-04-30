@@ -71,10 +71,14 @@ def wrap_dinov2_attention_with_comfy_attn(module: nn.Module):
             B, N, C = x.shape
             qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
             q, k, v = torch.unbind(qkv, 2)
+            # Cast to bf16 for sage attention compatibility
+            orig_dtype = q.dtype
+            if q.dtype == torch.float32:
+                q, k, v = q.bfloat16(), k.bfloat16(), v.bfloat16()
             q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
             attn_fn = optimized_attention_for_device(q.device)
             out = attn_fn(q, k, v, heads=self.num_heads, skip_reshape=True, skip_output_reshape=True)
-            out = out.transpose(1, 2).contiguous().view(B, N, C)
+            out = out.transpose(1, 2).contiguous().view(B, N, C).to(orig_dtype)
             return self.proj_drop(self.proj(out))
 
     module.__class__ = _ComfyAttnWrapper

@@ -214,11 +214,14 @@ class TimestepEmbedder(nn.Module):
         freqs = torch.exp(
             -np.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half
         ).to(device=t.device)
+        orig_dtype = t.dtype
         t = t[:, None].float()
         args = t * freqs[None]
         embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
         if dim % 2:
             embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
+        if torch.is_floating_point(embedding):
+            embedding = embedding.to(orig_dtype)
         return embedding
 
     def forward(self, t):
@@ -1971,10 +1974,14 @@ def _wrap_attn_comfy(module):
             B, N, C = x.shape
             qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
             q, k, v = torch.unbind(qkv, 2)
+            # Cast to bf16 for sage attention compatibility
+            orig_dtype = q.dtype
+            if q.dtype == torch.float32:
+                q, k, v = q.bfloat16(), k.bfloat16(), v.bfloat16()
             q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
             attn_fn = optimized_attention_for_device(q.device)
             out = attn_fn(q, k, v, heads=self.num_heads, skip_reshape=True, skip_output_reshape=True)
-            out = out.transpose(1, 2).contiguous().view(B, N, C)
+            out = out.transpose(1, 2).contiguous().view(B, N, C).to(orig_dtype)
             return self.proj_drop(self.proj(out))
 
     module.__class__ = _W
