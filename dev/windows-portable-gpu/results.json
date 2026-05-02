@@ -1,46 +1,23 @@
 {
-  "timestamp": "2026-05-02T13:56:57.823601+00:00",
+  "timestamp": "2026-05-02T17:32:58.498209+00:00",
   "platform": "windows_portable",
   "hardware": {
     "os": "Windows-10-10.0.26200-SP0",
     "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
     "gpu": "NVIDIA GeForce RTX 3090"
   },
-  "commit_hash": "679fe7612b6f9a77619bb64865f70f45ec75e022",
-  "success": false,
+  "commit_hash": "4f7d527eb45ede0f15663c1cecc26b20cb6e3322",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 1
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
       "status": "pass",
-      "duration_seconds": 525.44,
-      "error": null,
-      "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3090"
-      },
-      "resources": {
-        "ram": {
-          "peak": 13.51,
-          "avg": 5.47
-        },
-        "total_ram_gb": 31.9,
-        "samples": 414,
-        "vram": {
-          "peak": 5.35,
-          "avg": 1.42
-        }
-      }
-    },
-    {
-      "name": "full_generation",
-      "status": "pass",
-      "duration_seconds": 205.55,
+      "duration_seconds": 416.42,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -50,20 +27,43 @@
       "resources": {
         "ram": {
           "peak": 13.5,
-          "avg": 10.61
+          "avg": 5.63
         },
         "total_ram_gb": 31.9,
-        "samples": 181,
+        "samples": 363,
         "vram": {
-          "peak": 5.4,
-          "avg": 1.59
+          "peak": 6.3,
+          "avg": 1.48
+        }
+      }
+    },
+    {
+      "name": "full_generation",
+      "status": "pass",
+      "duration_seconds": 204.13,
+      "error": null,
+      "hardware": {
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
+      },
+      "resources": {
+        "ram": {
+          "peak": 13.5,
+          "avg": 10.62
+        },
+        "total_ram_gb": 31.9,
+        "samples": 179,
+        "vram": {
+          "peak": 5.46,
+          "avg": 1.61
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 106.18,
+      "duration_seconds": 106.4,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -73,20 +73,20 @@
       "resources": {
         "ram": {
           "peak": 12.65,
-          "avg": 8.95
+          "avg": 8.97
         },
         "total_ram_gb": 31.9,
-        "samples": 93,
+        "samples": 94,
         "vram": {
-          "peak": 5.41,
-          "avg": 1.81
+          "peak": 5.4,
+          "avg": 1.87
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 96.53,
+      "duration_seconds": 96.67,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -95,22 +95,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 13.15,
-          "avg": 12.56
+          "peak": 13.17,
+          "avg": 12.59
         },
         "total_ram_gb": 31.9,
         "samples": 85,
         "vram": {
-          "peak": 5.49,
-          "avg": 1.9
+          "peak": 5.47,
+          "avg": 1.84
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 260.23,
-      "error": "Workflow execution failed: {'prompt_id': '8022c9a5-e66f-4067-a0e0-1516927deb38', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['59', '80', '75', '82', '78', '77', '74', '99'], 'exception_message': '(\\'Unable to load EGL library\\', \"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 81, in EGL\\n    return ctypesloader.loadLibrary(\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\ctypesloader.py\", line 36, in loadLibrary\\n    return _loadLibraryWindows(dllType, name, mode)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\ctypesloader.py\", line 89, in _loadLibraryWindows\\n    return dllType( name, mode )\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\ctypes\\\\__init__.py\", line 379, in __init__\\n    self._handle = _dlopen(self._name, mode)\\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\\nFileNotFoundError: (\"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\nDuring handling of the above exception, another exception occurred:\\n\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_w_9z8aup\\\\persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\torch\\\\utils\\\\_contextlib.py\", line 120, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 317, in _render_3d_mesh_textured\\n    import pyrender\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\pyrender\\\\__init__.py\", line 3, in <module>\\n    from .light import Light, PointLight, DirectionalLight, SpotLight\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\pyrender\\\\light.py\", line 10, in <module>\\n    from OpenGL.GL import *\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\GL\\\\__init__.py\", line 3, in <module>\\n    from OpenGL import error as _error\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\error.py\", line 12, in <module>\\n    from OpenGL import platform, _configflags\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\__init__.py\", line 59, in <module>\\n    _load()\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\__init__.py\", line 55, in _load\\n    plugin.install(globals())\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 129, in install\\n    result = super(EGLPlatform,self).install(namespace)\\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 108, in install\\n    namespace[name] = getattr(self, name, None)\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 19, in __get__\\n    value = self.fget(obj)\\n            ^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 107, in GetCurrentContext\\n    eglGetCurrentContext = self.EGL.eglGetCurrentContext\\n                           ^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 19, in __get__\\n    value = self.fget(obj)\\n            ^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 87, in EGL\\n    raise ImportError(\"Unable to load EGL library\", *err.args)\\nImportError: (\\'Unable to load EGL library\\', \"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n        module_name=mod,\\n    ...<4 lines>...\\n        timeout=600.0,\\n    )\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n    ...<2 lines>...\\n    )\\n'], 'current_inputs': {'pose_opt_folder': ['C:\\\\workspaces\\\\SAM3DObjects-1525\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\output\\\\sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['59', '80', '75', '106', '108', '87', '100', '82', '85', '78', '77', '74', '99'], 'timestamp': 1777730217105}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3DObjects\\workflows\\scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "status": "pass",
+      "duration_seconds": 363.46,
+      "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
@@ -118,14 +118,14 @@
       },
       "resources": {
         "ram": {
-          "peak": 14.3,
-          "avg": 9.15
+          "peak": 21.63,
+          "avg": 10.66
         },
         "total_ram_gb": 31.9,
-        "samples": 228,
+        "samples": 318,
         "vram": {
-          "peak": 6.31,
-          "avg": 3.14
+          "peak": 6.28,
+          "avg": 2.74
         }
       }
     }
