@@ -31,6 +31,10 @@ optree = ">=0.11.0"
 c-compiler = "*"
 mesalib = "*"
 libegl = "*"
+libosmesa = "*"
+
+[env_vars]
+PYOPENGL_PLATFORM = "osmesa"
 
 [target.win-64.pypi-dependencies]
 triton-windows = ">=3.5.0"
