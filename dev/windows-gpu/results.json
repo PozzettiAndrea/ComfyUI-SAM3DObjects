@@ -1,23 +1,23 @@
 {
-  "timestamp": "2026-05-02T11:23:24.973951+00:00",
+  "timestamp": "2026-05-02T17:01:41.144181+00:00",
   "platform": "windows",
   "hardware": {
     "os": "Windows-10-10.0.26200-SP0",
     "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
     "gpu": "NVIDIA GeForce RTX 3090"
   },
-  "commit_hash": "8a809f09519b8b6e2565d32829943d24d820a763",
-  "success": false,
+  "commit_hash": "4f7d527eb45ede0f15663c1cecc26b20cb6e3322",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 1
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
       "status": "pass",
-      "duration_seconds": 494.81,
+      "duration_seconds": 459.86,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -26,21 +26,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 13.15,
-          "avg": 6.15
+          "peak": 12.47,
+          "avg": 5.97
         },
         "total_ram_gb": 31.9,
-        "samples": 433,
+        "samples": 402,
         "vram": {
-          "peak": 5.34,
-          "avg": 1.76
+          "peak": 5.37,
+          "avg": 1.81
         }
       }
     },
     {
       "name": "full_generation",
       "status": "pass",
-      "duration_seconds": 203.36,
+      "duration_seconds": 263.28,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -49,21 +49,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 13.28,
-          "avg": 9.93
+          "peak": 13.24,
+          "avg": 10.6
         },
         "total_ram_gb": 31.9,
-        "samples": 178,
+        "samples": 232,
         "vram": {
-          "peak": 5.39,
-          "avg": 2.3
+          "peak": 5.46,
+          "avg": 2.07
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 70.7,
+      "duration_seconds": 167.46,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -72,21 +72,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 14.47,
-          "avg": 12.82
+          "peak": 12.83,
+          "avg": 9.41
         },
         "total_ram_gb": 31.9,
-        "samples": 63,
+        "samples": 147,
         "vram": {
-          "peak": 5.48,
-          "avg": 2.02
+          "peak": 5.46,
+          "avg": 2.46
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 95.86,
+      "duration_seconds": 97.15,
       "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
@@ -95,22 +95,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 14.14,
-          "avg": 13.54
+          "peak": 13.31,
+          "avg": 12.74
         },
         "total_ram_gb": 31.9,
-        "samples": 85,
+        "samples": 86,
         "vram": {
-          "peak": 5.51,
-          "avg": 1.83
+          "peak": 5.47,
+          "avg": 1.91
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 395.19,
-      "error": "Workflow execution failed: {'prompt_id': '49920e31-f4c6-44fe-8b0f-726548adf192', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['78', '106', '85', '77', '80', '74', '87', '99', '82', '75', '59'], 'exception_message': '(\\'Unable to load OpenGL library\\', \"Could not find module \\'OSMesa\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'OSMesa\\', None)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\osmesa.py\", line 22, in GL\\n    return ctypesloader.loadLibrary(\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\ctypesloader.py\", line 36, in loadLibrary\\n    return _loadLibraryWindows(dllType, name, mode)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\ctypesloader.py\", line 89, in _loadLibraryWindows\\n    return dllType( name, mode )\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\ctypes\\\\__init__.py\", line 379, in __init__\\n    self._handle = _dlopen(self._name, mode)\\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\\nFileNotFoundError: (\"Could not find module \\'OSMesa\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'OSMesa\\', None)\\n\\nDuring handling of the above exception, another exception occurred:\\n\\nTraceback (most recent call last):\\n  File \"C:\\\\Users\\\\ContainerAdministrator\\\\AppData\\\\Local\\\\Temp\\\\comfyui_pvenv_mvwn879i\\\\persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\comfy_api\\\\latest\\\\_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\torch\\\\utils\\\\_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 320, in _render_3d_mesh_textured\\n    import pyrender\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\pyrender\\\\__init__.py\", line 3, in <module>\\n    from .light import Light, PointLight, DirectionalLight, SpotLight\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\pyrender\\\\light.py\", line 10, in <module>\\n    from OpenGL.GL import *\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\GL\\\\__init__.py\", line 3, in <module>\\n    from OpenGL import error as _error\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\error.py\", line 12, in <module>\\n    from OpenGL import platform, _configflags\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\__init__.py\", line 59, in <module>\\n    _load()\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\__init__.py\", line 55, in _load\\n    plugin.install(globals())\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 108, in install\\n    namespace[name] = getattr(self, name, None)\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 19, in __get__\\n    value = self.fget(obj)\\n            ^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\osmesa.py\", line 66, in GetCurrentContext\\n    function = self.OSMesa.OSMesaGetCurrentContext\\n               ^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 19, in __get__\\n    value = self.fget(obj)\\n            ^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\osmesa.py\", line 60, in OSMesa\\n    def OSMesa( self ): return self.GL\\n                               ^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 19, in __get__\\n    value = self.fget(obj)\\n            ^^^^^^^^^^^^^^\\n  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\.ce\\\\.pixi\\\\envs\\\\sam3dobjects-nodes\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\osmesa.py\", line 28, in GL\\n    raise ImportError(\"Unable to load OpenGL library\", *err.args)\\nImportError: (\\'Unable to load OpenGL library\\', \"Could not find module \\'OSMesa\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'OSMesa\\', None)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"C:\\\\workspaces\\\\SAM3DObjects-1252\\\\.venv\\\\lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['C:\\\\workspaces\\\\SAM3DObjects-1252\\\\ComfyUI\\\\output\\\\sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['78', '106', '85', '77', '80', '74', '87', '82', '99', '108', '100', '75', '59'], 'timestamp': 1777721004221}\n\nDetails:\nWorkflow: C:\\ComfyUI-SAM3DObjects\\workflows\\scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "status": "pass",
+      "duration_seconds": 427.54,
+      "error": null,
       "hardware": {
         "os": "Windows-10-10.0.26200-SP0",
         "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
@@ -118,14 +118,14 @@
       },
       "resources": {
         "ram": {
-          "peak": 20.46,
-          "avg": 10.32
+          "peak": 21.66,
+          "avg": 10.23
         },
         "total_ram_gb": 31.9,
-        "samples": 346,
+        "samples": 374,
         "vram": {
-          "peak": 6.47,
-          "avg": 3.03
+          "peak": 5.32,
+          "avg": 2.89
         }
       }
     }
