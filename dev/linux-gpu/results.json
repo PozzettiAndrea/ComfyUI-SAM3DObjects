@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-05-02T13:16:49.668114+00:00",
+  "timestamp": "2026-05-02T14:20:00.874298+00:00",
   "platform": "linux",
   "hardware": {
     "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
     "cpu": "AMD Ryzen 5 3600 6-Core Processor",
     "gpu": "NVIDIA GeForce RTX 5060"
   },
-  "commit_hash": "7c10f2c196c2d84613734946aa1bbb3c685c0c05",
+  "commit_hash": "679fe7612b6f9a77619bb64865f70f45ec75e022",
   "success": false,
   "summary": {
     "total": 5,
@@ -17,7 +17,7 @@
     {
       "name": "debug_large_image_results",
       "status": "pass",
-      "duration_seconds": 326.1,
+      "duration_seconds": 261.12,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -26,21 +26,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 16.35,
-          "avg": 8.3
+          "peak": 17.12,
+          "avg": 6.85
         },
         "total_ram_gb": 31.3,
-        "samples": 316,
+        "samples": 254,
         "vram": {
           "peak": 5.63,
-          "avg": 0.86
+          "avg": 0.93
         }
       }
     },
     {
       "name": "full_generation",
       "status": "pass",
-      "duration_seconds": 159.5,
+      "duration_seconds": 155.43,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -49,21 +49,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 16.0,
-          "avg": 11.58
+          "peak": 15.81,
+          "avg": 11.75
         },
         "total_ram_gb": 31.3,
-        "samples": 155,
+        "samples": 152,
         "vram": {
-          "peak": 4.76,
-          "avg": 1.05
+          "peak": 4.73,
+          "avg": 1.01
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 80.0,
+      "duration_seconds": 78.93,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -72,21 +72,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 14.28,
-          "avg": 10.18
+          "peak": 14.16,
+          "avg": 9.73
         },
         "total_ram_gb": 31.3,
-        "samples": 78,
+        "samples": 77,
         "vram": {
           "peak": 4.73,
-          "avg": 1.45
+          "avg": 1.47
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 97.63,
+      "duration_seconds": 138.88,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -95,22 +95,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 16.25,
-          "avg": 15.59
+          "peak": 16.76,
+          "avg": 15.15
         },
         "total_ram_gb": 31.3,
-        "samples": 95,
+        "samples": 135,
         "vram": {
           "peak": 4.71,
-          "avg": 1.29
+          "avg": 1.07
         }
       }
     },
     {
       "name": "scene_generation",
       "status": "fail",
-      "duration_seconds": 361.22,
-      "error": "Workflow execution failed: {'prompt_id': '9dfb0e6f-0b66-44c2-b7a9-b37fae0b5d7d', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['77', '87', '85', '74', '59', '80', '78', '82', '75', '99', '106'], 'exception_message': '\\'NoneType\\' object has no attribute \\'glGetError\\'\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_4t_oy_zs/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 317, in _render_3d_mesh_textured\\n    import pyrender\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/__init__.py\", line 3, in <module>\\n    from .light import Light, PointLight, DirectionalLight, SpotLight\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/light.py\", line 10, in <module>\\n    from OpenGL.GL import *\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/OpenGL/GL/__init__.py\", line 4, in <module>\\n    from OpenGL.GL.VERSION.GL_1_1 import *\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/OpenGL/GL/VERSION/GL_1_1.py\", line 14, in <module>\\n    from OpenGL.raw.GL.VERSION.GL_1_1 import *\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/OpenGL/raw/GL/VERSION/GL_1_1.py\", line 7, in <module>\\n    from OpenGL.raw.GL import _errors\\n  File \"/workspaces/SAM3DObjects-1254/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/OpenGL/raw/GL/_errors.py\", line 4, in <module>\\n    _error_checker = _ErrorChecker( _p, _p.GL.glGetError )\\n                                        ^^^^^^^^^^^^^^^^\\nAttributeError: \\'NoneType\\' object has no attribute \\'glGetError\\'\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1254/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1254/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1254/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1254/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1254/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1254/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['/workspaces/SAM3DObjects-1254/ComfyUI/output/sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['77', '87', '108', '85', '74', '59', '80', '78', '82', '100', '75', '99', '106'], 'timestamp': 1777727797954}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "duration_seconds": 362.52,
+      "error": "Workflow execution failed: {'prompt_id': 'afd651a7-4c96-4959-91b8-5b611ecc0ab0', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['77', '74', '87', '99', '85', '78', '106', '82', '80', '59', '75'], 'exception_message': 'Invalid device ID (0)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_huw61so1/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 359, in _render_3d_mesh_textured\\n    renderer = pyrender.OffscreenRenderer(W, H)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 31, in __init__\\n    self._create()\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 137, in _create\\n    egl_device = egl.get_device_by_index(device_id)\\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1357/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/platforms/egl.py\", line 83, in get_device_by_index\\n    raise ValueError(\\'Invalid device ID ({})\\'.format(device_id, len(devices)))\\nValueError: Invalid device ID (0)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1357/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1357/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1357/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1357/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1357/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1357/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['/workspaces/SAM3DObjects-1357/ComfyUI/output/sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['77', '74', '87', '85', '99', '78', '106', '82', '100', '80', '108', '59', '75'], 'timestamp': 1777731597621}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -118,14 +118,14 @@
       },
       "resources": {
         "ram": {
-          "peak": 22.34,
-          "avg": 13.67
+          "peak": 21.44,
+          "avg": 13.02
         },
         "total_ram_gb": 31.3,
-        "samples": 352,
+        "samples": 353,
         "vram": {
-          "peak": 5.56,
-          "avg": 2.36
+          "peak": 5.59,
+          "avg": 2.38
         }
       }
     }
