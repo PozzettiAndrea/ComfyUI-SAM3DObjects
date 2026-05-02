@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-05-02T10:40:55.541180+00:00",
+  "timestamp": "2026-05-02T10:53:51.040130+00:00",
   "platform": "linux",
   "hardware": {
     "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
     "cpu": "AMD Ryzen 5 3600 6-Core Processor",
     "gpu": "NVIDIA GeForce RTX 5060"
   },
-  "commit_hash": "f5341b40cb2e0245574909a9f4794bd634c1bd57",
+  "commit_hash": "8a809f09519b8b6e2565d32829943d24d820a763",
   "success": false,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 1
+    "passed": 0,
+    "failed": 5
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
-      "status": "pass",
-      "duration_seconds": 312.9,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 167.23,
+      "error": "Workflow execution failed: {'prompt_id': '7b64929c-cd8f-4330-be11-56e34b50e3d4', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['95', '74', '78', '77', '75', '88'], 'exception_message': \"No module named 'pytorch3d.renderer'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/SAM3DObjects-1048/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'bf16'}\"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9253, 0.8433, 0.7373],\\n          ...,\\n          [0.8037, 0.6587, 0.4863],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9136, 0.8315, 0.7256],\\n          [0.9175, 0.8354, 0.7295],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7959, 0.6509, 0.4785],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.9214, 0.8276, 0.7178],\\n          [0.9253, 0.8433, 0.7373],\\n          [0.9175, 0.8354, 0.7295],\\n          ...,\\n          [0.7920, 0.6470, 0.4746],\\n          [0.8076, 0.6626, 0.4902],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         ...,\\n\\n         [[0.8745, 0.6860, 0.4980],\\n          [0.8745, 0.6860, 0.4980],\\n          [0.8667, 0.6782, 0.4902],\\n          ...,\\n          [0.6392, 0.4353, 0.2471],\\n          [0.6431, 0.4392, 0.2510],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8667, 0.6782, 0.4902],\\n          [0.8706, 0.6821, 0.4941],\\n          [0.8706, 0.6821, 0.4941],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6470, 0.4431, 0.2549],\\n          [0.0000, 0.0000, 0.0000]],\\n\\n         [[0.8628, 0.6743, 0.4863],\\n          [0.8784, 0.6904, 0.5020],\\n          [0.8784, 0.6904, 0.5020],\\n          ...,\\n          [0.6431, 0.4392, 0.2510],\\n          [0.6353, 0.4314, 0.2432],\\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['59', '74', '95', '92', '78', '77', '75', '93', '88', '94'], 'timestamp': 1777719202220}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/debug_large_image_results.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -26,22 +26,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 16.53,
-          "avg": 5.36
+          "peak": 4.4,
+          "avg": 2.96
         },
         "total_ram_gb": 31.3,
-        "samples": 304,
+        "samples": 162,
         "vram": {
-          "peak": 5.49,
-          "avg": 0.83
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "full_generation",
-      "status": "pass",
-      "duration_seconds": 156.55,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 7.36,
+      "error": "Workflow execution failed: {'prompt_id': '8054c65a-12b7-49dc-8457-5010b177ad98', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['74', '4', '53', '28'], 'exception_message': \"No module named 'pytorch3d.renderer'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/SAM3DObjects-1048/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'bf16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['59', '74', '73', '54', '72', '71', '53', '28', '4', '70', '48'], 'timestamp': 1777719209487}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/full_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -49,22 +49,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 13.85,
-          "avg": 11.17
+          "peak": 2.64,
+          "avg": 2.59
         },
         "total_ram_gb": 31.3,
-        "samples": 153,
+        "samples": 8,
         "vram": {
-          "peak": 4.76,
-          "avg": 1.0
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "gaussian_generation",
-      "status": "pass",
-      "duration_seconds": 85.47,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 7.08,
+      "error": "Workflow execution failed: {'prompt_id': '2aa0e352-4716-44fd-ae5a-2ad367055a95', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['4', '60', '53', '28'], 'exception_message': \"No module named 'pytorch3d.renderer'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/SAM3DObjects-1048/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'bf16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['59', '62', '63', '61', '60', '53', '28', '4'], 'timestamp': 1777719216949}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/gaussian_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -72,22 +72,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 13.59,
-          "avg": 8.08
+          "peak": 2.58,
+          "avg": 2.58
         },
         "total_ram_gb": 31.3,
-        "samples": 84,
+        "samples": 7,
         "vram": {
-          "peak": 4.7,
-          "avg": 1.37
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "mesh_generation",
-      "status": "pass",
-      "duration_seconds": 100.31,
-      "error": null,
+      "status": "fail",
+      "duration_seconds": 6.77,
+      "error": "Workflow execution failed: {'prompt_id': '6925b5d9-e16d-4ecf-81b1-933013be9594', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['4', '60', '53', '28'], 'exception_message': \"No module named 'pytorch3d.renderer'\\n\", 'exception_type': 'ModuleNotFoundError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/internal/__init__.py\", line 149, in wrapped_func\\n    return method(locked_class, **inputs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n', '  File \"/workspaces/SAM3DObjects-1048/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py\", line 96, in execute\\n    from pytorch3d.renderer import look_at_view_transform\\n'], 'current_inputs': {'depth_model': [\"{'config_path': '/workspaces/SAM3DObjects-1048/ComfyUI/models/sam3dobjects/pipeline.yaml', 'compile': False, 'precision': 'bf16'}\"], 'image': ['tensor([[[[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         ...,\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]],\\n\\n         [[0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          ...,\\n          [0., 0., 0.],\\n          [0., 0., 0.],\\n          [0., 0., 0.]]]])']}, 'current_outputs': ['59', '64', '61', '60', '53', '28', '4', '65'], 'timestamp': 1777719224002}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/mesh_generation.json\nNode error: SAM3D_DepthEstimate",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -95,22 +95,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 17.53,
-          "avg": 16.54
+          "peak": 2.64,
+          "avg": 2.64
         },
         "total_ram_gb": 31.3,
-        "samples": 98,
+        "samples": 7,
         "vram": {
-          "peak": 4.74,
-          "avg": 1.3
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     },
     {
       "name": "scene_generation",
       "status": "fail",
-      "duration_seconds": 341.45,
-      "error": "Workflow execution failed: {'prompt_id': '338e4ab1-93ce-4438-b9fd-dfbda20e3311', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['99', '77', '78', '75', '82', '85', '87', '59', '106', '74', '80'], 'exception_message': 'Invalid device ID (0)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_ir7tlm8f/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 365, in _render_3d_mesh_textured\\n    renderer = pyrender.OffscreenRenderer(W, H)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 31, in __init__\\n    self._create()\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 137, in _create\\n    egl_device = egl.get_device_by_index(device_id)\\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1018/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/platforms/egl.py\", line 83, in get_device_by_index\\n    raise ValueError(\\'Invalid device ID ({})\\'.format(device_id, len(devices)))\\nValueError: Invalid device ID (0)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1018/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1018/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1018/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1018/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1018/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1018/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['/workspaces/SAM3DObjects-1018/ComfyUI/output/sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['99', '108', '77', '78', '75', '82', '85', '87', '59', '100', '106', '74', '80'], 'timestamp': 1777718452225}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "duration_seconds": 6.16,
+      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [85,87,106], sample: {\"inputs\":{\"depth_model\":[\"74\",0],\"image\":[\"77\",0]},\"class_type\":\"SAM3D_DepthEstimate\",\"_meta\":{\"title\":\"SAM3D_DepthEstimate\"}}",
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -118,14 +118,14 @@
       },
       "resources": {
         "ram": {
-          "peak": 20.75,
-          "avg": 11.81
+          "peak": 2.62,
+          "avg": 2.6
         },
         "total_ram_gb": 31.3,
-        "samples": 333,
+        "samples": 6,
         "vram": {
-          "peak": 5.66,
-          "avg": 2.51
+          "peak": 0.11,
+          "avg": 0.11
         }
       }
     }
