@@ -246,10 +246,12 @@ class SAM3D_ProjectionOverlay(io.ComfyNode):
     def _render_3d_mesh(loaded_meshes, img_array, K, colors, alpha, H, W):
         """Render solid colored meshes with proper depth buffering using pyrender."""
         import numpy as np
-        import pyrender
         import os
-
-        # Offscreen rendering backend set via PYOPENGL_PLATFORM env var in comfy-env.toml
+        import sys
+        # Set EGL for headless rendering on Linux (must be before pyrender import)
+        if sys.platform == 'linux':
+            os.environ.setdefault('PYOPENGL_PLATFORM', 'egl')
+        import pyrender
 
         overlay = img_array.copy()
 
@@ -314,10 +316,12 @@ class SAM3D_ProjectionOverlay(io.ComfyNode):
     def _render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W):
         """Render textured meshes using pyrender."""
         import numpy as np
-        import pyrender
         import os
-
-        # Offscreen rendering backend set via PYOPENGL_PLATFORM env var in comfy-env.toml
+        import sys
+        # Set EGL for headless rendering on Linux (must be before pyrender import)
+        if sys.platform == 'linux':
+            os.environ.setdefault('PYOPENGL_PLATFORM', 'egl')
+        import pyrender
 
         overlay = img_array.copy()
 
