@@ -35,6 +35,20 @@ from .vram_log import vram
 
 _DTYPE_DBG = os.environ.get("SAM3DOBJECTS_DTYPE_DBG", "").lower() in ("1", "true", "yes")
 
+# ============================================================
+# Module-level model cache (persists across subprocess worker calls)
+# ============================================================
+_model_patchers = {}   # {model_key: ModelPatcher}
+_post_loaded = set()   # Keys that have run post-load initialization
+
+
+def _unload_model(model_key):
+    """Move model weights back to CPU. Signals ComfyUI that VRAM is free."""
+    if model_key in _model_patchers:
+        patcher = _model_patchers[model_key]
+        patcher.unpatch_model(device_to=patcher.offload_device)
+    comfy.model_management.soft_empty_cache()
+
 
 # Inline decoder configs — used as fallback when YAML files are missing.
 # These are small, static configs that never change between releases.
@@ -406,206 +420,191 @@ def _resolve_dtype(precision: str) -> torch.dtype:
 def _load_generator(config_path: str, generator_type: str, precision: str = "bf16"):
     """
     Load a generator model (ss_generator or slat_generator) wrapped in ModelPatcher.
-
-    Args:
-        config_path: Path to pipeline.yaml
-        generator_type: 'ss' or 'slat'
-        precision: "bf16", "fp16", or "fp32"
+    Uses module-level cache — builds once on CPU, then load_models_gpu() on every call.
 
     Returns:
-        comfy.model_patcher.ModelPatcher wrapping the generator model
+        (model_key, model) — use model_key with _unload_model() when done.
     """
+    model_key = f"generator_{generator_type}"
 
-    config, checkpoint_dir = _load_config(config_path)
+    if model_key not in _model_patchers:
+        config, checkpoint_dir = _load_config(config_path)
+        gen_config_path = checkpoint_dir / config[f"{generator_type}_generator_config_path"]
+        gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"])
 
-    gen_config_path = checkpoint_dir / config[f"{generator_type}_generator_config_path"]
-    gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{generator_type}_generator_ckpt_path"])
+        with open(gen_config_path, 'r') as f:
+            gen_config = yaml.safe_load(f)
+        model_config = gen_config["module"]["generator"]["backbone"]
 
-    with open(gen_config_path, 'r') as f:
-        gen_config = yaml.safe_load(f)
-    model_config = gen_config["module"]["generator"]["backbone"]
+        offload_device = comfy.model_management.unet_offload_device()
 
-    offload_device = comfy.model_management.unet_offload_device()
+        vram(f"_load_generator({generator_type}): before build")
+        model = _instantiate(model_config)
 
-    # Build on CPU (native ComfyUI pattern — no meta device)
-    vram(f"_load_generator({generator_type}): before build")
-    model = _instantiate(model_config)
+        sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+        if 'state_dict' in sd:
+            sd = sd['state_dict']
+        sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
+        model.load_state_dict(sd, strict=False, assign=True)
+        del sd
+        vram(f"_load_generator({generator_type}): after load_state_dict")
 
-    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
-    # Training checkpoints nest weights under "state_dict"; safetensors are flat
-    if 'state_dict' in sd:
-        sd = sd['state_dict']
-    sd = _filter_and_remove_prefix(sd, "_base_models.generator.")
-    model.load_state_dict(sd, strict=False, assign=True)
-    vram(f"_load_generator({generator_type}): after load_state_dict")
+        model.eval()
+        model.requires_grad_(False)
+        _enable_lowvram_cast(model)
 
-    model.eval()
-    model.requires_grad_(False)
+        patcher = comfy.model_patcher.ModelPatcher(
+            model,
+            load_device=comfy.model_management.get_torch_device(),
+            offload_device=offload_device,
+        )
 
-    # Native models use manual_cast — dtype is handled by the operations tier.
-    # No convert_to_fp16() needed.
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            patcher.set_model_compute_dtype(dtype)
 
-    _enable_lowvram_cast(model)
-    patcher = comfy.model_patcher.ModelPatcher(
-        model,
-        load_device=comfy.model_management.get_torch_device(),
-        offload_device=offload_device,
-    )
+        _model_patchers[model_key] = patcher
+        log.info("Built and cached generator '%s'", model_key)
 
-    dtype = _resolve_dtype(precision)
-    if dtype != torch.float32:
-        patcher.set_model_compute_dtype(dtype)
-    if _DTYPE_DBG:
-        log.info("[DTYPE_DBG] _load_generator(%s): precision=%s dtype=%s force_cast=%s",
-                 generator_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
-
-    return patcher
+    comfy.model_management.load_models_gpu([_model_patchers[model_key]])
+    return model_key, _model_patchers[model_key].model
 
 
 def _load_decoder(config_path: str, decoder_type: str, precision: str = "bf16"):
     """
-    Load a decoder model (ss_decoder, slat_decoder_gs, slat_decoder_mesh) wrapped in ModelPatcher.
-
-    Args:
-        config_path: Path to pipeline.yaml
-        decoder_type: 'ss', 'slat_decoder_gs', 'slat_decoder_mesh'
-        precision: "bf16", "fp16", or "fp32"
+    Load a decoder model wrapped in ModelPatcher.
+    Uses module-level cache — builds once on CPU, then load_models_gpu() on every call.
 
     Returns:
-        comfy.model_patcher.ModelPatcher wrapping the decoder model
+        (model_key, model) — use model_key with _unload_model() when done.
     """
+    model_key = f"decoder_{decoder_type}"
 
-    config, checkpoint_dir = _load_config(config_path)
+    if model_key not in _model_patchers:
+        config, checkpoint_dir = _load_config(config_path)
 
-    if decoder_type == 'ss':
-        dec_config_path = checkpoint_dir / config.ss_decoder_config_path
-        dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config.ss_decoder_ckpt_path)
-    else:
-        dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
-        dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{decoder_type}_ckpt_path"])
+        if decoder_type == 'ss':
+            dec_config_path = checkpoint_dir / config.ss_decoder_config_path
+            dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config.ss_decoder_ckpt_path)
+        else:
+            dec_config_path = checkpoint_dir / config[f"{decoder_type}_config_path"]
+            dec_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{decoder_type}_ckpt_path"])
 
-    if dec_config_path.exists():
-        with open(dec_config_path, 'r') as f:
-            dec_config = yaml.safe_load(f)
-    else:
-        dec_config = _DEFAULT_DECODER_CONFIGS.get(decoder_type)
-        if dec_config is None:
-            raise FileNotFoundError(
-                f"No config file and no inline default for {decoder_type}: {dec_config_path}"
-            )
-        dec_config = dict(dec_config)  # shallow copy to avoid mutating the default
-        log.warning("Config file missing, using inline default: %s", dec_config_path)
-    # Remove pretrained_ckpt_path if present (training artifact)
-    dec_config.pop('pretrained_ckpt_path', None)
+        if dec_config_path.exists():
+            with open(dec_config_path, 'r') as f:
+                dec_config = yaml.safe_load(f)
+        else:
+            dec_config = _DEFAULT_DECODER_CONFIGS.get(decoder_type)
+            if dec_config is None:
+                raise FileNotFoundError(
+                    f"No config file and no inline default for {decoder_type}: {dec_config_path}"
+                )
+            dec_config = dict(dec_config)
+            log.warning("Config file missing, using inline default: %s", dec_config_path)
+        dec_config.pop('pretrained_ckpt_path', None)
 
-    offload_device = comfy.model_management.unet_offload_device()
+        offload_device = comfy.model_management.unet_offload_device()
 
-    # Decoders are small (~170-364 MB) and contain utility objects (FlexiCubes,
-    # SparseFeatures2Mesh) that create real data tensors in __init__, so skip
-    # the meta device pattern here — not worth the complexity.
-    vram(f"_load_decoder({decoder_type}): before instantiate")
-    model = _instantiate(dec_config)
+        vram(f"_load_decoder({decoder_type}): before instantiate")
+        model = _instantiate(dec_config)
 
-    sd = comfy.utils.load_torch_file(str(dec_ckpt_path))
-    # Decoder checkpoints have weights at root level with "module." prefix
-    sd = _remove_prefix(sd, "module.")
-    model.load_state_dict(sd, strict=False, assign=True)
-    vram(f"_load_decoder({decoder_type}): after load_state_dict")
+        sd = comfy.utils.load_torch_file(str(dec_ckpt_path))
+        sd = _remove_prefix(sd, "module.")
+        model.load_state_dict(sd, strict=False, assign=True)
+        del sd
+        vram(f"_load_decoder({decoder_type}): after load_state_dict")
 
-    model.eval()
-    model.requires_grad_(False)
+        model.eval()
+        model.requires_grad_(False)
 
-    # Cast to requested precision (sageattention requires fp16/bf16)
-    dtype = _resolve_dtype(precision)
-    if dtype != torch.float32:
-        model.to(dtype=dtype)
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            model.to(dtype=dtype)
 
-    # Re-init FlexiCubes / SparseFeatures2Mesh lookup tables on the target device.
-    if hasattr(model, 'mesh_extractor'):
-        from ..sam3d.representations import SparseFeatures2Mesh
-        me = model.mesh_extractor
-        if isinstance(me, SparseFeatures2Mesh):
-            device = str(comfy.model_management.get_torch_device())
-            model.mesh_extractor = SparseFeatures2Mesh(
-                device=device, res=me.res, use_color=me.use_color,
-            )
-            log.info("Re-initialized mesh_extractor on %s", device)
+        # Re-init FlexiCubes / SparseFeatures2Mesh lookup tables on the target device.
+        if hasattr(model, 'mesh_extractor'):
+            from ..sam3d.representations import SparseFeatures2Mesh
+            me = model.mesh_extractor
+            if isinstance(me, SparseFeatures2Mesh):
+                device = str(comfy.model_management.get_torch_device())
+                model.mesh_extractor = SparseFeatures2Mesh(
+                    device=device, res=me.res, use_color=me.use_color,
+                )
+                log.info("Re-initialized mesh_extractor on %s", device)
 
-    _enable_lowvram_cast(model)
-    patcher = comfy.model_patcher.ModelPatcher(
-        model,
-        load_device=comfy.model_management.get_torch_device(),
-        offload_device=offload_device,
-    )
+        _enable_lowvram_cast(model)
+        patcher = comfy.model_patcher.ModelPatcher(
+            model,
+            load_device=comfy.model_management.get_torch_device(),
+            offload_device=offload_device,
+        )
 
-    dtype = _resolve_dtype(precision)
-    if dtype != torch.float32:
-        patcher.set_model_compute_dtype(dtype)
-    if _DTYPE_DBG:
-        log.info("[DTYPE_DBG] _load_decoder(%s): precision=%s dtype=%s force_cast=%s",
-                 decoder_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            patcher.set_model_compute_dtype(dtype)
 
-    return patcher
+        _model_patchers[model_key] = patcher
+        log.info("Built and cached decoder '%s'", model_key)
+
+    comfy.model_management.load_models_gpu([_model_patchers[model_key]])
+    return model_key, _model_patchers[model_key].model
 
 
 def _load_condition_embedder(config_path: str, embedder_type: str, precision: str = "bf16"):
     """
-    Load a condition embedder (ss or slat) wrapped in ModelPatcher.
-
-    Args:
-        config_path: Path to pipeline.yaml
-        embedder_type: 'ss' or 'slat'
-        precision: "bf16", "fp16", or "fp32"
+    Load a condition embedder wrapped in ModelPatcher.
+    Uses module-level cache — builds once on CPU, then load_models_gpu() on every call.
 
     Returns:
-        comfy.model_patcher.ModelPatcher wrapping the embedder model
+        (model_key, model) — use model_key with _unload_model() when done.
     """
+    model_key = f"embedder_{embedder_type}"
 
-    config, checkpoint_dir = _load_config(config_path)
+    if model_key not in _model_patchers:
+        config, checkpoint_dir = _load_config(config_path)
+        gen_config_path = checkpoint_dir / config[f"{embedder_type}_generator_config_path"]
+        gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"])
 
-    gen_config_path = checkpoint_dir / config[f"{embedder_type}_generator_config_path"]
-    gen_ckpt_path = _prefer_safetensors(checkpoint_dir / config[f"{embedder_type}_generator_ckpt_path"])
+        with open(gen_config_path, 'r') as f:
+            gen_config = yaml.safe_load(f)
+        embedder_config = gen_config["module"]["condition_embedder"]["backbone"]
 
-    with open(gen_config_path, 'r') as f:
-        gen_config = yaml.safe_load(f)
-    embedder_config = gen_config["module"]["condition_embedder"]["backbone"]
+        offload_device = comfy.model_management.unet_offload_device()
 
-    offload_device = comfy.model_management.unet_offload_device()
+        vram(f"_load_condition_embedder({embedder_type}): before build")
+        embedder = _instantiate(embedder_config)
 
-    # Build on CPU (native ComfyUI pattern — no meta device)
-    vram(f"_load_condition_embedder({embedder_type}): before build")
-    embedder = _instantiate(embedder_config)
+        sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
+        if 'state_dict' in sd:
+            sd = sd['state_dict']
+        sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
+        embedder.load_state_dict(sd, strict=False, assign=True)
+        del sd
+        vram(f"_load_condition_embedder({embedder_type}): after load_state_dict")
 
-    sd = comfy.utils.load_torch_file(str(gen_ckpt_path))
-    # Training checkpoints nest weights under "state_dict"; safetensors are flat
-    if 'state_dict' in sd:
-        sd = sd['state_dict']
-    sd = _filter_and_remove_prefix(sd, "_base_models.condition_embedder.")
-    embedder.load_state_dict(sd, strict=False, assign=True)
-    vram(f"_load_condition_embedder({embedder_type}): after load_state_dict")
+        embedder.eval()
+        embedder.requires_grad_(False)
 
-    embedder.eval()
-    embedder.requires_grad_(False)
+        _reinit_dino_buffers(embedder)
+        _share_dino_backbones(embedder)
+        _wrap_dino_attention(embedder)
 
-    _reinit_dino_buffers(embedder)
-    _share_dino_backbones(embedder)
-    _wrap_dino_attention(embedder)
+        _enable_lowvram_cast(embedder)
+        patcher = comfy.model_patcher.ModelPatcher(
+            embedder,
+            load_device=comfy.model_management.get_torch_device(),
+            offload_device=offload_device,
+        )
 
-    _enable_lowvram_cast(embedder)
-    patcher = comfy.model_patcher.ModelPatcher(
-        embedder,
-        load_device=comfy.model_management.get_torch_device(),
-        offload_device=offload_device,
-    )
+        dtype = _resolve_dtype(precision)
+        if dtype != torch.float32:
+            patcher.set_model_compute_dtype(dtype)
 
-    dtype = _resolve_dtype(precision)
-    if dtype != torch.float32:
-        patcher.set_model_compute_dtype(dtype)
-    if _DTYPE_DBG:
-        log.info("[DTYPE_DBG] _load_condition_embedder(%s): precision=%s dtype=%s force_cast=%s",
-                 embedder_type, precision, dtype, getattr(patcher, 'force_cast_weights', None))
+        _model_patchers[model_key] = patcher
+        log.info("Built and cached embedder '%s'", model_key)
 
-    return patcher
+    comfy.model_management.load_models_gpu([_model_patchers[model_key]])
+    return model_key, _model_patchers[model_key].model
 
 
 def _get_preprocessor(config_path: str, preprocessor_type: str):
@@ -872,15 +871,9 @@ def run_stage1(
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # --- Phase 1: Run embedder ALONE (frees ~1.2 GB for attention intermediates) ---
+    # --- Phase 1: Load embedder, embed conditions, unload ---
     log.info("Loading Stage 1 embedder...")
-    vram("Stage1: before loading embedder")
-    ss_emb_patcher = _load_condition_embedder(config_path, 'ss', precision)
-
-    vram("Stage1: before load_models_gpu (embedder only)")
-    comfy.model_management.load_models_gpu([ss_emb_patcher])
-    vram("Stage1: after load_models_gpu (embedder only)")
-    ss_embedder = ss_emb_patcher.model
+    emb_key, ss_embedder = _load_condition_embedder(config_path, 'ss', precision)
 
     downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
     device = comfy.model_management.get_torch_device()
@@ -892,14 +885,10 @@ def run_stage1(
         image_tensor = ss_input_dict["image"]
         bs = image_tensor.shape[0]
 
-        # Get condition input mapping from config
         ss_condition_input_mapping = getattr(config, 'ss_condition_input_mapping', ['image'])
-
-        # Get condition embeddings
         condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
         condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
 
-        # Cast inputs to compute dtype before embedding (embedder uses attention internally)
         dtype = _resolve_dtype(precision)
         if dtype != torch.float32:
             condition_args = [
@@ -910,9 +899,7 @@ def run_stage1(
                 k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
                 for k, v in condition_kwargs.items()
             }
-            print(f"[DTYPE_DBG] run_stage1: cast embedder inputs to {dtype}", flush=True)
 
-        # Embed conditions
         if ss_embedder is not None and len(condition_args) > 0:
             tokens = ss_embedder(*condition_args, **condition_kwargs)
             condition_args = (tokens,)
@@ -923,37 +910,20 @@ def run_stage1(
             condition_kwargs = {}
 
     vram("Stage1: after embedding")
-
-    # --- Unload embedder to free VRAM before loading generator ---
-    log.info("Unloading embedder before generator load...")
-    comfy.model_management.unload_all_models()
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
+    _unload_model(emb_key)
     vram("Stage1: after embedder unload")
 
-    # --- Phase 2: Load generator + decoder for sampling ---
+    # --- Phase 2: Load generator + decoder, sample, unload ---
     log.info("Loading Stage 1 generator + decoder...")
-    vram("Stage1: before loading generator")
-    ss_gen_patcher = _load_generator(config_path, 'ss', precision)
-    ss_dec_patcher = _load_decoder(config_path, 'ss', precision)
+    gen_key, ss_generator = _load_generator(config_path, 'ss', precision)
+    dec_key, ss_decoder = _load_decoder(config_path, 'ss', precision)
 
-    vram("Stage1: before load_models_gpu (generator+decoder)")
-    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher])
-    vram("Stage1: after load_models_gpu (generator+decoder)")
-
-    ss_generator = ss_gen_patcher.model
-    ss_decoder = ss_dec_patcher.model
-
-    # Set compute dtype on generator for noise creation
     ss_generator._compute_dtype = _resolve_dtype(precision)
-    print(f"[DTYPE_DBG] run_stage1: set ss_generator._compute_dtype={ss_generator._compute_dtype}", flush=True)
 
-    # Configure generator (match original override_ss_generator_cfg_config)
     ss_generator.no_shortcut = True
     ss_generator.reverse_fn.strength = cfg_strength
     ss_generator.reverse_fn.strength_pm = cfg_strength_pm
     ss_generator.inference_steps = inference_steps
-    # Critical settings from original that were missing:
     ss_generator.reverse_fn.interval = getattr(config, 'ss_cfg_interval', [0, 500])
     ss_generator.rescale_t = getattr(config, 'ss_rescale_t', 3)
     ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
@@ -963,7 +933,6 @@ def run_stage1(
     vram("Stage1: before inference")
 
     with torch.no_grad():
-        # Check if MM-DiT architecture
         has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
 
         if has_latent_mapping:
@@ -974,7 +943,6 @@ def run_stage1(
         else:
             latent_shape_dict = (bs,) + (4096, 8)
 
-        # Cast inputs to compute dtype (mirrors BaseModel._apply_model xc.to(dtype))
         dtype = _resolve_dtype(precision)
         if dtype != torch.float32:
             condition_args = tuple(
@@ -985,9 +953,7 @@ def run_stage1(
                 k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
                 for k, v in condition_kwargs.items()
             }
-            print(f"[DTYPE_DBG] run_stage1: cast condition_args to {dtype}, types={[type(a).__name__ for a in condition_args]}, dtypes={[a.dtype if hasattr(a,'dtype') else 'N/A' for a in condition_args]}", flush=True)
 
-        # Run generator with progress reporting
         steps = ss_generator.inference_steps
         pbar = comfy.utils.ProgressBar(steps)
         gen_iter = ss_generator.generate_iter(
@@ -1007,7 +973,6 @@ def run_stage1(
 
         shape_latent = return_dict["shape"]
 
-        # Decode sparse structure
         ss = ss_decoder(
             shape_latent.permute(0, 2, 1)
             .contiguous()
@@ -1015,7 +980,6 @@ def run_stage1(
         )
         coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
 
-        # Downsample output
         return_dict["coords_original"] = coords
         original_shape = coords.shape
 
@@ -1032,6 +996,9 @@ def run_stage1(
         return_dict["downsample_factor"] = downsample_factor
 
     vram("Stage1: after inference")
+    _unload_model(gen_key)
+    _unload_model(dec_key)
+    vram("Stage1: after model cleanup")
 
     # Free preprocessing tensors — no longer needed after inference
     del ss_input_dict
@@ -1165,42 +1132,24 @@ def run_stage2(
         coords = torch.from_numpy(coords).int()
     coords = coords.to(device)
 
-    # Force-evict stale Stage 1 models before loading Stage 2.
-    vram("Stage2: before unload Stage1")
-    comfy.model_management.unload_all_models()
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
-    vram("Stage2: after unload Stage1")
-
-    # --- Phase 1: Run embedder ALONE (frees VRAM for attention intermediates) ---
+    # --- Phase 1: Load embedder, embed conditions, unload ---
     log.info("Loading Stage 2 embedder...")
-    slat_emb_patcher = _load_condition_embedder(config_path, 'slat', precision)
+    emb_key, slat_embedder = _load_condition_embedder(config_path, 'slat', precision)
 
-    vram("Stage2: before load_models_gpu (embedder only)")
-    comfy.model_management.load_models_gpu([slat_emb_patcher])
-    vram("Stage2: after load_models_gpu (embedder only)")
-    slat_embedder = slat_emb_patcher.model
-
-    log.info("Running Stage 2 condition embedding...")
-    vram("Stage2: before embedding")
-
-    # Get SLAT normalization stats
     slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
     slat_std = torch.tensor(getattr(config, 'slat_std', [1.0] * 8), device=device)
+
+    vram("Stage2: before embedding")
 
     with torch.no_grad():
         image_tensor = slat_input_dict["image"]
         DEVICE = image_tensor.device
         latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
 
-        # Get condition input mapping from config
         slat_condition_input_mapping = getattr(config, 'slat_condition_input_mapping', ['image'])
-
-        # Get condition embeddings
         condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
         condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
 
-        # Cast inputs to compute dtype before embedding (embedder uses attention internally)
         dtype = _resolve_dtype(precision)
         if dtype != torch.float32:
             condition_args = [
@@ -1211,9 +1160,7 @@ def run_stage2(
                 k: v.to(dtype=dtype) if isinstance(v, torch.Tensor) and v.is_floating_point() else v
                 for k, v in condition_kwargs.items()
             }
-            print(f"[DTYPE_DBG] run_stage2: cast embedder inputs to {dtype}", flush=True)
 
-        # Embed conditions
         if slat_embedder is not None and len(condition_args) > 0:
             tokens = slat_embedder(*condition_args, **condition_kwargs)
             condition_args = (tokens,)
@@ -1224,34 +1171,18 @@ def run_stage2(
             condition_kwargs = {}
 
     vram("Stage2: after embedding")
-
-    # --- Unload embedder to free VRAM before loading generator ---
-    log.info("Unloading embedder before generator load...")
-    comfy.model_management.unload_all_models()
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
+    _unload_model(emb_key)
     vram("Stage2: after embedder unload")
 
-    # --- Phase 2: Load generator for sampling ---
+    # --- Phase 2: Load generator, sample, unload ---
     log.info("Loading Stage 2 generator...")
-    slat_gen_patcher = _load_generator(config_path, 'slat', precision)
+    gen_key, slat_generator = _load_generator(config_path, 'slat', precision)
 
-    vram("Stage2: before load_models_gpu (generator only)")
-    comfy.model_management.load_models_gpu([slat_gen_patcher])
-    vram("Stage2: after load_models_gpu (generator only)")
-
-    slat_generator = slat_gen_patcher.model
-
-    # Set compute dtype on generator for noise creation
     slat_generator._compute_dtype = _resolve_dtype(precision)
-
-    # Configure generator (match original override_slat_generator_cfg_config)
     slat_generator.no_shortcut = True
-    # Read cfg_strength from config if available (config may override the default)
     slat_cfg = getattr(config, 'slat_cfg_strength', cfg_strength)
     slat_generator.reverse_fn.strength = slat_cfg
     slat_generator.inference_steps = inference_steps
-    # Critical settings from original that were missing:
     slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
     slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
 
@@ -1259,10 +1190,8 @@ def run_stage2(
     vram("Stage2: before inference")
 
     with torch.no_grad():
-        # Add coords to condition args
         condition_args = condition_args + (coords.cpu().numpy(),)
 
-        # Cast inputs to compute dtype (mirrors BaseModel._apply_model xc.to(dtype))
         dtype = _resolve_dtype(precision)
         if dtype != torch.float32:
             condition_args = tuple(
@@ -1276,7 +1205,6 @@ def run_stage2(
             if _DTYPE_DBG:
                 log.info("[DTYPE_DBG] run_stage2: cast inputs to %s", dtype)
 
-        # Run generator with progress reporting
         steps = slat_generator.inference_steps
         pbar = comfy.utils.ProgressBar(steps)
         gen_iter = slat_generator.generate_iter(
@@ -1288,16 +1216,17 @@ def run_stage2(
                 comfy.model_management.soft_empty_cache()
         slat_feats = xt
 
-        # Create SparseTensor
         slat = SparseTensor(
             coords=coords,
             feats=slat_feats[0],
         ).to(DEVICE)
 
-        # Apply mean/std normalization
         slat = slat * slat_std + slat_mean
 
     vram("Stage2: after inference")
+    _unload_model(gen_key)
+    vram("Stage2: after model cleanup")
+
     log.info("Stage 2 complete")
 
     # Build output dict with SLAT for saving.
@@ -1402,14 +1331,7 @@ def run_decode(
     # Don't cast feats here — the decoder's input_layer is fp32 (not touched by
     # convert_to_fp16), and the model casts to fp16 internally after input_layer.
 
-    # Force-evict previous stage models before loading decoder
-    vram(f"Decode({decode_format}): before cleanup")
-    comfy.model_management.unload_all_models()
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
-    vram(f"Decode({decode_format}): after cleanup")
-
-    # Load decoder
+    # Load decoder (load_models_gpu auto-evicts other models to free VRAM)
     if decode_format == "gaussian":
         decoder_name = 'slat_decoder_gs'
     else:
@@ -1418,11 +1340,8 @@ def run_decode(
     pbar.update(1)  # SLAT loaded
 
     log.info("Loading decoder (%s)...", decoder_name)
-    dec_patcher = _load_decoder(config_path, decoder_name, precision)
-    vram(f"Decode({decode_format}): before load_models_gpu")
-    comfy.model_management.load_models_gpu([dec_patcher])
+    dec_key, decoder = _load_decoder(config_path, decoder_name, precision)
     vram(f"Decode({decode_format}): after load_models_gpu")
-    decoder = dec_patcher.model
 
     log.info("Running decoder... slat.feats.dtype=%s, slat.feats.shape=%s, slat.coords.shape=%s",
              slat.feats.dtype, slat.feats.shape, slat.coords.shape)
@@ -1461,11 +1380,9 @@ def run_decode(
     pbar.update(1)  # Decode complete
     log.info("Decode complete")
 
-    # Free decoder + SLAT before saving — same pattern as lines 1307-1314
+    # Free decoder + SLAT before saving
     del slat
-    comfy.model_management.unload_all_models()
-    gc.collect()
-    comfy.model_management.soft_empty_cache()
+    _unload_model(dec_key)
     vram(f"Decode({decode_format}): after cleanup")
 
     # Determine output directory
