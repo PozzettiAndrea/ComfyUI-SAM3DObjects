@@ -1,131 +1,131 @@
 {
-  "timestamp": "2026-02-24T14:10:04.004871+00:00",
+  "timestamp": "2026-05-02T17:32:58.498209+00:00",
   "platform": "windows_portable",
   "hardware": {
-    "os": "Windows-11-10.0.26100-SP0",
-    "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-    "gpu": "NVIDIA RTX A4000"
+    "os": "Windows-10-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+    "gpu": "NVIDIA GeForce RTX 3090"
   },
-  "commit_hash": "8b8a491ccbd0de93ac8d4a31e7000ce8af804d1a",
-  "success": false,
+  "commit_hash": "4f7d527eb45ede0f15663c1cecc26b20cb6e3322",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 1
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
       "status": "pass",
-      "duration_seconds": 1531.95,
+      "duration_seconds": 416.42,
       "error": null,
       "hardware": {
-        "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-        "gpu": "NVIDIA RTX A4000"
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 29.13,
-          "avg": 18.62
+          "peak": 13.5,
+          "avg": 5.63
         },
-        "total_ram_gb": 30.0,
-        "samples": 939,
+        "total_ram_gb": 31.9,
+        "samples": 363,
         "vram": {
-          "peak": 15.58,
-          "avg": 6.12
+          "peak": 6.3,
+          "avg": 1.48
         }
       }
     },
     {
       "name": "full_generation",
       "status": "pass",
-      "duration_seconds": 1414.26,
+      "duration_seconds": 204.13,
       "error": null,
       "hardware": {
-        "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-        "gpu": "NVIDIA RTX A4000"
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 28.58,
-          "avg": 23.32
+          "peak": 13.5,
+          "avg": 10.62
         },
-        "total_ram_gb": 30.0,
-        "samples": 1066,
+        "total_ram_gb": 31.9,
+        "samples": 179,
         "vram": {
-          "peak": 15.64,
-          "avg": 13.72
+          "peak": 5.46,
+          "avg": 1.61
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 506.94,
+      "duration_seconds": 106.4,
       "error": null,
       "hardware": {
-        "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-        "gpu": "NVIDIA RTX A4000"
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 24.56,
-          "avg": 18.45
+          "peak": 12.65,
+          "avg": 8.97
         },
-        "total_ram_gb": 30.0,
-        "samples": 406,
+        "total_ram_gb": 31.9,
+        "samples": 94,
         "vram": {
-          "peak": 13.11,
-          "avg": 9.5
+          "peak": 5.4,
+          "avg": 1.87
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 432.82,
+      "duration_seconds": 96.67,
       "error": null,
       "hardware": {
-        "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-        "gpu": "NVIDIA RTX A4000"
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 22.09,
-          "avg": 16.3
+          "peak": 13.17,
+          "avg": 12.59
         },
-        "total_ram_gb": 30.0,
-        "samples": 340,
+        "total_ram_gb": 31.9,
+        "samples": 85,
         "vram": {
-          "peak": 15.58,
-          "avg": 11.4
+          "peak": 5.47,
+          "avg": 1.84
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 1851.15,
-      "error": "Workflow execution failed: {'prompt_id': '74489756-c51b-4023-85a1-6b578e94e77d', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['78', '99', '80', '87', '77', '59', '82', '106', '85', '74', '75'], 'exception_message': '(\\'Unable to load EGL library\\', \"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 67, in EGL\\n    return ctypesloader.loadLibrary(\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\ctypesloader.py\", line 45, in loadLibrary\\n    return dllType( name, mode )\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\ctypes\\\\__init__.py\", line 379, in __init__\\n    self._handle = _dlopen(self._name, mode)\\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\\nFileNotFoundError: (\"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\nDuring handling of the above exception, another exception occurred:\\n\\nTraceback (most recent call last):\\n  File \"C:\\\\WINDOWS\\\\TEMP\\\\comfyui_pvenv_qn0909n8\\\\persistent_worker.py\", line 1143, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 179, in create_overlay\\n    overlay = self._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\custom_nodes\\\\ComfyUI-SAM3DObjects\\\\nodes\\\\projection_overlay.py\", line 352, in _render_3d_mesh_textured\\n    renderer = pyrender.OffscreenRenderer(W, H)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\pyrender\\\\offscreen.py\", line 31, in __init__\\n    self._create()\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\pyrender\\\\offscreen.py\", line 135, in _create\\n    from pyrender.platforms import egl\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\pyrender\\\\platforms\\\\egl.py\", line 25, in <module>\\n    _ensure_egl_loaded()\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\pyrender\\\\platforms\\\\egl.py\", line 22, in _ensure_egl_loaded\\n    plugin.install(vars(OpenGL.platform))\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 92, in install\\n    namespace[ name ] = getattr(self,name,None)\\n                        ^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 14, in __get__\\n    value = self.fget( obj )\\n            ^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 93, in GetCurrentContext\\n    return self.EGL.eglGetCurrentContext\\n           ^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\baseplatform.py\", line 14, in __get__\\n    value = self.fget( obj )\\n            ^^^^^^^^^^^^^^^^\\n  File \"C:\\\\ce\\\\_env_e1841e\\\\.pixi\\\\envs\\\\default\\\\Lib\\\\site-packages\\\\OpenGL\\\\platform\\\\egl.py\", line 73, in EGL\\n    raise ImportError(\"Unable to load EGL library\", *err.args)\\nImportError: (\\'Unable to load EGL library\\', \"Could not find module \\'EGL\\' (or one of its dependencies). Try using the full path with constructor syntax.\", \\'EGL\\', None)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 527, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 331, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n', '  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 305, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\execution.py\", line 293, in process_inputs\\n    result = f(**inputs)\\n', '  File \"E:\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\metadata.py\", line 352, in proxy\\n    result = worker.call_method(\\n        module_name=mod,\\n    ...<4 lines>...\\n        timeout=600.0,\\n    )\\n', '  File \"E:\\\\ComfyUI_windows_portable\\\\python_embeded\\\\Lib\\\\site-packages\\\\comfy_env\\\\isolation\\\\workers\\\\subprocess.py\", line 2376, in call_method\\n    raise WorkerError(\\n    ...<2 lines>...\\n    )\\n'], 'current_inputs': {'pose_opt_folder': ['E:\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\output\\\\sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['78', '99', '80', '87', '108', '59', '77', '82', '85', '106', '74', '75', '100'], 'timestamp': 1771942201041}\n\nDetails:\nWorkflow: E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\workflows\\scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "status": "pass",
+      "duration_seconds": 363.46,
+      "error": null,
       "hardware": {
-        "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "Intel64 Family 6 Model 58 Stepping 9, GenuineIntel",
-        "gpu": "NVIDIA RTX A4000"
+        "os": "Windows-10-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 28.16,
-          "avg": 16.93
+          "peak": 21.63,
+          "avg": 10.66
         },
-        "total_ram_gb": 30.0,
-        "samples": 1378,
+        "total_ram_gb": 31.9,
+        "samples": 318,
         "vram": {
-          "peak": 15.74,
-          "avg": 10.92
+          "peak": 6.28,
+          "avg": 2.74
         }
       }
     }
