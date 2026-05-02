@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-05-02T16:23:51.813570+00:00",
+  "timestamp": "2026-05-02T16:49:55.283312+00:00",
   "platform": "linux",
   "hardware": {
     "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
     "cpu": "AMD Ryzen 5 3600 6-Core Processor",
     "gpu": "NVIDIA GeForce RTX 5060"
   },
-  "commit_hash": "86d8559f2038e88ed880b7a140ec854d7cdc8f14",
-  "success": false,
+  "commit_hash": "4f7d527eb45ede0f15663c1cecc26b20cb6e3322",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 3,
-    "failed": 2
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
-      "status": "fail",
-      "duration_seconds": 79.29,
-      "error": "Workflow execution failed: {'prompt_id': '5cbe73e9-8305-4960-9965-541be4114fcb', 'node_id': '74', 'node_type': 'LoadSAM3DModel', 'executed': ['77', '88', '78', '95', '75'], 'exception_message': 'Cannot send a request, as the client has been closed.\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv__8syimmi/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py\", line 121, in execute\\n    checkpoint_path = cls._get_or_download_checkpoint()\\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py\", line 160, in _get_or_download_checkpoint\\n    LoadSAM3DModel._download_files(models_dir, missing_files)\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py\", line 197, in _download_files\\n    hf_hub_download(\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_validators.py\", line 88, in _inner_fn\\n    return fn(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py\", line 976, in hf_hub_download\\n    return _hf_hub_download_to_local_dir(\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py\", line 1326, in _hf_hub_download_to_local_dir\\n    _get_metadata_or_catch_error(\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py\", line 1669, in _get_metadata_or_catch_error\\n    metadata = get_hf_file_metadata(\\n               ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_validators.py\", line 88, in _inner_fn\\n    return fn(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py\", line 1591, in get_hf_file_metadata\\n    response = _httpx_follow_relative_redirects_with_backoff(\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_http.py\", line 685, in _httpx_follow_relative_redirects_with_backoff\\n    response = http_backoff(\\n               ^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_http.py\", line 559, in http_backoff\\n    return next(\\n           ^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_http.py\", line 467, in _http_backoff_base\\n    response = client.request(method=method, url=url, **kwargs)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/httpx/_client.py\", line 825, in request\\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/httpx/_client.py\", line 901, in send\\n    raise RuntimeError(\"Cannot send a request, as the client has been closed.\")\\nRuntimeError: Cannot send a request, as the client has been closed.\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1603/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1603/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'attn_backend': ['flash_attn'], 'compile': [False], 'precision': ['auto']}, 'current_outputs': ['77', '88', '59', '94', '78', '92', '95', '74', '75', '93'], 'timestamp': 1777738212697}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/debug_large_image_results.json\nNode error: LoadSAM3DModel",
+      "status": "pass",
+      "duration_seconds": 267.13,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -26,21 +26,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 2.45,
-          "avg": 2.23
+          "peak": 16.13,
+          "avg": 6.44
         },
         "total_ram_gb": 31.3,
-        "samples": 77,
+        "samples": 259,
         "vram": {
-          "peak": 0.22,
-          "avg": 0.2
+          "peak": 5.6,
+          "avg": 0.91
         }
       }
     },
     {
       "name": "full_generation",
       "status": "pass",
-      "duration_seconds": 346.44,
+      "duration_seconds": 157.07,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -49,21 +49,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 15.62,
-          "avg": 7.81
+          "peak": 14.15,
+          "avg": 11.6
         },
         "total_ram_gb": 31.3,
-        "samples": 336,
+        "samples": 153,
         "vram": {
-          "peak": 4.76,
-          "avg": 0.61
+          "peak": 4.73,
+          "avg": 1.06
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 80.37,
+      "duration_seconds": 79.38,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -72,21 +72,21 @@
       },
       "resources": {
         "ram": {
-          "peak": 15.53,
-          "avg": 9.46
+          "peak": 14.15,
+          "avg": 10.09
         },
         "total_ram_gb": 31.3,
-        "samples": 79,
+        "samples": 78,
         "vram": {
-          "peak": 4.7,
-          "avg": 1.47
+          "peak": 4.73,
+          "avg": 1.45
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 99.58,
+      "duration_seconds": 97.67,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
@@ -95,22 +95,22 @@
       },
       "resources": {
         "ram": {
-          "peak": 15.64,
-          "avg": 15.28
+          "peak": 15.84,
+          "avg": 15.29
         },
         "total_ram_gb": 31.3,
-        "samples": 97,
+        "samples": 95,
         "vram": {
-          "peak": 4.74,
-          "avg": 1.26
+          "peak": 4.77,
+          "avg": 1.35
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 291.13,
-      "error": "Workflow execution failed: {'prompt_id': '34192f69-f5fc-47a6-a823-66f33bcf2d7a', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['77', '59', '82', '78', '74', '75', '99', '80'], 'exception_message': 'Cannot connect to \"None\"\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv__8syimmi/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/comfy_api/latest/_io.py\", line 1826, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 359, in _render_3d_mesh_textured\\n    renderer = pyrender.OffscreenRenderer(W, H)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 31, in __init__\\n    self._create()\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/offscreen.py\", line 149, in _create\\n    self._platform.init_context()\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyrender/platforms/pyglet_platform.py\", line 50, in init_context\\n    self._window = pyglet.window.Window(config=conf, visible=False,\\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyglet/window/xlib/__init__.py\", line 167, in __init__\\n    super().__init__(*args, **kwargs)\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyglet/window/__init__.py\", line 510, in __init__\\n    display = pyglet.display.get_display()\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyglet/display/__init__.py\", line 77, in get_display\\n    return Display()\\n           ^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1603/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/pyglet/display/xlib.py\", line 102, in __init__\\n    raise NoSuchDisplayException(f\\'Cannot connect to \"{name}\"\\')\\npyglet.display.xlib.NoSuchDisplayException: Cannot connect to \"None\"\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 534, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 334, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 308, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1603/ComfyUI/execution.py\", line 296, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1603/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 528, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1603/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 3516, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['/workspaces/SAM3DObjects-1603/ComfyUI/output/sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['77', '85', '59', '82', '78', '87', '100', '74', '75', '108', '99', '80', '106'], 'timestamp': 1777739031304}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "status": "pass",
+      "duration_seconds": 382.55,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
         "cpu": "AMD Ryzen 5 3600 6-Core Processor",
@@ -118,14 +118,14 @@
       },
       "resources": {
         "ram": {
-          "peak": 16.72,
-          "avg": 12.41
+          "peak": 23.21,
+          "avg": 13.79
         },
         "total_ram_gb": 31.3,
-        "samples": 284,
+        "samples": 372,
         "vram": {
-          "peak": 5.59,
-          "avg": 2.78
+          "peak": 5.66,
+          "avg": 2.34
         }
       }
     }
