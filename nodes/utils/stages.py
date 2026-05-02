@@ -872,56 +872,25 @@ def run_stage1(
     pointmap_scale = ss_input_dict.get("pointmap_scale", None)
     pointmap_shift = ss_input_dict.get("pointmap_shift", None)
 
-    # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
-    log.info("Loading Stage 1 models...")
-    vram("Stage1: before loading models")
-    ss_gen_patcher = _load_generator(config_path, 'ss', precision)
-    ss_dec_patcher = _load_decoder(config_path, 'ss', precision)
+    # --- Phase 1: Run embedder ALONE (frees ~1.2 GB for attention intermediates) ---
+    log.info("Loading Stage 1 embedder...")
+    vram("Stage1: before loading embedder")
     ss_emb_patcher = _load_condition_embedder(config_path, 'ss', precision)
 
-    vram("Stage1: before load_models_gpu")
-    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
-    vram("Stage1: after load_models_gpu")
-
-    ss_generator = ss_gen_patcher.model
-    ss_decoder = ss_dec_patcher.model
+    vram("Stage1: before load_models_gpu (embedder only)")
+    comfy.model_management.load_models_gpu([ss_emb_patcher])
+    vram("Stage1: after load_models_gpu (embedder only)")
     ss_embedder = ss_emb_patcher.model
-
-    # Set compute dtype on generator for noise creation
-    ss_generator._compute_dtype = _resolve_dtype(precision)
-    print(f"[DTYPE_DBG] run_stage1: set ss_generator._compute_dtype={ss_generator._compute_dtype}", flush=True)
-
-    # Configure generator (match original override_ss_generator_cfg_config)
-    ss_generator.no_shortcut = True
-    ss_generator.reverse_fn.strength = cfg_strength
-    ss_generator.reverse_fn.strength_pm = cfg_strength_pm
-    ss_generator.inference_steps = inference_steps
-    # Critical settings from original that were missing:
-    ss_generator.reverse_fn.interval = getattr(config, 'ss_cfg_interval', [0, 500])
-    ss_generator.rescale_t = getattr(config, 'ss_rescale_t', 3)
-    ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
-    ss_generator.reverse_fn.unconditional_handling = "add_flag"
-
-    log.info("Running sparse structure generation...")
-    vram("Stage1: before inference")
 
     downsample_ss_dist = getattr(config, 'downsample_ss_dist', 0)
     device = comfy.model_management.get_torch_device()
 
+    log.info("Running condition embedding...")
+    vram("Stage1: before embedding")
+
     with torch.no_grad():
         image_tensor = ss_input_dict["image"]
         bs = image_tensor.shape[0]
-
-        # Check if MM-DiT architecture
-        has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
-
-        if has_latent_mapping:
-            latent_shape_dict = {
-                k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
-                for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
-            }
-        else:
-            latent_shape_dict = (bs,) + (4096, 8)
 
         # Get condition input mapping from config
         ss_condition_input_mapping = getattr(config, 'ss_condition_input_mapping', ['image'])
@@ -952,6 +921,58 @@ def run_stage1(
             tokens = ss_embedder(**condition_kwargs)
             condition_args = (tokens,)
             condition_kwargs = {}
+
+    vram("Stage1: after embedding")
+
+    # --- Unload embedder to free VRAM before loading generator ---
+    log.info("Unloading embedder before generator load...")
+    comfy.model_management.unload_all_models()
+    gc.collect()
+    comfy.model_management.soft_empty_cache()
+    vram("Stage1: after embedder unload")
+
+    # --- Phase 2: Load generator + decoder for sampling ---
+    log.info("Loading Stage 1 generator + decoder...")
+    vram("Stage1: before loading generator")
+    ss_gen_patcher = _load_generator(config_path, 'ss', precision)
+    ss_dec_patcher = _load_decoder(config_path, 'ss', precision)
+
+    vram("Stage1: before load_models_gpu (generator+decoder)")
+    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher])
+    vram("Stage1: after load_models_gpu (generator+decoder)")
+
+    ss_generator = ss_gen_patcher.model
+    ss_decoder = ss_dec_patcher.model
+
+    # Set compute dtype on generator for noise creation
+    ss_generator._compute_dtype = _resolve_dtype(precision)
+    print(f"[DTYPE_DBG] run_stage1: set ss_generator._compute_dtype={ss_generator._compute_dtype}", flush=True)
+
+    # Configure generator (match original override_ss_generator_cfg_config)
+    ss_generator.no_shortcut = True
+    ss_generator.reverse_fn.strength = cfg_strength
+    ss_generator.reverse_fn.strength_pm = cfg_strength_pm
+    ss_generator.inference_steps = inference_steps
+    # Critical settings from original that were missing:
+    ss_generator.reverse_fn.interval = getattr(config, 'ss_cfg_interval', [0, 500])
+    ss_generator.rescale_t = getattr(config, 'ss_rescale_t', 3)
+    ss_generator.reverse_fn.backbone.condition_embedder.normalize_images = True
+    ss_generator.reverse_fn.unconditional_handling = "add_flag"
+
+    log.info("Running sparse structure generation...")
+    vram("Stage1: before inference")
+
+    with torch.no_grad():
+        # Check if MM-DiT architecture
+        has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
+
+        if has_latent_mapping:
+            latent_shape_dict = {
+                k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
+                for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
+            }
+        else:
+            latent_shape_dict = (bs,) + (4096, 8)
 
         # Cast inputs to compute dtype (mirrors BaseModel._apply_model xc.to(dtype))
         dtype = _resolve_dtype(precision)
@@ -1145,40 +1166,23 @@ def run_stage2(
     coords = coords.to(device)
 
     # Force-evict stale Stage 1 models before loading Stage 2.
-    import gc
     vram("Stage2: before unload Stage1")
     comfy.model_management.unload_all_models()
     gc.collect()
     comfy.model_management.soft_empty_cache()
     vram("Stage2: after unload Stage1")
 
-    # Load models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
-    log.info("Loading Stage 2 models...")
-    slat_gen_patcher = _load_generator(config_path, 'slat', precision)
+    # --- Phase 1: Run embedder ALONE (frees VRAM for attention intermediates) ---
+    log.info("Loading Stage 2 embedder...")
     slat_emb_patcher = _load_condition_embedder(config_path, 'slat', precision)
 
-    vram("Stage2: before load_models_gpu")
-    comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
-    vram("Stage2: after load_models_gpu")
-
-    slat_generator = slat_gen_patcher.model
+    vram("Stage2: before load_models_gpu (embedder only)")
+    comfy.model_management.load_models_gpu([slat_emb_patcher])
+    vram("Stage2: after load_models_gpu (embedder only)")
     slat_embedder = slat_emb_patcher.model
 
-    # Set compute dtype on generator for noise creation
-    slat_generator._compute_dtype = _resolve_dtype(precision)
-
-    # Configure generator (match original override_slat_generator_cfg_config)
-    slat_generator.no_shortcut = True
-    # Read cfg_strength from config if available (config may override the default)
-    slat_cfg = getattr(config, 'slat_cfg_strength', cfg_strength)
-    slat_generator.reverse_fn.strength = slat_cfg
-    slat_generator.inference_steps = inference_steps
-    # Critical settings from original that were missing:
-    slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
-    slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
-
-    log.info("Running SLAT generation...")
-    vram("Stage2: before inference")
+    log.info("Running Stage 2 condition embedding...")
+    vram("Stage2: before embedding")
 
     # Get SLAT normalization stats
     slat_mean = torch.tensor(getattr(config, 'slat_mean', [0.0] * 8), device=device)
@@ -1219,6 +1223,42 @@ def run_stage2(
             condition_args = (tokens,)
             condition_kwargs = {}
 
+    vram("Stage2: after embedding")
+
+    # --- Unload embedder to free VRAM before loading generator ---
+    log.info("Unloading embedder before generator load...")
+    comfy.model_management.unload_all_models()
+    gc.collect()
+    comfy.model_management.soft_empty_cache()
+    vram("Stage2: after embedder unload")
+
+    # --- Phase 2: Load generator for sampling ---
+    log.info("Loading Stage 2 generator...")
+    slat_gen_patcher = _load_generator(config_path, 'slat', precision)
+
+    vram("Stage2: before load_models_gpu (generator only)")
+    comfy.model_management.load_models_gpu([slat_gen_patcher])
+    vram("Stage2: after load_models_gpu (generator only)")
+
+    slat_generator = slat_gen_patcher.model
+
+    # Set compute dtype on generator for noise creation
+    slat_generator._compute_dtype = _resolve_dtype(precision)
+
+    # Configure generator (match original override_slat_generator_cfg_config)
+    slat_generator.no_shortcut = True
+    # Read cfg_strength from config if available (config may override the default)
+    slat_cfg = getattr(config, 'slat_cfg_strength', cfg_strength)
+    slat_generator.reverse_fn.strength = slat_cfg
+    slat_generator.inference_steps = inference_steps
+    # Critical settings from original that were missing:
+    slat_generator.reverse_fn.interval = getattr(config, 'slat_cfg_interval', [0, 500])
+    slat_generator.rescale_t = getattr(config, 'slat_rescale_t', 3)
+
+    log.info("Running SLAT generation...")
+    vram("Stage2: before inference")
+
+    with torch.no_grad():
         # Add coords to condition args
         condition_args = condition_args + (coords.cpu().numpy(),)
 
@@ -1361,6 +1401,13 @@ def run_decode(
 
     # Don't cast feats here — the decoder's input_layer is fp32 (not touched by
     # convert_to_fp16), and the model casts to fp16 internally after input_layer.
+
+    # Force-evict previous stage models before loading decoder
+    vram(f"Decode({decode_format}): before cleanup")
+    comfy.model_management.unload_all_models()
+    gc.collect()
+    comfy.model_management.soft_empty_cache()
+    vram(f"Decode({decode_format}): after cleanup")
 
     # Load decoder
     if decode_format == "gaussian":
