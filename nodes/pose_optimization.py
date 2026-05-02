@@ -4,9 +4,12 @@ import logging
 import os
 from typing import Any, Dict
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3D_PoseOptimization:
+class SAM3D_PoseOptimization(io.ComfyNode):
     """
     Refine object pose using ICP and render-based optimization.
 
@@ -19,54 +22,53 @@ class SAM3D_PoseOptimization:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "glb_path": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "Path to GLB mesh file from mesh decode"
-                }),
-                "pointmap_path": ("STRING", {
-                    "default": "",
-                    "multiline": False,
-                    "tooltip": "Path to pointmap .pt file from SAM3D_DepthEstimate"
-                }),
-                "intrinsics": ("SAM3D_INTRINSICS", {
-                    "tooltip": "Camera intrinsics from SAM3D_DepthEstimate"
-                }),
-                "pose": ("SAM3D_POSE", {
-                    "tooltip": "Initial pose from SAM3DSparseGen (rotation, translation, scale)"
-                }),
-                "mask": ("MASK", {
-                    "tooltip": "Original binary mask of the object"
-                }),
-            },
-            "optional": {
-                "enable_icp": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "Enable ICP (Iterative Closest Point) refinement step"
-                }),
-                "enable_render_opt": ("BOOLEAN", {
-                    "default": True,
-                    "tooltip": "Enable render-and-compare optimization step"
-                }),
-            }
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_PoseOptimization",
+            category="SAM3DObjects",
+            description="Refine object pose using ICP and render-based optimization. Outputs reposed GLB.",
+            inputs=[
+                io.String.Input("glb_path",
+                    default="",
+                    multiline=False,
+                    tooltip="Path to GLB mesh file from mesh decode"
+                ),
+                io.String.Input("pointmap_path",
+                    default="",
+                    multiline=False,
+                    tooltip="Path to pointmap .pt file from SAM3D_DepthEstimate"
+                ),
+                io.Custom("SAM3D_INTRINSICS").Input("intrinsics",
+                    tooltip="Camera intrinsics from SAM3D_DepthEstimate"
+                ),
+                io.Custom("SAM3D_POSE").Input("pose",
+                    tooltip="Initial pose from SAM3DSparseGen (rotation, translation, scale)"
+                ),
+                io.Mask.Input("mask",
+                    tooltip="Original binary mask of the object"
+                ),
+                io.Boolean.Input("enable_icp",
+                    default=True,
+                    tooltip="Enable ICP (Iterative Closest Point) refinement step",
+                    optional=True,
+                ),
+                io.Boolean.Input("enable_render_opt",
+                    default=True,
+                    tooltip="Enable render-and-compare optimization step",
+                    optional=True,
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="glb_path", tooltip="Path to reposed GLB file (mesh transformed with refined pose)"),
+                io.Custom("SAM3D_POSE").Output(display_name="pose", tooltip="Refined pose (rotation, translation, scale)"),
+                io.Float.Output(display_name="iou", tooltip="Final IoU score (quality metric, -1 if optimization skipped)"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING", "SAM3D_POSE", "FLOAT")
-    RETURN_NAMES = ("glb_path", "pose", "iou")
-    OUTPUT_TOOLTIPS = (
-        "Path to reposed GLB file (mesh transformed with refined pose)",
-        "Refined pose (rotation, translation, scale)",
-        "Final IoU score (quality metric, -1 if optimization skipped)"
-    )
-    FUNCTION = "optimize_pose"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Refine object pose using ICP and render-based optimization. Outputs reposed GLB."
-
-    def optimize_pose(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         glb_path: str,
         pointmap_path: str,
         intrinsics,  # numpy array or tensor
@@ -104,7 +106,7 @@ class SAM3D_PoseOptimization:
 
         if rotation is None or translation is None or scale is None:
             log.warning("Incomplete pose data, returning original")
-            return (glb_path, pose, -1.0)
+            return io.NodeOutput(glb_path, pose, -1.0)
 
         # Serialize helper
         def serialize_tensor(tensor):
@@ -149,7 +151,7 @@ class SAM3D_PoseOptimization:
 
         if response.get("status") == "error":
             log.error("Worker error: %s", response.get('error'))
-            return (glb_path, pose, -1.0)
+            return io.NodeOutput(glb_path, pose, -1.0)
 
         # Extract results
         output_glb_path = response.get("output_glb_path", glb_path)
@@ -166,4 +168,4 @@ class SAM3D_PoseOptimization:
                 refined_pose[key] = pose.get(key)
 
         log.info("Pose optimization completed (IoU: %.3f)", iou)
-        return (output_glb_path, refined_pose, float(iou))
+        return io.NodeOutput(output_glb_path, refined_pose, float(iou))

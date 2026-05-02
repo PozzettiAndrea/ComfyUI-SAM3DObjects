@@ -18,6 +18,21 @@ import comfy.utils
 log = logging.getLogger("sam3dobjects")
 
 
+def load_trusted_pt(path) -> Any:
+    """Load a .pt file that we saved ourselves.
+
+    Uses torch.load with weights_only=False because our intermediate files
+    (SLAT, sparse tensors, pointmaps, intrinsics, etc.) contain custom Python
+    objects like nodes.sam3d.sparse.SparseTensor which aren't accepted by
+    PyTorch's weights_only=True default.
+
+    ComfyUI's comfy.utils.load_torch_file accepts a safe_load=False parameter
+    but ignores it internally (always uses weights_only=True), so we bypass
+    it here for trusted intermediate artifacts.
+    """
+    return torch.load(str(path), map_location="cpu", weights_only=False)
+
+
 # =============================================================================
 # Preprocessing functions (merged from preprocessing.py)
 # =============================================================================
@@ -34,7 +49,7 @@ def load_pointmap_from_file(pointmap_path: str) -> torch.Tensor:
     """
     import comfy.model_management as mm
 
-    data = torch.load(pointmap_path, weights_only=False)
+    data = load_trusted_pt(pointmap_path)
     if isinstance(data, dict):
         pointmap = data.get("pointmap")
         if pointmap is None:

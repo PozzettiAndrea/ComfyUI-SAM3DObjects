@@ -27,9 +27,10 @@ import torch
 from PIL import Image
 import comfy.utils
 import comfy.model_management
+from .helpers import load_trusted_pt
 from .stages import (
     _load_config, _resolve_dtype,
-    _get_or_load_generator, _get_or_load_decoder, _get_or_load_condition_embedder,
+    _load_generator, _load_decoder, _load_condition_embedder,
 )
 
 log = logging.getLogger("sam3dobjects")
@@ -205,15 +206,9 @@ def _run_phase1_stage1(
 
     # Load Stage 1 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 1 models...")
-    ss_gen_patcher = _get_or_load_generator(config_path, 'ss', precision)
-    ss_dec_patcher = _get_or_load_decoder(config_path, 'ss', precision)
-    ss_emb_patcher = _get_or_load_condition_embedder(config_path, 'ss', precision)
-
-    comfy.model_management.load_models_gpu([ss_gen_patcher, ss_dec_patcher, ss_emb_patcher])
-
-    ss_generator = ss_gen_patcher.model
-    ss_decoder = ss_dec_patcher.model
-    ss_embedder = ss_emb_patcher.model
+    ss_gen_key, ss_generator = _load_generator(config_path, 'ss', precision)
+    ss_dec_key, ss_decoder = _load_decoder(config_path, 'ss', precision)
+    ss_emb_key, ss_embedder = _load_condition_embedder(config_path, 'ss', precision)
 
     # Get preprocessor
     preprocessor_config = config.get('ss_preprocessor')
@@ -287,46 +282,45 @@ def _run_phase1_stage1(
         # Run generation
         device = comfy.model_management.get_torch_device()
         with torch.no_grad():
-            with torch.autocast(device_type=device.type, dtype=dtype):
-                image_tensor = ss_input_dict["image"]
-                bs = image_tensor.shape[0]
+            image_tensor = ss_input_dict["image"]
+            bs = image_tensor.shape[0]
 
-                has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
-                if has_latent_mapping:
-                    latent_shape_dict = {
-                        k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
-                        for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
-                    }
-                else:
-                    latent_shape_dict = (bs,) + (4096, 8)
+            has_latent_mapping = hasattr(ss_generator.reverse_fn.backbone, "latent_mapping")
+            if has_latent_mapping:
+                latent_shape_dict = {
+                    k: (bs,) + (v.pos_emb.shape[0], v.input_layer.in_features)
+                    for k, v in ss_generator.reverse_fn.backbone.latent_mapping.items()
+                }
+            else:
+                latent_shape_dict = (bs,) + (4096, 8)
 
-                condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
-                condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
+            condition_args = [ss_input_dict[k] for k in ss_condition_input_mapping if k in ss_input_dict]
+            condition_kwargs = {k: v for k, v in ss_input_dict.items() if k not in ss_condition_input_mapping}
 
-                if ss_embedder is not None and len(condition_args) > 0:
-                    tokens = ss_embedder(*condition_args, **condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
-                elif ss_embedder is not None:
-                    tokens = ss_embedder(**condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
+            if ss_embedder is not None and len(condition_args) > 0:
+                tokens = ss_embedder(*condition_args, **condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
+            elif ss_embedder is not None:
+                tokens = ss_embedder(**condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
 
-                return_dict = ss_generator(latent_shape_dict, image_tensor.device, *condition_args, **condition_kwargs)
+            return_dict = ss_generator(latent_shape_dict, image_tensor.device, *condition_args, **condition_kwargs)
 
-                if not has_latent_mapping:
-                    return_dict = {"shape": return_dict}
+            if not has_latent_mapping:
+                return_dict = {"shape": return_dict}
 
-                shape_latent = return_dict["shape"]
-                ss = ss_decoder(shape_latent.permute(0, 2, 1).contiguous().view(shape_latent.shape[0], 8, 16, 16, 16))
-                coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
+            shape_latent = return_dict["shape"]
+            ss = ss_decoder(shape_latent.permute(0, 2, 1).contiguous().view(shape_latent.shape[0], 8, 16, 16, 16))
+            coords = torch.argwhere(ss > 0)[:, [0, 2, 3, 4]].int()
 
-                return_dict["coords_original"] = coords
-                if downsample_ss_dist > 0:
-                    coords = prune_sparse_structure(coords, max_neighbor_axes_dist=downsample_ss_dist)
-                coords, downsample_factor = downsample_sparse_structure(coords)
-                return_dict["coords"] = coords
-                return_dict["downsample_factor"] = downsample_factor
+            return_dict["coords_original"] = coords
+            if downsample_ss_dist > 0:
+                coords = prune_sparse_structure(coords, max_neighbor_axes_dist=downsample_ss_dist)
+            coords, downsample_factor = downsample_sparse_structure(coords)
+            return_dict["coords"] = coords
+            return_dict["downsample_factor"] = downsample_factor
 
         # Pose decoding
         pose_result = pose_decoder(return_dict, scene_scale=pointmap_scale, scene_shift=pointmap_shift)
@@ -370,13 +364,8 @@ def _run_phase2_stage2(
 
     # Load Stage 2 models via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading Stage 2 models...")
-    slat_gen_patcher = _get_or_load_generator(config_path, 'slat', precision)
-    slat_emb_patcher = _get_or_load_condition_embedder(config_path, 'slat', precision)
-
-    comfy.model_management.load_models_gpu([slat_gen_patcher, slat_emb_patcher])
-
-    slat_generator = slat_gen_patcher.model
-    slat_embedder = slat_emb_patcher.model
+    slat_gen_key, slat_generator = _load_generator(config_path, 'slat', precision)
+    slat_emb_key, slat_embedder = _load_condition_embedder(config_path, 'slat', precision)
 
     # Get preprocessor
     preprocessor_config = config.get('slat_preprocessor')
@@ -417,7 +406,7 @@ def _run_phase2_stage2(
 
         # Load sparse structure
         sparse_path = os.path.join(object_dir, "sparse_structure.pt")
-        stage1_output = torch.load(sparse_path, weights_only=False)
+        stage1_output = load_trusted_pt(sparse_path)
         coords = stage1_output.get("coords")
         if isinstance(coords, np.ndarray):
             coords = torch.from_numpy(coords).int()
@@ -428,28 +417,27 @@ def _run_phase2_stage2(
 
         # Run generation
         with torch.no_grad():
-            with torch.autocast(device_type=device.type, dtype=dtype):
-                image_tensor = slat_input_dict["image"]
-                DEVICE = image_tensor.device
-                latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
+            image_tensor = slat_input_dict["image"]
+            DEVICE = image_tensor.device
+            latent_shape = (image_tensor.shape[0],) + (coords.shape[0], 8)
 
-                condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
-                condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
+            condition_args = [slat_input_dict[k] for k in slat_condition_input_mapping if k in slat_input_dict]
+            condition_kwargs = {k: v for k, v in slat_input_dict.items() if k not in slat_condition_input_mapping}
 
-                if slat_embedder is not None and len(condition_args) > 0:
-                    tokens = slat_embedder(*condition_args, **condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
-                elif slat_embedder is not None:
-                    tokens = slat_embedder(**condition_kwargs)
-                    condition_args = (tokens,)
-                    condition_kwargs = {}
+            if slat_embedder is not None and len(condition_args) > 0:
+                tokens = slat_embedder(*condition_args, **condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
+            elif slat_embedder is not None:
+                tokens = slat_embedder(**condition_kwargs)
+                condition_args = (tokens,)
+                condition_kwargs = {}
 
-                condition_args = condition_args + (coords.cpu().numpy(),)
-                slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
+            condition_args = condition_args + (coords.cpu().numpy(),)
+            slat_feats = slat_generator(latent_shape, DEVICE, *condition_args, **condition_kwargs)
 
-                slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
-                slat = slat * slat_std + slat_mean
+            slat = SparseTensor(coords=coords, feats=slat_feats[0]).to(DEVICE)
+            slat = slat * slat_std + slat_mean
 
         # Save
         slat_path = os.path.join(object_dir, "slat.pt")
@@ -485,9 +473,7 @@ def _run_phase3_mesh_decode(
 
     # Load mesh decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading mesh decoder...")
-    dec_patcher = _get_or_load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
-    comfy.model_management.load_models_gpu([dec_patcher])
-    decoder = dec_patcher.model
+    dec_key, decoder = _load_decoder(mesh_config_path, 'slat_decoder_mesh', precision)
 
     device = comfy.model_management.get_torch_device()
     glb_paths = []
@@ -495,7 +481,7 @@ def _run_phase3_mesh_decode(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Mesh decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = load_trusted_pt(slat_path)
 
         # Extract slat
         slat = slat_data.get("slat")
@@ -565,9 +551,7 @@ def _run_phase4_texture(
 
     # Load gaussian decoder via ModelPatcher (ComfyUI manages VRAM, per-layer offloading)
     log.info("Loading gaussian decoder...")
-    dec_patcher = _get_or_load_decoder(gs_config_path, 'slat_decoder_gs', precision)
-    comfy.model_management.load_models_gpu([dec_patcher])
-    decoder = dec_patcher.model
+    dec_key, decoder = _load_decoder(gs_config_path, 'slat_decoder_gs', precision)
 
     device = comfy.model_management.get_torch_device()
     ply_paths = []
@@ -576,7 +560,7 @@ def _run_phase4_texture(
     for idx, (slat_path, object_dir) in enumerate(zip(slat_paths, object_dirs)):
         log.info("Gaussian decode [%d/%d]...", idx + 1, len(slat_paths))
 
-        slat_data = torch.load(slat_path, weights_only=False)
+        slat_data = load_trusted_pt(slat_path)
         slat = slat_data.get("slat")
         if not isinstance(slat, SparseTensor):
             coords = slat.get("coords") if isinstance(slat, dict) else slat_data.get("coords")

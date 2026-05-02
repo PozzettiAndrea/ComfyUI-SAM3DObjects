@@ -1378,62 +1378,96 @@ class FlexiCubes:
     def __init__(self, device="cuda"):
 
         self.device = device
-        self.dmc_table = torch.tensor(dmc_table, dtype=torch.long, device=device, requires_grad=False)
+        self.dmc_table = torch.tensor(dmc_table, dtype=torch.int32, device=device, requires_grad=False)
         self.num_vd_table = torch.tensor(num_vd_table,
-                                         dtype=torch.long, device=device, requires_grad=False)
+                                         dtype=torch.int32, device=device, requires_grad=False)
         self.check_table = torch.tensor(
             check_table,
-            dtype=torch.long, device=device, requires_grad=False)
+            dtype=torch.int32, device=device, requires_grad=False)
 
-        self.tet_table = torch.tensor(tet_table, dtype=torch.long, device=device, requires_grad=False)
-        self.quad_split_1 = torch.tensor([0, 1, 2, 0, 2, 3], dtype=torch.long, device=device, requires_grad=False)
-        self.quad_split_2 = torch.tensor([0, 1, 3, 3, 1, 2], dtype=torch.long, device=device, requires_grad=False)
-        self.quad_split_train = torch.tensor(
-            [0, 1, 1, 2, 2, 3, 3, 0], dtype=torch.long, device=device, requires_grad=False)
+        self.tet_table = torch.tensor(tet_table, dtype=torch.int32, device=device, requires_grad=False)
+        self.quad_split_1 = torch.tensor([0, 1, 2, 0, 2, 3], dtype=torch.int32, device=device, requires_grad=False)
+        self.quad_split_2 = torch.tensor([0, 1, 3, 3, 1, 2], dtype=torch.int32, device=device, requires_grad=False)
 
         self.cube_corners = torch.tensor([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0, 0, 1], [
                                          1, 0, 1], [0, 1, 1], [1, 1, 1]], dtype=torch.float, device=device)
-        self.cube_corners_idx = torch.pow(2, torch.arange(8, requires_grad=False))
+        self.cube_corners_idx = torch.pow(2, torch.arange(8, dtype=torch.int32, requires_grad=False))
         self.cube_edges = torch.tensor([0, 1, 1, 5, 4, 5, 0, 4, 2, 3, 3, 7, 6, 7, 2, 6,
-                                       2, 0, 3, 1, 7, 5, 6, 4], dtype=torch.long, device=device, requires_grad=False)
+                                       2, 0, 3, 1, 7, 5, 6, 4], dtype=torch.int32, device=device, requires_grad=False)
 
         self.edge_dir_table = torch.tensor([0, 2, 0, 2, 0, 2, 0, 2, 1, 1, 1, 1],
-                                           dtype=torch.long, device=device)
+                                           dtype=torch.int32, device=device)
         self.dir_faces_table = torch.tensor([
             [[5, 4], [3, 2], [4, 5], [2, 3]],
             [[5, 4], [1, 0], [4, 5], [0, 1]],
             [[3, 2], [1, 0], [2, 3], [0, 1]]
-        ], dtype=torch.long, device=device)
-        self.adj_pairs = torch.tensor([0, 1, 1, 3, 3, 2, 2, 0], dtype=torch.long, device=device)
+        ], dtype=torch.int32, device=device)
+        self.adj_pairs = torch.tensor([0, 1, 1, 3, 3, 2, 2, 0], dtype=torch.int32, device=device)
 
     def __call__(self, voxelgrid_vertices, scalar_field, cube_idx, resolution, qef_reg_scale=1e-3,
-                 weight_scale=0.99, beta=None, alpha=None, gamma_f=None, voxelgrid_colors=None, training=False):
+                 weight_scale=0.99, beta=None, alpha=None, gamma_f=None, voxelgrid_colors=None,
+                 cube_index_map=None, dtype=None):  # cube_index_map required for sparse path
+        """
+        Optionally specify 'dtype' to unify all float inputs (e.g. torch.float16).
+        If 'dtype' is None, we infer from voxelgrid_vertices or default to float32.
+        """
+        # unify floating tensors to a chosen dtype, so it can work with half, etc:
+        if dtype is None:
+            if voxelgrid_vertices.dtype in (torch.float16, torch.bfloat16, torch.float32, torch.float64):
+                dtype = voxelgrid_vertices.dtype
+            else:
+                dtype = torch.float32
+
+        voxelgrid_vertices = voxelgrid_vertices.to(dtype)
+        scalar_field = scalar_field.to(dtype)
+        if beta is not None:
+            beta = beta.to(dtype)
+        if alpha is not None:
+            alpha = alpha.to(dtype)
+        if gamma_f is not None:
+            gamma_f = gamma_f.to(dtype)
+        if voxelgrid_colors is not None:
+            voxelgrid_colors = voxelgrid_colors.to(dtype)
+
+        import logging
+        _fclog = logging.getLogger("sam3dobjects")
+        def _fvm():
+            return torch.cuda.memory_allocated() / 1024**2
+        _fclog.warning("[VRAM:fc] start: %.0f MiB | verts %s cubes %s sdf %s", _fvm(), voxelgrid_vertices.shape, cube_idx.shape, scalar_field.shape)
+
         surf_cubes, occ_fx8 = self._identify_surf_cubes(scalar_field, cube_idx)
         if surf_cubes.sum() == 0:
             return (
-                torch.zeros((0, 3), device=self.device),
-                torch.zeros((0, 3), dtype=torch.long, device=self.device),
-                torch.zeros((0), device=self.device),
-                torch.zeros((0, voxelgrid_colors.shape[-1]), device=self.device) if voxelgrid_colors is not None else None
+                torch.zeros((0, 3), device=self.device, dtype=dtype),
+                torch.zeros((0, 3), dtype=torch.int32, device=self.device),
+                torch.zeros((0), device=self.device, dtype=dtype),
+                torch.zeros((0, voxelgrid_colors.shape[-1]), device=self.device, dtype=dtype) if voxelgrid_colors is not None else None
             )
+        _fclog.warning("[VRAM:fc] after _identify_surf_cubes: %.0f MiB | surf_cubes %d/%d", _fvm(), surf_cubes.sum().item(), surf_cubes.shape[0])
+
         beta, alpha, gamma_f = self._normalize_weights(
             beta, alpha, gamma_f, surf_cubes, weight_scale)
-        
+
         if voxelgrid_colors is not None:
             voxelgrid_colors = torch.sigmoid(voxelgrid_colors)
 
-        case_ids = self._get_case_id(occ_fx8, surf_cubes, resolution)
+        case_ids = self._get_case_id(occ_fx8, surf_cubes, resolution, cube_index_map)
+        _fclog.warning("[VRAM:fc] after _get_case_id: %.0f MiB", _fvm())
 
         surf_edges, idx_map, edge_counts, surf_edges_mask = self._identify_surf_edges(
             scalar_field, cube_idx, surf_cubes
         )
+        _fclog.warning("[VRAM:fc] after _identify_surf_edges: %.0f MiB | surf_edges %s", _fvm(), surf_edges.shape)
 
         vd, L_dev, vd_gamma, vd_idx_map, vd_color = self._compute_vd(
             voxelgrid_vertices, cube_idx[surf_cubes], surf_edges, scalar_field,
             case_ids, beta, alpha, gamma_f, idx_map, qef_reg_scale, voxelgrid_colors)
+        _fclog.warning("[VRAM:fc] after _compute_vd: %.0f MiB | vd %s", _fvm(), vd.shape)
+
         vertices, faces, s_edges, edge_indices, vertices_color = self._triangulate(
             scalar_field, surf_edges, vd, vd_gamma, edge_counts, idx_map,
-            vd_idx_map, surf_edges_mask, training, vd_color)
+            vd_idx_map, surf_edges_mask, vd_color)
+        _fclog.warning("[VRAM:fc] after _triangulate: %.0f MiB | verts %s faces %s", _fvm(), vertices.shape, faces.shape)
         return vertices, faces, L_dev, vertices_color
 
     def _compute_reg_loss(self, vd, ue, edge_group_to_vd, vd_num_edges):
@@ -1449,85 +1483,75 @@ class FlexiCubes:
     def _normalize_weights(self, beta, alpha, gamma_f, surf_cubes, weight_scale):
         """
         Normalizes the given weights to be non-negative. If input weights are None, it creates and returns a set of weights of ones.
-        Only operates on surface cubes to avoid wasting VRAM on the ~95-99% of cubes that are discarded.
         """
-        n_surf = surf_cubes.sum()
+        n_cubes = surf_cubes.shape[0]
 
         if beta is not None:
-            beta = (torch.tanh(beta[surf_cubes]) * weight_scale + 1)
+            beta = (torch.tanh(beta) * weight_scale + 1)
         else:
-            beta = torch.ones((n_surf, 12), dtype=torch.float, device=self.device)
+            beta = torch.ones((n_cubes, 12), dtype=torch.float, device=self.device)
 
         if alpha is not None:
-            alpha = (torch.tanh(alpha[surf_cubes]) * weight_scale + 1)
+            alpha = (torch.tanh(alpha) * weight_scale + 1)
         else:
-            alpha = torch.ones((n_surf, 8), dtype=torch.float, device=self.device)
+            alpha = torch.ones((n_cubes, 8), dtype=torch.float, device=self.device)
 
         if gamma_f is not None:
-            gamma_f = torch.sigmoid(gamma_f[surf_cubes]) * weight_scale + (1 - weight_scale) / 2
+            gamma_f = torch.sigmoid(gamma_f) * weight_scale + (1 - weight_scale) / 2
         else:
-            gamma_f = torch.ones((n_surf,), dtype=torch.float, device=self.device)
+            gamma_f = torch.ones((n_cubes), dtype=torch.float, device=self.device)
 
-        return beta, alpha, gamma_f
+        return beta[surf_cubes], alpha[surf_cubes], gamma_f[surf_cubes]
 
     @torch.no_grad()
-    def _get_case_id(self, occ_fx8, surf_cubes, res):
+    def _get_case_id(self, occ_fx8, surf_cubes, res, cube_index_map):
         """
         Obtains the ID of topology cases based on cell corner occupancy. This function resolves the
         ambiguity in the Dual Marching Cubes (DMC) configurations as described in Section 1.3 of the
-        supplementary material. It should be noted that this function assumes a regular grid.
-
-        Memory-optimized: uses sparse coordinate lookup instead of dense [res³, 5] grid.
+        supplementary material. Uses hashmap-based sparse neighbor lookup (SparseFlex).
         """
-        case_ids = (occ_fx8[surf_cubes] * self.cube_corners_idx.to(self.device).unsqueeze(0)).sum(-1)
+        occ_int = occ_fx8[surf_cubes].to(torch.int32)
+        corners_idx = self.cube_corners_idx.to(self.device).unsqueeze(0)
+        case_ids = (occ_int * corners_idx).sum(-1, dtype=torch.int32)
 
         problem_config = self.check_table.to(self.device)[case_ids]
         to_check = problem_config[..., 0] == 1
+
         problem_config = problem_config[to_check]
-        if not isinstance(res, (list, tuple)):
-            res = [res, res, res]
+        problem_config_index = cube_index_map[surf_cubes][to_check]
 
-        if problem_config.shape[0] == 0:
-            return case_ids
+        # Build hashmap from ALL problematic cubes BEFORE within_range filtering.
+        # This mirrors the original dense code where problem_config_full is populated
+        # with all problematic cubes before any adjacency-based filtering.
+        all_problem_config = problem_config
+        all_keys = ((problem_config_index[..., 0] * res + problem_config_index[..., 1]) * res + problem_config_index[..., 2]).tolist()
+        inverse_cube_index_dict = dict(zip(all_keys, range(len(all_problem_config))))
+        all_problem_config_sentinel = torch.cat((all_problem_config, torch.zeros((1, 5), dtype=all_problem_config.dtype, device=all_problem_config.device)))
 
-        # Compute 3D coords of problematic surface cubes directly from flat indices
-        # (avoids allocating dense [res³, 3] vol_idx and [res³, 5] problem_config_full)
-        surf_indices = torch.where(surf_cubes)[0]
-        problem_indices = surf_indices[to_check]
-        r1, r2 = res[1], res[2]
-        vol_idx_problem = torch.stack([
-            problem_indices // (r1 * r2),
-            (problem_indices // r2) % r1,
-            problem_indices % r2
-        ], dim=1)
-
-        # Sparse flag tensor: bool [res³] = 16.7 MB instead of long [res³, 5] = 671 MB
-        total_cubes = res[0] * r1 * r2
-        has_problem = torch.zeros(total_cubes, device=self.device, dtype=torch.bool)
-        key_problem = vol_idx_problem[:, 0] * (r1 * r2) + vol_idx_problem[:, 1] * r2 + vol_idx_problem[:, 2]
-        has_problem[key_problem] = True
-
+        vol_idx_problem = cube_index_map[surf_cubes][to_check]
         vol_idx_problem_adj = vol_idx_problem + problem_config[..., 1:4]
 
         within_range = (
             vol_idx_problem_adj[..., 0] >= 0) & (
-            vol_idx_problem_adj[..., 0] < res[0]) & (
+            vol_idx_problem_adj[..., 0] < res) & (
             vol_idx_problem_adj[..., 1] >= 0) & (
-            vol_idx_problem_adj[..., 1] < res[1]) & (
+            vol_idx_problem_adj[..., 1] < res) & (
             vol_idx_problem_adj[..., 2] >= 0) & (
-            vol_idx_problem_adj[..., 2] < res[2])
+            vol_idx_problem_adj[..., 2] < res)
 
-        vol_idx_problem = vol_idx_problem[within_range]
         vol_idx_problem_adj = vol_idx_problem_adj[within_range]
         problem_config = problem_config[within_range]
 
-        # Check if adjacent cubes also have problematic configs
-        key_adj = vol_idx_problem_adj[:, 0] * (r1 * r2) + vol_idx_problem_adj[:, 1] * r2 + vol_idx_problem_adj[:, 2]
-        to_invert = has_problem[key_adj]
+        # Look up adjacent positions in the FULL hashmap (not the filtered one)
+        inverse_indices = ((vol_idx_problem_adj[..., 0] * res + vol_idx_problem_adj[..., 1]) * res + vol_idx_problem_adj[..., 2]).tolist()
+        inverse_indices = torch.tensor([inverse_cube_index_dict.get(idx, len(all_problem_config)) for idx in inverse_indices], dtype=torch.int32, device=self.device)
+        problem_config_adj = all_problem_config_sentinel[inverse_indices]
 
         # If two cubes with cases C16 and C19 share an ambiguous face, both cases are inverted.
-        idx = torch.arange(case_ids.shape[0], device=self.device)[to_check][within_range][to_invert]
+        to_invert = (problem_config_adj[..., 0] == 1)
+        idx = torch.arange(case_ids.shape[0], dtype=torch.int32, device=self.device)[to_check][within_range][to_invert]
         case_ids.index_put_((idx,), problem_config[to_invert][..., -1])
+
         return case_ids
 
     @torch.no_grad()
@@ -1541,14 +1565,14 @@ class FlexiCubes:
         all_edges = cube_idx[surf_cubes][:, self.cube_edges].reshape(-1, 2)
         unique_edges, _idx_map, counts = torch.unique(all_edges, dim=0, return_inverse=True, return_counts=True)
 
-        unique_edges = unique_edges.long()
+        unique_edges = unique_edges.int()
         mask_edges = occ_n[unique_edges.reshape(-1)].reshape(-1, 2).sum(-1) == 1
 
         surf_edges_mask = mask_edges[_idx_map]
         counts = counts[_idx_map]
 
-        mapping = torch.ones((unique_edges.shape[0]), dtype=torch.long, device=cube_idx.device) * -1
-        mapping[mask_edges] = torch.arange(mask_edges.sum(), device=cube_idx.device)
+        mapping = torch.ones((unique_edges.shape[0]), dtype=torch.int32, device=cube_idx.device) * -1
+        mapping[mask_edges] = torch.arange(mask_edges.sum(), dtype=torch.int32, device=cube_idx.device)
         # Shaped as [number of cubes x 12 edges per cube]. This is later used to map a cube edge to the unique index
         # for a surface-intersecting edge. Non-surface-intersecting edges are marked with -1.
         idx_map = mapping[_idx_map]
@@ -1647,8 +1671,8 @@ class FlexiCubes:
         # else:
         #     vd_color = None
 
-        vd = torch.zeros((total_num_vd, 3), device=self.device)
-        beta_sum = torch.zeros((total_num_vd, 1), device=self.device)
+        vd = torch.zeros((total_num_vd, 3), device=self.device, dtype=beta.dtype)
+        beta_sum = torch.zeros((total_num_vd, 1), device=self.device, dtype=beta.dtype)
 
         idx_group = torch.gather(input=idx_map.reshape(-1), dim=0, index=edge_group_to_cube * 12 + edge_group)
 
@@ -1672,7 +1696,7 @@ class FlexiCubes:
         interpolate colors use the same method as dual vertices
         '''
         if voxelgrid_colors is not None:
-            vd_color = torch.zeros((total_num_vd, C), device=self.device)
+            vd_color = torch.zeros((total_num_vd, C), device=self.device, dtype=beta.dtype)
             c_group = torch.index_select(input=surf_edges_c, index=idx_group.reshape(-1), dim=0).reshape(-1, 2, C)
             uc_group = self._linear_interp(s_group * alpha_group, c_group)
             vd_color = vd_color.index_add_(0, index=edge_group_to_vd, source=uc_group * beta_group) / beta_sum
@@ -1688,9 +1712,9 @@ class FlexiCubes:
 
         return vd, L_dev, vd_gamma, vd_idx_map, vd_color
 
-    def _triangulate(self, scalar_field, surf_edges, vd, vd_gamma, edge_counts, idx_map, vd_idx_map, surf_edges_mask, training, vd_color):
+    def _triangulate(self, scalar_field, surf_edges, vd, vd_gamma, edge_counts, idx_map, vd_idx_map, surf_edges_mask, vd_color):
         """
-        Connects four neighboring dual vertices to form a quadrilateral. The quadrilaterals are then split into 
+        Connects four neighboring dual vertices to form a quadrilateral. The quadrilaterals are then split into
         triangles based on the gamma parameter, as described in Section 4.3.
         """
         with torch.no_grad():
@@ -1698,7 +1722,8 @@ class FlexiCubes:
             group = idx_map.reshape(-1)[group_mask]
             vd_idx = vd_idx_map[group_mask]
             edge_indices, indices = torch.sort(group, stable=True)
-            quad_vd_idx = vd_idx[indices].reshape(-1, 4)
+            indices = indices.to(torch.int32)
+            quad_vd_idx = vd_idx[indices].reshape(-1, 4).to(torch.int32)
 
             # Ensure all face directions point towards the positive SDF to maintain consistent winding.
             s_edges = scalar_field[surf_edges[edge_indices.reshape(-1, 4)[:, 0]].reshape(-1)].reshape(-1, 2)
@@ -1709,31 +1734,11 @@ class FlexiCubes:
         quad_gamma = torch.index_select(input=vd_gamma, index=quad_vd_idx.reshape(-1), dim=0).reshape(-1, 4)
         gamma_02 = quad_gamma[:, 0] * quad_gamma[:, 2]
         gamma_13 = quad_gamma[:, 1] * quad_gamma[:, 3]
-        if not training:
-            mask = (gamma_02 > gamma_13)
-            faces = torch.zeros((quad_gamma.shape[0], 6), dtype=torch.long, device=quad_vd_idx.device)
-            faces[mask] = quad_vd_idx[mask][:, self.quad_split_1]
-            faces[~mask] = quad_vd_idx[~mask][:, self.quad_split_2]
-            faces = faces.reshape(-1, 3)
-        else:
-            vd_quad = torch.index_select(input=vd, index=quad_vd_idx.reshape(-1), dim=0).reshape(-1, 4, 3)
-            vd_02 = (vd_quad[:, 0] + vd_quad[:, 2]) / 2
-            vd_13 = (vd_quad[:, 1] + vd_quad[:, 3]) / 2
-            weight_sum = (gamma_02 + gamma_13) + 1e-8
-            vd_center = (vd_02 * gamma_02.unsqueeze(-1) + vd_13 * gamma_13.unsqueeze(-1)) / weight_sum.unsqueeze(-1)
-            
-            if vd_color is not None:
-                color_quad = torch.index_select(input=vd_color, index=quad_vd_idx.reshape(-1), dim=0).reshape(-1, 4, vd_color.shape[-1])
-                color_02 = (color_quad[:, 0] + color_quad[:, 2]) / 2
-                color_13 = (color_quad[:, 1] + color_quad[:, 3]) / 2
-                color_center = (color_02 * gamma_02.unsqueeze(-1) + color_13 * gamma_13.unsqueeze(-1)) / weight_sum.unsqueeze(-1)
-                vd_color = torch.cat([vd_color, color_center])
-            
-            
-            vd_center_idx = torch.arange(vd_center.shape[0], device=self.device) + vd.shape[0]
-            vd = torch.cat([vd, vd_center])
-            faces = quad_vd_idx[:, self.quad_split_train].reshape(-1, 4, 2)
-            faces = torch.cat([faces, vd_center_idx.reshape(-1, 1, 1).repeat(1, 4, 1)], -1).reshape(-1, 3)
+        mask = (gamma_02 > gamma_13)
+        faces = torch.zeros((quad_gamma.shape[0], 6), dtype=torch.int32, device=quad_vd_idx.device)
+        faces[mask] = quad_vd_idx[mask][:, self.quad_split_1]
+        faces[~mask] = quad_vd_idx[~mask][:, self.quad_split_2]
+        faces = faces.reshape(-1, 3)
         return vd, faces, s_edges, edge_indices, vd_color
 
 # =============================================================================
@@ -1764,20 +1769,6 @@ cube_edges = torch.tensor(
 )
 
 
-def construct_dense_grid(res, device="cuda"):
-    """construct a dense grid based on resolution"""
-    res_v = res + 1
-    vertsid = torch.arange(res_v**3, device=device)
-    coordsid = vertsid.reshape(res_v, res_v, res_v)[:res, :res, :res].flatten()
-    cube_corners_bias = (
-        cube_corners[:, 0] * res_v + cube_corners[:, 1]
-    ) * res_v + cube_corners[:, 2]
-    cube_fx8 = coordsid.unsqueeze(1) + cube_corners_bias.unsqueeze(0).to(device)
-    verts = torch.stack(
-        [vertsid // (res_v**2), (vertsid // res_v) % res_v, vertsid % res_v], dim=1
-    )
-    return verts, cube_fx8
-
 
 def construct_voxel_grid(coords):
     verts = (cube_corners.unsqueeze(0).to(coords) + coords.unsqueeze(1)).reshape(-1, 3)
@@ -1806,23 +1797,56 @@ def cubes_to_verts(num_verts, cubes, value, reduce="mean"):
     )
 
 
-def sparse_cube2verts(coords, feats, training=True):
+def sparse_cube2verts(coords, feats):
     new_coords, cubes = construct_voxel_grid(coords)
     new_feats = cubes_to_verts(new_coords.shape[0], cubes, feats)
-    if training:
-        con_loss = torch.mean((feats - new_feats[cubes]) ** 2)
-    else:
-        con_loss = 0.0
-    return new_coords, new_feats, con_loss
+    return new_coords, new_feats
 
 
-def get_dense_attrs(coords: torch.Tensor, feats: torch.Tensor, res: int, sdf_init=True):
-    F = feats.shape[-1]
-    dense_attrs = torch.zeros([res] * 3 + [F], device=feats.device, dtype=feats.dtype)
-    if sdf_init:
-        dense_attrs[..., 0] = 1  # initial outside sdf value
-    dense_attrs[coords[:, 0], coords[:, 1], coords[:, 2], :] = feats
-    return dense_attrs.reshape(-1, F)
+
+def get_sparse_attrs(coords: torch.Tensor, feats: torch.Tensor, res: int, sdf_init=True):
+    """Get sparse attrs — returns only occupied coordinates, never materializes a dense [res³, F] grid."""
+    verts = coords
+    verts, masks = torch.unique(verts, dim=0, return_inverse=True)
+    feats_sparse = torch.zeros((len(verts), feats.shape[-1]), device=feats.device, dtype=feats.dtype)
+    feats_sparse[masks] = feats
+    return feats_sparse, verts
+
+
+_DILATE_OFFSETS = torch.tensor(
+    [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
+    dtype=torch.int,
+)
+
+
+def dilate_sparse_cubes(coords, feats, res):
+    """Add 6-connected neighbor cubes with default (zero) features."""
+    offsets = _DILATE_OFFSETS.to(device=coords.device, dtype=coords.dtype)
+    neighbors = (coords.unsqueeze(1) + offsets.unsqueeze(0)).reshape(-1, 3)
+    valid = (neighbors >= 0).all(-1) & (neighbors < res).all(-1)
+    neighbors = neighbors[valid]
+    all_coords = torch.cat([coords, neighbors])
+    unique_coords, inverse = torch.unique(all_coords, dim=0, return_inverse=True)
+    dilated_feats = torch.zeros(len(unique_coords), feats.shape[-1],
+                                device=feats.device, dtype=feats.dtype)
+    orig_indices = inverse[:len(coords)]
+    dilated_feats[orig_indices] = feats
+    return unique_coords, dilated_feats
+
+
+def dilate_sparse_verts(v_pos, v_attrs, dilated_cube_coords, res_v):
+    """Add corner vertices for dilated cubes. New verts get SDF=1.0, rest=0."""
+    corners = (cube_corners.unsqueeze(0).to(dilated_cube_coords) + dilated_cube_coords.unsqueeze(1)).reshape(-1, 3)
+    valid = (corners >= 0).all(-1) & (corners < res_v).all(-1)
+    corners = corners[valid]
+    all_verts = torch.cat([v_pos, corners])
+    unique_verts, inverse = torch.unique(all_verts, dim=0, return_inverse=True)
+    dilated_attrs = torch.zeros(len(unique_verts), v_attrs.shape[-1],
+                                device=v_attrs.device, dtype=v_attrs.dtype)
+    dilated_attrs[..., 0] = 1.0  # SDF=1.0 (outside) default for new verts
+    orig_indices = inverse[:len(v_pos)]
+    dilated_attrs[orig_indices] = v_attrs  # overwrite with actual data
+    return unique_verts, dilated_attrs
 
 
 def get_defomed_verts(v_pos: torch.Tensor, deform: torch.Tensor, res):
@@ -1837,17 +1861,12 @@ def get_defomed_verts(v_pos: torch.Tensor, deform: torch.Tensor, res):
 
 class MeshExtractResult:
     def __init__(self, vertices, faces, vertex_attrs=None, res=64):
-        self.vertices = vertices
+        self.vertices = vertices.float()
         self.faces = faces.long()
-        self.vertex_attrs = vertex_attrs
+        self.vertex_attrs = vertex_attrs.float() if vertex_attrs is not None else None
         self.face_normal = self.comput_face_normals(vertices, faces)
         self.res = res
         self.success = vertices.shape[0] != 0 and faces.shape[0] != 0
-
-        # training only
-        self.tsdf_v = None
-        self.tsdf_s = None
-        self.reg_loss = None
 
     def comput_face_normals(self, verts, faces):
         i0 = faces[..., 0].long()
@@ -1883,16 +1902,13 @@ class MeshExtractResult:
 class SparseFeatures2Mesh:
     def __init__(self, device="cuda", res=64, use_color=True):
         """
-        a model to generate a mesh from sparse features structures using flexicube
+        Generate a mesh from sparse feature structures using SparseFlex (FlexiCubes).
         """
         super().__init__()
         self.device = device
         self.res = res
         self.mesh_extractor = FlexiCubes(device=device)
         self.sdf_bias = -1.0 / res
-        verts, cube = construct_dense_grid(self.res, self.device)
-        self.reg_c = cube.to(self.device)
-        self.reg_v = verts.to(self.device)
         self.use_color = use_color
         self._calc_layout()
 
@@ -1927,18 +1943,19 @@ class SparseFeatures2Mesh:
             :, self.layouts[name]["range"][0] : self.layouts[name]["range"][1]
         ].reshape(-1, *self.layouts[name]["shape"])
 
-    def __call__(self, cubefeats: SparseTensor, training=False):
+    def __call__(self, cubefeats: SparseTensor):
         """
-        Generates a mesh based on the specified sparse voxel structures.
-        Args:
-            cube_attrs [Nx21] : Sparse Tensor attrs about cube weights
-            verts_attrs [Nx10] : [0:1] SDF [1:4] deform [4:7] color [7:10] normal
-        Returns:
-            return the success tag and ni you loss,
+        Generates a mesh from sparse voxel structures using SparseFlex.
         """
-        # add sdf bias to verts_attrs
+        import logging
+        _log = logging.getLogger("sam3dobjects")
+        def _vm():
+            return torch.cuda.memory_allocated() / 1024**2
+
         coords = cubefeats.coords[:, 1:]
         feats = cubefeats.feats
+        device = coords.device
+        _log.warning("[VRAM:mesh] start: %.0f MiB | cubefeats %s", _vm(), cubefeats.feats.shape)
 
         sdf, deform, color, weights = [
             self.get_layout(feats, name)
@@ -1946,45 +1963,78 @@ class SparseFeatures2Mesh:
         ]
         sdf += self.sdf_bias
         v_attrs = [sdf, deform, color] if self.use_color else [sdf, deform]
-        v_pos, v_attrs, reg_loss = sparse_cube2verts(
-            coords, torch.cat(v_attrs, dim=-1), training=training
+        v_pos, v_attrs = sparse_cube2verts(
+            coords, torch.cat(v_attrs, dim=-1)
         )
-        v_attrs_d = get_dense_attrs(v_pos, v_attrs, res=self.res + 1, sdf_init=True)
-        weights_d = get_dense_attrs(coords, weights, res=self.res, sdf_init=False)
+        _log.warning("[VRAM:mesh] after sparse_cube2verts: %.0f MiB | v_pos %s", _vm(), v_pos.shape)
+
+        res_v = self.res + 1
+
+        v_attrs_d, v_pos_dilate = get_sparse_attrs(v_pos, v_attrs, res=res_v, sdf_init=True)
+        weights_d, coords_dilate = get_sparse_attrs(coords, weights, res=self.res, sdf_init=False)
+
+        # Free input tensor + all extracted views — dilated copies are independent
+        cubefeats.data = None  # Break caller's reference to feats (~654 MiB)
+        del cubefeats, feats, coords, sdf, deform, color, weights, v_pos, v_attrs
+        comfy.model_management.soft_empty_cache()
+        _log.warning("[VRAM:mesh] after get_sparse_attrs + del: %.0f MiB | verts %d cubes %d", _vm(), len(v_pos_dilate), len(coords_dilate))
+
+        # Dilate cube set by 1 voxel to add boundary cubes
+        coords_dilate, weights_d = dilate_sparse_cubes(coords_dilate, weights_d, self.res)
+        v_pos_dilate, v_attrs_d = dilate_sparse_verts(v_pos_dilate, v_attrs_d, coords_dilate, res_v)
+        _log.warning("[VRAM:mesh] after dilation: %.0f MiB | verts %d cubes %d", _vm(), len(v_pos_dilate), len(coords_dilate))
+
         if self.use_color:
-            sdf_d, deform_d, colors_d = (
-                v_attrs_d[..., 0],
-                v_attrs_d[..., 1:4],
-                v_attrs_d[..., 4:],
-            )
+            sdf_d, deform_d, colors_d = v_attrs_d[..., 0], v_attrs_d[..., 1:4], v_attrs_d[..., 4:]
         else:
             sdf_d, deform_d = v_attrs_d[..., 0], v_attrs_d[..., 1:4]
             colors_d = None
 
-        x_nx3 = get_defomed_verts(self.reg_v, deform_d, self.res)
+        x_nx3 = get_defomed_verts(v_pos_dilate, deform_d, self.res)
+        del deform_d
+        comfy.model_management.soft_empty_cache()
 
-        vertices, faces, L_dev, colors = self.mesh_extractor(
+        # Append sentinel vertex/sdf for out-of-bounds searchsorted lookups
+        x_nx3 = torch.cat((x_nx3, torch.ones((1, 3), dtype=x_nx3.dtype, device=device) * 0.5))
+        sdf_d = torch.cat((sdf_d, torch.ones((1,), dtype=sdf_d.dtype, device=device)))
+        if colors_d is not None:
+            colors_d = torch.cat((colors_d, torch.zeros((1, colors_d.shape[-1]), dtype=colors_d.dtype, device=device)))
+        del v_attrs_d
+        comfy.model_management.soft_empty_cache()
+
+        # Build sparse cube index via searchsorted
+        mask_reg_c_sparse = (v_pos_dilate[..., 0] * res_v + v_pos_dilate[..., 1]) * res_v + v_pos_dilate[..., 2]
+        del v_pos_dilate
+        comfy.model_management.soft_empty_cache()
+        reg_c_sparse = (coords_dilate[..., 0] * res_v + coords_dilate[..., 1]) * res_v + coords_dilate[..., 2]
+        cube_corners_bias = (cube_corners[:, 0] * res_v + cube_corners[:, 1]) * res_v + cube_corners[:, 2]
+        reg_c_value = (reg_c_sparse.unsqueeze(1) + cube_corners_bias.unsqueeze(0).to(device)).reshape(-1)
+        del reg_c_sparse, cube_corners_bias
+        reg_c = torch.searchsorted(mask_reg_c_sparse, reg_c_value)
+        reg_c = reg_c.clamp(max=len(mask_reg_c_sparse) - 1)
+        reg_c[mask_reg_c_sparse[reg_c] != reg_c_value] = len(mask_reg_c_sparse)
+        del reg_c_value, mask_reg_c_sparse
+        comfy.model_management.soft_empty_cache()
+        reg_c = reg_c.reshape(-1, 8)
+        _log.warning("[VRAM:mesh] after searchsorted: %.0f MiB | reg_c %s", _vm(), reg_c.shape)
+
+        vertices, faces, _, colors = self.mesh_extractor(
             voxelgrid_vertices=x_nx3,
             scalar_field=sdf_d,
-            cube_idx=self.reg_c,
+            cube_idx=reg_c,
             resolution=self.res,
             beta=weights_d[:, :12],
             alpha=weights_d[:, 12:20],
             gamma_f=weights_d[:, 20],
             voxelgrid_colors=colors_d,
-            training=training,
+            cube_index_map=coords_dilate,
         )
+
+        _log.warning("[VRAM:mesh] after FlexiCubes: %.0f MiB | verts %s faces %s", _vm(), vertices.shape, faces.shape)
 
         mesh = MeshExtractResult(
             vertices=vertices, faces=faces, vertex_attrs=colors, res=self.res
         )
-        if training:
-            if mesh.success:
-                reg_loss += L_dev.mean() * 0.5
-            reg_loss += (weights[:, :20]).abs().mean() * 0.2
-            mesh.reg_loss = reg_loss
-            mesh.tsdf_v = get_defomed_verts(v_pos, v_attrs[:, 1:4], self.res)
-            mesh.tsdf_s = v_attrs[:, 0]
         return mesh
 
 

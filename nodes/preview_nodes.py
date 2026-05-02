@@ -4,28 +4,22 @@ Preview nodes for Point Clouds and Gaussian Splats
 
 import logging
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3D_PreviewPointCloud:
+class SAM3D_PreviewPointCloud(io.ComfyNode):
     """
     Preview point cloud PLY files in the browser using VTK.js
     """
 
     @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "file_path": ("STRING", {"default": ""}),
-            },
-            "optional": {
-            },
-        }
-
-    RETURN_TYPES = ()
-    FUNCTION = "preview"
-    OUTPUT_NODE = True
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = """
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_PreviewPointCloud",
+            category="SAM3DObjects",
+            description="""
 Preview point cloud PLY files in 3D using VTK.js (scientific visualization).
 
 Inputs:
@@ -43,16 +37,24 @@ Controls:
 - Right Mouse: Pan camera
 - Mouse Wheel: Zoom in/out
 - Slider: Adjust point size
-"""
+""",
+            is_output_node=True,
+            inputs=[
+                io.String.Input("file_path", default=""),
+            ],
+            outputs=[],
+        )
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         """Force re-execution when file_path changes."""
         # Return deterministic value based on inputs for proper cache invalidation
         file_path = kwargs.get('file_path', '')
         return f"{file_path}"
 
-    def preview(self, file_path=""):
+    @classmethod
+    @torch.no_grad()
+    def execute(cls, file_path=""):
         """
         Preview the point cloud using VTK.js.
 

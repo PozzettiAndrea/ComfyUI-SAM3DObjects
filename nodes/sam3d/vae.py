@@ -18,12 +18,14 @@ import math
 from typing import *
 import numpy as np
 import torch
+import comfy.model_management
 import torch.nn as nn
 import torch.nn.functional as F
 
 import comfy.ops
 import comfy.utils
 
+from ..utils.helpers import load_trusted_pt
 from . import ops_sparse
 from .model import (
     GroupNorm32,
@@ -330,7 +332,7 @@ class SparseStructureDecoderTdfyWrapper(SparseStructureDecoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -345,7 +347,7 @@ class SparseStructureEncoderTdfyWrapper(SparseStructureEncoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -519,7 +521,7 @@ class SLatEncoderTdfyWrapper(SLatEncoder):
         super().__init__(*args, **kwargs)
         if pretrained_ckpt_path is not None and os.path.exists(pretrained_ckpt_path):
             self.load_state_dict(
-                comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
+                load_trusted_pt(pretrained_ckpt_path)
             )
 
 
@@ -667,7 +669,7 @@ class SLatGaussianDecoderTdfyWrapper(SLatGaussianDecoder):
         if pretrained_ckpt_path is not None:
             if os.path.exists(pretrained_ckpt_path):
                 self.load_state_dict(
-                    comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
+                    load_trusted_pt(pretrained_ckpt_path)
                 )
             else:
                 raise FileNotFoundError(
@@ -813,25 +815,36 @@ class SLatMeshDecoder(SparseTransformerBase):
         ])
         self.out_layer = sparse_operations.SparseLinear(model_channels // 8, self.out_channels, dtype=dtype, device=device)
 
-    def to_representation(self, x: SparseTensor) -> List:
-        """Convert a batch of network outputs to mesh representations."""
-        from .representations import MeshExtractResult
-        ret = []
-        for i in range(x.shape[0]):
-            xi = x[i]
-            # Mesh extraction is geometric post-processing — run in fp32
-            if xi.feats.dtype != torch.float32:
-                xi = xi.replace(xi.feats.float())
-            mesh = self.mesh_extractor(xi, training=self.training)
-            ret.append(mesh)
-        return ret
-
     def forward(self, x: SparseTensor) -> List:
+        import logging
+        _log = logging.getLogger("sam3dobjects")
+        def _vm():
+            return torch.cuda.memory_allocated() / 1024**2
+        def _vp():
+            return torch.cuda.max_memory_allocated() / 1024**2
+
+        _log.info("[VRAM:decoder] input: %.0f MB (peak %.0f MB) | feats %s coords %s", _vm(), _vp(), x.feats.shape, x.coords.shape)
         h = super().forward(x)
-        for block in self.upsample:
+        del x  # SLAT input no longer needed after transformer
+        _log.info("[VRAM:decoder] after transformer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
+        for i, block in enumerate(self.upsample):
             h = block(h)
+            comfy.model_management.soft_empty_cache()
+            _log.info("[VRAM:decoder] after upsample[%d]: %.0f MB (peak %.0f MB) | feats %s coords %s", i, _vm(), _vp(), h.feats.shape, h.coords.shape)
         h = self.out_layer(h)
-        return self.to_representation(h)
+        _log.info("[VRAM:decoder] after out_layer: %.0f MB (peak %.0f MB) | feats %s", _vm(), _vp(), h.feats.shape)
+
+        # Pass h directly to mesh_extractor — avoids h[0] which creates a
+        # 654 MiB copy via torch.cat. __call__ uses .coords[:, 1:] and .feats,
+        # both work with the batch column present.
+        xi = h
+        if xi.feats.dtype != torch.float32:
+            xi = xi.replace(xi.feats.float())
+        del h  # Only xi holds cubefeats now
+        comfy.model_management.soft_empty_cache()
+        _log.info("[VRAM:decoder] after del h + empty_cache: %.0f MB (peak %.0f MB)", _vm(), _vp())
+        mesh = self.mesh_extractor(xi)
+        return [mesh]
 
 
 class SLatMeshDecoderTdfyWrapper(SLatMeshDecoder):
@@ -840,7 +853,7 @@ class SLatMeshDecoderTdfyWrapper(SLatMeshDecoder):
         super().__init__(*args, **kwargs)
         if pretrained_ckpt_path is not None and os.path.exists(pretrained_ckpt_path):
             self.load_state_dict(
-                comfy.utils.load_torch_file(pretrained_ckpt_path, safe_load=True)
+                load_trusted_pt(pretrained_ckpt_path)
             )
 
 

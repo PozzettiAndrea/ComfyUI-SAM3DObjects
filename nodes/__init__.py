@@ -37,7 +37,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadSAM3DModel": "(down)Load SAM3D Model",
+    "LoadSAM3DModel": "(Down)Load SAM3D Model",
     "SAM3D_DepthEstimate": "SAM3D Depth Estimate",
     "SAM3DGenerateSLAT": "SAM3D Generate SLAT",
     "SAM3DGaussianDecode": "SAM3D Gaussian Decode",

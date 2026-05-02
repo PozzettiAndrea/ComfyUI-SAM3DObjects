@@ -4,9 +4,14 @@ import logging
 import os
 from typing import Any
 
+import torch
+from comfy_api.latest import io
+
+from .utils.helpers import load_trusted_pt
+
 log = logging.getLogger("sam3dobjects")
 
-class SAM3DGaussianDecode:
+class SAM3DGaussianDecode(io.ComfyNode):
     """
     Gaussian Decoding.
 
@@ -17,35 +22,34 @@ class SAM3DGaussianDecode:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "slat_decoder_gs": ("SAM3D_MODEL", {"tooltip": "Gaussian decoder from LoadSAM3DModel"}),
-                "slat": ("STRING", {"forceInput": True, "tooltip": "Path to SLAT from SAM3DGenerateSLAT"}),
-            },
-            "optional": {
-                "up_axis": (["Y-up (standard)", "Z-up"], {
-                    "default": "Y-up (standard)",
-                    "tooltip": "Coordinate system for PLY output. Y-up is common for viewers."
-                }),
-                "world_coordinates": ("BOOLEAN", {
-                    "default": False,
-                    "tooltip": "Output in world coordinates (from depth estimation). Disabled = centered at origin."
-                }),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3DGaussianDecode",
+            category="SAM3DObjects",
+            description="Decode SLAT to Gaussian splats (~15 seconds).",
+            inputs=[
+                io.Custom("SAM3D_MODEL").Input("slat_decoder_gs", tooltip="Gaussian decoder from LoadSAM3DModel"),
+                io.String.Input("slat", force_input=True, tooltip="Path to SLAT from SAM3DGenerateSLAT"),
+                io.Combo.Input("up_axis", options=["Y-up (standard)", "Z-up"],
+                    default="Y-up (standard)",
+                    tooltip="Coordinate system for PLY output. Y-up is common for viewers.",
+                    optional=True,
+                ),
+                io.Boolean.Input("world_coordinates",
+                    default=False,
+                    tooltip="Output in world coordinates (from depth estimation). Disabled = centered at origin.",
+                    optional=True,
+                ),
+            ],
+            outputs=[
+                io.String.Output(display_name="ply_filepath", tooltip="Path to saved Gaussian PLY file"),
+            ],
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("ply_filepath",)
-    OUTPUT_TOOLTIPS = (
-        "Path to saved Gaussian PLY file",
-    )
-    FUNCTION = "decode_gaussian"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Decode SLAT to Gaussian splats (~15 seconds)."
-
-    def decode_gaussian(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         slat_decoder_gs: Any,
         slat: str,
         up_axis: str = "Y-up (standard)",
@@ -61,7 +65,7 @@ class SAM3DGaussianDecode:
             slat: Path to SLAT from SAM3DGenerateSLAT
 
         Returns:
-            ply_filepath
+            NodeOutput of ply_filepath
         """
         # These imports happen in the isolated subprocess
         import os
@@ -72,8 +76,10 @@ class SAM3DGaussianDecode:
         import folder_paths
         from .utils.stages import run_decode
         from .utils.helpers import ensure_decoder_files
+        from .utils.vram_log import vram
 
         log.info("GaussianDecode: Decoding SLAT to Gaussian...")
+        vram("GaussianDecode: start")
 
         # Resolve path to absolute (handles both absolute and relative inputs)
         if not os.path.isabs(slat):
@@ -87,8 +93,8 @@ class SAM3DGaussianDecode:
         # Ensure decoder files exist (download if missing)
         ensure_decoder_files(config_path, "gaussian")
 
-        # Load SLAT (our own intermediate file, not an untrusted checkpoint)
-        slat_data = torch.load(slat, weights_only=False)
+        # SLAT files are our own intermediate outputs — not untrusted checkpoints
+        slat_data = load_trusted_pt(slat)
 
         # Run Gaussian decoding
         result = run_decode(
@@ -117,5 +123,6 @@ class SAM3DGaussianDecode:
         if not ply_path:
             raise RuntimeError("PLY file was not generated")
 
+        vram("GaussianDecode: done")
         log.info("GaussianDecode completed: %s", ply_path)
-        return (ply_path,)
+        return io.NodeOutput(ply_path,)

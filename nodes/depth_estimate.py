@@ -4,13 +4,32 @@ import logging
 import os
 from typing import Any
 
+import torch
+from comfy_api.latest import io
+
 log = logging.getLogger("sam3dobjects")
 
-# Module-level cache for MoGe ModelPatcher (persists across node executions)
-_MOGE_PATCHER = None
-_MOGE_DTYPE = None
 
-class SAM3D_DepthEstimate:
+def _move_orphans_to_device(model, device):
+    """Move non-leaf params/buffers to device for modules accessed outside __call__.
+
+    MoGe invokes the DINOv2 backbone via get_intermediate_layers() (a regular
+    method, not __call__), so the orphan-param forward pre-hooks installed by
+    _enable_lowvram_cast() never fire.  Similarly, MoGeModelV1.forward() is
+    called from infer() as a method.  Explicitly move their small orphan tensors
+    (cls_token, pos_embed, image_mean, image_std, etc.) to the compute device.
+    """
+    import torch
+    for mod in [model, model.backbone]:
+        for _, p in mod.named_parameters(recurse=False):
+            if p.data.device != device:
+                p.data = p.data.to(device)
+        for _, b in mod.named_buffers(recurse=False):
+            if b.device != device:
+                b.data = b.data.to(device)
+
+
+class SAM3D_DepthEstimate(io.ComfyNode):
     """
     Depth Estimation using MoGe model.
 
@@ -26,28 +45,27 @@ class SAM3D_DepthEstimate:
     """
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "depth_model": ("SAM3D_MODEL", {"tooltip": "Depth model from LoadSAM3DModel"}),
-                "image": ("IMAGE", {"tooltip": "Input RGB image"}),
-            },
-        }
+    def define_schema(cls):
+        return io.Schema(
+            node_id="SAM3D_DepthEstimate",
+            category="SAM3DObjects",
+            description="Run MoGe depth estimation to get camera intrinsics and point cloud PLY.",
+            inputs=[
+                io.Custom("SAM3D_MODEL").Input("depth_model", tooltip="Depth model from LoadSAM3DModel"),
+                io.Image.Input("image", tooltip="Input RGB image"),
+            ],
+            outputs=[
+                io.Custom("SAM3D_INTRINSICS").Output(display_name="intrinsics", tooltip="Camera intrinsics matrix (3x3)"),
+                io.Custom("SAM3D_POINTMAP").Output(display_name="pointmap", tooltip="Pointmap tensor (H, W, 3) - pass to SAM3DGenerateSLAT"),
+                io.String.Output(display_name="pointcloud_ply", tooltip="Path to PLY file for visualization"),
+                io.Mask.Output(display_name="depth_mask", tooltip="Depth map as mask (normalized 0-1)"),
+            ],
+        )
 
-    RETURN_TYPES = ("SAM3D_INTRINSICS", "SAM3D_POINTMAP", "STRING", "MASK")
-    RETURN_NAMES = ("intrinsics", "pointmap", "pointcloud_ply", "depth_mask")
-    OUTPUT_TOOLTIPS = (
-        "Camera intrinsics matrix (3x3)",
-        "Pointmap tensor (H, W, 3) - pass to SAM3DGenerateSLAT",
-        "Path to PLY file for visualization",
-        "Depth map as mask (normalized 0-1)"
-    )
-    FUNCTION = "estimate_depth"
-    CATEGORY = "SAM3DObjects"
-    DESCRIPTION = "Run MoGe depth estimation to get camera intrinsics and point cloud PLY."
-
-    def estimate_depth(
-        self,
+    @classmethod
+    @torch.no_grad()
+    def execute(
+        cls,
         depth_model: Any,
         image,  # torch.Tensor [B, H, W, C] - arrives deserialized
     ):
@@ -62,12 +80,9 @@ class SAM3D_DepthEstimate:
             image: Input image tensor [B, H, W, C]
 
         Returns:
-            Tuple of (intrinsics, pointmap, pointcloud_ply, depth_mask)
+            NodeOutput of (intrinsics, pointmap, pointcloud_ply, depth_mask)
         """
-        global _MOGE_PATCHER, _MOGE_DTYPE
-
         # These imports happen in the isolated subprocess
-        import sys
         import time
         import torch
         import numpy as np
@@ -75,14 +90,19 @@ class SAM3D_DepthEstimate:
         from PIL import Image
         import folder_paths
         import comfy.utils
+        import gc
         import comfy.model_management as mm
         import comfy.model_patcher
         from pytorch3d.renderer import look_at_view_transform
         from pytorch3d.transforms import Transform3d
 
+        from .utils.vram_log import vram
+        from .utils.stages import _enable_lowvram_cast
+
         pbar = comfy.utils.ProgressBar(4)
         start_time = time.time()
         log.info("DepthEstimate: Running depth estimation with MoGe...")
+        vram("DepthEstimate: start")
 
         # Convert ComfyUI tensor to PIL Image
         # ComfyUI IMAGE format: [B, H, W, C] float32 0-1
@@ -101,36 +121,33 @@ class SAM3D_DepthEstimate:
         else:
             model_dtype = torch.float32
 
-        # Load MoGe depth model (cached in ModelPatcher for VRAM management)
-        # Invalidate cache if dtype changed
-        if _MOGE_PATCHER is not None and _MOGE_DTYPE != model_dtype:
-            log.info("MoGe dtype changed (%s -> %s), reloading", _MOGE_DTYPE, model_dtype)
-            _MOGE_PATCHER = None
+        # Load MoGe depth model (same pattern as _load_generator / _load_decoder in stages.py)
+        from .sam3d.moge import MoGeModel
 
-        if _MOGE_PATCHER is None:
-            from .sam3d.moge import MoGeModel
+        moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
+        log.info("Loading MoGe model from %s...", moge_path)
 
-            moge_path = Path(folder_paths.models_dir) / "sam3dobjects" / "moge_vitl.safetensors"
-            log.info("Loading MoGe model from %s...", moge_path)
+        vram("DepthEstimate: before MoGe from_pretrained")
+        raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
+        _enable_lowvram_cast(raw_model)
+        vram("DepthEstimate: after MoGe from_pretrained")
 
-            raw_model = MoGeModel.from_pretrained(str(moge_path), dtype=model_dtype)
-
-            from .utils.stages import _enable_lowvram_cast
-            _enable_lowvram_cast(raw_model)
-
-            _MOGE_PATCHER = comfy.model_patcher.ModelPatcher(
-                raw_model,
-                load_device=mm.get_torch_device(),
-                offload_device=mm.unet_offload_device(),
-            )
-            _MOGE_DTYPE = model_dtype
-            log.info("MoGe wrapped in ModelPatcher (dtype=%s)", model_dtype)
+        patcher = comfy.model_patcher.ModelPatcher(
+            raw_model,
+            load_device=mm.get_torch_device(),
+            offload_device=mm.unet_offload_device(),
+        )
 
         device = mm.get_torch_device()
-        mm.load_models_gpu([_MOGE_PATCHER])
+        vram("DepthEstimate: before load_models_gpu")
+        mm.load_models_gpu([patcher])
+        vram("DepthEstimate: after load_models_gpu")
+
+        # Move orphan params that get_intermediate_layers/infer access outside __call__
+        _move_orphans_to_device(patcher.model, device)
 
         from .sam3d.pipeline import MoGe
-        model = MoGe(_MOGE_PATCHER.model, device=str(device))
+        model = MoGe(patcher.model, device=str(device))
         pbar.update(1)  # Model loaded
 
         # Prepare image tensor
@@ -138,9 +155,16 @@ class SAM3D_DepthEstimate:
         loaded_image = torch.from_numpy(loaded_image).permute(2, 0, 1).contiguous()[:3]  # CHW, RGB
 
         # Run depth model — boundary cast to model dtype
-        # (native pattern: model_base.py _apply_model casts `xc = xc.to(dtype)`)
+        vram("DepthEstimate: before MoGe inference")
         with torch.no_grad():
             output = model(loaded_image.to(device=device, dtype=model_dtype))
+        vram("DepthEstimate: after MoGe inference")
+
+        # Offload MoGe — downstream nodes don't need it on GPU
+        mm.unload_all_models()
+        gc.collect()
+        mm.soft_empty_cache()
+        vram("DepthEstimate: after cleanup")
 
         pointmaps = output["pointmaps"]
         pbar.update(1)  # Inference done
@@ -177,13 +201,13 @@ class SAM3D_DepthEstimate:
 
         # Create output directory
         base_output_dir = folder_paths.get_output_directory()
-        inference_dir = self._get_next_inference_dir(base_output_dir)
+        inference_dir = cls._get_next_inference_dir(base_output_dir)
 
         # Convert pointmap to tensor for direct node-to-node transfer
         pointmap_tensor = torch.from_numpy(pointmap_np)
 
         # Save PLY file for visualization
-        pointcloud_ply = self._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
+        pointcloud_ply = cls._save_pointcloud_ply(pointmap_np, image_pil, inference_dir)
 
         # Create depth visualization
         # Pointmap is in HWC format (H, W, 3) where channel 2 is Z (depth)
@@ -205,10 +229,12 @@ class SAM3D_DepthEstimate:
 
         pbar.update(1)  # Outputs saved
         elapsed = time.time() - start_time
+        vram("DepthEstimate: done")
         log.info("Depth estimation done: %.0fs", elapsed)
-        return (intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
+        return io.NodeOutput(intrinsics_np, pointmap_tensor, pointcloud_ply, depth_mask)
 
-    def _get_next_inference_dir(self, base_output_dir: str) -> str:
+    @staticmethod
+    def _get_next_inference_dir(base_output_dir: str) -> str:
         """
         Find the next available sam3d_inference_N directory.
 
@@ -238,7 +264,8 @@ class SAM3D_DepthEstimate:
 
         return inference_dir
 
-    def _save_pointcloud_ply(self, pointmap, image_pil, output_dir: str) -> str:
+    @staticmethod
+    def _save_pointcloud_ply(pointmap, image_pil, output_dir: str) -> str:
         """
         Save pointmap as a PLY file with vertex colors from the image.
 
@@ -285,8 +312,9 @@ class SAM3D_DepthEstimate:
         # Save as pointcloud.ply in the inference directory
         filepath = os.path.join(output_dir, "pointcloud.ply")
 
-        # Write PLY file manually (simple ASCII format with colors)
-        with open(filepath, 'w') as f:
+        # Write PLY file — chunked to avoid 7M+ individual write() calls
+        CHUNK = 100_000
+        with open(filepath, 'w', newline='\n') as f:
             f.write("ply\n")
             f.write("format ascii 1.0\n")
             f.write(f"element vertex {len(valid_points)}\n")
@@ -298,9 +326,11 @@ class SAM3D_DepthEstimate:
             f.write("property uchar blue\n")
             f.write("end_header\n")
 
-            for i in range(len(valid_points)):
-                x, y, z = valid_points[i]
-                r, g, b = valid_colors[i]
-                f.write(f"{x} {y} {z} {r} {g} {b}\n")
+            for start in range(0, len(valid_points), CHUNK):
+                end = min(start + CHUNK, len(valid_points))
+                pts = valid_points[start:end]
+                cols = valid_colors[start:end]
+                data = np.column_stack([pts, cols])
+                np.savetxt(f, data, fmt='%g %g %g %d %d %d')
 
         return filepath
