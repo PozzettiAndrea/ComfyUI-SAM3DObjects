@@ -15,6 +15,9 @@ Three options, in order of speed → reliability:
    python install.py
    ```
 
+---
+
+
 
 <div align="center">
 <a href="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/">
@@ -28,7 +31,6 @@ https://github.com/user-attachments/assets/f8580108-8b59-4938-9339-b3ef8b72039f
 
 ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D Objects](https://github.com/bennyguo/sam-3d-objects).
 
----
 
 
 ## Community
