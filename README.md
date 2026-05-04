@@ -1,5 +1,21 @@
 # ComfyUI-SAM3DObjects
 
+## Installation
+
+Three options, in order of speed → reliability:
+
+1. **ComfyUI Manager (nightly)** — search for `ComfyUI-SAM3DObjects` in the Manager and click Install. Fastest, but the Manager's nightly index can lag.
+2. **Manager via Git URL** — in ComfyUI Manager: "Install via Git URL" with `https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects.git`.
+3. **Manual (most reliable)**:
+   ```bash
+   cd ComfyUI/custom_nodes
+   git clone https://github.com/PozzettiAndrea/ComfyUI-SAM3DObjects.git
+   cd ComfyUI-SAM3DObjects
+   pip install -r requirements.txt --upgrade
+   python install.py
+   ```
+
+
 <div align="center">
 <a href="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/">
 <img src="https://pozzettiandrea.github.io/ComfyUI-SAM3DObjects/gallery-preview.png" alt="Workflow Test Gallery" width="800">
@@ -11,10 +27,6 @@
 https://github.com/user-attachments/assets/f8580108-8b59-4938-9339-b3ef8b72039f
 
 ComfyUI custom nodes for generating 3D objects from single images using [SAM 3D Objects](https://github.com/bennyguo/sam-3d-objects).
-
-## Installation
-
-Please always install from the ComfyUI Manager
 
 ## Community
 
