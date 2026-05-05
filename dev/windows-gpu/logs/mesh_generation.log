@@ -1,45 +1,10 @@
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'ShortCut_3' (3677 MB) -> cpu: 1271 / 24575 MB
 Capturing execution frames: mesh_generation.json
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=46 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'ShortCut_3' (3677 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'FlowMatching_6' (2290 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=47 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'FlowMatching_6' (2290 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'EmbedderFuser_2' (1259 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=48 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'EmbedderFuser_2' (1259 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'EmbedderFuser_5' (1227 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=49 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'EmbedderFuser_5' (1227 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'MoGeModelV1_1' (599 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=50 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'MoGeModelV1_1' (599 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'SLatGaussianDecoderTdfyWrapper_7' (162 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=51 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'SLatGaussianDecoderTdfyWrapper_7' (162 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'SparseStructureDecoderTdfyWrapper_4' (140 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=52 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'SparseStructureDecoderTdfyWrapper_4' (140 MB): 1271 / 24575 MB
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
   [ComfyUI] Received JSON with keys: ['prompt']
-  [ComfyUI] Prompt has 8 nodes
   Queuing workflow for execution...
+  [ComfyUI] Prompt has 8 nodes
   [ComfyUI]   Node 4: LoadImage
   [ComfyUI]     Inputs: {"image": "elephant.png"}
   [ComfyUI]   Node 28: InvertMask
@@ -56,27 +21,36 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI]     Inputs: {"with_postprocess": false, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "use_sparse_flexicubes": true, "slat_decoder_mesh": ["60", 3], "slat": ["61", 0]}
   [ComfyUI]   Node 65: Preview3D
   [ComfyUI]     Inputs: {"model_file": ["64", 0], "image": ""}
-  [ComfyUI] Generated prompt_id: a8c6afe6-cbfe-46a8-8205-cf2d7ddb7e1d
+  [ComfyUI] Generated prompt_id: 044acb7c-aa6d-42ba-884e-7f6039d994f0
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
   [ComfyUI] [comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
-  [ComfyUI] [VRAM] Before LoadSAM3DModel: 1271 / 24575 MB
+  [ComfyUI] [VRAM] Before LoadSAM3DModel: 1156 / 16379 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
+  [ComfyUI] [comfy-env] sam3dobjects-nodes: Library/bin has 646 DLLs
+  [ComfyUI] [comfy-env] SubprocessWorker: C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [comfy-env] env_vars: {'COMFYUI_BASE': 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI'}
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['C:\\workspaces\\SAM3DObjects-0326\\ComfyUI', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\.ce\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.local\\bin\\pixi.EXE', 'run', '--as-is', '--manifest-path', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\.ce\\pixi.toml', '-e', 'sam3dobjects-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_nodbq5up\\persistent_worker.py', 'tcp://127.0.0.1:52708']...
+  Node executed (1 total), capturing...
+  Frame 2 saved (frame_001.jpg, t=0.5s)
+  [capture-node] freeze=2ms shot=79ms unfreeze=2ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
   [ComfyUI] [SubprocessWorker] worker started/confirmed
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=53 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=1 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3DModel done (0.03s): result: NodeOutput
-  [ComfyUI] [VRAM] After LoadSAM3DModel: 1271 / 24575 MB
+  [ComfyUI] [comfy-env] LoadSAM3DModel done (3.19s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3DModel: 1156 / 16379 MB
   [ComfyUI] [comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
-  [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 1271 / 24575 MB
+  [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 1156 / 16379 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
@@ -86,261 +60,159 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=54 sending call_method
+  [ComfyUI] [SubprocessWorker] call_id=2 sending call_method
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
-  Node executed (1 total), capturing...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=9MiB alloc, 128MiB reserved | gpu=1517MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=9MiB alloc, 128MiB reserved | gpu=1517MiB/24575MiB used
-  [ComfyUI] C:\workspaces\SAM3DObjects-1828\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\sam3d\moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
+  [ComfyUI] C:\workspaces\SAM3DObjects-0326\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\sam3d\moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
   [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
-  Frame 2 saved (frame_001.jpg, t=0.6s)
-  [capture-node] freeze=5ms shot=196ms unfreeze=5ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=9MiB alloc, 128MiB reserved | gpu=1517MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=9MiB alloc, 128MiB reserved | gpu=1517MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=54
-  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +327MB (now 337MB) reserved=384MB peak=4112MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=608MiB alloc, 640MiB reserved | gpu=2029MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=54
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=608MiB alloc, 640MiB reserved | gpu=2029MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe inference: torch=642MiB alloc, 1024MiB reserved | gpu=2413MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after cleanup: torch=43MiB alloc, 96MiB reserved | gpu=1485MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -295MB (now 43MB) reserved=96MB peak=4112MB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=54
-  Frame 3 saved (frame_002.jpg, t=3.0s)
-  [capture-periodic] freeze=4ms shot=127ms unfreeze=3ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=54
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: done: torch=62MiB alloc, 192MiB reserved | gpu=1581MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] Created 1 model patchers: ['MoGeModelV1_8']
-  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (4.20s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3D_DepthEstimate: 1271 / 24575 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
-  [ComfyUI] [comfy-env] Running SAM3DGenerateSLAT: seed: 42, stage1_steps: 12, stage1_cfg: 7.5, stage1_cfg_pm: 0.0, stage2_steps: 12, stage2_cfg: 5.0, use_distillation: True, generator: dict, image: torch.float32 [1,1062,1600,3] cpu, mask: torch.float32 [1,1062,1600] cpu, pointmap: torch.float32 [1062,1600,3] cpu
-  [ComfyUI] [VRAM] Before SAM3DGenerateSLAT: 1271 / 24575 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
-  [ComfyUI] [SubprocessWorker] call_method: nodes.generate_slat.SAM3DGenerateSLAT.EXECUTE_NORMALIZED
-  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] worker started/confirmed
-  [ComfyUI] [comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 1062, 1600, 3])
-  [ComfyUI] [comfy-env] PRE-SERIALIZE 'mask' shape: torch.Size([1, 1062, 1600])
-  [ComfyUI] [comfy-env] PRE-SERIALIZE 'pointmap' shape: torch.Size([1062, 1600, 3])
-  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
-  [ComfyUI] [SubprocessWorker] created 0 shm blocks
-  [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=55 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600]
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: start: torch=9MiB alloc, 192MiB reserved | gpu=1581MiB/24575MiB used
-  [ComfyUI] 2026-05-02 18:53:07.109 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=55
-  [ComfyUI] [comfy-env] VRAM request: 2.54GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +255MB (now 299MB) reserved=384MB peak=4112MB
-  Frame 4 saved (frame_003.jpg, t=5.3s)
-  [capture-periodic] freeze=3ms shot=139ms unfreeze=4ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before embedding: torch=1302MiB alloc, 1312MiB reserved | gpu=2701MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedding: torch=1331MiB alloc, 2432MiB reserved | gpu=3821MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +757MB (now 1056MB) reserved=2432MB peak=4112MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedder unload: torch=72MiB alloc, 224MiB reserved | gpu=1613MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=55
-  [ComfyUI] [comfy-env] VRAM request: 3.86GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [capture-loop] iter=50 t=6.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +760MB (now 1817MB) reserved=1856MB peak=4112MB
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=55
-  [ComfyUI] [comfy-env] VRAM request: 0.15GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before inference: torch=3890MiB alloc, 3904MiB reserved | gpu=5293MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 6) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 4096, 8) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 1) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +2167MB (now 3985MB) reserved=4192MB peak=4112MB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  Frame 5 saved (frame_004.jpg, t=9.8s)
-  [capture-periodic] freeze=4ms shot=124ms unfreeze=4ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  Frame 6 saved (frame_005.jpg, t=12.0s)
-  [capture-periodic] freeze=3ms shot=130ms unfreeze=4ms saved=True
-  [capture-loop] iter=100 t=12.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  Frame 7 saved (frame_006.jpg, t=14.2s)
-  [capture-periodic] freeze=3ms shot=134ms unfreeze=3ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after inference: torch=3906MiB alloc, 4384MiB reserved | gpu=5773MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -458MB (now 3528MB) reserved=4384MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -3300MB (now 228MB) reserved=448MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after model cleanup: torch=88MiB alloc, 320MiB reserved | gpu=1709MiB/24575MiB used
-  [ComfyUI] 2026-05-02 18:53:18.179 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=55
-  [ComfyUI] [comfy-env] VRAM request: 2.50GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
-  [ComfyUI] === WATCHDOG TICK 3 ===
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00002724 (most recent call first):
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
+  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=2
+  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 15.96GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 15.96GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +240MB (now 240MB) reserved=256MB peak=240MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=599MiB alloc, 608MiB reserved | gpu=1776MiB/16379MiB used
+  Frame 3 saved (frame_002.jpg, t=4.7s)
+  [capture-periodic] freeze=2ms shot=76ms unfreeze=3ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +359MB (now 599MB) reserved=608MB peak=599MB
+  [capture-loop] iter=50 t=5.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=599MiB alloc, 608MiB reserved | gpu=1776MiB/16379MiB used
+  Frame 4 saved (frame_003.jpg, t=6.8s)
+  [capture-periodic] freeze=2ms shot=74ms unfreeze=3ms saved=True
+  [capture-loop] iter=100 t=11.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=150 t=17.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=200 t=22.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=250 t=28.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=300 t=33.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=350 t=39.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=400 t=44.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=450 t=50.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=500 t=55.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=550 t=61.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=600 t=67.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=650 t=72.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=700 t=78.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=750 t=83.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=800 t=89.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=850 t=94.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=900 t=100.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=950 t=105.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1000 t=111.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1050 t=116.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1100 t=122.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1150 t=128.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1200 t=133.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1250 t=139.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1300 t=144.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1350 t=150.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1400 t=155.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1450 t=161.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1500 t=166.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1550 t=172.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1600 t=178.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1650 t=183.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1700 t=189.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1750 t=194.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1800 t=200.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1850 t=205.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1900 t=211.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=1950 t=216.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2000 t=222.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2050 t=227.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2100 t=233.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2150 t=239.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2200 t=244.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2250 t=250.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2300 t=255.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2350 t=261.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2400 t=266.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2450 t=272.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2500 t=277.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2550 t=283.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2600 t=289.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2650 t=294.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2700 t=300.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2750 t=305.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2800 t=311.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2850 t=316.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=2900 t=322.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=2950 t=327.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3000 t=333.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3050 t=338.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3100 t=344.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3150 t=350.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3200 t=355.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=3250 t=361.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3300 t=366.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3350 t=372.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3400 t=377.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3450 t=383.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3500 t=388.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3550 t=394.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3600 t=400.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3650 t=405.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3700 t=411.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3750 t=416.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3800 t=422.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3850 t=427.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=3900 t=433.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=3950 t=438.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4000 t=444.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4050 t=450.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4100 t=455.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4150 t=461.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4200 t=466.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4250 t=472.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4300 t=477.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4350 t=483.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4400 t=488.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4450 t=494.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4500 t=499.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4550 t=505.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4600 t=511.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4650 t=516.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4700 t=522.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4750 t=527.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4800 t=533.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=4850 t=538.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4900 t=544.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=4950 t=550.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5000 t=555.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=5050 t=561.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5100 t=566.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=5150 t=572.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5200 t=577.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5250 t=583.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5300 t=588.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=5350 t=594.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5400 t=600.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-loop] iter=5450 t=605.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] !!! Exception during processing !!! ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s
+  [ComfyUI] Traceback (most recent call last):
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 535, in execute
+  [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 335, in get_output_data
+  [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+  [ComfyUI]     await process_inputs(input_dict, i)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 297, in process_inputs
+  [ComfyUI]     result = f(**inputs)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\metadata.py", line 528, in proxy
+  [ComfyUI]     result = worker.call_method(
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3511, in call_method
+  [ComfyUI]     response = self._send_request(request, timeout)
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3442, in _send_request
+  [ComfyUI]     raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")
+  [ComfyUI] TimeoutError: ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s
+  Execution complete (t=606.6s)
   [ComfyUI] 
-  [ComfyUI] Current thread 0x0000054c (most recent call first):
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x000040ac (most recent call first):
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\nn\modules\module.py", line 1370 in convert
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\nn\modules\module.py", line 965 in _apply
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\nn\modules\module.py", line 1384 in to
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 1328 in _hooked_to
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy\model_patcher.py", line 873 in load
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy\model_patcher.py", line 1067 in partially_load
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy\model_management.py", line 606 in model_use_more_vram
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy\model_management.py", line 578 in model_load
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy\model_management.py", line 814 in load_models_gpu
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 1526 in _shimmed_load_models_gpu
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\utils\stages.py", line 606 in _load_condition_embedder
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\utils\stages.py", line 1137 in run_stage2
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\generate_slat.py", line 262 in execute
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-1828\ComfyUI\comfy_api\latest\_io.py", line 1826 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 1749 in main
-  [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_0zgllkjn\persistent_worker.py", line 1794 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before embedding: torch=1264MiB alloc, 1312MiB reserved | gpu=2701MiB/24575MiB used
-  Frame 8 saved (frame_007.jpg, t=16.5s)
-  [capture-periodic] freeze=3ms shot=139ms unfreeze=4ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedding: torch=1275MiB alloc, 1408MiB reserved | gpu=2797MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +963MB (now 1192MB) reserved=1408MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedder unload: torch=48MiB alloc, 224MiB reserved | gpu=1613MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=55
-  [ComfyUI] [comfy-env] VRAM request: 2.40GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +565MB (now 1757MB) reserved=1824MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before inference: torch=2338MiB alloc, 2368MiB reserved | gpu=3757MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 8713, 8) device=cuda:0
-  [capture-loop] iter=150 t=18.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +623MB (now 2381MB) reserved=2688MB peak=4132MB
-  Frame 9 saved (frame_008.jpg, t=18.8s)
-  [capture-periodic] freeze=5ms shot=137ms unfreeze=5ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  Frame 10 saved (frame_009.jpg, t=21.0s)
-  [capture-periodic] freeze=3ms shot=179ms unfreeze=5ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  Frame 11 saved (frame_010.jpg, t=23.2s)
-  [capture-periodic] freeze=3ms shot=157ms unfreeze=4ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=55
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after inference: torch=2338MiB alloc, 2720MiB reserved | gpu=4109MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -283MB (now 2099MB) reserved=2720MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after model cleanup: torch=48MiB alloc, 256MiB reserved | gpu=1645MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: done: torch=29MiB alloc, 256MiB reserved | gpu=1645MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] SAM3DGenerateSLAT done (19.85s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3DGenerateSLAT: 1271 / 24575 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
-  [ComfyUI] [comfy-env] Running SAM3DMeshDecode: with_postprocess: False, simplify: 0.95, up_axis: 'Y-up (standard)', world_coordinates: False, use_sparse_flexicubes: True, slat_decoder_mesh: dict, slat: 'C:\\workspaces\\SAM3DObjects-1828\\ComfyUI\\output\\sam3...
-  [ComfyUI] [VRAM] Before SAM3DMeshDecode: 1271 / 24575 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
-  [ComfyUI] [SubprocessWorker] call_method: nodes.mesh_decode.SAM3DMeshDecode.EXECUTE_NORMALIZED
-  [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] worker started/confirmed
-  [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
-  [ComfyUI] [SubprocessWorker] created 0 shm blocks
-  [ComfyUI] [SubprocessWorker] sending request via socket...
-  [ComfyUI] [SubprocessWorker] call_id=56 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: start: torch=9MiB alloc, 256MiB reserved | gpu=1645MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=56
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): before instantiate: torch=9MiB alloc, 256MiB reserved | gpu=1645MiB/24575MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): after load_state_dict: torch=9MiB alloc, 416MiB reserved | gpu=1805MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=56
-  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 24.44GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.44GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1929MB (now 170MB) reserved=288MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after load_models_gpu: torch=182MiB alloc, 288MiB reserved | gpu=1677MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=56
-  [capture-loop] iter=200 t=24.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
-  Frame 12 saved (frame_011.jpg, t=25.5s)
-  [capture-periodic] freeze=3ms shot=124ms unfreeze=4ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +635MB (now 806MB) reserved=960MB peak=4132MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] start: 468 MiB | cubefeats torch.Size([557632, 101])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after sparse_cube2verts: 501 MiB | v_pos torch.Size([661147, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after get_sparse_attrs + del: 267 MiB | verts 661147 cubes 557632
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after dilation: 293 MiB | verts 842557 cubes 739134
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after searchsorted: 328 MiB | reg_c torch.Size([739134, 8])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] start: 328 MiB | verts torch.Size([842558, 3]) cubes torch.Size([739134, 8]) sdf torch.Size([842558])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_cubes: 334 MiB | surf_cubes 193620/739134
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _get_case_id: 370 MiB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_edges: 400 MiB | surf_edges torch.Size([193648, 2])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _compute_vd: 428 MiB | vd torch.Size([193644, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _triangulate: 437 MiB | verts torch.Size([193644, 3]) faces torch.Size([387284, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after FlexiCubes: 342 MiB | verts torch.Size([193644, 3]) faces torch.Size([387284, 3])
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=56
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after cleanup: torch=38MiB alloc, 320MiB reserved | gpu=1711MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=56
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: done: torch=9MiB alloc, 320MiB reserved | gpu=1711MiB/24575MiB used
-  [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] Created 1 model patchers: ['SLatMeshDecoderTdfyWrapper_9']
-  [ComfyUI] [comfy-env] SAM3DMeshDecode done (2.27s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3DMeshDecode: 1271 / 24575 MB
-  [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB)
-  [ComfyUI] Prompt executed in 26.56 seconds
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'MoGeModelV1_8' (599 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=57 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'MoGeModelV1_8' (599 MB): 1271 / 24575 MB
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'SLatMeshDecoderTdfyWrapper_9' (173 MB) -> cpu: 1271 / 24575 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
-  [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
-  [ComfyUI] [SubprocessWorker] call_id=58 sending model_to_device
-  [ComfyUI] [comfy-env] [VRAM] After offload 'SLatMeshDecoderTdfyWrapper_9' (173 MB): 1271 / 24575 MB
-  Node executed (2 total), capturing...
-  Frame 13 saved (frame_012.jpg, t=27.0s)
-  [capture-node] freeze=4ms shot=204ms unfreeze=0ms saved=True
-  Execution complete (t=27.0s)
-  [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
-  [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
-  [3d-wait] Phase 2: iframes=0
-  [3d-wait] Total 3D wait: 60.0s
-  Captured 13 unique frames over 87.39s
-  [debug] iframes: 0
-  [timing] trigger_3d_previews: 0.0s
-  Saved high-quality screenshot: mesh_generation_executed.png
-  [timing] final_screenshot: 0.9s
-    Captured 14 video frames
+  Execution error: {'prompt_id': 'd15514ee-41f6-4706-b29e-3877a910683f', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '53', '4', '60'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3511, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3442, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0326\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '64', '53', '59', '28', '65', '61', '4'], 'timestamp': 1777947373031}
+  [ComfyUI] Prompt executed in 00:10:06
+    Status: FAILED
+    Error: Workflow execution failed: {'prompt_id': 'd15514ee-41f6-4706-b29e-3877a910683f', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '53', '4', '60'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3511, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3442, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0326\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '64', '53', '59', '28', '65', '61', '4'], 'timestamp': 1777947373031}
+    Details: Workflow: C:\ComfyUI-SAM3DObjects\workflows\mesh_generation.json
+Node error: SAM3D_DepthEstimate
