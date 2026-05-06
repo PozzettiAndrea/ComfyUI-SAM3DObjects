@@ -3,8 +3,8 @@ Capturing execution frames: gaussian_generation.json
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
   [ComfyUI] Received JSON with keys: ['prompt']
-  Queuing workflow for execution...
   [ComfyUI] Prompt has 8 nodes
+  Queuing workflow for execution...
   [ComfyUI]   Node 4: LoadImage
   [ComfyUI]     Inputs: {"image": "elephant.png"}
   [ComfyUI]   Node 28: InvertMask
@@ -21,7 +21,7 @@ Capturing execution frames: gaussian_generation.json
   [ComfyUI]     Inputs: {"file_path": ["63", 0], "preview_vtk": ""}
   [ComfyUI]   Node 63: SAM3DGaussianDecode
   [ComfyUI]     Inputs: {"up_axis": "Y-up (standard)", "world_coordinates": false, "slat_decoder_gs": ["60", 2], "slat": ["61", 0]}
-  [ComfyUI] Generated prompt_id: b90c1622-26a2-4fc1-b056-59d7d90335e5
+  [ComfyUI] Generated prompt_id: a6972bf4-2646-48d3-861e-720aba9f5094
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
@@ -31,14 +31,14 @@ Capturing execution frames: gaussian_generation.json
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [comfy-env] sam3dobjects-nodes: Library/bin has 646 DLLs
-  [ComfyUI] [comfy-env] SubprocessWorker: C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
-  [ComfyUI] [comfy-env] env_vars: {'COMFYUI_BASE': 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI'}
-  [ComfyUI] [ComfyUI-SAM3DObjects] python: C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
-  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['C:\\workspaces\\SAM3DObjects-0326\\ComfyUI', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\.ce\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects']
-  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\workspaces\SAM3DObjects-0326\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
-  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.local\\bin\\pixi.EXE', 'run', '--as-is', '--manifest-path', 'C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\.ce\\pixi.toml', '-e', 'sam3dobjects-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_hwmqlsbv\\persistent_worker.py', 'tcp://127.0.0.1:62472']...
+  [ComfyUI] [comfy-env] SubprocessWorker: C:\workspaces\SAM3DObjects-0231\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [comfy-env] env_vars: {'COMFYUI_BASE': 'C:\\workspaces\\SAM3DObjects-0231\\ComfyUI'}
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: C:\workspaces\SAM3DObjects-0231\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['C:\\workspaces\\SAM3DObjects-0231\\ComfyUI', 'C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects', 'C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\.ce\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=C:\workspaces\SAM3DObjects-0231\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\python.exe
+  [ComfyUI] [SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\.ce\\pixi.toml', '-e', 'sam3dobjects-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_9w7xsw4s\\persistent_worker.py', 'tcp://127.0.0.1:53963']...
   Node executed (1 total), capturing...
-  Frame 2 saved (frame_001.jpg, t=0.5s)
+  Frame 2 saved (frame_001.jpg, t=0.4s)
   [capture-node] freeze=2ms shot=73ms unfreeze=2ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
   [ComfyUI] [SubprocessWorker] worker started/confirmed
@@ -47,7 +47,7 @@ Capturing execution frames: gaussian_generation.json
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=1 sending call_method
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3DModel done (3.20s): result: NodeOutput
+  [ComfyUI] [comfy-env] LoadSAM3DModel done (3.16s): result: NodeOutput
   [ComfyUI] [VRAM] After LoadSAM3DModel: 1156 / 16379 MB
   [ComfyUI] [comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
   [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 1156 / 16379 MB
@@ -66,153 +66,153 @@ Capturing execution frames: gaussian_generation.json
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
-  [ComfyUI] C:\workspaces\SAM3DObjects-0326\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\sam3d\moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  [ComfyUI] C:\workspaces\SAM3DObjects-0231\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\sam3d\moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
   [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=0MiB alloc, 0MiB reserved | gpu=1156MiB/16379MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=2
   [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 15.96GB
   [ComfyUI] [comfy-env] VRAM after eviction: 15.96GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +224MB (now 224MB) reserved=256MB peak=224MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +200MB (now 200MB) reserved=224MB peak=200MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=599MiB alloc, 608MiB reserved | gpu=1776MiB/16379MiB used
   Frame 3 saved (frame_002.jpg, t=4.7s)
-  [capture-periodic] freeze=2ms shot=73ms unfreeze=2ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +375MB (now 599MB) reserved=608MB peak=599MB
-  [capture-loop] iter=50 t=5.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
+  [capture-periodic] freeze=2ms shot=57ms unfreeze=2ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +399MB (now 599MB) reserved=608MB peak=599MB
+  [capture-loop] iter=50 t=5.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=7.9/15.9GB (50%) swap=2.9/13.5GB (22%) cpu=13% browser_rss=0.71GB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=599MiB alloc, 608MiB reserved | gpu=1776MiB/16379MiB used
   Frame 4 saved (frame_003.jpg, t=6.8s)
-  [capture-periodic] freeze=2ms shot=65ms unfreeze=2ms saved=True
-  [capture-loop] iter=100 t=11.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=150 t=16.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=200 t=22.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=250 t=28.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=300 t=33.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=350 t=39.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=400 t=44.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=450 t=50.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=500 t=55.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=550 t=61.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=600 t=66.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=650 t=72.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=700 t=77.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=750 t=83.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=800 t=88.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=850 t=94.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=900 t=99.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=950 t=105.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1000 t=110.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1050 t=116.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1100 t=121.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1150 t=127.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1200 t=133.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1250 t=138.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1300 t=144.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1350 t=149.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1400 t=155.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1450 t=160.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1500 t=166.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1550 t=171.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1600 t=177.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1650 t=182.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1700 t=188.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1750 t=193.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1800 t=199.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=1850 t=204.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1900 t=210.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=1950 t=215.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2000 t=221.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2050 t=226.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2100 t=232.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2150 t=238.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2200 t=243.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2250 t=249.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2300 t=254.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2350 t=260.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2400 t=265.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2450 t=271.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2500 t=276.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2550 t=282.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2600 t=287.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2650 t=293.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2700 t=298.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=2750 t=304.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2800 t=309.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2850 t=315.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2900 t=320.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=2950 t=326.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3000 t=331.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3050 t=337.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3100 t=343.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3150 t=348.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
-  [capture-loop] iter=3200 t=354.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3250 t=359.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3300 t=365.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3350 t=370.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3400 t=376.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3450 t=381.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3500 t=387.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3550 t=392.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3600 t=398.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3650 t=403.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=3700 t=409.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3750 t=414.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3800 t=420.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3850 t=425.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3900 t=431.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=3950 t=436.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4000 t=442.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4050 t=448.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4100 t=453.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4150 t=459.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4200 t=464.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4250 t=470.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4300 t=475.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4350 t=481.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4400 t=486.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4450 t=492.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4500 t=497.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=4550 t=503.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4600 t=508.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4650 t=514.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4700 t=519.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4750 t=525.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4800 t=530.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4850 t=536.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4900 t=541.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=4950 t=547.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=5000 t=553.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5050 t=558.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=5100 t=564.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=5150 t=569.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5200 t=575.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5250 t=580.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5300 t=586.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5350 t=591.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [capture-loop] iter=5400 t=597.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
-  [capture-loop] iter=5450 t=602.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
+  [capture-periodic] freeze=2ms shot=70ms unfreeze=4ms saved=True
+  [capture-loop] iter=100 t=11.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=13% browser_rss=0.71GB
+  [capture-loop] iter=150 t=16.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.71GB
+  [capture-loop] iter=200 t=22.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.71GB
+  [capture-loop] iter=250 t=28.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=300 t=33.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=350 t=39.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=400 t=44.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=450 t=50.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=500 t=55.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=550 t=61.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=600 t=66.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (51%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=650 t=72.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=700 t=77.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=750 t=83.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=800 t=88.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (51%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=850 t=94.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=900 t=99.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=950 t=105.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.2/15.9GB (52%) swap=2.9/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1000 t=110.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=1050 t=116.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.4/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1100 t=121.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.4/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1150 t=127.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.4/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1200 t=132.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.4/15.9GB (53%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1250 t=138.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.4/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=1300 t=143.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.4/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1350 t=149.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1400 t=154.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1450 t=160.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=1500 t=165.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1550 t=171.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1600 t=176.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1650 t=182.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1700 t=187.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1750 t=193.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1800 t=198.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=1850 t=204.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1900 t=209.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=1950 t=215.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2000 t=221.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2050 t=226.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2100 t=232.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2150 t=237.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=2200 t=243.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2250 t=248.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=2300 t=254.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2350 t=259.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2400 t=265.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=2450 t=270.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2500 t=276.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2550 t=281.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2600 t=287.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2650 t=292.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=2700 t=298.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2750 t=303.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=2800 t=309.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2850 t=314.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=2900 t=320.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=2950 t=325.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3000 t=331.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3050 t=336.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3100 t=342.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3150 t=347.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3200 t=353.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=3250 t=358.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3300 t=364.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3350 t=370.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3400 t=375.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3450 t=381.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3500 t=386.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3550 t=392.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3600 t=397.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=3650 t=403.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3700 t=408.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3750 t=414.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3800 t=419.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3850 t=425.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3900 t=430.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=3950 t=436.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4000 t=441.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=4050 t=447.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4100 t=452.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=4150 t=458.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4200 t=463.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4250 t=469.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4300 t=474.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.3/15.9GB (52%) swap=2.9/13.5GB (21%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4350 t=480.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=5% browser_rss=0.62GB
+  [capture-loop] iter=4400 t=485.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=4450 t=491.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=4500 t=496.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4550 t=502.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4600 t=507.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4650 t=513.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4700 t=518.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4750 t=524.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4800 t=529.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4850 t=535.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=4900 t=540.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=4950 t=546.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=5000 t=552.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=5050 t=557.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=5100 t=563.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=4% browser_rss=0.62GB
+  [capture-loop] iter=5150 t=568.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=5200 t=574.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=5250 t=579.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=5300 t=585.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=2% browser_rss=0.62GB
+  [capture-loop] iter=5350 t=590.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=5400 t=596.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
+  [capture-loop] iter=5450 t=601.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2 ram=8.1/15.9GB (51%) swap=3.0/13.5GB (22%) cpu=3% browser_rss=0.62GB
   [ComfyUI] !!! Exception during processing !!! ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s
   [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 535, in execute
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\ComfyUI\execution.py", line 535, in execute
   [ComfyUI]     output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 335, in get_output_data
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\ComfyUI\execution.py", line 335, in get_output_data
   [ComfyUI]     return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\ComfyUI\execution.py", line 309, in _async_map_node_over_list
   [ComfyUI]     await process_inputs(input_dict, i)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\ComfyUI\execution.py", line 297, in process_inputs
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\ComfyUI\execution.py", line 297, in process_inputs
   [ComfyUI]     result = f(**inputs)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\metadata.py", line 528, in proxy
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\.venv\lib\site-packages\comfy_env\isolation\metadata.py", line 524, in proxy
   [ComfyUI]     result = worker.call_method(
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3511, in call_method
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 668, in call_method
   [ComfyUI]     response = self._send_request(request, timeout)
-  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0326\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 3442, in _send_request
+  [ComfyUI]   File "C:\workspaces\SAM3DObjects-0231\.venv\lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 599, in _send_request
   [ComfyUI]     raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")
   [ComfyUI] TimeoutError: ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s
   [ComfyUI] 
   [ComfyUI] Prompt executed in 00:10:06
-  Execution complete (t=606.5s)
-  Execution error: {'prompt_id': 'f7151d24-8d9b-48aa-b9fb-d047223321a1', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '53', '4', '60'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3511, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3442, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0326\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '63', '53', '59', '28', '61', '62', '4'], 'timestamp': 1777946760095}
+  Execution complete (t=606.6s)
+  Execution error: {'prompt_id': '8e1926bd-9452-4db6-9dfd-6b471c576a57', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['60', '28', '53', '4'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 524, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 668, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 599, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0231\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['61', '63', '28', '53', '59', '60', '62', '4'], 'timestamp': 1778029851260}
     Status: FAILED
-    Error: Workflow execution failed: {'prompt_id': 'f7151d24-8d9b-48aa-b9fb-d047223321a1', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['28', '53', '4', '60'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 528, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3511, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0326\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 3442, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0326\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['60', '63', '53', '59', '28', '61', '62', '4'], 'timestamp': 1777946760095}
+    Error: Workflow execution failed: {'prompt_id': '8e1926bd-9452-4db6-9dfd-6b471c576a57', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['60', '28', '53', '4'], 'exception_message': 'ComfyUI-SAM3DObjects: call_id=2 timed out after 600.0s\n', 'exception_type': 'TimeoutError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 524, in proxy\n    result = worker.call_method(\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 668, in call_method\n    response = self._send_request(request, timeout)\n', '  File "C:\\workspaces\\SAM3DObjects-0231\\.venv\\lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 599, in _send_request\n    raise TimeoutError(f"{self.name}: call_id={call_id} timed out after {timeout}s")\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-0231\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['61', '63', '28', '53', '59', '60', '62', '4'], 'timestamp': 1778029851260}
     Details: Workflow: C:\ComfyUI-SAM3DObjects\workflows\gaussian_generation.json
 Node error: SAM3D_DepthEstimate
