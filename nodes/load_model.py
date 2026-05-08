@@ -10,6 +10,31 @@ from comfy_api.latest import io
 
 log = logging.getLogger("sam3dobjects")
 
+
+def _comfy_tqdm():
+    """tqdm that shows download progress in ComfyUI's UI."""
+    try:
+        import comfy.utils
+        import tqdm as _tqdm_mod
+    except ImportError:
+        return None
+    holder = {"pbar": None, "total": 0, "done": 0}
+    class _T(_tqdm_mod.tqdm):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, **kw)
+            if self.total and self.total > 0 and holder["pbar"] is None:
+                holder["total"] = self.total
+                holder["done"] = 0
+                holder["pbar"] = comfy.utils.ProgressBar(self.total)
+        def update(self, n=1):
+            ret = super().update(n)
+            if n and holder["pbar"] and holder["total"] > 0:
+                holder["done"] = min(holder["done"] + n, holder["total"])
+                holder["pbar"].update_absolute(holder["done"], holder["total"])
+            return ret
+    return _T
+
+
 try:
     from .comfy_utils import get_sam3d_models_path
 except ImportError:
@@ -199,6 +224,7 @@ class LoadSAM3DModel(io.ComfyNode):
                 filename=filename,
                 local_dir=str(target_dir),
                 local_dir_use_symlinks=False,
+                tqdm_class=_comfy_tqdm(),
             )
 
         log.info("Download complete")
@@ -221,6 +247,7 @@ class LoadSAM3DModel(io.ComfyNode):
             filename="dinov2_vitl14_reg.safetensors",
             local_dir=str(models_dir),
             local_dir_use_symlinks=False,
+            tqdm_class=_comfy_tqdm(),
         )
         log.info("DINOv2 safetensors downloaded")
 
@@ -243,5 +270,6 @@ class LoadSAM3DModel(io.ComfyNode):
                 filename=fname,
                 local_dir=str(models_dir),
                 local_dir_use_symlinks=False,
+                tqdm_class=_comfy_tqdm(),
             )
         log.info("MoGe safetensors downloaded")
