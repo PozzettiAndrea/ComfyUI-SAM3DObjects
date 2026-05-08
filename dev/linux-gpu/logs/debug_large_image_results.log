@@ -2,8 +2,8 @@ Capturing execution frames: debug_large_image_results.json
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   [ComfyUI] === /validate endpoint called ===
-  [ComfyUI] Received JSON with keys: ['prompt']
   Queuing workflow for execution...
+  [ComfyUI] Received JSON with keys: ['prompt']
   [ComfyUI] Prompt has 10 nodes
   [ComfyUI]   Node 59: SAM3D_DepthEstimate
   [ComfyUI]     Inputs: {"depth_model": ["74", 0], "image": ["77", 0]}
@@ -25,146 +25,154 @@ Capturing execution frames: debug_large_image_results.json
   [ComfyUI]     Inputs: {"model_file": ["93", 0], "image": ""}
   [ComfyUI]   Node 95: MaskPreview
   [ComfyUI]     Inputs: {"mask": ["78", 0]}
-  [ComfyUI] Generated prompt_id: 618415e5-413b-4b48-8f6c-073191136908
+  [ComfyUI] Generated prompt_id: 6c38636d-6eec-416c-8263-32ae755f2724
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
   [ComfyUI] got prompt
-  [ComfyUI] LoadMultibandImage: Loaded /workspaces/SAM3DObjects-0430/ComfyUI/input/scene_multiband.npz
+  [ComfyUI] LoadMultibandImage: Loaded /workspaces/SAM3DObjects-1206/ComfyUI/input/scene_multiband.npz
   [ComfyUI]   Shape: (1, 10, 2240, 3360)
   [ComfyUI]   Channels: 10
   [ComfyUI]   Names: img_01_r,img_01_g,img_01_b,mask_01,mask_02,mask_03,mask_04,mask_05,mask_06,mask_07
-  Frame 2 saved (frame_001.jpg, t=2.6s)
-  [capture-periodic] freeze=4ms shot=236ms unfreeze=9ms saved=True
+  Frame 2 saved (frame_001.jpg, t=2.4s)
+  [capture-periodic] freeze=2ms shot=180ms unfreeze=6ms saved=True
   Node executed (1 total), capturing...
+  [ComfyUI] [comfy-env] SubprocessWorker: /workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
   [ComfyUI] [comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
-  [ComfyUI] [comfy-env] SubprocessWorker: /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
-  [ComfyUI] [comfy-env] env_vars: {'COMFYUI_BASE': '/workspaces/SAM3DObjects-0430/ComfyUI'}
-  [ComfyUI] [VRAM] Before LoadSAM3DModel: 302 / 24124 MB
-  [ComfyUI] [ComfyUI-SAM3DObjects] python: /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
+  [ComfyUI] [comfy-env] env_vars: {'COMFYUI_BASE': '/workspaces/SAM3DObjects-1206/ComfyUI'}
+  [ComfyUI] [VRAM] Before LoadSAM3DModel: 153 / 7703 MB
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: /workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
   [ComfyUI] [SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
-  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/workspaces/SAM3DObjects-0430/ComfyUI', '/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages', '/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
-  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
-  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/workspaces/SAM3DObjects-0430/ComfyUI/.ce/pixi.toml', '-e', 'sam3dobjects-nodes', 'python', '/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py', 'abstract://comfy_worker_2dc16a9f0c7e']...
-  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_2dc16a9f0c7e (abstract, no filesystem path)
-  Frame 3 saved (frame_002.jpg, t=3.4s)
-  [capture-node] freeze=9ms shot=495ms unfreeze=14ms saved=True
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/workspaces/SAM3DObjects-1206/ComfyUI', '/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages', '/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/workspaces/SAM3DObjects-1206/ComfyUI/.ce/pixi.toml', '-e', 'sam3dobjects-nodes', 'python', '/tmp/comfyui_pvenv_luknogky/persistent_worker.py', 'abstract://comfy_worker_8a7bcf1d3287']...
+  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_8a7bcf1d3287 (abstract, no filesystem path)
+  Frame 3 saved (frame_002.jpg, t=3.3s)
+  [capture-node] freeze=2ms shot=158ms unfreeze=2ms saved=True
   Node executed (2 total), capturing...
-  Frame 4 saved (frame_003.jpg, t=4.3s)
-  [capture-node] freeze=4ms shot=223ms unfreeze=4ms saved=True
+  Frame 4 saved (frame_003.jpg, t=3.7s)
+  [capture-node] freeze=2ms shot=173ms unfreeze=7ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
   [ComfyUI] [SubprocessWorker] worker started/confirmed
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=1 sending call_method
-  Frame 5 saved (frame_004.jpg, t=6.6s)
-  [capture-periodic] freeze=3ms shot=256ms unfreeze=3ms saved=True
-  [ComfyUI] /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_validators.py:205: UserWarning: The `local_dir_use_symlinks` argument is deprecated and ignored in `hf_hub_download`. Downloading to a local directory does not use symlinks anymore.
+  Frame 5 saved (frame_004.jpg, t=6.0s)
+  [capture-periodic] freeze=2ms shot=162ms unfreeze=12ms saved=True
+  [ComfyUI] /workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:205: UserWarning: The `local_dir_use_symlinks` argument is deprecated and ignored in `hf_hub_download`. Downloading to a local directory does not use symlinks anymore.
   [ComfyUI]   warnings.warn(
-  [capture-loop] iter=50 t=7.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=4.5/31.2GB (14%) swap=0.7/32.0GB (2%) cpu=4% browser_rss=1.03GB
+  [capture-loop] iter=50 t=6.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  Frame 6 saved (frame_005.jpg, t=8.3s)
+  [capture-periodic] freeze=2ms shot=208ms unfreeze=6ms saved=True
+  [capture-loop] iter=100 t=12.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=150 t=18.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=200 t=23.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=250 t=29.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=300 t=35.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=350 t=41.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=400 t=46.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-  [capture-loop] iter=100 t=13.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=4.7/31.2GB (15%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=1.01GB
-  [capture-loop] iter=150 t=19.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=5.0/31.2GB (16%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=1.02GB
-  [capture-loop] iter=200 t=25.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=5.1/31.2GB (16%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.94GB
-  [capture-loop] iter=250 t=31.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=5.5/31.2GB (18%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.94GB
-  [capture-loop] iter=300 t=37.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=5.8/31.2GB (18%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.95GB
-  [capture-loop] iter=350 t=43.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.3/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=9% browser_rss=0.95GB
-  [capture-loop] iter=400 t=49.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.6/31.2GB (21%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.95GB
-  [capture-loop] iter=450 t=55.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.7/31.2GB (22%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.93GB
-  [capture-loop] iter=500 t=61.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.9/31.2GB (22%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.93GB
+  [capture-loop] iter=450 t=52.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=500 t=58.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] [worker:ComfyUI-SAM3DObjects]
   [ComfyUI] === WATCHDOG TICK 1 ===
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x000079042e601640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007220ae612640 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e6ee7640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] Thread 0x000072245b31e640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 106 in _vram_poller
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Current thread 0x00007905e76ec640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] Current thread 0x000072245bb23640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e7ce7740 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 558 in xet_get
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 1842 in _download_to_tmp_and_move
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 1427 in _hf_hub_download_to_local_dir
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 976 in hf_hub_download
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_validators.py", line 88 in _inner_fn
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 197 in _download_files
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 160 in _get_or_download_checkpoint
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 121 in execute
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy_api/latest/_io.py", line 1827 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1749 in main
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1794 in <module>
+  [ComfyUI] Thread 0x000072245c11e740 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 558 in xet_get
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1842 in _download_to_tmp_and_move
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1427 in _hf_hub_download_to_local_dir
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 976 in hf_hub_download
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py", line 88 in _inner_fn
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 197 in _download_files
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 160 in _get_or_download_checkpoint
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 121 in execute
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1807 in <module>
   [ComfyUI] 
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
   [ComfyUI] 
-  [capture-loop] iter=550 t=67.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.0/31.2GB (19%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  [capture-loop] iter=600 t=73.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.1/31.2GB (19%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.93GB
-  [capture-loop] iter=650 t=79.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.3/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  [capture-loop] iter=700 t=85.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.4/31.2GB (21%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.93GB
-  [capture-loop] iter=750 t=91.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.8/31.2GB (22%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.93GB
-  [capture-loop] iter=800 t=97.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=7.1/31.2GB (23%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.93GB
-  [capture-loop] iter=850 t=103.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.2/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=8% browser_rss=0.93GB
-  [capture-loop] iter=900 t=109.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.4/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=4% browser_rss=0.93GB
-  [capture-loop] iter=950 t=115.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.1/31.2GB (19%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  [capture-loop] iter=1000 t=121.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.2/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
+  [capture-loop] iter=550 t=64.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=600 t=69.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=650 t=75.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=700 t=81.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=750 t=87.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=800 t=92.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=850 t=98.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3
+  [capture-loop] iter=900 t=104.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=950 t=110.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1000 t=115.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1050 t=121.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] [worker:ComfyUI-SAM3DObjects]
   [ComfyUI] === WATCHDOG TICK 2 ===
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x000079042e601640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007220ae612640 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e6ee7640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] Thread 0x000072245b31e640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 106 in _vram_poller
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Current thread 0x00007905e76ec640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] Current thread 0x000072245bb23640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
   [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e7ce7740 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 558 in xet_get
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 1842 in _download_to_tmp_and_move
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 1427 in _hf_hub_download_to_local_dir
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/file_download.py", line 976 in hf_hub_download
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/huggingface_hub/utils/_validators.py", line 88 in _inner_fn
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 219 in _ensure_dinov2_safetensors
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 128 in execute
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy_api/latest/_io.py", line 1827 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1749 in main
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1794 in <module>
+  [ComfyUI] Thread 0x000072245c11e740 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 558 in xet_get
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1842 in _download_to_tmp_and_move
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 1427 in _hf_hub_download_to_local_dir
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/file_download.py", line 976 in hf_hub_download
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py", line 88 in _inner_fn
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 197 in _download_files
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 160 in _get_or_download_checkpoint
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/load_model.py", line 121 in execute
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1807 in <module>
   [ComfyUI] 
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
   [ComfyUI] 
-  [capture-loop] iter=1050 t=127.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.1/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  [capture-loop] iter=1100 t=133.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=6.1/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.93GB
+  [capture-loop] iter=1100 t=127.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1150 t=132.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1200 t=139.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1250 t=144.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1300 t=150.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1350 t=156.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] got response: ok
-  [ComfyUI] [comfy-env] LoadSAM3DModel done (136.14s): result: NodeOutput
-  [ComfyUI] [VRAM] After LoadSAM3DModel: 563 / 24124 MB
+  [ComfyUI] [comfy-env] LoadSAM3DModel done (154.53s): result: NodeOutput
+  [ComfyUI] [VRAM] After LoadSAM3DModel: 270 / 7703 MB
   [ComfyUI] [comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,2240,3360,3] cpu
-  [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 563 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 270 / 7703 MB
   [ComfyUI] [SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
@@ -178,54 +186,80 @@ Capturing execution frames: debug_large_image_results.json
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 2240, 3360, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 2240, 3360, 3])
-  [capture-loop] iter=1150 t=139.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.3/31.2GB (20%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.94GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=0MiB alloc, 0MiB reserved | gpu=563MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=563MiB/24124MiB used
-  [ComfyUI] /workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  Frame 7 saved (frame_006.jpg, t=159.1s)
+  [capture-periodic] freeze=2ms shot=134ms unfreeze=5ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
+  [ComfyUI] /workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
   [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
-  Frame 6 saved (frame_005.jpg, t=141.4s)
-  [capture-periodic] freeze=3ms shot=255ms unfreeze=5ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=563MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=0MiB alloc, 0MiB reserved | gpu=563MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=2
-  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 24.71GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.71GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +264MB (now 264MB) reserved=288MB peak=264MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=599MiB alloc, 608MiB reserved | gpu=1191MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +335MB (now 599MB) reserved=608MB peak=599MB
-  Frame 7 saved (frame_006.jpg, t=143.8s)
-  [capture-periodic] freeze=3ms shot=252ms unfreeze=3ms saved=True
-  [capture-loop] iter=1200 t=145.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=6.8/31.2GB (22%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
+  [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 7.79GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.79GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=599MiB alloc, 608MiB reserved | gpu=948MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +599MB (now 599MB) reserved=608MB peak=599MB
+  Frame 8 saved (frame_007.jpg, t=161.3s)
+  [capture-periodic] freeze=2ms shot=187ms unfreeze=6ms saved=True
+  [capture-loop] iter=1400 t=161.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=599MiB alloc, 608MiB reserved | gpu=1191MiB/24124MiB used
-  Frame 8 saved (frame_007.jpg, t=150.7s)
-  [capture-periodic] freeze=3ms shot=245ms unfreeze=11ms saved=True
-  [capture-loop] iter=1250 t=152.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=7.0/31.2GB (22%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  Frame 9 saved (frame_008.jpg, t=153.1s)
-  [capture-periodic] freeze=3ms shot=234ms unfreeze=6ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +335MB (now 934MB) reserved=1120MB peak=934MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe inference: torch=759MiB alloc, 1120MiB reserved | gpu=1765MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after cleanup: torch=159MiB alloc, 256MiB reserved | gpu=901MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=599MiB alloc, 608MiB reserved | gpu=948MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +224MB (now 824MB) reserved=1152MB peak=824MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe inference: torch=759MiB alloc, 1152MiB reserved | gpu=1528MiB/7703MiB used
+  [capture-loop] iter=1450 t=167.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after cleanup: torch=159MiB alloc, 256MiB reserved | gpu=632MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -689MB (now 245MB) reserved=640MB peak=934MB
-  Frame 10 saved (frame_009.jpg, t=155.4s)
-  [capture-periodic] freeze=3ms shot=271ms unfreeze=6ms saved=True
-  Frame 11 saved (frame_010.jpg, t=157.8s)
-  [capture-periodic] freeze=3ms shot=248ms unfreeze=3ms saved=True
-  [capture-loop] iter=1300 t=158.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=8.3/31.2GB (27%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [capture-loop] iter=1350 t=164.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=8.3/31.2GB (27%) swap=0.7/32.0GB (2%) cpu=5% browser_rss=0.94GB
-  [capture-loop] iter=1400 t=170.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=8.3/31.2GB (27%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -579MB (now 245MB) reserved=640MB peak=824MB
+  Frame 9 saved (frame_008.jpg, t=168.2s)
+  [capture-periodic] freeze=1ms shot=192ms unfreeze=8ms saved=True
+  Frame 10 saved (frame_009.jpg, t=170.5s)
+  [capture-periodic] freeze=1ms shot=185ms unfreeze=5ms saved=True
+  [capture-loop] iter=1500 t=173.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [capture-loop] iter=1550 t=178.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
+  [ComfyUI] === WATCHDOG TICK 3 ===
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007220ae612640 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x000072245b31e640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 106 in _vram_poller
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Current thread 0x000072245bb23640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x000072245c11e740 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 1536 in write_normal
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 1623 in savetxt
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 334 in _save_pointcloud_ply
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/depth_estimate.py", line 210 in execute
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1807 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
+  [ComfyUI] 
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=2
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: done: torch=245MiB alloc, 640MiB reserved | gpu=1285MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -237MB (now 9MB) reserved=640MB peak=934MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: done: torch=245MiB alloc, 640MiB reserved | gpu=1016MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -237MB (now 9MB) reserved=640MB peak=824MB
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 1 model patchers: ['MoGeModelV1_1']
-  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (34.90s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3D_DepthEstimate: 1285 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (26.55s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3D_DepthEstimate: 1016 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
   [ComfyUI] [comfy-env] Running SAM3DGenerateSLAT: seed: 42, stage1_steps: 12, stage1_cfg: 7.5, stage1_cfg_pm: 0.0, stage2_steps: 12, stage2_cfg: 5.0, use_distillation: False, generator: dict, image: torch.float32 [1,2240,3360,3] cpu, mask: torch.float32 [1,2240,3360] cpu, pointmap: torch.float32 [2240,3360,3] cpu
-  [ComfyUI] [VRAM] Before SAM3DGenerateSLAT: 1285 / 24124 MB
+  [ComfyUI] [VRAM] Before SAM3DGenerateSLAT: 1016 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
   [ComfyUI] [SubprocessWorker] call_method: nodes.generate_slat.SAM3DGenerateSLAT.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
@@ -236,6 +270,7 @@ Capturing execution frames: debug_large_image_results.json
   [ComfyUI] [comfy-env] PRE-SERIALIZE 'mask' shape: torch.Size([1, 2240, 3360])
   [ComfyUI] [comfy-env] PRE-SERIALIZE 'pointmap' shape: torch.Size([2240, 3360, 3])
   [ComfyUI] [SubprocessWorker] serializing kwargs to shm...
+  [capture-loop] iter=1600 t=184.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=3 sending call_method
@@ -248,296 +283,141 @@ Capturing execution frames: debug_large_image_results.json
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[2240, 3360, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([2240, 3360, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: start: torch=9MiB alloc, 640MiB reserved | gpu=1285MiB/24124MiB used
-  [ComfyUI] 2026-05-08 04:39:22.703 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +258MB (now 267MB) reserved=704MB peak=934MB
-  [capture-loop] iter=1450 t=176.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=8.6/31.2GB (28%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): before build: torch=109MiB alloc, 768MiB reserved | gpu=1451MiB/24124MiB used
-  Frame 12 saved (frame_011.jpg, t=176.4s)
-  [capture-periodic] freeze=4ms shot=249ms unfreeze=13ms saved=True
-  Frame 13 saved (frame_012.jpg, t=178.8s)
-  [capture-periodic] freeze=3ms shot=242ms unfreeze=2ms saved=True
-  [capture-loop] iter=1500 t=182.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=10.6/31.2GB (34%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.93GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): after load_state_dict: torch=109MiB alloc, 768MiB reserved | gpu=1451MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: start: torch=9MiB alloc, 640MiB reserved | gpu=1016MiB/7703MiB used
+  [ComfyUI] 2026-05-08 12:15:13.901 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +258MB (now 267MB) reserved=640MB peak=824MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): before build: torch=109MiB alloc, 640MiB reserved | gpu=1082MiB/7703MiB used
+  Frame 11 saved (frame_010.jpg, t=186.3s)
+  [capture-periodic] freeze=1ms shot=196ms unfreeze=7ms saved=True
+  Frame 12 saved (frame_011.jpg, t=188.6s)
+  [capture-periodic] freeze=2ms shot=178ms unfreeze=5ms saved=True
+  [capture-loop] iter=1650 t=190.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=9
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): after load_state_dict: torch=109MiB alloc, 640MiB reserved | gpu=1082MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 2.54GB, free before eviction: 24.28GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.28GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +562MB (now 830MB) reserved=896MB peak=934MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before embedding: torch=1368MiB alloc, 1376MiB reserved | gpu=2059MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
-  [ComfyUI] === WATCHDOG TICK 3 ===
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007903043dc640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/socket.py", line 295 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 626 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 480 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/resource_sharer.py", line 138 in _serve
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x000079042e601640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e6ee7640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Current thread 0x00007905e76ec640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e7ce7740 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/sageattention/core.py", line 147 in sageattn
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy/ldm/modules/attention.py", line 569 in attention_sage
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy/ldm/modules/attention.py", line 139 in wrapper
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1983 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py", line 367 in attn_residual_func
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py", line 378 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py", line 400 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py", line 689 in forward_features
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 2035 in _forward_last_layer
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 2045 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1833 in inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1885 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 2201 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1833 in inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1885 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 908 in run_stage1
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/generate_slat.py", line 237 in execute
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy_api/latest/_io.py", line 1827 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1749 in main
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1794 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedding: torch=1398MiB alloc, 2464MiB reserved | gpu=3147MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedder unload: torch=138MiB alloc, 352MiB reserved | gpu=1035MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): before build: torch=138MiB alloc, 352MiB reserved | gpu=1035MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): after load_state_dict: torch=138MiB alloc, 352MiB reserved | gpu=1035MiB/24124MiB used
+  [ComfyUI] [comfy-env] VRAM request: 2.54GB, free before eviction: 7.38GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.38GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +210MB (now 477MB) reserved=544MB peak=824MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before embedding: torch=1368MiB alloc, 1376MiB reserved | gpu=1818MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedding: torch=1398MiB alloc, 2464MiB reserved | gpu=2908MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedder unload: torch=138MiB alloc, 288MiB reserved | gpu=732MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): before build: torch=138MiB alloc, 288MiB reserved | gpu=732MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -339MB (now 138MB) reserved=288MB peak=1428MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): after load_state_dict: torch=138MiB alloc, 288MiB reserved | gpu=732MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 3.86GB, free before eviction: 24.21GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.21GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -619MB (now 211MB) reserved=416MB peak=1451MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(ss): before instantiate: torch=3816MiB alloc, 3840MiB reserved | gpu=4523MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(ss): after load_state_dict: torch=3816MiB alloc, 3840MiB reserved | gpu=4523MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +3605MB (now 3816MB) reserved=3840MB peak=3816MB
+  [ComfyUI] [comfy-env] VRAM request: 3.86GB, free before eviction: 7.31GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.31GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(ss): before instantiate: torch=3816MiB alloc, 3840MiB reserved | gpu=4284MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(ss): after load_state_dict: torch=3816MiB alloc, 3840MiB reserved | gpu=4284MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +3677MB (now 3816MB) reserved=3840MB peak=3816MB
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 0.15GB, free before eviction: 20.55GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 20.55GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before inference: torch=3957MiB alloc, 3968MiB reserved | gpu=4651MiB/24124MiB used
+  [ComfyUI] [comfy-env] VRAM request: 0.15GB, free before eviction: 3.59GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 3.59GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before inference: torch=3957MiB alloc, 3968MiB reserved | gpu=4412MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 6) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 4096, 8) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 1) device=cuda:0
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +315MB (now 4132MB) reserved=4160MB peak=4132MB
-  [capture-loop] iter=1550 t=188.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.8/31.2GB (35%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +248MB (now 4065MB) reserved=4288MB peak=4116MB
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 13 saved (frame_012.jpg, t=195.5s)
+  [capture-periodic] freeze=2ms shot=179ms unfreeze=7ms saved=True
+  [capture-loop] iter=1700 t=195.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 14 saved (frame_013.jpg, t=197.8s)
+  [capture-periodic] freeze=9ms shot=163ms unfreeze=4ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 15 saved (frame_014.jpg, t=200.1s)
+  [capture-periodic] freeze=1ms shot=175ms unfreeze=6ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [capture-loop] iter=1750 t=201.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=1
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 16 saved (frame_015.jpg, t=202.4s)
+  [capture-periodic] freeze=1ms shot=260ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  Frame 14 saved (frame_013.jpg, t=190.2s)
-  [capture-periodic] freeze=3ms shot=245ms unfreeze=6ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  Frame 15 saved (frame_014.jpg, t=192.6s)
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [capture-periodic] freeze=3ms shot=237ms unfreeze=9ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [capture-loop] iter=1600 t=194.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=11 ram=10.9/31.2GB (35%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  Frame 16 saved (frame_015.jpg, t=195.0s)
-  [capture-periodic] freeze=2ms shot=225ms unfreeze=14ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after inference: torch=3974MiB alloc, 4448MiB reserved | gpu=5133MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -982MB (now 3151MB) reserved=4448MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1702MB (now 1449MB) reserved=4448MB peak=4168MB
-  Frame 17 saved (frame_016.jpg, t=197.3s)
-  [capture-periodic] freeze=3ms shot=280ms unfreeze=5ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after model cleanup: torch=155MiB alloc, 448MiB reserved | gpu=1133MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1306MB (now 144MB) reserved=448MB peak=4168MB
-  [ComfyUI] 2026-05-08 04:39:46.074 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): before build: torch=105MiB alloc, 448MiB reserved | gpu=1133MiB/24124MiB used
-  Frame 18 saved (frame_017.jpg, t=199.7s)
-  [capture-periodic] freeze=3ms shot=249ms unfreeze=3ms saved=True
-  [capture-loop] iter=1650 t=200.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=14.3/31.2GB (46%) swap=0.7/32.0GB (2%) cpu=7% browser_rss=0.95GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): after load_state_dict: torch=105MiB alloc, 448MiB reserved | gpu=1133MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after inference: torch=3974MiB alloc, 4512MiB reserved | gpu=4956MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -299MB (now 3767MB) reserved=4512MB peak=4179MB
+  Frame 17 saved (frame_016.jpg, t=204.8s)
+  [capture-periodic] freeze=1ms shot=157ms unfreeze=7ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -2215MB (now 1553MB) reserved=4512MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after model cleanup: torch=155MiB alloc, 384MiB reserved | gpu=828MiB/7703MiB used
+  [ComfyUI] 2026-05-08 12:15:35.866 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1458MB (now 96MB) reserved=384MB peak=4179MB
+  Frame 18 saved (frame_017.jpg, t=207.0s)
+  [capture-periodic] freeze=2ms shot=166ms unfreeze=9ms saved=True
+  [capture-loop] iter=1800 t=207.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): before build: torch=105MiB alloc, 384MiB reserved | gpu=828MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): after load_state_dict: torch=105MiB alloc, 384MiB reserved | gpu=828MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 2.50GB, free before eviction: 24.31GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.31GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +200MB (now 345MB) reserved=448MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before embedding: torch=1332MiB alloc, 1376MiB reserved | gpu=2061MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedding: torch=1342MiB alloc, 1472MiB reserved | gpu=2157MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedder unload: torch=115MiB alloc, 320MiB reserved | gpu=1005MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): before build: torch=115MiB alloc, 320MiB reserved | gpu=1005MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -230MB (now 115MB) reserved=320MB peak=4168MB
-  [capture-loop] iter=1700 t=206.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=15.9/31.2GB (51%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.95GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): after load_state_dict: torch=115MiB alloc, 320MiB reserved | gpu=1005MiB/24124MiB used
+  [ComfyUI] [comfy-env] VRAM request: 2.50GB, free before eviction: 7.34GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.34GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +280MB (now 377MB) reserved=512MB peak=4179MB
+  [capture-loop] iter=1850 t=213.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before embedding: torch=1332MiB alloc, 1376MiB reserved | gpu=1820MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1027MB (now 1404MB) reserved=1472MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedding: torch=1342MiB alloc, 1472MiB reserved | gpu=1916MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedder unload: torch=115MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): before build: torch=115MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1290MB (now 115MB) reserved=320MB peak=4179MB
+  [capture-loop] iter=1900 t=218.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=1
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): after load_state_dict: torch=115MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=3
-  [ComfyUI] [comfy-env] VRAM request: 2.40GB, free before eviction: 24.24GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.24GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +207MB (now 322MB) reserved=512MB peak=4168MB
-  [capture-loop] iter=1750 t=212.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=15.9/31.2GB (51%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before inference: torch=2406MiB alloc, 2464MiB reserved | gpu=3149MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 26577, 8) device=cuda:0
-  [ComfyUI] W0508 04:40:00.648000 2221 .ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py:53] is_fx_tracing will return true for both fx.symbolic_trace and torch.export. Please use is_fx_tracing_symbolic_tracing() for specifically fx.symbolic_trace or torch.compiler.is_compiling() for specifically torch.export/compile.
-  [ComfyUI] /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/cppcore.py:106: UserWarning: [WARNING]your gpu arch (8, 6) isn't compiled in prebuilt, may cause invalid device function error. available: {(9, 0), (12, 0), (7, 0), (8, 0), (10, 0)}
-  [ComfyUI]   warnings.warn(
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n64k32m32n32k32A1T16816_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +2107MB (now 2430MB) reserved=2496MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n64k32m32n32k32A1T16816_300_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n64k32m32n32k32A1T16816_400_C301LLL_SK in prebuilt. compile with nvrtc...
-  [capture-loop] iter=1800 t=218.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=16.2/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=5% browser_rss=0.95GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n128k32m32n64k32A1T16816_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n128k32m32n64k32A1T16816_300_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m64n128k32m32n64k32A1T16816_400_C301LLL_SK in prebuilt. compile with nvrtc...
-  [capture-loop] iter=1850 t=224.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=16.3/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m128n64k32m64n32k32A1T16816_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m128n64k32m64n32k32A1T16816_300_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Ampere_bf16bf16bf16f32f32tnt_m128n64k32m64n32k32A1T16816_400_C301LLL_SK in prebuilt. compile with nvrtc...
+  [ComfyUI] [comfy-env] VRAM request: 2.40GB, free before eviction: 7.28GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.28GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +303MB (now 418MB) reserved=576MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1466MB (now 1885MB) reserved=1984MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before inference: torch=2406MiB alloc, 2464MiB reserved | gpu=2908MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 26539, 8) device=cuda:0
+  [ComfyUI] W0508 12:15:49.794000 1236 .ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py:53] is_fx_tracing will return true for both fx.symbolic_trace and torch.export. Please use is_fx_tracing_symbolic_tracing() for specifically fx.symbolic_trace or torch.compiler.is_compiling() for specifically torch.export/compile.
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +604MB (now 2490MB) reserved=2592MB peak=4179MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [33m[comfy-attn] Varlen attention: sage2[0m
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +260MB (now 2691MB) reserved=2784MB peak=4168MB
-  [capture-loop] iter=1900 t=230.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=16.4/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=5% browser_rss=0.94GB
-  [ComfyUI] /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/cppcore.py:106: UserWarning: [WARNING]your gpu arch (8, 6) isn't compiled in prebuilt, may cause invalid device function error. available: {(9, 0), (12, 0), (7, 0), (8, 0), (10, 0)}
-  [ComfyUI]   warnings.warn(
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m32n128k16m32n32k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +225MB (now 2916MB) reserved=3232MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m32n256k8m32n64k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [capture-loop] iter=1950 t=236.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.3/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m32n64k16m32n32k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m32n32k32m32n32k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m64n256k8m32n64k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [capture-loop] iter=2000 t=242.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.4/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=5% browser_rss=0.95GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m64n128k8m32n64k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
-  [ComfyUI] === WATCHDOG TICK 4 ===
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x00007903043dc640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/socket.py", line 295 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 626 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 480 in accept
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/resource_sharer.py", line 138 in _serve
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x000079042e601640 (most recent call first):
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e6ee7640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 106 in _vram_poller
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Current thread 0x00007905e76ec640 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 52 in _watchdog
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
-  [ComfyUI] 
-  [ComfyUI] Thread 0x00007905e7ce7740 (most recent call first):
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1075 in send
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1213 in _forwarded_print
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/algo.py", line 209 in cached_get_nvrtc_params
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/ops.py", line 1513 in implicit_gemm
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/conv.py", line 467 in _conv_forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/conv.py", line 755 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1833 in inner
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1885 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 152 in _spconv_conv3d_forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 586 in _forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 601 in forward_comfy_cast_weights
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 612 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1195 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1703 in _forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy/patcher_extension.py", line 112 in execute
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1653 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/model.py", line 1745 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 666 in inner_forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 698 in forward
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 426 in _generate_dynamics
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 133 in step
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 121 in solve_iter
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/generators.py", line 410 in generate_iter
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 1213 in run_stage2
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/generate_slat.py", line 262 in execute
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
-  [ComfyUI]   File "/workspaces/SAM3DObjects-0430/ComfyUI/comfy_api/latest/_io.py", line 1827 in EXECUTE_NORMALIZED
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1749 in main
-  [ComfyUI]   File "/tmp/comfyui_pvenv_7mfv1yoo/persistent_worker.py", line 1794 in <module>
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
-  [ComfyUI] 
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m64n64k8m32n32k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Can't find algo Simt_f32f32f32f32f32tnt_m64n32k16m32n32k8A1_200_C301LLL_SK in prebuilt. compile with nvrtc...
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -413MB (now 2504MB) reserved=3232MB peak=4168MB
-  [capture-loop] iter=2050 t=248.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.3/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +200MB (now 2690MB) reserved=2784MB peak=4179MB
+  [capture-loop] iter=1950 t=224.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +225MB (now 2916MB) reserved=3264MB peak=4179MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +205MB (now 2710MB) reserved=3296MB peak=4168MB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  Frame 19 saved (frame_018.jpg, t=249.7s)
-  [capture-periodic] freeze=3ms shot=240ms unfreeze=4ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -287MB (now 2629MB) reserved=3264MB peak=4179MB
+  Frame 19 saved (frame_018.jpg, t=227.3s)
+  [capture-periodic] freeze=1ms shot=183ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -204MB (now 2506MB) reserved=3392MB peak=4168MB
-  Frame 20 saved (frame_019.jpg, t=252.0s)
-  [capture-periodic] freeze=3ms shot=233ms unfreeze=3ms saved=True
+  Frame 20 saved (frame_019.jpg, t=229.6s)
+  [capture-periodic] freeze=2ms shot=177ms unfreeze=6ms saved=True
+  [capture-loop] iter=2000 t=230.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=1
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [capture-loop] iter=2100 t=254.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=16.3/31.2GB (52%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.94GB
+  Frame 21 saved (frame_020.jpg, t=231.9s)
+  [capture-periodic] freeze=2ms shot=185ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +203MB (now 2710MB) reserved=3232MB peak=4168MB
-  Frame 21 saved (frame_020.jpg, t=254.4s)
-  [capture-periodic] freeze=4ms shot=233ms unfreeze=13ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 22 saved (frame_021.jpg, t=234.3s)
+  [capture-periodic] freeze=1ms shot=174ms unfreeze=5ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  [capture-loop] iter=2050 t=235.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
+  Frame 23 saved (frame_022.jpg, t=236.6s)
+  [capture-periodic] freeze=1ms shot=181ms unfreeze=3ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -266MB (now 2445MB) reserved=3296MB peak=4168MB
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  Frame 22 saved (frame_021.jpg, t=256.8s)
-  [capture-periodic] freeze=3ms shot=224ms unfreeze=10ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=3
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after inference: torch=2407MiB alloc, 3328MiB reserved | gpu=4021MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -266MB (now 2179MB) reserved=3328MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after model cleanup: torch=116MiB alloc, 352MiB reserved | gpu=1045MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: done: torch=97MiB alloc, 352MiB reserved | gpu=1045MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after inference: torch=2407MiB alloc, 3232MiB reserved | gpu=3680MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -246MB (now 2384MB) reserved=3232MB peak=4179MB
+  Frame 24 saved (frame_023.jpg, t=238.9s)
+  [capture-periodic] freeze=1ms shot=176ms unfreeze=14ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after model cleanup: torch=116MiB alloc, 384MiB reserved | gpu=832MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: done: torch=97MiB alloc, 384MiB reserved | gpu=832MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 5 model patchers: ['EmbedderFuser_2', 'ShortCut_3', 'SparseStructureDecoderTdfyWrapper_4', 'EmbedderFuser_5', 'FlowMatching_6']
-  [ComfyUI] [comfy-env] SAM3DGenerateSLAT done (84.21s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3DGenerateSLAT: 1045 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3DGenerateSLAT done (54.83s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3DGenerateSLAT: 832 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
-  [ComfyUI] [comfy-env] Running SAM3DMeshDecode: with_postprocess: False, simplify: 0.95, up_axis: 'Y-up (standard)', world_coordinates: False, use_sparse_flexicubes: True, slat_decoder_mesh: dict, slat: '/workspaces/SAM3DObjects-0430/ComfyUI/output/sam3d_run_1...
-  [ComfyUI] [VRAM] Before SAM3DMeshDecode: 1045 / 24124 MB
+  [ComfyUI] [comfy-env] Running SAM3DMeshDecode: with_postprocess: False, simplify: 0.95, up_axis: 'Y-up (standard)', world_coordinates: False, use_sparse_flexicubes: True, slat_decoder_mesh: dict, slat: '/workspaces/SAM3DObjects-1206/ComfyUI/output/sam3d_run_1...
+  [ComfyUI] [VRAM] Before SAM3DMeshDecode: 832 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
   [ComfyUI] [SubprocessWorker] call_method: nodes.mesh_decode.SAM3DMeshDecode.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
@@ -548,63 +428,113 @@ Capturing execution frames: debug_large_image_results.json
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=4 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: start: torch=9MiB alloc, 352MiB reserved | gpu=1045MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: start: torch=9MiB alloc, 384MiB reserved | gpu=832MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=4
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): before instantiate: torch=9MiB alloc, 352MiB reserved | gpu=1045MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): after load_state_dict: torch=9MiB alloc, 416MiB reserved | gpu=1109MiB/24124MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -2170MB (now 9MB) reserved=416MB peak=4168MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): before instantiate: torch=9MiB alloc, 384MiB reserved | gpu=832MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): after load_state_dict: torch=9MiB alloc, 416MiB reserved | gpu=864MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -2375MB (now 9MB) reserved=416MB peak=4179MB
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=4
-  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 24.13GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 24.13GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after load_models_gpu: torch=183MiB alloc, 288MiB reserved | gpu=981MiB/24124MiB used
+  [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 7.17GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.17GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after load_models_gpu: torch=183MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=4
-  Frame 23 saved (frame_022.jpg, t=259.2s)
-  [capture-periodic] freeze=3ms shot=236ms unfreeze=3ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +641MB (now 651MB) reserved=736MB peak=4168MB
-  [ComfyUI] /workspaces/SAM3DObjects-0430/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.1/site-packages/spconv/pytorch/cppcore.py:106: UserWarning: [WARNING]your gpu arch (8, 6) isn't compiled in prebuilt, may cause invalid device function error. available: {(9, 0), (12, 0), (7, 0), (8, 0), (10, 0)}
-  [ComfyUI]   warnings.warn(
-  [capture-loop] iter=2150 t=260.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=17.2/31.2GB (55%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.95GB
-  Frame 24 saved (frame_023.jpg, t=261.5s)
-  [capture-periodic] freeze=3ms shot=259ms unfreeze=11ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +302MB (now 953MB) reserved=1120MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -666MB (now 288MB) reserved=448MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1797MB (now 2086MB) reserved=2272MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +311MB (now 2397MB) reserved=4768MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] start: 1054 MiB | cubefeats torch.Size([1700928, 101])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after sparse_cube2verts: 1151 MiB | v_pos torch.Size([1958283, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after get_sparse_attrs + del: 437 MiB | verts 1958283 cubes 1700928
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after dilation: 499 MiB | verts 2385863 cubes 2142604
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1872MB (now 525MB) reserved=704MB peak=4168MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after searchsorted: 602 MiB | reg_c torch.Size([2142604, 8])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] start: 602 MiB | verts torch.Size([2385864, 3]) cubes torch.Size([2142604, 8]) sdf torch.Size([2385864])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_cubes: 621 MiB | surf_cubes 487380/2142604
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _get_case_id: 716 MiB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_edges: 792 MiB | surf_edges torch.Size([487688, 2])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _compute_vd: 863 MiB | vd torch.Size([487662, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _triangulate: 885 MiB | verts torch.Size([487662, 3]) faces torch.Size([975376, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after FlexiCubes: 638 MiB | verts torch.Size([487662, 3]) faces torch.Size([975376, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +640MB (now 650MB) reserved=736MB peak=4179MB
+  Frame 25 saved (frame_024.jpg, t=241.2s)
+  [capture-periodic] freeze=2ms shot=193ms unfreeze=7ms saved=True
+  [capture-loop] iter=2100 t=241.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +302MB (now 952MB) reserved=1088MB peak=4179MB
+  Frame 26 saved (frame_025.jpg, t=243.5s)
+  [capture-periodic] freeze=2ms shot=181ms unfreeze=7ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects]
+  [ComfyUI] === WATCHDOG TICK 4 ===
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1130MB (now 2083MB) reserved=2240MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] Thread 0x0000721fed9ff640 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/socket.py", line 295 in accept
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 626 in accept
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/connection.py", line 480 in accept
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/multiprocessing/resource_sharer.py", line 138 in _serve
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x00007220ae612640 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 359 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 655 in wait
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/tqdm/_monitor.py", line 60 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x000072245b31e640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 82 in wlog
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 124 in _vram_poller
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Current thread 0x000072245bb23640 (most recent call first):
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 52 in _watchdog
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1012 in run
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/threading.py", line 1032 in _bootstrap
+  [ComfyUI] 
+  [ComfyUI] Thread 0x000072245c11e740 (most recent call first):
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 481 in forward_comfy_cast_weights
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/ops_sparse.py", line 498 in forward
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/container.py", line 253 in forward
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/vae.py", line 746 in forward
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/vae.py", line 831 in forward
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1790 in _call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1779 in _wrapped_call_impl
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/utils/stages.py", line 1377 in run_decode
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/mesh_decode.py", line 126 in execute
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124 in decorate_context
+  [ComfyUI]   File "/workspaces/SAM3DObjects-1206/ComfyUI/comfy_api/latest/_io.py", line 1833 in EXECUTE_NORMALIZED
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1762 in main
+  [ComfyUI]   File "/tmp/comfyui_pvenv_luknogky/persistent_worker.py", line 1807 in <module>
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] === END ===
+  [ComfyUI] 
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] start: 1052 MiB | cubefeats torch.Size([1698496, 101])
+  [capture-loop] iter=2150 t=247.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after sparse_cube2verts: 1149 MiB | v_pos torch.Size([1954154, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after get_sparse_attrs + del: 437 MiB | verts 1954154 cubes 1698496
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1113MB (now 970MB) reserved=1152MB peak=4179MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after dilation: 498 MiB | verts 2379394 cubes 2137402
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after searchsorted: 601 MiB | reg_c torch.Size([2137402, 8])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] start: 601 MiB | verts torch.Size([2379395, 3]) cubes torch.Size([2137402, 8]) sdf torch.Size([2379395])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_cubes: 619 MiB | surf_cubes 492468/2137402
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _get_case_id: 715 MiB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_edges: 792 MiB | surf_edges torch.Size([492824, 2])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _compute_vd: 864 MiB | vd torch.Size([492828, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _triangulate: 886 MiB | verts torch.Size([492828, 3]) faces torch.Size([985648, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after FlexiCubes: 637 MiB | verts torch.Size([492828, 3]) faces torch.Size([985648, 3])
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=4
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after cleanup: torch=82MiB alloc, 320MiB reserved | gpu=1015MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after cleanup: torch=83MiB alloc, 320MiB reserved | gpu=770MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=4
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: done: torch=9MiB alloc, 320MiB reserved | gpu=1015MiB/24124MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: done: torch=9MiB alloc, 320MiB reserved | gpu=770MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 1 model patchers: ['SLatMeshDecoderTdfyWrapper_7']
-  [ComfyUI] [comfy-env] SAM3DMeshDecode done (7.98s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3DMeshDecode: 1015 / 24124 MB
+  [ComfyUI] [comfy-env] SAM3DMeshDecode done (8.56s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3DMeshDecode: 770 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
-  [ComfyUI] Prompt executed in 266.37 seconds
-  [capture-loop] iter=2200 t=266.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=17.4/31.2GB (56%) swap=0.7/32.0GB (2%) cpu=6% browser_rss=0.95GB
+  [ComfyUI] Prompt executed in 247.49 seconds
   Node executed (3 total), capturing...
-  Frame 25 saved (frame_024.jpg, t=267.6s)
-  [capture-node] freeze=49ms shot=1679ms unfreeze=3ms saved=True
-  Execution complete (t=269.6s)
+  Frame 27 saved (frame_026.jpg, t=248.4s)
+  [capture-node] freeze=1526ms shot=185ms unfreeze=4ms saved=True
+  Execution complete (t=250.3s)
   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
-  [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
+  [3d-wait] Phase 1 done in 0.0s
   [3d-wait] Phase 2: iframes=0
-  [3d-wait] Total 3D wait: 60.0s
-  Captured 25 unique frames over 329.62s
+  [3d-wait] Total 3D wait: 0.0s
+  Captured 27 unique frames over 250.29s
   [debug] iframes: 0
   [timing] trigger_3d_previews: 0.0s
   Saved high-quality screenshot: debug_large_image_results_executed.png
-  [timing] final_screenshot: 0.6s
-    Captured 26 video frames
+  [timing] final_screenshot: 1.0s
+    Captured 28 video frames
