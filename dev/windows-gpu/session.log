@@ -1,4 +1,4 @@
-[00:00] Crash dump logging enabled: C:\logs\SAM3DObjects-2123\dev\windows-gpu\crash_dump.log
+[00:00] Crash dump logging enabled: C:\logs\SAM3DObjects-0807\dev\windows-gpu\crash_dump.log
 [00:00] 
 [00:00] [1/4] INSTALL
 [00:00] ----------------------------------------
@@ -6,672 +6,655 @@
 [DEBUG] server=None, server_url=None, api=None
 [00:00] 
 Setting up ComfyUI...
-[00:00] Creating virtual environment at C:\workspaces\SAM3DObjects-2123\.venv...
-[00:00] Running: uv venv C:\workspaces\SAM3DObjects-2123\.venv --python 3.11
-[00:01] Cloning ComfyUI (latest) to C:\workspaces\SAM3DObjects-2123\ComfyUI...
-[00:01] Running: git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git C:\workspaces\SAM3DObjects-2123\ComfyUI
-[00:03] Installing ComfyUI requirements into C:\workspaces\SAM3DObjects-2123\.venv...
-[00:03]     comfyui-frontend-package==1.43.17
-[00:03]     comfyui-workflow-templates==0.9.72
-[00:03]     comfyui-embedded-docs==0.4.4
-[00:03]     torch
-[00:03]     torchsde
-[00:03]     torchvision
-[00:03]     torchaudio
-[00:03]     numpy>=1.25.0
-[00:03]     einops
-[00:03]     transformers>=4.50.3
-[00:03]     tokenizers>=0.13.3
-[00:03]     sentencepiece
-[00:03]     safetensors>=0.4.2
-[00:03]     aiohttp>=3.11.8
-[00:03]     yarl>=1.18.0
-[00:03]     pyyaml
-[00:03]     Pillow
-[00:03]     scipy
-[00:03]     tqdm
-[00:03]     psutil
-[00:03]     alembic
-[00:03]     SQLAlchemy>=2.0.0
-[00:03]     filelock
-[00:03]     av>=14.2.0
-[00:03]     comfy-kitchen>=0.2.8
-[00:03]     comfy-aimdo==0.3.0
-[00:03]     requests
-[00:03]     simpleeval>=1.0.0
-[00:03]     blake3
-[00:03]     
-[00:03]     #non essential dependencies:
-[00:03]     kornia>=0.7.1
-[00:03]     spandrel
-[00:03]     pydantic~=2.0
-[00:03]     pydantic-settings~=2.0
-[00:03]     PyOpenGL
-[00:03]     glfw
-[00:03] Running: uv pip install --python C:\workspaces\SAM3DObjects-2123\.venv\Scripts\python.exe --index-url https://download.pytorch.org/whl/cu128 --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match -r C:\workspaces\SAM3DObjects-2123\ComfyUI\requirements.txt
-[00:45] 
+[00:00] Creating virtual environment at C:\workspaces\SAM3DObjects-0807\.venv...
+[00:00] Running: uv venv C:\workspaces\SAM3DObjects-0807\.venv --python 3.13
+[00:02] Cloning ComfyUI (latest) to C:\workspaces\SAM3DObjects-0807\ComfyUI...
+[00:02] Running: git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git C:\workspaces\SAM3DObjects-0807\ComfyUI
+[00:05] Installing ComfyUI requirements into C:\workspaces\SAM3DObjects-0807\.venv...
+[00:05]     comfyui-frontend-package==1.43.17
+[00:05]     comfyui-workflow-templates==0.9.72
+[00:05]     comfyui-embedded-docs==0.4.4
+[00:05]     torch
+[00:05]     torchsde
+[00:05]     torchvision
+[00:05]     torchaudio
+[00:05]     numpy>=1.25.0
+[00:05]     einops
+[00:05]     transformers>=4.50.3
+[00:05]     tokenizers>=0.13.3
+[00:05]     sentencepiece
+[00:05]     safetensors>=0.4.2
+[00:05]     aiohttp>=3.11.8
+[00:05]     yarl>=1.18.0
+[00:05]     pyyaml
+[00:05]     Pillow
+[00:05]     scipy
+[00:05]     tqdm
+[00:05]     psutil
+[00:05]     alembic
+[00:05]     SQLAlchemy>=2.0.0
+[00:05]     filelock
+[00:05]     av>=14.2.0
+[00:05]     comfy-kitchen>=0.2.8
+[00:05]     comfy-aimdo==0.3.0
+[00:05]     requests
+[00:05]     simpleeval>=1.0.0
+[00:05]     blake3
+[00:05]     
+[00:05]     #non essential dependencies:
+[00:05]     kornia>=0.7.1
+[00:05]     spandrel
+[00:05]     pydantic~=2.0
+[00:05]     pydantic-settings~=2.0
+[00:05]     PyOpenGL
+[00:05]     glfw
+[00:05] Running: uv pip install --python C:\workspaces\SAM3DObjects-0807\.venv\Scripts\python.exe --index-url https://download.pytorch.org/whl/cu128 --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match -r C:\workspaces\SAM3DObjects-0807\ComfyUI\requirements.txt
+[00:57] 
 Installing custom node...
-[00:45] Copying ComfyUI-SAM3DObjects to C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects...
-[00:45] Installing node requirements...
-[00:45]     # Process isolation for ComfyUI nodes
-[00:45]     comfy-env==0.3.66
-[00:45]     comfy-3d-viewers==0.2.44
-[00:45]     comfy-sparse-attn==0.0.9
-[00:45] Running: uv pip install --python C:\workspaces\SAM3DObjects-2123\.venv\Scripts\python.exe --index-url https://download.pytorch.org/whl/cu128 --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match -r C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\requirements.txt
-[00:48] 
+[00:57] Copying ComfyUI-SAM3DObjects to C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects...
+[00:57] Installing node requirements...
+[00:57]     # Process isolation for ComfyUI nodes
+[00:57]     comfy-env==0.3.69
+[00:57]     comfy-3d-viewers==0.2.44
+[00:57]     comfy-sparse-attn==0.0.9
+[00:57] Running: uv pip install --python C:\workspaces\SAM3DObjects-0807\.venv\Scripts\python.exe --index-url https://download.pytorch.org/whl/cu128 --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match -r C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\requirements.txt
+[00:59] 
 Running install.py...
-[00:48] Running: C:\workspaces\SAM3DObjects-2123\.venv\Scripts\python.exe C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\install.py
-[00:49]   [comfy-env] Enabled Windows long path support
-[00:49]   
-[00:49]   Installing 2 node dependencies...
-[00:49]     Cloning ComfyUI-Multiband...
-[00:50]     Installing requirements for ComfyUI-Multiband...
-[00:50]     Cloning ComfyUI-GeometryPack...
-[00:55]     Installing requirements for ComfyUI-GeometryPack...
-[00:55]     Running install.py for ComfyUI-GeometryPack...
-[00:56]   [comfy-env] Enabled Windows long path support
-[00:58]   [comfy-env] Workspace: C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce
-[00:58]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-2123\ComfyUI
-[00:58]   [comfy-env] Found 4 node config(s):
-[00:58]     - geometrypack-blender <- custom_nodes\ComfyUI-GeometryPack\nodes\blender\comfy-env.toml (python=3.11)
-[00:58]     - geometrypack-gpu <- custom_nodes\ComfyUI-GeometryPack\nodes\gpu\comfy-env.toml (python=host)
-[00:58]     - geometrypack-main <- custom_nodes\ComfyUI-GeometryPack\nodes\main\comfy-env.toml (python=host)
-[00:58]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
-[00:58]   [comfy-env] Bootstrap interpreter has python 3.11 + torch 2.11.0 (cu128). Looking for cuda-only wheels matching cu128/torch2.11/cp311.
-[00:58]   [comfy-env] GPU: Detection: smi
-[00:58]   Driver: 581.57
-[00:58]   CUDA: 13.0
-[00:58]   Recommended: CUDA 13.0
-[00:58]   
-[00:58]     GPU 0: NVIDIA GeForce RTX 4060 Ti (sm_89) [Ada] 16380MB
-[00:58]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu128 (CUDA 12.8 via bootstrap torch)
-[00:58]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
-[00:58]   [comfy-env] cuda-wheels: checking across Python versions: cp3.11, cp3.12
-[00:58]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp311
-[00:58]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp311 win_amd64
-[00:59]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp311-cp311-win_amd64.whl
-[00:59]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp312
-[00:59]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
-[00:59]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
-[00:59]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
-[00:59]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[00:59]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
-[00:59]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[00:59]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
-[01:00]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [comfy-env] cuda-wheels combo: cu12.8/torch2.11 (bootstrap matches; per-node envs will pin to this)
-[01:00]   [comfy-env] Root conda deps from ComfyUI-GeometryPack: ['av', 'ffmpeg']
-[01:00]   [comfy-env] Comfyui feature pin: torch ==2.11.0, torchvision ==0.26.*, torchaudio ==2.11.*
-[01:00]   [comfy-env] Root conda deps injected into comfyui feature: ['av', 'ffmpeg']
-[01:00]   [comfy-env] cuda-wheels combo: per-node cuda features will pin ['torch', 'torchaudio', 'torchvision'] via pypi-options.dependency-overrides (https://download.pytorch.org/whl/cu128)
-[01:00]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp311 win_amd64
-[01:00]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp311-cp311-win_amd64.whl
-[01:00]   [comfy-env] geometrypack-gpu: cuda-wheels deferred for post-pixi install (cumesh)
-[01:00]   [comfy-env] geometrypack-gpu: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
-[01:00]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
-[01:00]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
-[01:00]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:00]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
-[01:01]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:01]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
-[01:01]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:01]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
-[01:01]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
-[01:01]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
-[01:01]   [comfy-env] sam3dobjects-nodes: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
-[01:01]   Generated C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml
-[01:01]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[01:01]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11.15-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[01:01]   [comfy-env] Running `pixi install --all`...
-[01:05]      WARN The package `fsspec==2026.4.0` does not have an extra named `http`
-[01:19]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[01:19]     	- Scripts/.librsvg-pre-unlink.bat
-[01:19]     To enable them, run:
-[01:19]     	pixi config set --local run-post-link-scripts insecure
-[01:19]     More info:
-[01:19]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[01:23]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[01:23]     	- Scripts/.librsvg-pre-unlink.bat
-[01:23]     To enable them, run:
-[01:23]     	pixi config set --local run-post-link-scripts insecure
-[01:23]     More info:
-[01:23]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[01:26]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[01:26]     	- Scripts/.librsvg-pre-unlink.bat
-[01:26]     To enable them, run:
-[01:26]     	pixi config set --local run-post-link-scripts insecure
-[01:26]     More info:
-[01:26]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[02:41]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[02:41]     	- Scripts/.librsvg-pre-unlink.bat
-[02:41]     To enable them, run:
-[02:41]     	pixi config set --local run-post-link-scripts insecure
-[02:41]     More info:
-[02:41]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[03:11]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[03:11]     	- Scripts/.librsvg-pre-unlink.bat
-[03:11]     To enable them, run:
-[03:11]     	pixi config set --local run-post-link-scripts insecure
-[03:11]     More info:
-[03:11]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[03:35]     Error:   Ã— Failed to update PyPI packages for environment 'sam3dobjects-nodes'
-[03:35]       â”œâ”€â–¶ Failed to prepare distributions
-[03:36]       â”œâ”€â–¶ Failed to build `utils3d @ git+https://
-[03:36]       â”‚   github.com/EasternJournalist/utils3d.git?
-[03:36]       â”‚   rev=3913c65d81e05e47b9f367250cf8c0f7462a0900#3913c65d81e05e47b9f367250cf
-[03:36]       â”‚   8c0f7462a0900`
-[03:36]       â”œâ”€â–¶ The build backend returned an error
-[03:36]       â•°â”€â–¶ Call to `setuptools.build_meta.build_wheel` failed (exit code: 1)
-[03:36]           [31m[stderr][39m
-[03:36]           Traceback (most recent call last):
-[03:36]             File "<string>", line 8, in <module>
-[03:36]             File "C:\Users\ContainerAdministrator\AppData\Local\rattler\cache\uv-
-[03:36]           cache\builds-v0\.tmpVUUHEm\Lib\site-packages\setuptools\__init__.py",
-[03:36]           line 15, in <module>
-[03:36]               from typing import TYPE_CHECKING, TypeVar, overload
-[03:36]             File "C:
-[03:36]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:36]           windows-x86_64-none\Lib\typing.py", line 29, in <module>
-[03:36]               import re as stdlib_re  # Avoid confusion with the re we export.
-[03:36]               ^^^^^^^^^^^^^^^^^^^^^^
-[03:36]             File "C:
-[03:36]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:36]           windows-x86_64-none\Lib\re\__init__.py", line 125, in <module>
-[03:36]               from . import _compiler, _parser
-[03:36]             File "C:
-[03:36]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:36]           windows-x86_64-none\Lib\re\_compiler.py", line 18, in <module>
-[03:36]               assert _sre.MAGIC == MAGIC, "SRE module mismatch"
-[03:36]                      ^^^^^^^^^^^^^^^^^^^
-[03:36]           AssertionError: SRE module mismatch
-[03:36]           [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
-[03:36]           environment.
-[03:36]     Warning: ComfyUI-GeometryPack install.py failed (exit code 1)
-[03:36]   
-[03:36]   [requirements] Re-installing main package requirements...
-[03:36]     Installing requirements for ComfyUI-SAM3DObjects...
-[03:36]   [comfy-env] Workspace: C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce
-[03:36]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-2123\ComfyUI
-[03:36]   [comfy-env] Found 4 node config(s):
-[03:36]     - geometrypack-blender <- custom_nodes\ComfyUI-GeometryPack\nodes\blender\comfy-env.toml (python=3.11)
-[03:36]     - geometrypack-gpu <- custom_nodes\ComfyUI-GeometryPack\nodes\gpu\comfy-env.toml (python=host)
-[03:36]     - geometrypack-main <- custom_nodes\ComfyUI-GeometryPack\nodes\main\comfy-env.toml (python=host)
-[03:36]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
-[03:36]   [comfy-env] Bootstrap interpreter has python 3.11 + torch 2.11.0 (cu128). Looking for cuda-only wheels matching cu128/torch2.11/cp311.
-[03:36]   [comfy-env] GPU: Detection: smi
-[03:36]   Driver: 581.57
-[03:36]   CUDA: 13.0
-[03:36]   Recommended: CUDA 13.0
-[03:36]   
-[03:36]     GPU 0: NVIDIA GeForce RTX 4060 Ti (sm_89) [Ada] 16380MB
-[03:36]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu128 (CUDA 12.8 via bootstrap torch)
-[03:36]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
-[03:36]   [comfy-env] cuda-wheels: checking across Python versions: cp3.11, cp3.12
-[03:36]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp311
-[03:36]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp311 win_amd64
-[03:36]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp311-cp311-win_amd64.whl
-[03:36]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp312
-[03:36]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
-[03:36]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:36]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
-[03:37]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:37]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
-[03:37]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:37]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
-[03:37]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
-[03:37]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:37]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
-[03:37]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:37]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
-[03:37]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:37]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [comfy-env] cuda-wheels combo: cu12.8/torch2.11 (bootstrap matches; per-node envs will pin to this)
-[03:38]   [comfy-env] Root conda deps from ComfyUI-GeometryPack: ['av', 'ffmpeg']
-[03:38]   [comfy-env] Comfyui feature pin: torch ==2.11.0, torchvision ==0.26.*, torchaudio ==2.11.*
-[03:38]   [comfy-env] Root conda deps injected into comfyui feature: ['av', 'ffmpeg']
-[03:38]   [comfy-env] cuda-wheels combo: per-node cuda features will pin ['torch', 'torchaudio', 'torchvision'] via pypi-options.dependency-overrides (https://download.pytorch.org/whl/cu128)
-[03:38]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp311 win_amd64
-[03:38]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp311-cp311-win_amd64.whl
-[03:38]   [comfy-env] geometrypack-gpu: cuda-wheels deferred for post-pixi install (cumesh)
-[03:38]   [comfy-env] geometrypack-gpu: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
-[03:38]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
-[03:38]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
-[03:38]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
-[03:38]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
-[03:38]   [comfy-env] sam3dobjects-nodes: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
-[03:38]   Generated C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml
-[03:38]   [comfy-env] Running `pixi install --all`...
-[03:41]     Error:   Ã— Failed to update PyPI packages for environment 'sam3dobjects-nodes'
-[03:41]       â”œâ”€â–¶ Failed to prepare distributions
-[03:41]       â”œâ”€â–¶ Failed to build `utils3d @ git+https://
-[03:41]       â”‚   github.com/EasternJournalist/utils3d.git?
-[03:41]       â”‚   rev=3913c65d81e05e47b9f367250cf8c0f7462a0900#3913c65d81e05e47b9f367250cf
-[03:41]       â”‚   8c0f7462a0900`
-[03:41]       â”œâ”€â–¶ The build backend returned an error
-[03:41]       â•°â”€â–¶ Call to `setuptools.build_meta.build_wheel` failed (exit code: 1)
-[03:41]           [31m[stderr][39m
-[03:41]           Traceback (most recent call last):
-[03:41]             File "<string>", line 8, in <module>
-[03:41]             File "C:\Users\ContainerAdministrator\AppData\Local\rattler\cache\uv-
-[03:41]           cache\builds-v0\.tmpnUqTWm\Lib\site-packages\setuptools\__init__.py",
-[03:41]           line 15, in <module>
-[03:41]               from typing import TYPE_CHECKING, TypeVar, overload
-[03:41]             File "C:
-[03:41]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]           windows-x86_64-none\Lib\typing.py", line 29, in <module>
-[03:41]               import re as stdlib_re  # Avoid confusion with the re we export.
-[03:41]               ^^^^^^^^^^^^^^^^^^^^^^
-[03:41]             File "C:
-[03:41]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]           windows-x86_64-none\Lib\re\__init__.py", line 125, in <module>
-[03:41]               from . import _compiler, _parser
-[03:41]             File "C:
-[03:41]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]           windows-x86_64-none\Lib\re\_compiler.py", line 18, in <module>
-[03:41]               assert _sre.MAGIC == MAGIC, "SRE module mismatch"
-[03:41]                      ^^^^^^^^^^^^^^^^^^^
-[03:41]           AssertionError: SRE module mismatch
-[03:41]           [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
-[03:41]           environment.
-[03:41] Warning: install.py failed (exit code 1), continuing...
-[03:41]   [!]       \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]   [!]       windows-x86_64-none\Lib\typing.py", line 29, in <module>
-[03:41]   [!]           import re as stdlib_re  # Avoid confusion with the re we export.
-[03:41]   [!]           ^^^^^^^^^^^^^^^^^^^^^^
-[03:41]   [!]         File "C:
-[03:41]   [!]       \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]   [!]       windows-x86_64-none\Lib\re\__init__.py", line 125, in <module>
-[03:41]   [!]           from . import _compiler, _parser
-[03:41]   [!]         File "C:
-[03:41]   [!]       \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-
-[03:41]   [!]       windows-x86_64-none\Lib\re\_compiler.py", line 18, in <module>
-[03:41]   [!]           assert _sre.MAGIC == MAGIC, "SRE module mismatch"
-[03:41]   [!]                  ^^^^^^^^^^^^^^^^^^^
-[03:41]   [!]       AssertionError: SRE module mismatch
-[03:41]   [!]       
-[03:41]   [!]       [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
-[03:41]   [!]       environment.
-[03:41]   [!] 
-[03:41]   [!] 
-[03:41]   [!] stdout:
-[03:41] Installing 2 node dependency(ies)...
-[03:41]   ComfyUI-Multiband from PozzettiAndrea/ComfyUI-Multiband
-[03:41]   ComfyUI-Multiband already exists, skipping...
-[03:41]   ComfyUI-GeometryPack from PozzettiAndrea/ComfyUI-GeometryPack
-[03:41]   ComfyUI-GeometryPack already exists, skipping...
-[03:41] Installing validation endpoint...
-[03:41]   Cloning PozzettiAndrea/ComfyUI-validate-endpoint...
-[03:41] Running: git clone --depth 1 https://github.com/PozzettiAndrea/ComfyUI-validate-endpoint.git C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
-[03:42] CUDA packages absent (will mock): pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
-[03:42] [INSTALL] PASSED
-[03:42] 
-[03:42] [2/4] REGISTRATION
-[03:42] ----------------------------------------
-[03:42] 
+[00:59] Running: C:\workspaces\SAM3DObjects-0807\.venv\Scripts\python.exe C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\install.py
+[01:02]   [comfy-env] Enabled Windows long path support
+[01:02]   
+[01:02]   Installing 2 node dependencies...
+[01:02]     Cloning ComfyUI-Multiband...
+[01:03]     Installing requirements for ComfyUI-Multiband...
+[01:03]     Cloning ComfyUI-GeometryPack...
+[01:07]     Installing requirements for ComfyUI-GeometryPack...
+[01:08]     Running install.py for ComfyUI-GeometryPack...
+[01:09]   [comfy-env] Enabled Windows long path support
+[01:12]   [comfy-env] Workspace: C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce
+[01:12]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-0807\ComfyUI
+[01:12]   [comfy-env] Found 4 node config(s):
+[01:12]     - geometrypack-blender <- custom_nodes\ComfyUI-GeometryPack\nodes\blender\comfy-env.toml (python=3.11)
+[01:12]     - geometrypack-gpu <- custom_nodes\ComfyUI-GeometryPack\nodes\gpu\comfy-env.toml (python=host)
+[01:12]     - geometrypack-main <- custom_nodes\ComfyUI-GeometryPack\nodes\main\comfy-env.toml (python=host)
+[01:12]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
+[01:12]   [comfy-env] Bootstrap interpreter has python 3.13 + torch 2.11.0 (cu128). Looking for cuda-only wheels matching cu128/torch2.11/cp313.
+[01:13]   [comfy-env] GPU: Detection: smi
+[01:13]   Driver: 581.57
+[01:13]   CUDA: 13.0
+[01:13]   Recommended: CUDA 13.0
+[01:13]   
+[01:13]     GPU 0: NVIDIA GeForce RTX 3060 (sm_86) [Ampere] 12288MB
+[01:13]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu128 (CUDA 12.8 via bootstrap torch)
+[01:13]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
+[01:13]   [comfy-env] cuda-wheels: checking across Python versions: cp3.13, cp3.12
+[01:13]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp313
+[01:13]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp313 win_amd64
+[01:13]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp313-cp313-win_amd64.whl
+[01:13]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp312
+[01:13]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
+[01:13]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:13]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
+[01:13]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:13]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
+[01:14]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:14]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
+[01:14]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
+[01:14]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:14]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
+[01:14]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:14]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
+[01:14]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:14]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [comfy-env] cuda-wheels combo: cu12.8/torch2.11 (bootstrap matches; per-node envs will pin to this)
+[01:15]   [comfy-env] Root conda deps from ComfyUI-GeometryPack: ['av', 'ffmpeg']
+[01:15]   [comfy-env] Comfyui feature pin: torch ==2.11.0, torchvision ==0.26.*, torchaudio ==2.11.*
+[01:15]   [comfy-env] Root conda deps injected into comfyui feature: ['av', 'ffmpeg']
+[01:15]   [comfy-env] cuda-wheels combo: per-node cuda features will pin ['torch', 'torchaudio', 'torchvision'] via pypi-options.dependency-overrides (https://download.pytorch.org/whl/cu128)
+[01:15]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp313 win_amd64
+[01:15]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp313-cp313-win_amd64.whl
+[01:15]   [comfy-env] geometrypack-gpu: cuda-wheels deferred for post-pixi install (cumesh)
+[01:15]   [comfy-env] geometrypack-gpu: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
+[01:15]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
+[01:15]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
+[01:15]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
+[01:15]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
+[01:15]   [comfy-env] sam3dobjects-nodes: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
+[01:15]   Generated C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml
+[01:15]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[01:15]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[01:15]   [comfy-env] Installing 4 environment(s):
+[01:15]     - geometrypack-blender (python=3.11, 2 pypi deps)
+[01:15]     - geometrypack-gpu (python=host, 2 pypi deps, 1 cuda wheels)
+[01:15]     - geometrypack-main (python=host, 12 pypi deps)
+[01:15]     - sam3dobjects-nodes (python=3.12, 8 pypi deps, 7 cuda wheels)
+[01:15]   [comfy-env] Running `pixi install --all`...
+[01:22]      WARN The package `fsspec==2026.4.0` does not have an extra named `http`
+[01:32]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[01:32]     	- Scripts/.librsvg-pre-unlink.bat
+[01:32]     To enable them, run:
+[01:32]     	pixi config set --local run-post-link-scripts insecure
+[01:32]     More info:
+[01:32]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[01:39]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[01:39]     	- Scripts/.librsvg-pre-unlink.bat
+[01:39]     To enable them, run:
+[01:39]     	pixi config set --local run-post-link-scripts insecure
+[01:39]     More info:
+[01:39]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[01:42]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[01:42]     	- Scripts/.librsvg-pre-unlink.bat
+[01:42]     To enable them, run:
+[01:42]     	pixi config set --local run-post-link-scripts insecure
+[01:42]     More info:
+[01:42]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[02:26]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[02:26]     	- Scripts/.librsvg-pre-unlink.bat
+[02:26]     To enable them, run:
+[02:26]     	pixi config set --local run-post-link-scripts insecure
+[02:26]     More info:
+[02:26]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[03:00]     Error:   Ã— Failed to update PyPI packages for environment 'sam3dobjects-nodes'
+[03:00]       â”œâ”€â–¶ Failed to prepare distributions
+[03:00]       â”œâ”€â–¶ Failed to build `utils3d @ git+https://
+[03:00]       â”‚   github.com/EasternJournalist/utils3d.git?
+[03:00]       â”‚   rev=3913c65d81e05e47b9f367250cf8c0f7462a0900#3913c65d81e05e47b9f367250cf
+[03:00]       â”‚   8c0f7462a0900`
+[03:00]       â”œâ”€â–¶ The build backend returned an error
+[03:00]       â•°â”€â–¶ Call to `setuptools.build_meta.build_wheel` failed (exit code: 1)
+[03:00]           [31m[stderr][39m
+[03:00]           Traceback (most recent call last):
+[03:00]             File "<string>", line 8, in <module>
+[03:00]             File "C:\Users\ContainerAdministrator\AppData\Local\rattler\cache\uv-
+[03:00]           cache\builds-v0\.tmpbhqTCP\Lib\site-packages\setuptools\__init__.py",
+[03:00]           line 15, in <module>
+[03:00]               from typing import TYPE_CHECKING, TypeVar, overload
+[03:00]             File "C:
+[03:00]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-
+[03:00]           windows-x86_64-none\Lib\typing.py", line 32, in <module>
+[03:00]               from _typing import (
+[03:00]           ImportError: cannot import name 'NoDefault' from '_typing' (unknown
+[03:00]           location)
+[03:00]           [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
+[03:00]           environment.
+[03:00]     Warning: ComfyUI-GeometryPack install.py failed (exit code 1)
+[03:00]   
+[03:00]   [requirements] Re-installing main package requirements...
+[03:00]     Installing requirements for ComfyUI-SAM3DObjects...
+[03:00]   [comfy-env] Workspace: C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce
+[03:00]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-0807\ComfyUI
+[03:00]   [comfy-env] Found 4 node config(s):
+[03:00]     - geometrypack-blender <- custom_nodes\ComfyUI-GeometryPack\nodes\blender\comfy-env.toml (python=3.11)
+[03:00]     - geometrypack-gpu <- custom_nodes\ComfyUI-GeometryPack\nodes\gpu\comfy-env.toml (python=host)
+[03:00]     - geometrypack-main <- custom_nodes\ComfyUI-GeometryPack\nodes\main\comfy-env.toml (python=host)
+[03:00]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
+[03:00]   [comfy-env] Bootstrap interpreter has python 3.13 + torch 2.11.0 (cu128). Looking for cuda-only wheels matching cu128/torch2.11/cp313.
+[03:00]   [comfy-env] GPU: Detection: smi
+[03:00]   Driver: 581.57
+[03:00]   CUDA: 13.0
+[03:00]   Recommended: CUDA 13.0
+[03:00]   
+[03:00]     GPU 0: NVIDIA GeForce RTX 3060 (sm_86) [Ampere] 12288MB
+[03:01]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu128 (CUDA 12.8 via bootstrap torch)
+[03:01]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
+[03:01]   [comfy-env] cuda-wheels: checking across Python versions: cp3.13, cp3.12
+[03:01]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp313
+[03:01]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp313 win_amd64
+[03:01]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp313-cp313-win_amd64.whl
+[03:01]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu12.8/torch2.11/cp312
+[03:01]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
+[03:01]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [comfy-env] cuda-wheels combo: cu12.8/torch2.11 (bootstrap matches; per-node envs will pin to this)
+[03:01]   [comfy-env] Root conda deps from ComfyUI-GeometryPack: ['av', 'ffmpeg']
+[03:01]   [comfy-env] Comfyui feature pin: torch ==2.11.0, torchvision ==0.26.*, torchaudio ==2.11.*
+[03:01]   [comfy-env] Root conda deps injected into comfyui feature: ['av', 'ffmpeg']
+[03:01]   [comfy-env] cuda-wheels combo: per-node cuda features will pin ['torch', 'torchaudio', 'torchvision'] via pypi-options.dependency-overrides (https://download.pytorch.org/whl/cu128)
+[03:01]   [cuda-wheels] Looking up cumesh: cu128 torch2.11 cp313 win_amd64
+[03:01]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.11-cp313-cp313-win_amd64.whl
+[03:01]   [comfy-env] geometrypack-gpu: cuda-wheels deferred for post-pixi install (cumesh)
+[03:01]   [comfy-env] geometrypack-gpu: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
+[03:01]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.11 cp312 win_amd64
+[03:01]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:01]   [cuda-wheels] Looking up gsplat: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [cuda-wheels] Looking up flash-attn: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   https://pozzettiandrea.github.io/cuda-wheels/v2/flash_attn/: HTTPError: HTTP Error 404: Not Found
+[03:02]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [cuda-wheels] Looking up sageattention: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [cuda-wheels] Looking up spconv: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [cuda-wheels] Looking up cumm: cu128 torch2.11 cp312 win_amd64
+[03:02]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.11-cp312-cp312-win_amd64.whl
+[03:02]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
+[03:02]   [comfy-env] sam3dobjects-nodes: torch override -> torch==2.11.0, torchvision==0.26.*, torchaudio==2.11.* from https://download.pytorch.org/whl/cu128
+[03:02]   Generated C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml
+[03:02]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[03:02]   [comfy-env] Installing 4 environment(s):
+[03:02]     - geometrypack-blender (python=3.11, 2 pypi deps)
+[03:02]     - geometrypack-gpu (python=host, 2 pypi deps, 1 cuda wheels)
+[03:02]     - geometrypack-main (python=host, 12 pypi deps)
+[03:02]     - sam3dobjects-nodes (python=3.12, 8 pypi deps, 7 cuda wheels)
+[03:02]   [comfy-env] Running `pixi install --all`...
+[03:06]     Error:   Ã— Failed to update PyPI packages for environment 'sam3dobjects-nodes'
+[03:06]       â”œâ”€â–¶ Failed to prepare distributions
+[03:06]       â”œâ”€â–¶ Failed to build `utils3d @ git+https://
+[03:06]       â”‚   github.com/EasternJournalist/utils3d.git?
+[03:06]       â”‚   rev=3913c65d81e05e47b9f367250cf8c0f7462a0900#3913c65d81e05e47b9f367250cf
+[03:06]       â”‚   8c0f7462a0900`
+[03:06]       â”œâ”€â–¶ The build backend returned an error
+[03:06]       â•°â”€â–¶ Call to `setuptools.build_meta.build_wheel` failed (exit code: 1)
+[03:06]           [31m[stderr][39m
+[03:06]           Traceback (most recent call last):
+[03:06]             File "<string>", line 8, in <module>
+[03:06]             File "C:\Users\ContainerAdministrator\AppData\Local\rattler\cache\uv-
+[03:06]           cache\builds-v0\.tmpukSNya\Lib\site-packages\setuptools\__init__.py",
+[03:06]           line 15, in <module>
+[03:06]               from typing import TYPE_CHECKING, TypeVar, overload
+[03:06]             File "C:
+[03:06]           \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-
+[03:06]           windows-x86_64-none\Lib\typing.py", line 32, in <module>
+[03:06]               from _typing import (
+[03:06]           ImportError: cannot import name 'NoDefault' from '_typing' (unknown
+[03:06]           location)
+[03:06]           [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
+[03:06]           environment.
+[03:06] Warning: install.py failed (exit code 1), continuing...
+[03:06]   [!]       
+[03:06]   [!]       [31m[stderr][39m
+[03:06]   [!]       Traceback (most recent call last):
+[03:06]   [!]         File "<string>", line 8, in <module>
+[03:06]   [!]         File "C:\Users\ContainerAdministrator\AppData\Local\rattler\cache\uv-
+[03:06]   [!]       cache\builds-v0\.tmpukSNya\Lib\site-packages\setuptools\__init__.py",
+[03:06]   [!]       line 15, in <module>
+[03:06]   [!]           from typing import TYPE_CHECKING, TypeVar, overload
+[03:06]   [!]         File "C:
+[03:06]   [!]       \Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-
+[03:06]   [!]       windows-x86_64-none\Lib\typing.py", line 32, in <module>
+[03:06]   [!]           from _typing import (
+[03:06]   [!]       ImportError: cannot import name 'NoDefault' from '_typing' (unknown
+[03:06]   [!]       location)
+[03:06]   [!]       
+[03:06]   [!]       [36m[1mhint[0m[39m[1m:[0m This usually indicates a problem with the package or the build
+[03:06]   [!]       environment.
+[03:06]   [!] 
+[03:06]   [!] 
+[03:06]   [!] stdout:
+[03:06] Installing 2 node dependency(ies)...
+[03:06]   ComfyUI-Multiband from PozzettiAndrea/ComfyUI-Multiband
+[03:06]   ComfyUI-Multiband already exists, skipping...
+[03:06]   ComfyUI-GeometryPack from PozzettiAndrea/ComfyUI-GeometryPack
+[03:06]   ComfyUI-GeometryPack already exists, skipping...
+[03:06] Installing validation endpoint...
+[03:06]   Cloning PozzettiAndrea/ComfyUI-validate-endpoint...
+[03:06] Running: git clone --depth 1 https://github.com/PozzettiAndrea/ComfyUI-validate-endpoint.git C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
+[03:07] CUDA packages absent (will mock): pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
+[03:07] [INSTALL] PASSED
+[03:07] 
+[03:07] [2/4] REGISTRATION
+[03:07] ----------------------------------------
+[03:07] 
 [DEBUG] server=None, server_url=None, api=None
-[03:42] 
+[03:07] 
 Starting ComfyUI server...
-[03:42] Starting ComfyUI server on port 41885...
-[03:42] CUDA mock packages: pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
-[03:42] Starting ComfyUI server on port 41885...
-[03:42] Waiting for server to be ready (timeout: 600s)...
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.schemas
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.tables
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.types
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.constraints
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.defaults
-[03:43]   [ComfyUI] setup plugin alembic.autogenerate.comments
-[03:44]   [ComfyUI] [comfy-env] ComfyUI-GeometryPack: 3 isolation env(s):
-[03:44]   [ComfyUI] [comfy-env]   blender -> C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender
-[03:44]   [ComfyUI] [comfy-env]   gpu -> C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu
-[03:44]   [ComfyUI] [comfy-env]   main -> C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main
-[03:44]   [ComfyUI] [comfy-env] prestartup complete
-[03:44]   [ComfyUI] [comfy-env] ComfyUI-SAM3DObjects: 1 isolation env(s):
-[03:44]   [ComfyUI] [comfy-env]   nodes -> C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes
-[03:44]   [ComfyUI] [comfy-env] prestartup complete
-[03:44]   [ComfyUI] 
-[03:44]   [ComfyUI] Prestartup times for custom nodes:
-[03:44]   [ComfyUI]    0.1 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
-[03:44]   [ComfyUI]    0.4 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack
-[03:44]   [ComfyUI] 
-[04:26]   [ComfyUI] WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
-[04:26]   [ComfyUI] Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_mxfp8', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_mxfp8', 'scaled_mm_nvfp4']}
-[04:26]   [ComfyUI] Found comfy_kitchen backend triton: {'available': False, 'disabled': True, 'unavailable_reason': "ImportError: No module named 'triton'", 'capabilities': []}
-[04:26]   [ComfyUI] Found comfy_kitchen backend cuda: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8']}
-[04:26]   [ComfyUI] Checkpoint files will always be loaded safely.
-[04:26]   [ComfyUI] Total VRAM 16380 MB, total RAM 16310 MB
-[04:26]   [ComfyUI] pytorch version: 2.11.0+cu128
-[04:26]   [ComfyUI] Set vram state to: NORMAL_VRAM
-[04:26]   [ComfyUI] Device: cuda:0 NVIDIA GeForce RTX 4060 Ti : cudaMallocAsync
-[04:26]   [ComfyUI] Using async weight offloading with 2 streams
-[04:26]   [ComfyUI] Enabled pinned memory 6523.0
-[04:27]   [ComfyUI] Using pytorch attention
+[03:07] Starting ComfyUI server on port 41898...
+[03:07] CUDA mock packages: pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
+[03:07] Starting ComfyUI server on port 41898...
+[03:07] Waiting for server to be ready (timeout: 600s)...
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.schemas
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.tables
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.types
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.constraints
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.defaults
+[03:10]   [ComfyUI] setup plugin alembic.autogenerate.comments
+[03:11]   [ComfyUI] [comfy-env] ComfyUI-GeometryPack: 3 isolation env(s):
+[03:11]   [ComfyUI] [comfy-env]   blender -> C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender
+[03:11]   [ComfyUI] [comfy-env]   gpu -> C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu
+[03:11]   [ComfyUI] [comfy-env]   main -> C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main
+[03:11]   [ComfyUI] [comfy-env] prestartup complete
+[03:11]   [ComfyUI] [comfy-env] ComfyUI-SAM3DObjects: 1 isolation env(s):
+[03:11]   [ComfyUI] [comfy-env]   nodes -> C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes
+[03:11]   [ComfyUI] [comfy-env] prestartup complete
+[03:11]   [ComfyUI] 
+[03:11]   [ComfyUI] Prestartup times for custom nodes:
+[03:11]   [ComfyUI]    0.1 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+[03:11]   [ComfyUI]    0.5 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+[03:11]   [ComfyUI] 
+[04:20]   [ComfyUI] WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
+[04:20]   [ComfyUI] Found comfy_kitchen backend cuda: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8']}
+[04:20]   [ComfyUI] Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_mxfp8', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_mxfp8', 'scaled_mm_nvfp4']}
+[04:20]   [ComfyUI] Found comfy_kitchen backend triton: {'available': False, 'disabled': True, 'unavailable_reason': "ImportError: No module named 'triton'", 'capabilities': []}
+[04:20]   [ComfyUI] Checkpoint files will always be loaded safely.
+[04:20]   [ComfyUI] Total VRAM 12287 MB, total RAM 32672 MB
+[04:20]   [ComfyUI] pytorch version: 2.11.0+cu128
+[04:20]   [ComfyUI] Set vram state to: NORMAL_VRAM
+[04:20]   [ComfyUI] Device: cuda:0 NVIDIA GeForce RTX 3060 : cudaMallocAsync
+[04:20]   [ComfyUI] Using async weight offloading with 2 streams
+[04:20]   [ComfyUI] Enabled pinned memory 13068.0
+[04:22]   [ComfyUI] Using pytorch attention
 [04:34]   [ComfyUI] aimdo: src-win/cuda-detour.c:38:INFO:aimdo_setup_hooks: installing 6 hooks
 [04:34]   [ComfyUI] aimdo: src-win/cuda-detour.c:28:DEBUG:install_hook_entries: hooks successfully installed
-[04:34]   [ComfyUI] aimdo: src-win/shmem-detect.c:80:INFO:comfy-aimdo WDDM adapter match: NVIDIA GeForce RTX 4060 Ti runtime_luid=00000000:00ae959a dxgi_luid=00000000:00ae959a
-[04:34]   [ComfyUI] aimdo: src/control.c:152:INFO:comfy-aimdo inited for GPU: NVIDIA GeForce RTX 4060 Ti (VRAM: 16379 MB)
+[04:34]   [ComfyUI] aimdo: src-win/shmem-detect.c:80:INFO:comfy-aimdo WDDM adapter match: NVIDIA GeForce RTX 3060 runtime_luid=00000000:00a98f85 dxgi_luid=00000000:00a98f85
+[04:34]   [ComfyUI] aimdo: src/control.c:152:INFO:comfy-aimdo inited for GPU: NVIDIA GeForce RTX 3060 (VRAM: 12287 MB)
 [04:34]   [ComfyUI] DynamicVRAM support detected and enabled
-[04:34]   [ComfyUI] Python version: 3.11.15 (main, Apr 14 2026, 14:31:26) [MSC v.1944 64 bit (AMD64)]
+[04:34]   [ComfyUI] Python version: 3.13.13 (main, Apr 14 2026, 14:30:19) [MSC v.1944 64 bit (AMD64)]
 [04:34]   [ComfyUI] ComfyUI version: 0.20.1
 [04:34]   [ComfyUI] comfy-aimdo version: 0.3.0
 [04:34]   [ComfyUI] comfy-kitchen version: 0.2.8
 [04:34]   [ComfyUI] ****** User settings have been changed to be stored on the server instead of browser storage. ******
 [04:34]   [ComfyUI] ****** For multi-user setups add the --multi-user CLI argument to enable multiple user profiles. ******
 [04:34]   [ComfyUI] ComfyUI frontend version: 1.43.17
-[04:34]   [ComfyUI] [Prompt Server] web root: C:\workspaces\SAM3DObjects-2123\.venv\Lib\site-packages\comfyui_frontend_package\static
+[04:34]   [ComfyUI] [Prompt Server] web root: C:\workspaces\SAM3DObjects-0807\.venv\Lib\site-packages\comfyui_frontend_package\static
 [04:34]   [ComfyUI] Asset seeder disabled
-[04:36]   [ComfyUI] loading...
-[04:36]   [ComfyUI] calling register_nodes
-[04:36]   [ComfyUI] [comfy-env] Version: 0.3.66
-[04:37]   [ComfyUI] [comfy-env] register_nodes: ComfyUI-GeometryPack
-[04:37]   [ComfyUI] [comfy-env] Found 3 isolation env(s)
-[04:37]   [ComfyUI] [comfy-env] Importing nodes (root)...
-[04:37]   [ComfyUI] [comfy-env] Imported nodes root: 0 nodes
-[04:37]   [ComfyUI] [comfy-env] Scanning blender metadata...
-[04:37]   [ComfyUI] [comfy-env] Scanning gpu metadata...
-[04:37]   [ComfyUI] [comfy-env] Scanning main metadata...
-[04:37]   [ComfyUI] [comfy-env] geometrypack-gpu: Library/bin has 234 DLLs
-[04:37]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml -e geometrypack-gpu python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_3a08couc.py C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.gpu
-[04:37]   [ComfyUI] [comfy-env] Scan env PATH for nodes.gpu:
-[04:37]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-gpu
-[04:37]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Library\bin
-[04:37]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Scripts
-[04:37]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Lib\site-packages\bpy
-[04:37]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
-[04:37]   [ComfyUI] [comfy-env]   [5] C:\Windows
-[04:37]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
-[04:37]   [ComfyUI] [comfy-env] geometrypack-blender: Library/bin has 234 DLLs
-[04:37]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml -e geometrypack-blender python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_t378_abv.py C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.blender
-[04:37]   [ComfyUI] [comfy-env] Scan env PATH for nodes.blender:
-[04:37]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-blender
-[04:37]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Library\bin
-[04:37]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Scripts
-[04:37]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Lib\site-packages\bpy
-[04:37]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
-[04:37]   [ComfyUI] [comfy-env]   [5] C:\Windows
-[04:37]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
-[04:37]   [ComfyUI] [comfy-env] geometrypack-main: Library/bin has 609 DLLs
-[04:37]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml -e geometrypack-main python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_q1r8ib0u.py C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.main
-[04:37]   [ComfyUI] [comfy-env] Scan env PATH for nodes.main:
-[04:37]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-main
-[04:37]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-main\Library\bin
-[04:37]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-main\Scripts
-[04:37]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-main\Lib\site-packages\bpy
-[04:37]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
-[04:37]   [ComfyUI] [comfy-env]   [5] C:\Windows
-[04:37]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
-[04:37]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.blender:
-[04:37]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.blender from C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack
-[04:37]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
-[04:37]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_t378_abv.py", line 53, in <module>
-[04:37]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
-[04:37]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Lib\importlib\__init__.py", line 126, in import_module
-[04:37]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
-[04:37]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\__init__.py", line 6, in <module>
-[04:37]   [ComfyUI] [comfy-env]       from . import blender_io
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\__init__.py", line 8, in <module>
-[04:37]   [ComfyUI] [comfy-env]       from .load_mesh_blend import NODE_CLASS_MAPPINGS as LOAD_MESH_BLEND_MAPS, NODE_DISPLAY_NAME_MAPPINGS as LOAD_MESH_BLEND_DISP
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\load_mesh_blend.py", line 15, in <module>
-[04:37]   [ComfyUI] [comfy-env]       import bpy  # noqa: F401  (loaded for DLL-ordering side-effect)
-[04:37]   [ComfyUI] [comfy-env]       ^^^^^^^^^^
-[04:37]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'bpy'
-[04:37]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.blender (exit 1, 0.2s):
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-[04:37]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\__init__.py", line 6, in <module>
-[04:37]   [ComfyUI] [comfy-env]       from . import blender_io
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\__init__.py", line 8, in <module>
-[04:37]   [ComfyUI] [comfy-env]       from .load_mesh_blend import NODE_CLASS_MAPPINGS as LOAD_MESH_BLEND_MAPS, NODE_DISPLAY_NAME_MAPPINGS as LOAD_MESH_BLEND_DISP
-[04:37]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\load_mesh_blend.py", line 15, in <module>
-[04:37]   [ComfyUI] [comfy-env]       import bpy  # noqa: F401  (loaded for DLL-ordering side-effect)
-[04:37]   [ComfyUI] [comfy-env]       ^^^^^^^^^^
-[04:37]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'bpy'
-[04:38]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.gpu:
-[04:38]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.gpu from C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack
-[04:38]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
-[04:38]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_3a08couc.py", line 53, in <module>
-[04:38]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
-[04:38]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Lib\importlib\__init__.py", line 126, in import_module
-[04:38]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
-[04:38]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\__init__.py", line 1, in <module>
-[04:38]   [ComfyUI] [comfy-env]       from . import remeshing_gpu
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\__init__.py", line 2, in <module>
-[04:38]   [ComfyUI] [comfy-env]       from .remesh import NODE_CLASS_MAPPINGS as REMESH_MAPS, NODE_DISPLAY_NAME_MAPPINGS as REMESH_DISP
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\remesh.py", line 13, in <module>
-[04:38]   [ComfyUI] [comfy-env]       import trimesh as trimesh_module
-[04:38]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'trimesh'
-[04:38]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.gpu (exit 1, 1.3s):
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-[04:38]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\__init__.py", line 1, in <module>
-[04:38]   [ComfyUI] [comfy-env]       from . import remeshing_gpu
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\__init__.py", line 2, in <module>
-[04:38]   [ComfyUI] [comfy-env]       from .remesh import NODE_CLASS_MAPPINGS as REMESH_MAPS, NODE_DISPLAY_NAME_MAPPINGS as REMESH_DISP
-[04:38]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\remesh.py", line 13, in <module>
-[04:38]   [ComfyUI] [comfy-env]       import trimesh as trimesh_module
-[04:38]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'trimesh'
-[04:40]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.main:
-[04:40]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.main from C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack
-[04:40]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
-[04:40]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_q1r8ib0u.py", line 53, in <module>
-[04:40]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
-[04:40]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\geometrypack-main\Lib\importlib\__init__.py", line 126, in import_module
-[04:40]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
-[04:40]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-[04:40]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\__init__.py", line 12, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from . import io
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\__init__.py", line 8, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from .load_mesh import NODE_CLASS_MAPPINGS as LoadMesh_mappings, NODE_DISPLAY_NAME_MAPPINGS as LoadMesh_display
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\load_mesh.py", line 29, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from comfy_api.latest import io
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\__init__.py", line 8, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from ._input import ImageInput, AudioInput, MaskInput, LatentInput, VideoInput
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\_input\__init__.py", line 1, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from .basic_types import ImageInput, AudioInput, MaskInput, LatentInput
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\_input\basic_types.py", line 1, in <module>
-[04:40]   [ComfyUI] [comfy-env]       import torch
-[04:40]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'torch'
-[04:40]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.main (exit 1, 3.3s):
-[04:40]   [ComfyUI] [comfy-env]       from .load_mesh import NODE_CLASS_MAPPINGS as LoadMesh_mappings, NODE_DISPLAY_NAME_MAPPINGS as LoadMesh_display
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\load_mesh.py", line 29, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from comfy_api.latest import io
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\__init__.py", line 8, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from ._input import ImageInput, AudioInput, MaskInput, LatentInput, VideoInput
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\_input\__init__.py", line 1, in <module>
-[04:40]   [ComfyUI] [comfy-env]       from .basic_types import ImageInput, AudioInput, MaskInput, LatentInput
-[04:40]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\comfy_api\latest\_input\basic_types.py", line 1, in <module>
-[04:40]   [ComfyUI] [comfy-env]       import torch
-[04:40]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'torch'
-[04:40]   [ComfyUI] [comfy-env] Registered 0 total nodes
-[04:40]   [ComfyUI] ComfyUI-Multiband loaded: 15 nodes registered
-[04:40]   [ComfyUI] loading...
-[04:40]   [ComfyUI] calling register_nodes
-[04:40]   [ComfyUI] [comfy-env] Version: 0.3.66
-[04:40]   [ComfyUI] [comfy-env] register_nodes: ComfyUI-SAM3DObjects
-[04:40]   [ComfyUI] [comfy-env] Found 1 isolation env(s)
-[04:40]   [ComfyUI] [comfy-env] Scanning nodes metadata (isolation root)...
-[04:40]   [ComfyUI] [comfy-env] sam3dobjects-nodes: Library/bin has 646 DLLs
-[04:40]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\pixi.toml -e sam3dobjects-nodes python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_4sw52uwq.py C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects nodes
-[04:40]   [ComfyUI] [comfy-env] Scan env PATH for nodes:
-[04:40]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes
-[04:40]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Library\bin
-[04:40]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Scripts
-[04:40]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\bpy
-[04:40]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
-[04:40]   [ComfyUI] [comfy-env]   [5] C:\Windows
-[04:40]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
-[04:41]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes:
-[04:41]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes from C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+[04:38]   [ComfyUI] loading...
+[04:38]   [ComfyUI] calling register_nodes
+[04:38]   [ComfyUI] [comfy-env] Version: 0.3.69
+[04:39]   [ComfyUI] [comfy-env] register_nodes: ComfyUI-GeometryPack
+[04:39]   [ComfyUI] [comfy-env] Found 3 isolation env(s)
+[04:39]   [ComfyUI] [comfy-env] Importing nodes (root)...
+[04:39]   [ComfyUI] [comfy-env] Imported nodes root: 0 nodes
+[04:39]   [ComfyUI] [comfy-env] Scanning blender metadata...
+[04:39]   [ComfyUI] [comfy-env] Scanning gpu metadata...
+[04:39]   [ComfyUI] [comfy-env] Scanning main metadata...
+[04:39]   [ComfyUI] [comfy-env] geometrypack-gpu: Library/bin has 235 DLLs
+[04:39]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml -e geometrypack-gpu python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_l88j01hh.py C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.gpu
+[04:39]   [ComfyUI] [comfy-env] Scan env PATH for nodes.gpu:
+[04:39]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-gpu
+[04:39]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Library\bin
+[04:39]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Scripts
+[04:39]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Lib\site-packages\bpy
+[04:39]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
+[04:39]   [ComfyUI] [comfy-env]   [5] C:\Windows
+[04:39]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
+[04:39]   [ComfyUI] [comfy-env] geometrypack-blender: Library/bin has 234 DLLs
+[04:39]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml -e geometrypack-blender python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_xo4_5mxw.py C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.blender
+[04:39]   [ComfyUI] [comfy-env] Scan env PATH for nodes.blender:
+[04:39]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-blender
+[04:39]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Library\bin
+[04:39]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Scripts
+[04:39]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Lib\site-packages\bpy
+[04:39]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
+[04:39]   [ComfyUI] [comfy-env]   [5] C:\Windows
+[04:39]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
+[04:39]   [ComfyUI] [comfy-env] geometrypack-main: Library/bin has 610 DLLs
+[04:39]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml -e geometrypack-main python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_we4nbebr.py C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes.main
+[04:39]   [ComfyUI] [comfy-env] Scan env PATH for nodes.main:
+[04:39]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-main
+[04:39]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-main\Library\bin
+[04:39]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-main\Scripts
+[04:39]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-main\Lib\site-packages\bpy
+[04:39]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
+[04:39]   [ComfyUI] [comfy-env]   [5] C:\Windows
+[04:39]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
+[04:39]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.blender:
+[04:39]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.blender from C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+[04:39]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
+[04:39]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_xo4_5mxw.py", line 53, in <module>
+[04:39]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
+[04:39]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-blender\Lib\importlib\__init__.py", line 126, in import_module
+[04:39]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
+[04:39]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\__init__.py", line 6, in <module>
+[04:39]   [ComfyUI] [comfy-env]       from . import blender_io
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\__init__.py", line 8, in <module>
+[04:39]   [ComfyUI] [comfy-env]       from .load_mesh_blend import NODE_CLASS_MAPPINGS as LOAD_MESH_BLEND_MAPS, NODE_DISPLAY_NAME_MAPPINGS as LOAD_MESH_BLEND_DISP
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\load_mesh_blend.py", line 15, in <module>
+[04:39]   [ComfyUI] [comfy-env]       import bpy  # noqa: F401  (loaded for DLL-ordering side-effect)
+[04:39]   [ComfyUI] [comfy-env]       ^^^^^^^^^^
+[04:39]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'bpy'
+[04:39]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.blender (exit 1, 0.3s):
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+[04:39]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\__init__.py", line 6, in <module>
+[04:39]   [ComfyUI] [comfy-env]       from . import blender_io
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\__init__.py", line 8, in <module>
+[04:39]   [ComfyUI] [comfy-env]       from .load_mesh_blend import NODE_CLASS_MAPPINGS as LOAD_MESH_BLEND_MAPS, NODE_DISPLAY_NAME_MAPPINGS as LOAD_MESH_BLEND_DISP
+[04:39]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\blender\blender_io\load_mesh_blend.py", line 15, in <module>
+[04:39]   [ComfyUI] [comfy-env]       import bpy  # noqa: F401  (loaded for DLL-ordering side-effect)
+[04:39]   [ComfyUI] [comfy-env]       ^^^^^^^^^^
+[04:39]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'bpy'
+[04:39]   [ComfyUI] [comfy-env] Scanned blender: 0 nodes (0.4s)
+[04:41]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.gpu:
+[04:41]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.gpu from C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack
 [04:41]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
-[04:41]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_4sw52uwq.py", line 53, in <module>
+[04:41]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_l88j01hh.py", line 53, in <module>
 [04:41]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
-[04:41]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\importlib\__init__.py", line 90, in import_module
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-gpu\Lib\importlib\__init__.py", line 88, in import_module
 [04:41]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
-[04:41]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[04:41]   [ComfyUI] [comfy-env]              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\__init__.py", line 2, in <module>
-[04:41]   [ComfyUI] [comfy-env]       import comfy_sparse_attn
-[04:41]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'comfy_sparse_attn'
-[04:41]   [ComfyUI] [comfy-env] Metadata scan failed for nodes (exit 1, 0.2s):
-[04:41]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\__init__.py", line 1, in <module>
+[04:41]   [ComfyUI] [comfy-env]       from . import remeshing_gpu
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\__init__.py", line 2, in <module>
+[04:41]   [ComfyUI] [comfy-env]       from .remesh import NODE_CLASS_MAPPINGS as REMESH_MAPS, NODE_DISPLAY_NAME_MAPPINGS as REMESH_DISP
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\remesh.py", line 13, in <module>
+[04:41]   [ComfyUI] [comfy-env]       import trimesh as trimesh_module
+[04:41]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'trimesh'
+[04:41]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.gpu (exit 1, 2.1s):
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+[04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
 [04:41]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\__init__.py", line 2, in <module>
-[04:41]   [ComfyUI] [comfy-env]       import comfy_sparse_attn
-[04:41]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'comfy_sparse_attn'
-[04:41]   [ComfyUI] [comfy-env] Imported nodes root: 0 nodes (isolation)
-[04:41]   [ComfyUI] [comfy-env] Registered 0 total nodes
-[04:41]   [ComfyUI] 
-[04:41]   [ComfyUI] Import times for custom nodes:
-[04:41]   [ComfyUI]    0.0 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\websocket_image_save.py
-[04:41]   [ComfyUI]    0.0 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
-[04:41]   [ComfyUI]    0.1 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-Multiband
-[04:41]   [ComfyUI]    0.2 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
-[04:41]   [ComfyUI]    3.8 seconds: C:\workspaces\SAM3DObjects-2123\ComfyUI\custom_nodes\ComfyUI-GeometryPack
-[04:41]   [ComfyUI] 
-[04:41]   [ComfyUI] Context impl SQLiteImpl.
-[04:41]   [ComfyUI] Will assume non-transactional DDL.
-[04:41]   [ComfyUI] Context impl SQLiteImpl.
-[04:41]   [ComfyUI] Will assume non-transactional DDL.
-[04:41]   [ComfyUI] Running upgrade  -> 0001_assets, Initial assets schema
-[04:41]   [ComfyUI] Revision ID: 0001_assets
-[04:41]   [ComfyUI] Revises: None
-[04:41]   [ComfyUI] Create Date: 2025-12-10 00:00:00
-[04:41]   [ComfyUI] Running upgrade 0001_assets -> 0002_merge_to_asset_references, Merge AssetInfo and AssetCacheState into unified asset_references table.
-[04:41]   [ComfyUI] Running upgrade 0002_merge_to_asset_references -> 0003_add_metadata_job_id, Add system_metadata and job_id columns to asset_references.
-[04:41]   [ComfyUI] Change preview_id FK from assets.id to asset_references.id.
-[04:41]   [ComfyUI] Database upgraded from None to 0003_add_metadata_job_id
-[04:41]   [ComfyUI] Starting server
-[04:41]   [ComfyUI] 
-[04:41]   [ComfyUI] To see the GUI go to: http://127.0.0.1:41885
-[04:41] Server responding, waiting for nodes to load...
-[05:01] Server is ready!
-[05:01] Checking for import errors in server logs...
-[05:01] No import errors detected
-[05:01] Found 713 registered nodes
-[05:01] [REGISTRATION] PASSED
-[05:01] 
-[05:01] [3/4] INSTANTIATION
-[05:01] ----------------------------------------
-[05:01] 
-[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000014A8EC56E30>, server_url=None, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000014A8EC54370>
-[05:01] Testing node constructors...
-[05:02] All 0 node(s) instantiated successfully!
-[05:02] [INSTANTIATION] PASSED
-[05:02] 
-[05:02] [4/4] EXECUTION
-[05:02] ----------------------------------------
-[05:02] 
-[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000014A8EC56E30>, server_url=None, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000014A8EC54370>
-[05:02] GPU runner - will execute 5 workflow(s)
-[05:02] Running 5 workflow(s) (all with videos)...
-[05:02] Installing screenshot dependencies (playwright, pillow)...
-[05:03]   Packages installed, downloading chromium browser...
-[05:16]   Screenshot dependencies installed successfully
-[05:17] Starting headless browser...
-[05:17]   GPU detected (no Vulkan) — using ANGLE/OpenGL rendering
-[05:20] Capturing execution frames: debug_large_image_results.json
-[05:26]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[05:26]   Validating workflow...
-[05:26]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 10 nodes, missing class_type: [59,74,92,93], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
-[05:27] Capturing execution frames: full_generation.json
-[05:27]   [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
-[05:27]   [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
-[05:27]   [ComfyUI] Traceback (most recent call last):
-[05:27]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\events.py", line 84, in _run
-[05:27]   [ComfyUI]     self._context.run(self._callback, *self._args)
-[05:27]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
-[05:27]   [ComfyUI]     self._sock.shutdown(socket.SHUT_RDWR)
-[05:27]   [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
-[05:32]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[05:32]   Validating workflow...
-[05:32]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 11 nodes, missing class_type: [54,59,70,71,72,73,74], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
-[05:32] Capturing execution frames: gaussian_generation.json
-[05:37]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[05:37]   Validating workflow...
-[05:37]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,62,63], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
-[05:37] Capturing execution frames: mesh_generation.json
-[05:42]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[05:42]   Validating workflow...
-[05:42]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,64], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
-[05:42] Capturing execution frames: scene_generation.json
-[05:42]   [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
-[05:42]   [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
-[05:42]   [ComfyUI] Traceback (most recent call last):
-[05:42]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\events.py", line 84, in _run
-[05:42]   [ComfyUI]     self._context.run(self._callback, *self._args)
-[05:42]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
-[05:42]   [ComfyUI]     self._sock.shutdown(socket.SHUT_RDWR)
-[05:42]   [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
-[05:47]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[05:47]   Validating workflow...
-[05:47]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [59,74,80,82,85,87,100,106], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
-[05:47] Results saved to C:\logs\SAM3DObjects-2123\dev\windows-gpu\results.json
-[05:47] Saved: C:\logs\SAM3DObjects-2123\dev\windows-gpu\index.html
-[05:47] 
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\__init__.py", line 1, in <module>
+[04:41]   [ComfyUI] [comfy-env]       from . import remeshing_gpu
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\__init__.py", line 2, in <module>
+[04:41]   [ComfyUI] [comfy-env]       from .remesh import NODE_CLASS_MAPPINGS as REMESH_MAPS, NODE_DISPLAY_NAME_MAPPINGS as REMESH_DISP
+[04:41]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\gpu\remeshing_gpu\remesh.py", line 13, in <module>
+[04:41]   [ComfyUI] [comfy-env]       import trimesh as trimesh_module
+[04:41]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'trimesh'
+[04:41]   [ComfyUI] [comfy-env] Scanned gpu: 0 nodes (2.1s)
+[04:44]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes.main:
+[04:44]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes.main from C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+[04:44]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
+[04:44]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_we4nbebr.py", line 53, in <module>
+[04:44]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\geometrypack-main\Lib\importlib\__init__.py", line 88, in import_module
+[04:44]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
+[04:44]   [ComfyUI] [comfy-env]              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1395, in _gcd_import
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+[04:44]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\__init__.py", line 12, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from . import io
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\__init__.py", line 8, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from .load_mesh import NODE_CLASS_MAPPINGS as LoadMesh_mappings, NODE_DISPLAY_NAME_MAPPINGS as LoadMesh_display
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\load_mesh.py", line 29, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from comfy_api.latest import io
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\__init__.py", line 8, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from ._input import ImageInput, AudioInput, MaskInput, LatentInput, VideoInput
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\_input\__init__.py", line 1, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from .basic_types import ImageInput, AudioInput, MaskInput, LatentInput
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\_input\basic_types.py", line 1, in <module>
+[04:44]   [ComfyUI] [comfy-env]       import torch
+[04:44]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'torch'
+[04:44]   [ComfyUI] [comfy-env] Metadata scan failed for nodes.main (exit 1, 5.3s):
+[04:44]   [ComfyUI] [comfy-env]       from .load_mesh import NODE_CLASS_MAPPINGS as LoadMesh_mappings, NODE_DISPLAY_NAME_MAPPINGS as LoadMesh_display
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes\main\io\load_mesh.py", line 29, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from comfy_api.latest import io
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\__init__.py", line 8, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from ._input import ImageInput, AudioInput, MaskInput, LatentInput, VideoInput
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\_input\__init__.py", line 1, in <module>
+[04:44]   [ComfyUI] [comfy-env]       from .basic_types import ImageInput, AudioInput, MaskInput, LatentInput
+[04:44]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\comfy_api\latest\_input\basic_types.py", line 1, in <module>
+[04:44]   [ComfyUI] [comfy-env]       import torch
+[04:44]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'torch'
+[04:44]   [ComfyUI] [comfy-env] Scanned main: 0 nodes (5.4s)
+[04:44]   [ComfyUI] [comfy-env] Registered 0 total nodes
+[04:45]   [ComfyUI] ComfyUI-Multiband loaded: 15 nodes registered
+[04:45]   [ComfyUI] loading...
+[04:45]   [ComfyUI] calling register_nodes
+[04:45]   [ComfyUI] [comfy-env] Version: 0.3.69
+[04:45]   [ComfyUI] [comfy-env] register_nodes: ComfyUI-SAM3DObjects
+[04:45]   [ComfyUI] [comfy-env] Found 1 isolation env(s)
+[04:45]   [ComfyUI] [comfy-env] Scanning nodes metadata (isolation root)...
+[04:45]   [ComfyUI] [comfy-env] sam3dobjects-nodes: Library/bin has 646 DLLs
+[04:45]   [ComfyUI] [comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\pixi.toml -e sam3dobjects-nodes python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_slinj6zb.py C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects nodes
+[04:45]   [ComfyUI] [comfy-env] Scan env PATH for nodes:
+[04:45]   [ComfyUI] [comfy-env]   [0] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes
+[04:45]   [ComfyUI] [comfy-env]   [1] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Library\bin
+[04:45]   [ComfyUI] [comfy-env]   [2] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Scripts
+[04:45]   [ComfyUI] [comfy-env]   [3] C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\bpy
+[04:45]   [ComfyUI] [comfy-env]   [4] C:\Windows\System32
+[04:45]   [ComfyUI] [comfy-env]   [5] C:\Windows
+[04:45]   [ComfyUI] [comfy-env]   [6] C:\Windows\System32\Wbem
+[04:46]   [ComfyUI] [comfy-env] Metadata scan stderr for nodes:
+[04:46]   [ComfyUI] [comfy-env]   [meta-scan] importing nodes from C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+[04:46]   [ComfyUI] [comfy-env]   Traceback (most recent call last):
+[04:46]   [ComfyUI] [comfy-env]     File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_slinj6zb.py", line 53, in <module>
+[04:46]   [ComfyUI] [comfy-env]       module = importlib.import_module(package_name)
+[04:46]   [ComfyUI] [comfy-env]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:46]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\.ce\.pixi\envs\sam3dobjects-nodes\Lib\importlib\__init__.py", line 90, in import_module
+[04:46]   [ComfyUI] [comfy-env]       return _bootstrap._gcd_import(name[level:], package, level)
+[04:46]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[04:46]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\__init__.py", line 2, in <module>
+[04:46]   [ComfyUI] [comfy-env]       import comfy_sparse_attn
+[04:46]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'comfy_sparse_attn'
+[04:46]   [ComfyUI] [comfy-env] Metadata scan failed for nodes (exit 1, 0.3s):
+[04:46]   [ComfyUI] [comfy-env]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+[04:46]   [ComfyUI] [comfy-env]     File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[04:46]   [ComfyUI] [comfy-env]     File "C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\__init__.py", line 2, in <module>
+[04:46]   [ComfyUI] [comfy-env]       import comfy_sparse_attn
+[04:46]   [ComfyUI] [comfy-env]   ModuleNotFoundError: No module named 'comfy_sparse_attn'
+[04:46]   [ComfyUI] [comfy-env] Scanned nodes root: 0 nodes (0.3s)
+[04:46]   [ComfyUI] [comfy-env] Imported nodes root: 0 nodes (isolation)
+[04:46]   [ComfyUI] [comfy-env] Registered 0 total nodes
+[04:46]   [ComfyUI] 
+[04:46]   [ComfyUI] Import times for custom nodes:
+[04:46]   [ComfyUI]    0.0 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\websocket_image_save.py
+[04:46]   [ComfyUI]    0.0 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
+[04:46]   [ComfyUI]    0.4 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+[04:46]   [ComfyUI]    0.9 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-Multiband
+[04:46]   [ComfyUI]    6.1 seconds: C:\workspaces\SAM3DObjects-0807\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+[04:46]   [ComfyUI] 
+[04:46]   [ComfyUI] Context impl SQLiteImpl.
+[04:46]   [ComfyUI] Will assume non-transactional DDL.
+[04:46]   [ComfyUI] Context impl SQLiteImpl.
+[04:46]   [ComfyUI] Will assume non-transactional DDL.
+[04:46]   [ComfyUI] Running upgrade  -> 0001_assets, Initial assets schema
+[04:46]   [ComfyUI] Revision ID: 0001_assets
+[04:46]   [ComfyUI] Revises: None
+[04:46]   [ComfyUI] Create Date: 2025-12-10 00:00:00
+[04:46]   [ComfyUI] Running upgrade 0001_assets -> 0002_merge_to_asset_references, Merge AssetInfo and AssetCacheState into unified asset_references table.
+[04:46]   [ComfyUI] Running upgrade 0002_merge_to_asset_references -> 0003_add_metadata_job_id, Add system_metadata and job_id columns to asset_references.
+[04:46]   [ComfyUI] Change preview_id FK from assets.id to asset_references.id.
+[04:46]   [ComfyUI] Database upgraded from None to 0003_add_metadata_job_id
+[04:46]   [ComfyUI] Starting server
+[04:46]   [ComfyUI] 
+[04:46]   [ComfyUI] To see the GUI go to: http://127.0.0.1:41898
+[04:47] Server responding, waiting for nodes to load...
+[05:07] Server is ready!
+[05:07] Checking for import errors in server logs...
+[05:07] No import errors detected
+[05:07] Found 714 registered nodes
+[05:07] [REGISTRATION] PASSED
+[05:07] 
+[05:07] [3/4] INSTANTIATION
+[05:07] ----------------------------------------
+[05:07] 
+[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000019E6CF47760>, server_url=None, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000019E6CF44370>
+[05:07] Testing node constructors...
+[05:08] All 0 node(s) instantiated successfully!
+[05:08] [INSTANTIATION] PASSED
+[05:08] 
+[05:08] [4/4] EXECUTION
+[05:08] ----------------------------------------
+[05:08] 
+[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000019E6CF47760>, server_url=None, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000019E6CF44370>
+[05:08] GPU runner - will execute 5 workflow(s)
+[05:08] Running 5 workflow(s) (all with videos)...
+[05:08] Installing screenshot dependencies (playwright, pillow)...
+[05:09]   Packages installed, downloading chromium browser...
+[05:27]   Screenshot dependencies installed successfully
+[05:27] Starting headless browser...
+[05:28]   GPU detected (no Vulkan) — using ANGLE/OpenGL rendering
+[05:32] Capturing execution frames: debug_large_image_results.json
+[05:39]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[05:39]   Validating workflow...
+[05:39]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 10 nodes, missing class_type: [59,74,92,93], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
+[05:39] Capturing execution frames: full_generation.json
+[05:40]   [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost()
+[05:40]   [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
+[05:40]   [ComfyUI] Traceback (most recent call last):
+[05:40]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\asyncio\events.py", line 89, in _run
+[05:40]   [ComfyUI]     self._context.run(self._callback, *self._args)
+[05:40]   [ComfyUI]     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[05:40]   [ComfyUI]   File "C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+[05:40]   [ComfyUI]     self._sock.shutdown(socket.SHUT_RDWR)
+[05:40]   [ComfyUI]     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+[05:40]   [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+[05:45]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[05:45]   Validating workflow...
+[05:45]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 11 nodes, missing class_type: [54,59,70,71,72,73,74], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+[05:46] Capturing execution frames: gaussian_generation.json
+[05:52]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[05:52]   Validating workflow...
+[05:52]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,62,63], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+[05:52] Capturing execution frames: mesh_generation.json
+[05:58]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[05:58]   Validating workflow...
+[05:58]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,64], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
+[05:58] Capturing execution frames: scene_generation.json
+[06:04]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[06:04]   Validating workflow...
+[06:04]   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [59,74,80,82,85,87,100,106], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
+[06:05] Results saved to C:\logs\SAM3DObjects-0807\dev\windows-gpu\results.json
+[06:05] Saved: C:\logs\SAM3DObjects-0807\dev\windows-gpu\index.html
+[06:05] 
 windows: FAILED
-[05:47] Error: Workflow execution failed (5 error(s))
-[05:47] Details: debug_large_image_results.json: Workflow validation failed
+[06:05] Error: Workflow execution failed (5 error(s))
+[06:05] Details: debug_large_image_results.json: Workflow validation failed
 
 Details:
 graphToPrompt produced nodes without class_type: graphToPrompt: 10 nodes, missing class_type: [59,74,92,93], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
@@ -691,4 +674,4 @@ scene_generation.json: Workflow validation failed
 
 Details:
 graphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [59,74,80,82,85,87,100,106], sample: {"inputs":{"depth_model":["74",0],"image":["77",0]},"_meta":{}}
-[05:47] Stopping ComfyUI server...
+[06:05] Stopping ComfyUI server...
