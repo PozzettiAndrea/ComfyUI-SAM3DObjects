@@ -1,131 +1,131 @@
 {
-  "timestamp": "2026-05-07T13:03:12.781168+00:00",
+  "timestamp": "2026-05-07T19:31:15.975723+00:00",
   "platform": "linux",
   "hardware": {
     "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-    "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-    "gpu": "NVIDIA GeForce RTX 5060"
+    "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+    "gpu": "NVIDIA GeForce RTX 3090"
   },
-  "commit_hash": "241e379f8456a6642f166627919048c40c9907ba",
-  "success": false,
+  "commit_hash": "576486a943bc45ae4391faece1008527b2f737ad",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 4,
-    "failed": 1
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
       "status": "pass",
-      "duration_seconds": 312.03,
+      "duration_seconds": 395.31,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-        "gpu": "NVIDIA GeForce RTX 5060"
+        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 16.8,
-          "avg": 8.47
+          "peak": 15.74,
+          "avg": 8.01
         },
-        "total_ram_gb": 31.3,
-        "samples": 303,
+        "total_ram_gb": 31.2,
+        "samples": 384,
         "vram": {
-          "peak": 5.6,
-          "avg": 0.88
+          "peak": 5.83,
+          "avg": 1.22
         }
       }
     },
     {
       "name": "full_generation",
       "status": "pass",
-      "duration_seconds": 153.64,
+      "duration_seconds": 199.84,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-        "gpu": "NVIDIA GeForce RTX 5060"
+        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 15.88,
-          "avg": 11.79
+          "peak": 13.89,
+          "avg": 11.28
         },
-        "total_ram_gb": 31.3,
-        "samples": 150,
+        "total_ram_gb": 31.2,
+        "samples": 195,
         "vram": {
-          "peak": 4.7,
-          "avg": 1.04
+          "peak": 4.9,
+          "avg": 1.42
         }
       }
     },
     {
       "name": "gaussian_generation",
       "status": "pass",
-      "duration_seconds": 78.41,
+      "duration_seconds": 121.44,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-        "gpu": "NVIDIA GeForce RTX 5060"
+        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 14.2,
-          "avg": 10.06
+          "peak": 13.6,
+          "avg": 10.38
         },
-        "total_ram_gb": 31.3,
-        "samples": 77,
+        "total_ram_gb": 31.2,
+        "samples": 118,
         "vram": {
-          "peak": 4.7,
-          "avg": 1.49
+          "peak": 4.9,
+          "avg": 1.85
         }
       }
     },
     {
       "name": "mesh_generation",
       "status": "pass",
-      "duration_seconds": 117.17,
+      "duration_seconds": 155.47,
       "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-        "gpu": "NVIDIA GeForce RTX 5060"
+        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 13.39,
-          "avg": 10.81
+          "peak": 13.6,
+          "avg": 11.04
         },
-        "total_ram_gb": 31.3,
-        "samples": 114,
+        "total_ram_gb": 31.2,
+        "samples": 151,
         "vram": {
-          "peak": 4.76,
-          "avg": 1.22
+          "peak": 4.9,
+          "avg": 1.66
         }
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 284.17,
-      "error": "Workflow execution failed: {'prompt_id': 'bf6edb1d-0f38-41ab-8995-6dfb993e1950', 'node_id': '100', 'node_type': 'SAM3D_ProjectionOverlay', 'executed': ['78', '75', '74', '80', '99', '59', '82', '77'], 'exception_message': 'Invalid device ID (0)\\n\\nWorker traceback:\\nTraceback (most recent call last):\\n  File \"/tmp/comfyui_pvenv_8g80169v/persistent_worker.py\", line 1749, in main\\n    result = method(**inputs)\\n             ^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/comfy_api/latest/_io.py\", line 1827, in EXECUTE_NORMALIZED\\n    to_return = cls.execute(*args, **kwargs)\\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\\n    return func(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 185, in execute\\n    overlay = cls._render_3d_mesh_textured(loaded_meshes, img_array, K, alpha, H, W)\\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/projection_overlay.py\", line 363, in _render_3d_mesh_textured\\n    renderer = pyrender.OffscreenRenderer(W, H)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/pyrender/offscreen.py\", line 31, in __init__\\n    self._create()\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/pyrender/offscreen.py\", line 137, in _create\\n    egl_device = egl.get_device_by_index(device_id)\\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/workspaces/SAM3DObjects-1241/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/pyrender/platforms/egl.py\", line 83, in get_device_by_index\\n    raise ValueError(\\'Invalid device ID ({})\\'.format(device_id, len(devices)))\\nValueError: Invalid device ID (0)\\n\\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File \"/workspaces/SAM3DObjects-1241/ComfyUI/execution.py\", line 535, in execute\\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1241/ComfyUI/execution.py\", line 335, in get_output_data\\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\\n', '  File \"/workspaces/SAM3DObjects-1241/ComfyUI/execution.py\", line 309, in _async_map_node_over_list\\n    await process_inputs(input_dict, i)\\n', '  File \"/workspaces/SAM3DObjects-1241/ComfyUI/execution.py\", line 297, in process_inputs\\n    result = f(**inputs)\\n', '  File \"/workspaces/SAM3DObjects-1241/.venv/lib/python3.10/site-packages/comfy_env/isolation/metadata.py\", line 524, in proxy\\n    result = worker.call_method(\\n', '  File \"/workspaces/SAM3DObjects-1241/.venv/lib/python3.10/site-packages/comfy_env/isolation/workers/subprocess.py\", line 673, in call_method\\n    raise WorkerError(\\n'], 'current_inputs': {'pose_opt_folder': ['/workspaces/SAM3DObjects-1241/ComfyUI/output/sam3d_scene_1_pose_optimized'], 'render_mode': ['3d_mesh_textured'], 'point_size': [2], 'alpha': [0.6]}, 'current_outputs': ['78', '108', '75', '74', '80', '87', '99', '106', '100', '59', '82', '85', '77'], 'timestamp': 1778158992252}\n\nDetails:\nWorkflow: /node/ComfyUI-SAM3DObjects/workflows/scene_generation.json\nNode error: SAM3D_ProjectionOverlay",
+      "status": "pass",
+      "duration_seconds": 365.77,
+      "error": null,
       "hardware": {
         "os": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
-        "cpu": "AMD Ryzen 5 3600 6-Core Processor",
-        "gpu": "NVIDIA GeForce RTX 5060"
+        "cpu": "Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz",
+        "gpu": "NVIDIA GeForce RTX 3090"
       },
       "resources": {
         "ram": {
-          "peak": 17.13,
-          "avg": 13.03
+          "peak": 21.64,
+          "avg": 13.15
         },
-        "total_ram_gb": 31.3,
-        "samples": 277,
+        "total_ram_gb": 31.2,
+        "samples": 355,
         "vram": {
-          "peak": 6.11,
-          "avg": 2.8
+          "peak": 5.86,
+          "avg": 2.49
         }
       }
     }
