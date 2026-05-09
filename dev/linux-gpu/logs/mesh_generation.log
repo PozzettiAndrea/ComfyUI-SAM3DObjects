@@ -1,14 +1,14 @@
-  [ComfyUI] [comfy-env] [VRAM] Before offload 'ShortCut_3' (3677 MB) -> cpu: 544 / 7703 MB
 Capturing execution frames: mesh_generation.json
+  [ComfyUI] [comfy-env] [VRAM] Before offload 'ShortCut_3' (3677 MB) -> cpu: 544 / 7703 MB
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: failed
   [ComfyUI] [ComfyUI-SAM3DObjects] Socket unhealthy, restarting worker...
-  [ComfyUI] [ComfyUI-SAM3DObjects] python: /workspaces/SAM3DObjects-1221/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
-  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/workspaces/SAM3DObjects-1221/ComfyUI', '/workspaces/SAM3DObjects-1221/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/workspaces/SAM3DObjects-1221/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages', '/workspaces/SAM3DObjects-1221/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
+  [ComfyUI] [ComfyUI-SAM3DObjects] python: /workspaces/SAM3DObjects-1658/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
   [ComfyUI] [comfy-env] Invalidated 7 stale model patchers (will be cleaned up during next unload)
-  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/workspaces/SAM3DObjects-1221/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
-  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/workspaces/SAM3DObjects-1221/ComfyUI/.ce/pixi.toml', '-e', 'sam3dobjects-nodes', 'python', '/tmp/comfyui_pvenv_11wka44e/persistent_worker.py', 'abstract://comfy_worker_f7149e4f08a6']...
-  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_f7149e4f08a6 (abstract, no filesystem path)
+  [ComfyUI] [ComfyUI-SAM3DObjects] sys_path sent to worker: ['/workspaces/SAM3DObjects-1658/ComfyUI', '/workspaces/SAM3DObjects-1658/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects', '/workspaces/SAM3DObjects-1658/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages', '/workspaces/SAM3DObjects-1658/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects']
+  [ComfyUI] [SubprocessWorker] is_pixi=True, python=/workspaces/SAM3DObjects-1658/ComfyUI/.ce/.pixi/envs/sam3dobjects-nodes/bin/python
+  [ComfyUI] [SubprocessWorker] launching cmd=['/root/.pixi/bin/pixi', 'run', '--as-is', '--manifest-path', '/workspaces/SAM3DObjects-1658/ComfyUI/.ce/pixi.toml', '-e', 'sam3dobjects-nodes', 'python', '/tmp/comfyui_pvenv_t0nqn7tk/persistent_worker.py', 'abstract://comfy_worker_27429ca2a7bd']...
+  [ComfyUI] [SubprocessWorker] socket_addr=abstract://comfy_worker_27429ca2a7bd (abstract, no filesystem path)
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
   [ComfyUI] [SubprocessWorker] call_id=47 sending model_to_device
   [ComfyUI] Model 'ShortCut_3' gone from worker (restarted?), treating as offloaded
@@ -57,8 +57,8 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI]   Node 4: LoadImage
   [ComfyUI]     Inputs: {"image": "elephant.png"}
   [ComfyUI]   Node 28: InvertMask
-  Queuing workflow for execution...
   [ComfyUI]     Inputs: {"mask": ["4", 1]}
+  Queuing workflow for execution...
   [ComfyUI]   Node 53: MaskPreview
   [ComfyUI]     Inputs: {"mask": ["28", 0]}
   [ComfyUI]   Node 59: SAM3D_DepthEstimate
@@ -71,7 +71,7 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI]     Inputs: {"with_postprocess": false, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "use_sparse_flexicubes": true, "slat_decoder_mesh": ["60", 3], "slat": ["61", 0]}
   [ComfyUI]   Node 65: Preview3D
   [ComfyUI]     Inputs: {"model_file": ["64", 0], "image": ""}
-  [ComfyUI] Generated prompt_id: 96bac676-40f6-430f-a61f-8749200dcc08
+  [ComfyUI] Generated prompt_id: b7604227-cc9f-4642-9bb0-57dc0b752782
   [ComfyUI] Calling execution.validate_prompt()...
   [ComfyUI] Validation result: valid=True
   [ComfyUI] === Validation PASSED ===
@@ -131,7 +131,7 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [SubprocessWorker] call_id=61 sending model_to_device
   [ComfyUI] Model 'MoGeModelV1_1' gone from worker (restarted?), treating as offloaded
   [ComfyUI] [comfy-env] [VRAM] After offload 'MoGeModelV1_1' (599 MB): 270 / 7703 MB
-  [ComfyUI] [comfy-env] LoadSAM3DModel done (0.25s): result: NodeOutput
+  [ComfyUI] [comfy-env] LoadSAM3DModel done (0.22s): result: NodeOutput
   [ComfyUI] [VRAM] After LoadSAM3DModel: 270 / 7703 MB
   [ComfyUI] [comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
   [ComfyUI] [VRAM] Before SAM3D_DepthEstimate: 270 / 7703 MB
@@ -148,36 +148,36 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'parent_pid', 'fd', 'storage_size']
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
-  Frame 2 saved (frame_001.jpg, t=0.7s)
-  [capture-node] freeze=2ms shot=169ms unfreeze=5ms saved=True
+  Frame 2 saved (frame_001.jpg, t=0.6s)
+  [capture-node] freeze=2ms shot=142ms unfreeze=8ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: start: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
-  [ComfyUI] /workspaces/SAM3DObjects-1221/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
+  [ComfyUI] /workspaces/SAM3DObjects-1658/ComfyUI/custom_nodes/ComfyUI-SAM3DObjects/nodes/sam3d/moge.py:1012: UserWarning: Deprecated arguments ignored: {'output_mask': True, 'split_head': True}
   [ComfyUI]   warnings.warn(f"Deprecated arguments ignored: {deprecated_kwargs}")
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe from_pretrained: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before load_models_gpu: torch=0MiB alloc, 0MiB reserved | gpu=270MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=62
   [ComfyUI] [comfy-env] VRAM request: 0.63GB, free before eviction: 7.79GB
   [ComfyUI] [comfy-env] VRAM after eviction: 7.79GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +571MB (now 571MB) reserved=576MB peak=571MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +569MB (now 569MB) reserved=576MB peak=569MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after load_models_gpu: torch=599MiB alloc, 608MiB reserved | gpu=948MiB/7703MiB used
-  Frame 3 saved (frame_002.jpg, t=3.0s)
-  [capture-periodic] freeze=1ms shot=191ms unfreeze=6ms saved=True
+  Frame 3 saved (frame_002.jpg, t=2.9s)
+  [capture-periodic] freeze=1ms shot=136ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=62
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: before MoGe inference: torch=599MiB alloc, 608MiB reserved | gpu=948MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after MoGe inference: torch=642MiB alloc, 1120MiB reserved | gpu=1496MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -203MB (now 368MB) reserved=704MB peak=679MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -209MB (now 360MB) reserved=704MB peak=677MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: after cleanup: torch=43MiB alloc, 96MiB reserved | gpu=472MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=62
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=62
-  Frame 4 saved (frame_003.jpg, t=5.3s)
-  [capture-periodic] freeze=1ms shot=157ms unfreeze=6ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -307MB (now 62MB) reserved=160MB peak=679MB
+  Frame 4 saved (frame_003.jpg, t=5.1s)
+  [capture-periodic] freeze=1ms shot=178ms unfreeze=4ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -299MB (now 62MB) reserved=160MB peak=677MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=62
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] DepthEstimate: done: torch=62MiB alloc, 160MiB reserved | gpu=536MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 1 model patchers: ['MoGeModelV1_1']
-  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (5.50s): result: NodeOutput
+  [ComfyUI] [comfy-env] SAM3D_DepthEstimate done (5.49s): result: NodeOutput
   [ComfyUI] [VRAM] After SAM3D_DepthEstimate: 536 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB)
   [ComfyUI] [comfy-env] Running SAM3DGenerateSLAT: seed: 42, stage1_steps: 12, stage1_cfg: 7.5, stage1_cfg_pm: 0.0, stage2_steps: 12, stage2_cfg: 5.0, use_distillation: True, generator: dict, image: torch.float32 [1,1062,1600,3] cpu, mask: torch.float32 [1,1062,1600] cpu, pointmap: torch.float32 [1062,1600,3] cpu
@@ -205,24 +205,24 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1062, 1600, 3]
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1062, 1600, 3])
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: start: torch=9MiB alloc, 160MiB reserved | gpu=536MiB/7703MiB used
-  [ComfyUI] 2026-05-09 12:35:04.567 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [capture-loop] iter=50 t=6.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] 2026-05-09 17:12:49.886 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [capture-loop] iter=50 t=6.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): before build: torch=42MiB alloc, 224MiB reserved | gpu=666MiB/7703MiB used
-  Frame 5 saved (frame_004.jpg, t=7.6s)
-  [capture-periodic] freeze=1ms shot=186ms unfreeze=8ms saved=True
-  Frame 6 saved (frame_005.jpg, t=9.9s)
-  [capture-periodic] freeze=2ms shot=181ms unfreeze=8ms saved=True
+  Frame 5 saved (frame_004.jpg, t=7.4s)
+  [capture-periodic] freeze=1ms shot=191ms unfreeze=7ms saved=True
+  Frame 6 saved (frame_005.jpg, t=9.8s)
+  [capture-periodic] freeze=1ms shot=189ms unfreeze=1ms saved=True
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(ss): after load_state_dict: torch=42MiB alloc, 224MiB reserved | gpu=666MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=63
   [ComfyUI] [comfy-env] VRAM request: 2.54GB, free before eviction: 7.48GB
   [ComfyUI] [comfy-env] VRAM after eviction: 7.48GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +412MB (now 475MB) reserved=512MB peak=679MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +380MB (now 443MB) reserved=480MB peak=677MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before embedding: torch=1302MiB alloc, 1312MiB reserved | gpu=1754MiB/7703MiB used
+  [capture-loop] iter=100 t=11.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=1
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedding: torch=1331MiB alloc, 2464MiB reserved | gpu=2908MiB/7703MiB used
-  [capture-loop] iter=100 t=12.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after embedder unload: torch=72MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): before build: torch=72MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -403MB (now 72MB) reserved=192MB peak=1353MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -371MB (now 72MB) reserved=192MB peak=1345MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(ss): after load_state_dict: torch=72MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=63
   [ComfyUI] [comfy-env] VRAM request: 3.86GB, free before eviction: 7.41GB
@@ -232,99 +232,105 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=63
   [ComfyUI] [comfy-env] VRAM request: 0.15GB, free before eviction: 3.65GB
   [ComfyUI] [comfy-env] VRAM after eviction: 3.65GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +3677MB (now 3750MB) reserved=3776MB peak=3750MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: before inference: torch=3890MiB alloc, 3904MiB reserved | gpu=4348MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 6) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 4096, 8) device=cuda:0
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +3833MB (now 3905MB) reserved=3936MB peak=3905MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 3) device=cuda:0
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 1, 1) device=cuda:0
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +203MB (now 3953MB) reserved=4224MB peak=4097MB
-  Frame 7 saved (frame_006.jpg, t=14.5s)
-  [capture-periodic] freeze=1ms shot=185ms unfreeze=5ms saved=True
+  Frame 7 saved (frame_006.jpg, t=14.3s)
+  [capture-periodic] freeze=1ms shot=176ms unfreeze=7ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +207MB (now 4112MB) reserved=4256MB peak=4112MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  Frame 8 saved (frame_007.jpg, t=16.8s)
-  [capture-periodic] freeze=1ms shot=182ms unfreeze=6ms saved=True
+  Frame 8 saved (frame_007.jpg, t=16.6s)
+  [capture-periodic] freeze=2ms shot=191ms unfreeze=6ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [capture-loop] iter=150 t=17.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -208MB (now 3905MB) reserved=4256MB peak=4112MB
+  [capture-loop] iter=150 t=17.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +207MB (now 4112MB) reserved=4192MB peak=4112MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  Frame 9 saved (frame_008.jpg, t=19.1s)
-  [capture-periodic] freeze=1ms shot=174ms unfreeze=8ms saved=True
+  Frame 9 saved (frame_008.jpg, t=19.0s)
+  [capture-periodic] freeze=2ms shot=194ms unfreeze=7ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -208MB (now 3905MB) reserved=4224MB peak=4112MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  Frame 10 saved (frame_009.jpg, t=21.4s)
-  [capture-periodic] freeze=1ms shot=184ms unfreeze=6ms saved=True
+  Frame 10 saved (frame_009.jpg, t=21.3s)
+  [capture-periodic] freeze=2ms shot=172ms unfreeze=5ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +200MB (now 4106MB) reserved=4224MB peak=4112MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [capture-loop] iter=200 t=23.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [capture-loop] iter=200 t=23.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=8
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -201MB (now 3905MB) reserved=4192MB peak=4112MB
+  Frame 11 saved (frame_010.jpg, t=23.6s)
+  [capture-periodic] freeze=1ms shot=188ms unfreeze=10ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  Frame 11 saved (frame_010.jpg, t=23.8s)
-  [capture-periodic] freeze=2ms shot=190ms unfreeze=5ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after inference: torch=3906MiB alloc, 4416MiB reserved | gpu=4860MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -526MB (now 3428MB) reserved=4416MB peak=4128MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -2047MB (now 1382MB) reserved=4416MB peak=4128MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after model cleanup: torch=88MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
-  [ComfyUI] 2026-05-09 12:35:24.458 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): before build: torch=37MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1345MB (now 37MB) reserved=320MB peak=4128MB
-  Frame 12 saved (frame_011.jpg, t=26.1s)
-  [capture-periodic] freeze=1ms shot=188ms unfreeze=4ms saved=True
-  Frame 13 saved (frame_012.jpg, t=28.3s)
-  [capture-periodic] freeze=2ms shot=176ms unfreeze=63ms saved=True
-  [capture-loop] iter=250 t=29.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): after load_state_dict: torch=37MiB alloc, 320MiB reserved | gpu=764MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after inference: torch=3906MiB alloc, 4448MiB reserved | gpu=4892MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -546MB (now 3360MB) reserved=4448MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -2507MB (now 853MB) reserved=4448MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage1: after model cleanup: torch=88MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
+  [ComfyUI] 2026-05-09 17:13:09.690 | WARNING  | nodes.sam3d.transforms:__post_init__:1359 - No rgb pointmap normalizer provided, using scale + shift
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): before build: torch=37MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
+  Frame 12 saved (frame_011.jpg, t=25.9s)
+  [capture-periodic] freeze=1ms shot=202ms unfreeze=7ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -817MB (now 37MB) reserved=256MB peak=4112MB
+  Frame 13 saved (frame_012.jpg, t=28.2s)
+  [capture-periodic] freeze=2ms shot=184ms unfreeze=6ms saved=True
+  [capture-loop] iter=250 t=29.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_condition_embedder(slat): after load_state_dict: torch=37MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=63
-  [ComfyUI] [comfy-env] VRAM request: 2.50GB, free before eviction: 7.38GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 7.38GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +400MB (now 437MB) reserved=512MB peak=4128MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before embedding: torch=1264MiB alloc, 1280MiB reserved | gpu=1724MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedding: torch=1275MiB alloc, 1376MiB reserved | gpu=1820MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedder unload: torch=48MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): before build: torch=48MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -390MB (now 48MB) reserved=256MB peak=4128MB
+  [ComfyUI] [comfy-env] VRAM request: 2.50GB, free before eviction: 7.44GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.44GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +400MB (now 437MB) reserved=512MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before embedding: torch=1264MiB alloc, 1312MiB reserved | gpu=1756MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedding: torch=1275MiB alloc, 1408MiB reserved | gpu=1852MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -207MB (now 231MB) reserved=1408MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after embedder unload: torch=48MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): before build: torch=48MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
   [capture-loop] iter=300 t=35.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): after load_state_dict: torch=48MiB alloc, 256MiB reserved | gpu=700MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_generator(slat): after load_state_dict: torch=48MiB alloc, 192MiB reserved | gpu=636MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=63
-  [ComfyUI] [comfy-env] VRAM request: 2.40GB, free before eviction: 7.34GB
-  [ComfyUI] [comfy-env] VRAM after eviction: 7.34GB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +375MB (now 423MB) reserved=544MB peak=4128MB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before inference: torch=2338MiB alloc, 2368MiB reserved | gpu=2812MiB/7703MiB used
+  [ComfyUI] [comfy-env] VRAM request: 2.40GB, free before eviction: 7.41GB
+  [ComfyUI] [comfy-env] VRAM after eviction: 7.41GB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +688MB (now 919MB) reserved=992MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: before inference: torch=2338MiB alloc, 2400MiB reserved | gpu=2844MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [DTYPE_DBG] _generate_noise_tensor: _compute_dtype=torch.bfloat16 shape=(1, 8699, 8) device=cuda:0
-  [ComfyUI] W0509 12:35:34.540000 2625 .ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py:53] is_fx_tracing will return true for both fx.symbolic_trace and torch.export. Please use is_fx_tracing_symbolic_tracing() for specifically fx.symbolic_trace or torch.compiler.is_compiling() for specifically torch.export/compile.
+  [ComfyUI] W0509 17:13:20.238000 2834 .ce/.pixi/envs/sam3dobjects-nodes/lib/python3.12/site-packages/torch/fx/_symbolic_trace.py:53] is_fx_tracing will return true for both fx.symbolic_trace and torch.export. Please use is_fx_tracing_symbolic_tracing() for specifically fx.symbolic_trace or torch.compiler.is_compiling() for specifically torch.export/compile.
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [33m[comfy-attn] Varlen attention: sage2[0m
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1994MB (now 2417MB) reserved=2528MB peak=4128MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +1497MB (now 2417MB) reserved=2592MB peak=4112MB
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  Frame 14 saved (frame_013.jpg, t=39.8s)
-  [capture-periodic] freeze=1ms shot=187ms unfreeze=2ms saved=True
-  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [capture-loop] iter=350 t=40.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
+  Frame 14 saved (frame_013.jpg, t=39.6s)
+  [capture-periodic] freeze=1ms shot=188ms unfreeze=2ms saved=True
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [capture-loop] iter=350 t=40.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=7
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after inference: torch=2338MiB alloc, 2656MiB reserved | gpu=3104MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -547MB (now 1871MB) reserved=2656MB peak=4128MB
-  Frame 15 saved (frame_014.jpg, t=42.1s)
-  [capture-periodic] freeze=1ms shot=133ms unfreeze=2ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after model cleanup: torch=48MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: done: torch=29MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
+  Frame 15 saved (frame_014.jpg, t=42.0s)
+  [capture-periodic] freeze=1ms shot=193ms unfreeze=6ms saved=True
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=63
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after inference: torch=2338MiB alloc, 2688MiB reserved | gpu=3136MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -307MB (now 2111MB) reserved=2688MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1722MB (now 389MB) reserved=2688MB peak=4112MB
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Stage2: after model cleanup: torch=48MiB alloc, 224MiB reserved | gpu=672MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] GenerateSLAT: done: torch=29MiB alloc, 224MiB reserved | gpu=672MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 5 model patchers: ['EmbedderFuser_2', 'ShortCut_3', 'SparseStructureDecoderTdfyWrapper_4', 'EmbedderFuser_5', 'FlowMatching_6']
-  [ComfyUI] [comfy-env] SAM3DGenerateSLAT done (36.99s): result: NodeOutput
-  [ComfyUI] [VRAM] After SAM3DGenerateSLAT: 736 / 7703 MB
+  [ComfyUI] [comfy-env] SAM3DGenerateSLAT done (37.81s): result: NodeOutput
+  [ComfyUI] [VRAM] After SAM3DGenerateSLAT: 672 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
-  [ComfyUI] [comfy-env] Running SAM3DMeshDecode: with_postprocess: False, simplify: 0.95, up_axis: 'Y-up (standard)', world_coordinates: False, use_sparse_flexicubes: True, slat_decoder_mesh: dict, slat: '/workspaces/SAM3DObjects-1221/ComfyUI/output/sam3d_run_4...
-  [ComfyUI] [VRAM] Before SAM3DMeshDecode: 736 / 7703 MB
+  [ComfyUI] [comfy-env] Running SAM3DMeshDecode: with_postprocess: False, simplify: 0.95, up_axis: 'Y-up (standard)', world_coordinates: False, use_sparse_flexicubes: True, slat_decoder_mesh: dict, slat: '/workspaces/SAM3DObjects-1658/ComfyUI/output/sam3d_run_4...
+  [ComfyUI] [VRAM] Before SAM3DMeshDecode: 672 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
   [ComfyUI] [SubprocessWorker] call_method: nodes.mesh_decode.SAM3DMeshDecode.EXECUTE_NORMALIZED
   [ComfyUI] [SubprocessWorker] acquired lock, ensuring started...
@@ -335,42 +341,41 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [SubprocessWorker] created 0 shm blocks
   [ComfyUI] [SubprocessWorker] sending request via socket...
   [ComfyUI] [SubprocessWorker] call_id=64 sending call_method
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: start: torch=9MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: start: torch=9MiB alloc, 224MiB reserved | gpu=672MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=64
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): before instantiate: torch=9MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): before instantiate: torch=9MiB alloc, 224MiB reserved | gpu=672MiB/7703MiB used
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] _load_decoder(slat_decoder_mesh): after load_state_dict: torch=9MiB alloc, 416MiB reserved | gpu=864MiB/7703MiB used
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] -1862MB (now 9MB) reserved=416MB peak=4128MB
   [ComfyUI] [SubprocessWorker] callback 'request_vram_budget' from call_id=64
   [ComfyUI] [comfy-env] VRAM request: 0.18GB, free before eviction: 7.17GB
   [ComfyUI] [comfy-env] VRAM after eviction: 7.17GB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after load_models_gpu: torch=182MiB alloc, 288MiB reserved | gpu=736MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=64
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +451MB (now 460MB) reserved=736MB peak=4128MB
-  Frame 16 saved (frame_015.jpg, t=44.4s)
-  [capture-periodic] freeze=1ms shot=183ms unfreeze=6ms saved=True
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +447MB (now 907MB) reserved=1696MB peak=4128MB
+  Frame 16 saved (frame_015.jpg, t=44.3s)
+  [capture-periodic] freeze=8ms shot=186ms unfreeze=5ms saved=True
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] +416MB (now 805MB) reserved=864MB peak=4112MB
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] start: 468 MiB | cubefeats torch.Size([556736, 101])
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after sparse_cube2verts: 500 MiB | v_pos torch.Size([660777, 3])
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after get_sparse_attrs + del: 267 MiB | verts 660777 cubes 556736
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after dilation: 293 MiB | verts 842780 cubes 739092
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after searchsorted: 328 MiB | reg_c torch.Size([739092, 8])
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] start: 328 MiB | verts torch.Size([842781, 3]) cubes torch.Size([739092, 8]) sdf torch.Size([842781])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_cubes: 334 MiB | surf_cubes 194456/739092
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_cubes: 334 MiB | surf_cubes 194443/739092
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _get_case_id: 370 MiB
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_edges: 400 MiB | surf_edges torch.Size([194478, 2])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _compute_vd: 429 MiB | vd torch.Size([194479, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _triangulate: 438 MiB | verts torch.Size([194479, 3]) faces torch.Size([388926, 3])
-  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after FlexiCubes: 342 MiB | verts torch.Size([194479, 3]) faces torch.Size([388926, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _identify_surf_edges: 400 MiB | surf_edges torch.Size([194464, 2])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _compute_vd: 429 MiB | vd torch.Size([194465, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:fc] after _triangulate: 438 MiB | verts torch.Size([194465, 3]) faces torch.Size([388898, 3])
+  [ComfyUI] [worker:ComfyUI-SAM3DObjects] WARNING: [VRAM:mesh] after FlexiCubes: 342 MiB | verts torch.Size([194465, 3]) faces torch.Size([388898, 3])
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=64
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] Decode(mesh): after cleanup: torch=38MiB alloc, 256MiB reserved | gpu=706MiB/7703MiB used
+  [capture-loop] iter=400 t=46.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=2
   [ComfyUI] [SubprocessWorker] callback 'report_progress' from call_id=64
   [ComfyUI] [worker:ComfyUI-SAM3DObjects] [VRAM] MeshDecode: done: torch=9MiB alloc, 256MiB reserved | gpu=706MiB/7703MiB used
   [ComfyUI] [SubprocessWorker] got response: ok
   [ComfyUI] [comfy-env] Created 1 model patchers: ['SLatMeshDecoderTdfyWrapper_7']
-  [ComfyUI] [comfy-env] SAM3DMeshDecode done (2.72s): result: NodeOutput
+  [ComfyUI] [comfy-env] SAM3DMeshDecode done (2.68s): result: NodeOutput
   [ComfyUI] [VRAM] After SAM3DMeshDecode: 706 / 7703 MB
   [ComfyUI] [VRAM] Loaded: SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB), SubprocessModel (0 MB)
-  [ComfyUI] Prompt executed in 45.59 seconds
+  [ComfyUI] Prompt executed in 46.34 seconds
   [ComfyUI] [comfy-env] [VRAM] Before offload 'ShortCut_3' (3677 MB) -> cpu: 706 / 7703 MB
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
   [ComfyUI] [ComfyUI-SAM3DObjects] Health check: ok
@@ -407,14 +412,14 @@ Capturing execution frames: mesh_generation.json
   [ComfyUI] [SubprocessWorker] call_id=71 sending model_to_device
   [ComfyUI] [comfy-env] [VRAM] After offload 'SparseStructureDecoderTdfyWrapper_4' (140 MB): 706 / 7703 MB
   Node executed (2 total), capturing...
-  Frame 17 saved (frame_016.jpg, t=46.1s)
-  [capture-node] freeze=379ms shot=828ms unfreeze=0ms saved=True
-  Execution complete (t=46.1s)
+  Frame 17 saved (frame_016.jpg, t=46.8s)
+  [capture-node] freeze=2ms shot=455ms unfreeze=0ms saved=True
+  Execution complete (t=46.8s)
   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
   [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
   [3d-wait] Phase 2: iframes=0
   [3d-wait] Total 3D wait: 60.0s
-  Captured 17 unique frames over 107.4s
+  Captured 17 unique frames over 107.36s
   [debug] iframes: 0
   [timing] trigger_3d_previews: 0.0s
   Saved high-quality screenshot: mesh_generation_executed.png
