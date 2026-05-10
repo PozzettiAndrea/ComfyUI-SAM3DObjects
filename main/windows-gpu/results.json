@@ -1,132 +1,107 @@
 {
-  "timestamp": "2026-05-08T13:47:06.980459+00:00",
+  "timestamp": "2026-05-10T15:10:51.675721+00:00",
   "platform": "windows",
   "hardware": {
-    "os": "Windows-10-10.0.26200-SP0",
-    "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-    "gpu": "NVIDIA GeForce RTX 3060"
+    "os": "Windows-11-10.0.26200-SP0",
+    "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
   },
-  "commit_hash": "be88c72bcbf711622f8f791a4fef07a6fad07f70",
-  "success": false,
+  "commit_hash": "b2e9667a2505b6e5218e559c81cf317d5c3383ba",
+  "run_url": null,
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 0,
-    "failed": 5
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
-      "status": "fail",
-      "duration_seconds": 8.26,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 10 nodes, missing class_type: [59,74,92,93], sample: {\"inputs\":{\"depth_model\":[\"74\",0],\"image\":[\"77\",0]},\"_meta\":{}}",
+      "status": "pass",
+      "duration_seconds": 499.35,
+      "error": null,
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3060"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 0.93,
-          "avg": 0.92
+          "peak": 13.36,
+          "avg": 6.61
         },
         "total_ram_gb": 31.9,
-        "samples": 8,
-        "vram": {
-          "peak": 0.42,
-          "avg": 0.33
-        }
+        "samples": 461
       }
     },
     {
       "name": "full_generation",
-      "status": "fail",
-      "duration_seconds": 6.38,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 11 nodes, missing class_type: [54,59,70,71,72,73,74], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 262.92,
+      "error": null,
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3060"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 0.92,
-          "avg": 0.92
+          "peak": 13.34,
+          "avg": 10.61
         },
         "total_ram_gb": 31.9,
-        "samples": 6,
-        "vram": {
-          "peak": 0.44,
-          "avg": 0.43
-        }
+        "samples": 260
       }
     },
     {
       "name": "gaussian_generation",
-      "status": "fail",
-      "duration_seconds": 6.18,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,62,63], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 165.24,
+      "error": null,
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3060"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 0.92,
-          "avg": 0.92
+          "peak": 12.87,
+          "avg": 9.46
         },
         "total_ram_gb": 31.9,
-        "samples": 6,
-        "vram": {
-          "peak": 0.46,
-          "avg": 0.45
-        }
+        "samples": 164
       }
     },
     {
       "name": "mesh_generation",
-      "status": "fail",
-      "duration_seconds": 6.09,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,64], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 99.19,
+      "error": null,
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3060"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 0.92,
-          "avg": 0.92
+          "peak": 13.37,
+          "avg": 12.75
         },
         "total_ram_gb": 31.9,
-        "samples": 6,
-        "vram": {
-          "peak": 0.49,
-          "avg": 0.48
-        }
+        "samples": 99
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 6.63,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [59,74,80,82,100], sample: {\"inputs\":{\"depth_model\":[\"74\",0],\"image\":[\"77\",0]},\"_meta\":{}}",
+      "status": "pass",
+      "duration_seconds": 442.54,
+      "error": null,
       "hardware": {
-        "os": "Windows-10-10.0.26200-SP0",
-        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel",
-        "gpu": "NVIDIA GeForce RTX 3060"
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "Intel64 Family 6 Model 79 Stepping 1, GenuineIntel"
       },
       "resources": {
         "ram": {
-          "peak": 0.92,
-          "avg": 0.92
+          "peak": 20.45,
+          "avg": 10.38
         },
         "total_ram_gb": 31.9,
-        "samples": 6,
-        "vram": {
-          "peak": 0.54,
-          "avg": 0.52
-        }
+        "samples": 437
       }
     }
   ]
