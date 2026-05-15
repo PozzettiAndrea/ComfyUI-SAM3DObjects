@@ -1,0 +1,1211 @@
+setup plugin alembic.autogenerate.schemas
+setup plugin alembic.autogenerate.tables
+setup plugin alembic.autogenerate.types
+setup plugin alembic.autogenerate.constraints
+setup plugin alembic.autogenerate.defaults
+setup plugin alembic.autogenerate.comments
+[comfy-env] ComfyUI-GeometryPack: 1 isolation env(s):
+[comfy-env]   nodes -> C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-GeometryPack\nodes
+[comfy-env] Workspace: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env
+[comfy-env]     env: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\geometrypack-nodes  [OK]
+[comfy-env] prestartup complete
+[comfy-env] ComfyUI-SAM3DObjects: 1 isolation env(s):
+[comfy-env]   nodes -> C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes
+[comfy-env]     env: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes  [OK]
+[comfy-env] prestartup complete
+
+Prestartup times for custom nodes:
+   0.1 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+   0.5 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+
+Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_mxfp8', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_mxfp8', 'scaled_mm_nvfp4']}
+Found comfy_kitchen backend triton: {'available': False, 'disabled': True, 'unavailable_reason': "ImportError: No module named 'triton'", 'capabilities': []}
+Found comfy_kitchen backend cuda: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_mxfp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_nvfp4']}
+Checkpoint files will always be loaded safely.
+Total VRAM 12287 MB, total RAM 32648 MB
+pytorch version: 2.11.0+cu130
+Set vram state to: NORMAL_VRAM
+Device: cuda:0 NVIDIA GeForce RTX 3060 : cudaMallocAsync
+Using async weight offloading with 2 streams
+Enabled pinned memory 13059.0
+Using pytorch attention
+aimdo: src-win/cuda-detour.c:38:INFO:aimdo_setup_hooks: installing 6 hooks
+aimdo: src-win/cuda-detour.c:28:DEBUG:install_hook_entries: hooks successfully installed
+aimdo: src-win/shmem-detect.c:80:INFO:comfy-aimdo WDDM adapter match: NVIDIA GeForce RTX 3060 runtime_luid=00000000:0000b1f7 dxgi_luid=00000000:0000b1f7
+aimdo: src/control.c:152:INFO:comfy-aimdo inited for GPU: NVIDIA GeForce RTX 3060 (VRAM: 12287 MB)
+DynamicVRAM support detected and enabled
+Python version: 3.13.12 (tags/v3.13.12:1cbe481, Feb  3 2026, 18:22:25) [MSC v.1944 64 bit (AMD64)]
+ComfyUI version: 0.21.1
+comfy-aimdo version: 0.3.0
+comfy-kitchen version: 0.2.8
+****** User settings have been changed to be stored on the server instead of browser storage. ******
+****** For multi-user setups add the --multi-user CLI argument to enable multiple user profiles. ******
+ComfyUI frontend version: 1.43.18
+[Prompt Server] web root: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfyui_frontend_package\static
+Asset seeder disabled
+loading...
+calling register_nodes
+[comfy-env] Version: 0.3.89
+[comfy-env] register_nodes: ComfyUI-GeometryPack
+[comfy-env] ComfyUI source dir: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI
+[comfy-env] Found 1 isolation env(s)
+[comfy-env] Scanning nodes metadata (isolation root)...
+[comfy-env] geometrypack-nodes: Library/bin has 613 DLLs
+[comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\pixi.toml -e geometrypack-nodes python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_8juzshfw.py C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-GeometryPack nodes C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_out_65xcx96y.pkl
+[comfy-env] Scan env PATH for nodes:
+[comfy-env]   [0] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\geometrypack-nodes
+[comfy-env]   [1] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\geometrypack-nodes\Library\bin
+[comfy-env]   [2] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\geometrypack-nodes\Scripts
+[comfy-env]   [3] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\geometrypack-nodes\Lib\site-packages\bpy
+[comfy-env]   [4] C:\Windows\System32
+[comfy-env]   [5] C:\Windows
+[comfy-env]   [6] C:\Windows\System32\Wbem
+[comfy-env] Metadata scan stderr for nodes:
+[comfy-env]   [meta-scan] importing nodes from C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+[comfy-env]   ERROR:root:Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+[comfy-env]   [meta-scan] import OK
+[comfy-env] Scanned nodes: 125 nodes (81.4s)
+[comfy-env] Scanned nodes root: 125 nodes (81.4s)
+[comfy-env] Imported nodes root: 125 nodes (isolation)
+[comfy-env] Registered 125 total nodes
+ComfyUI-Multiband loaded: 15 nodes registered
+loading...
+calling register_nodes
+[comfy-env] Version: 0.3.89
+[comfy-env] register_nodes: ComfyUI-SAM3DObjects
+[comfy-env] ComfyUI source dir: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI
+[comfy-env] Found 1 isolation env(s)
+[comfy-env] Scanning nodes metadata (isolation root)...
+[comfy-env] sam3dobjects-nodes: Library/bin has 648 DLLs
+[comfy-env] Metadata scan: C:\Users\ContainerAdministrator\.pixi\bin\pixi.exe run --as-is --manifest-path C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\pixi.toml -e sam3dobjects-nodes python C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_fp197yzl.py C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects nodes C:\Users\ContainerAdministrator\AppData\Local\Temp\comfy_meta_out_9y98cgb2.pkl
+[comfy-env] Scan env PATH for nodes:
+[comfy-env]   [0] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes
+[comfy-env]   [1] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Library\bin
+[comfy-env]   [2] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Scripts
+[comfy-env]   [3] C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\bpy
+[comfy-env]   [4] C:\Windows\System32
+[comfy-env]   [5] C:\Windows
+[comfy-env]   [6] C:\Windows\System32\Wbem
+[comfy-env] Metadata scan stderr for nodes:
+[comfy-env]   [meta-scan] importing nodes from C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+[comfy-env]   ERROR:root:Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+[comfy-env]   [meta-scan] import OK
+[comfy-env] Scanned nodes: 13 nodes (71.6s)
+[comfy-env] Scanned nodes root: 13 nodes (71.6s)
+[comfy-env] Imported nodes root: 13 nodes (isolation)
+[comfy-env] Registered 13 total nodes
+
+Import times for custom nodes:
+   0.0 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\websocket_image_save.py
+   0.0 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
+   0.9 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-Multiband
+  71.6 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects
+  82.2 seconds: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-GeometryPack
+
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running upgrade  -> 0001_assets, Initial assets schema
+Revision ID: 0001_assets
+Revises: None
+Create Date: 2025-12-10 00:00:00
+Running upgrade 0001_assets -> 0002_merge_to_asset_references, Merge AssetInfo and AssetCacheState into unified asset_references table.
+Running upgrade 0002_merge_to_asset_references -> 0003_add_metadata_job_id, Add system_metadata and job_id columns to asset_references.
+Change preview_id FK from assets.id to asset_references.id.
+Database upgraded from None to 0003_add_metadata_job_id
+Starting server
+
+To see the GUI go to: http://127.0.0.1:41890
+=== /validate endpoint called ===
+Received JSON with keys: ['prompt']
+Prompt has 10 nodes
+  Node 59: SAM3D_DepthEstimate
+    Inputs: {"depth_model": ["74", 0], "image": ["77", 0]}
+  Node 74: LoadSAM3DModel
+    Inputs: {"attn_backend": "flash_attn", "compile": false, "precision": "auto"}
+  Node 75: MultibandLoad
+    Inputs: {"image": "scene_multiband.npz", "normalize": true}
+  Node 77: MultibandToImage
+    Inputs: {"channels": "0,1,2", "multiband": ["75", 0]}
+  Node 78: MultibandToMasks
+    Inputs: {"channels": "3", "auto_detect_masks": false, "multiband": ["75", 0]}
+  Node 88: PreviewImage
+    Inputs: {"images": ["77", 0]}
+  Node 92: SAM3DGenerateSLAT
+    Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "use_distillation": false, "generator": ["74", 1], "image": ["77", 0], "mask": ["78", 0], "
+  Node 93: SAM3DMeshDecode
+    Inputs: {"with_postprocess": false, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "use_sparse_flexicubes": true, "slat_decoder_mesh": ["74", 3], "slat": ["92", 0]}
+  Node 94: Preview3D
+    Inputs: {"model_file": ["93", 0], "image": ""}
+  Node 95: MaskPreview
+    Inputs: {"mask": ["78", 0]}
+Generated prompt_id: 9d792fc9-1aeb-466c-bdba-56534bc07af8
+Calling execution.validate_prompt()...
+Validation result: valid=True
+=== Validation PASSED ===
+got prompt
+LoadMultibandImage: Loaded C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\input\scene_multiband.npz
+  Shape: (1, 10, 2240, 3360)
+  Channels: 10
+  Names: img_01_r,img_01_g,img_01_b,mask_01,mask_02,mask_03,mask_04,mask_05,mask_06,mask_07
+[comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
+[VRAM] Before LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] SubprocessWorker: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\python.exe
+[comfy-env] env_vars: {'COMFYUI_BASE': 'C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI'}
+[SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[comfy-env] sam3dobjects-nodes: Library/bin has 648 DLLs
+[ComfyUI-SAM3DObjects] python: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\python.exe
+[ComfyUI-SAM3DObjects] sys_path sent to worker: ['C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI', 'C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects']
+[SubprocessWorker] is_pixi=True, python=C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\python.exe
+[SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\pixi.toml', '-e', 'sam3dobjects-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py', 'tcp://127.0.0.1:62115']...
+[worker:ComfyUI-SAM3DObjects] ERROR: Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+[SubprocessWorker] worker started/confirmed
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=1 sending call_method
+C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\utils\_validators.py:205: UserWarning: The `local_dir_use_symlinks` argument is deprecated and ignored in `hf_hub_download`. Downloading to a local directory does not use symlinks anymore.
+  warnings.warn(
+ss_decoder.yaml:   0%|          | 0.00/244 [00:00<?, ?B/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.yaml: 100%|██████████| 244/244 [00:00<00:00, 242kB/s]
+slat_decoder_gs.yaml:   0%|          | 0.00/576 [00:00<?, ?B/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs.yaml: 100%|██████████| 576/576 [00:00<00:00, 382kB/s]
+slat_decoder_mesh.yaml:   0%|          | 0.00/300 [00:00<?, ?B/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.yaml: 100%|██████████| 300/300 [00:00<00:00, 277kB/s]
+ss_decoder.safetensors:   0%|          | 0.00/148M [00:00<?, ?B/s]ss_decoder.safetensors:   0%|          | 532k/148M [00:01<05:50, 420kB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.safetensors:  26%|██▋       | 38.8M/148M [00:01<00:03, 33.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.safetensors:  39%|███▊      | 57.1M/148M [00:01<00:02, 43.4MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.safetensors:  62%|██████▏   | 91.0M/148M [00:02<00:01, 44.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.safetensors: 100%|██████████| 148M/148M [00:02<00:00, 75.3MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_decoder.safetensors: 100%|██████████| 148M/148M [00:02<00:00, 51.9MB/s]
+slat_generator.yaml: 0.00B [00:00, ?B/s]slat_generator.yaml: 1.99kB [00:00, ?B/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[worker:ComfyUI-SAM3DObjects] WARNING: Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+ss_generator.safetensors:   0%|          | 0.00/6.69G [00:00<?, ?B/s]ss_generator.safetensors:   0%|          | 326k/6.69G [00:01<5:43:06, 325kB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   0%|          | 25.2M/6.69G [00:01<05:19, 20.9MB/s]ss_generator.safetensors:   1%|          | 67.5M/6.69G [00:01<02:00, 54.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   1%|▏         | 84.3M/6.69G [00:02<02:50, 38.7MB/s]ss_generator.safetensors:   2%|▏         | 156M/6.69G [00:02<01:16, 85.9MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   3%|▎         | 206M/6.69G [00:03<01:11, 91.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   4%|▍         | 252M/6.69G [00:03<01:10, 91.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   5%|▍         | 307M/6.69G [00:04<00:54, 116MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   6%|▌         | 394M/6.69G [00:04<00:45, 137MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   6%|▋         | 428M/6.69G [00:05<00:55, 113MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   7%|▋         | 478M/6.69G [00:05<00:47, 131MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   8%|▊         | 521M/6.69G [00:05<00:53, 115MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:   9%|▊         | 571M/6.69G [00:07<01:33, 65.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  10%|▉         | 639M/6.69G [00:07<01:06, 91.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  11%|█         | 747M/6.69G [00:07<00:41, 143MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  12%|█▏        | 773M/6.69G [00:09<01:14, 79.6MB/s]ss_generator.safetensors:  12%|█▏        | 811M/6.69G [00:09<01:06, 88.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  15%|█▍        | 977M/6.69G [00:09<00:31, 179MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  15%|█▌        | 1.02G/6.69G [00:10<00:37, 153MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  17%|█▋        | 1.11G/6.69G [00:14<01:49, 51.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  18%|█▊        | 1.22G/6.69G [00:14<01:12, 75.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  19%|█▉        | 1.29G/6.69G [00:14<01:04, 84.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  21%|██▏       | 1.44G/6.69G [00:15<00:49, 105MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  22%|██▏       | 1.49G/6.69G [00:16<00:45, 115MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  23%|██▎       | 1.54G/6.69G [00:16<00:41, 125MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  25%|██▌       | 1.68G/6.69G [00:17<00:42, 119MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  26%|██▌       | 1.72G/6.69G [00:19<01:02, 79.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  26%|██▌       | 1.74G/6.69G [00:19<01:03, 78.2MB/s]ss_generator.safetensors:  26%|██▌       | 1.76G/6.69G [00:20<01:19, 61.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  31%|███       | 2.06G/6.69G [00:20<00:22, 205MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  35%|███▌      | 2.37G/6.69G [00:23<00:30, 142MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  36%|███▋      | 2.44G/6.69G [00:23<00:27, 153MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[worker:ComfyUI-SAM3DObjects] 
+=== WATCHDOG TICK 1 ===
+[worker:ComfyUI-SAM3DObjects] Thread 0x00002de0 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000017fc (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00003040 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00000c74 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001b0c (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00002868 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000035d8 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 106 in _vram_poller
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Current thread 0x00000b68 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 52 in _watchdog
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001ed4 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 558 in xet_get
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 1842 in _download_to_tmp_and_move
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 1427 in _hf_hub_download_to_local_dir
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 976 in hf_hub_download
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\utils\_validators.py", line 88 in _inner_fn
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 222 in _download_files
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 185 in _get_or_download_checkpoint
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 146 in execute
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120 in decorate_context
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833 in EXECUTE_NORMALIZED
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762 in main
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1807 in <module>
+
+[worker:ComfyUI-SAM3DObjects] === END ===
+
+ss_generator.safetensors:  36%|███▋      | 2.44G/6.69G [00:36<00:27, 153MB/s]ss_generator.safetensors:  38%|███▊      | 2.57G/6.69G [00:38<02:34, 26.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  42%|████▏     | 2.78G/6.69G [00:39<01:31, 42.7MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  42%|████▏     | 2.83G/6.69G [00:39<01:20, 47.7MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  44%|████▍     | 2.94G/6.69G [00:40<01:06, 56.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  49%|████▉     | 3.29G/6.69G [00:40<00:29, 117MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  54%|█████▎    | 3.59G/6.69G [00:40<00:16, 184MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  55%|█████▌    | 3.68G/6.69G [00:42<00:23, 127MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  60%|█████▉    | 3.98G/6.69G [00:43<00:13, 202MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  64%|██████▍   | 4.27G/6.69G [00:43<00:08, 286MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  69%|██████▉   | 4.61G/6.69G [00:43<00:05, 410MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  75%|███████▍  | 5.00G/6.69G [00:43<00:02, 568MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  77%|███████▋  | 5.13G/6.69G [00:51<00:15, 98.7MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  78%|███████▊  | 5.23G/6.69G [00:51<00:13, 111MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  86%|████████▌ | 5.75G/6.69G [00:53<00:05, 164MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  92%|█████████▏| 6.18G/6.69G [00:53<00:02, 252MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors:  99%|█████████▉| 6.65G/6.69G [00:53<00:00, 371MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+ss_generator.safetensors: 100%|██████████| 6.69G/6.69G [00:53<00:00, 125MB/s]
+slat_decoder_gs_4.yaml:   0%|          | 0.00/575 [00:00<?, ?B/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.yaml: 100%|██████████| 575/575 [00:00<00:00, 553kB/s]
+ss_generator.yaml: 0.00B [00:00, ?B/s]ss_generator.yaml: 5.08kB [00:00, 4.72MB/s]
+pipeline.yaml: 0.00B [00:00, ?B/s]pipeline.yaml: 3.55kB [00:00, ?B/s]
+slat_decoder_gs_4.safetensors:   0%|          | 0.00/170M [00:00<?, ?B/s]slat_decoder_gs_4.safetensors:  28%|██▊       | 47.5M/170M [00:01<00:03, 37.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.safetensors:  39%|███▉      | 66.6M/170M [00:01<00:02, 46.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.safetensors:  45%|████▍     | 75.8M/170M [00:02<00:02, 35.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.safetensors:  81%|████████  | 137M/170M [00:02<00:00, 81.1MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.safetensors: 100%|██████████| 170M/170M [00:02<00:00, 108MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs_4.safetensors: 100%|██████████| 170M/170M [00:02<00:00, 72.2MB/s]
+slat_decoder_gs.safetensors:   0%|          | 0.00/171M [00:00<?, ?B/s]slat_decoder_gs.safetensors:  39%|███▉      | 67.1M/171M [00:02<00:04, 24.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_gs.safetensors: 100%|██████████| 171M/171M [00:02<00:00, 60.8MB/s] 
+slat_generator.safetensors:   0%|          | 0.00/4.91G [00:00<?, ?B/s]slat_generator.safetensors:   1%|          | 25.2M/4.91G [00:01<04:03, 20.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:   1%|▏         | 63.2M/4.91G [00:02<02:21, 34.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:   1%|▏         | 67.5M/4.91G [00:02<02:35, 31.1MB/s]slat_generator.safetensors:   2%|▏         | 78.1M/4.91G [00:02<02:53, 27.8MB/s]slat_generator.safetensors:   2%|▏         | 101M/4.91G [00:03<02:22, 33.8MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:   7%|▋         | 319M/4.91G [00:04<00:46, 99.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:   9%|▊         | 420M/4.91G [00:06<00:53, 84.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  12%|█▏        | 571M/4.91G [00:07<00:41, 105MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  13%|█▎        | 622M/4.91G [00:07<00:41, 104MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  16%|█▌        | 773M/4.91G [00:10<00:51, 79.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  19%|█▉        | 924M/4.91G [00:12<00:50, 78.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  21%|██        | 1.02G/4.91G [00:13<00:46, 83.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  22%|██▏       | 1.08G/4.91G [00:13<00:43, 87.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  23%|██▎       | 1.13G/4.91G [00:14<00:43, 87.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  26%|██▋       | 1.30G/4.91G [00:18<01:04, 55.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  29%|██▉       | 1.44G/4.91G [00:18<00:41, 82.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  31%|███       | 1.52G/4.91G [00:21<00:52, 64.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  32%|███▏      | 1.59G/4.91G [00:21<00:43, 76.6MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[worker:ComfyUI-SAM3DObjects] 
+=== WATCHDOG TICK 2 ===
+[worker:ComfyUI-SAM3DObjects] Thread 0x00002960 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00002d24 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x0000068c (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00003428 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001e04 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000034b0 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00002de0 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000017fc (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00003040 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00000c74 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001b0c (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00002868 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 359 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 655 in wait
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000035d8 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 106 in _vram_poller
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Current thread 0x00000b68 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 52 in _watchdog
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1012 in run
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001ed4 (most recent call first):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 558 in xet_get
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 1842 in _download_to_tmp_and_move
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 1427 in _hf_hub_download_to_local_dir
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\file_download.py", line 976 in hf_hub_download
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\huggingface_hub\utils\_validators.py", line 88 in _inner_fn
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 222 in _download_files
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 185 in _get_or_download_checkpoint
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\load_model.py", line 146 in execute
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120 in decorate_context
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833 in EXECUTE_NORMALIZED
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762 in main
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1807 in <module>
+
+[worker:ComfyUI-SAM3DObjects] === END ===
+
+slat_generator.safetensors:  34%|███▍      | 1.67G/4.91G [00:32<02:26, 22.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  40%|███▉      | 1.94G/4.91G [00:32<01:01, 48.4MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  45%|████▌     | 2.23G/4.91G [00:32<00:30, 86.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  52%|█████▏    | 2.55G/4.91G [00:33<00:16, 142MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  59%|█████▊    | 2.87G/4.91G [00:33<00:09, 216MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  66%|██████▌   | 3.23G/4.91G [00:33<00:05, 316MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  73%|███████▎  | 3.60G/4.91G [00:33<00:03, 436MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  80%|████████  | 3.93G/4.91G [00:34<00:01, 555MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  83%|████████▎ | 4.07G/4.91G [00:34<00:01, 558MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  90%|█████████ | 4.43G/4.91G [00:38<00:02, 173MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors:  97%|█████████▋| 4.74G/4.91G [00:39<00:00, 238MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors: 100%|██████████| 4.91G/4.91G [00:39<00:00, 280MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_generator.safetensors: 100%|██████████| 4.91G/4.91G [00:39<00:00, 125MB/s]
+slat_decoder_mesh.safetensors:   0%|          | 0.00/364M [00:00<?, ?B/s]slat_decoder_mesh.safetensors:   0%|          | 50.2k/364M [00:01<2:31:33, 40.0kB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:   5%|▌         | 18.9M/364M [00:01<00:20, 16.8MB/s]  [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  10%|█         | 37.8M/364M [00:01<00:10, 30.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  13%|█▎        | 47.5M/364M [00:02<00:09, 32.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  30%|██▉       | 108M/364M [00:02<00:02, 89.3MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  34%|███▍      | 123M/364M [00:02<00:02, 80.7MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  55%|█████▌    | 201M/364M [00:03<00:02, 79.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  72%|███████▏  | 260M/364M [00:03<00:00, 107MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  86%|████████▋ | 314M/364M [00:04<00:00, 130MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors:  91%|█████████ | 331M/364M [00:04<00:00, 115MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors: 100%|██████████| 364M/364M [00:04<00:00, 136MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+slat_decoder_mesh.safetensors: 100%|██████████| 364M/364M [00:04<00:00, 83.0MB/s]
+dinov2_vitl14_reg.safetensors:   0%|          | 0.00/1.22G [00:00<?, ?B/s]dinov2_vitl14_reg.safetensors:   1%|          | 8.33M/1.22G [00:01<03:02, 6.64MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:   2%|▏         | 25.0M/1.22G [00:01<00:59, 19.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:   9%|▉         | 113M/1.22G [00:02<00:13, 80.8MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  14%|█▍        | 168M/1.22G [00:03<00:21, 48.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  26%|██▌       | 319M/1.22G [00:04<00:08, 102MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  30%|███       | 370M/1.22G [00:05<00:10, 82.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  39%|███▉      | 480M/1.22G [00:07<00:10, 73.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  43%|████▎     | 521M/1.22G [00:07<00:08, 81.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  47%|████▋     | 571M/1.22G [00:08<00:08, 77.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  51%|█████     | 622M/1.22G [00:08<00:06, 91.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  63%|██████▎   | 773M/1.22G [00:09<00:03, 116MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  68%|██████▊   | 823M/1.22G [00:10<00:04, 84.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors:  96%|█████████▌| 1.17G/1.22G [00:10<00:00, 223MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+dinov2_vitl14_reg.safetensors: 100%|██████████| 1.22G/1.22G [00:10<00:00, 113MB/s]
+moge_vitl.safetensors:   0%|          | 0.00/1.26G [00:00<?, ?B/s]moge_vitl.safetensors:   0%|          | 70.2k/1.26G [00:02<11:12:18, 31.2kB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:   3%|▎         | 34.5M/1.26G [00:03<01:22, 14.8MB/s]   [SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  10%|█         | 128M/1.26G [00:03<00:18, 62.4MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  15%|█▌        | 194M/1.26G [00:03<00:12, 82.0MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  21%|██        | 263M/1.26G [00:04<00:11, 85.4MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  23%|██▎       | 285M/1.26G [00:04<00:11, 85.7MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  26%|██▌       | 322M/1.26G [00:05<00:11, 82.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  30%|██▉       | 375M/1.26G [00:05<00:08, 105MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  31%|███       | 393M/1.26G [00:05<00:08, 98.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  33%|███▎      | 416M/1.26G [00:06<00:10, 79.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  36%|███▋      | 456M/1.26G [00:06<00:08, 96.5MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  41%|████      | 509M/1.26G [00:06<00:06, 123MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  42%|████▏     | 527M/1.26G [00:07<00:06, 110MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  45%|████▍     | 565M/1.26G [00:07<00:05, 121MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  51%|█████     | 642M/1.26G [00:08<00:05, 111MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  53%|█████▎    | 662M/1.26G [00:08<00:06, 87.2MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  55%|█████▌    | 693M/1.26G [00:08<00:05, 94.9MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  60%|██████    | 756M/1.26G [00:09<00:03, 129MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  64%|██████▍   | 804M/1.26G [00:09<00:03, 116MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  67%|██████▋   | 845M/1.26G [00:09<00:03, 127MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  70%|███████   | 880M/1.26G [00:10<00:04, 88.1MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  78%|███████▊  | 976M/1.26G [00:11<00:03, 91.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  84%|████████▎ | 1.05G/1.26G [00:12<00:02, 94.4MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  89%|████████▉ | 1.12G/1.26G [00:12<00:01, 120MB/s] [SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  93%|█████████▎| 1.16G/1.26G [00:13<00:00, 96.8MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors:  95%|█████████▍| 1.19G/1.26G [00:13<00:00, 97.3MB/s][SubprocessWorker] callback 'report_progress' from call_id=1
+[SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl.safetensors: 100%|██████████| 1.26G/1.26G [00:13<00:00, 92.7MB/s]
+moge_vitl_config.json:   0%|          | 0.00/343 [00:00<?, ?B/s][SubprocessWorker] callback 'report_progress' from call_id=1
+moge_vitl_config.json: 100%|██████████| 343/343 [00:00<00:00, 328kB/s]
+[SubprocessWorker] got response: ok
+[comfy-env] LoadSAM3DModel done (160.07s): result: NodeOutput
+[VRAM] After LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,2240,3360,3] cpu
+[VRAM] Before SAM3D_DepthEstimate: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 2240, 3360, 3])
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=2 sending call_method
+[worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 2240, 3360, 3]
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 2240, 3360, 3])
+[worker:ComfyUI-SAM3DObjects] WARNING: No comfy kitchen, using old apply_rope functions.
+[SubprocessWorker] got response: error
+!!! Exception during processing !!! No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+Traceback (most recent call last):
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 535, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 335, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 297, in process_inputs
+    result = f(**inputs)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\metadata.py", line 556, in proxy
+    result = worker.call_method(
+        module_name=mod,
+    ...<4 lines>...
+        timeout=600.0,
+    )
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 674, in call_method
+    raise WorkerError(
+    ...<2 lines>...
+    )
+comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+
+Prompt executed in 174.81 seconds
+=== /validate endpoint called ===
+Received JSON with keys: ['prompt']
+Prompt has 11 nodes
+  Node 4: LoadImage
+    Inputs: {"image": "elephant.png"}
+  Node 28: InvertMask
+    Inputs: {"mask": ["4", 1]}
+  Node 48: Preview3D
+    Inputs: {"model_file": ["73", 0], "image": ""}
+  Node 53: MaskPreview
+    Inputs: {"mask": ["28", 0]}
+  Node 54: SAM3D_PreviewPointCloud
+    Inputs: {"file_path": ["59", 2], "preview_vtk": ""}
+  Node 59: SAM3D_DepthEstimate
+    Inputs: {"depth_model": ["74", 0], "image": ["4", 0]}
+  Node 70: SAM3DGenerateSLAT
+    Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "use_distillation": false, "generator": ["74", 1], "image": ["4", 0], "mask": ["28", 0], "p
+  Node 71: SAM3DGaussianDecode
+    Inputs: {"up_axis": "Y-up (standard)", "world_coordinates": false, "slat_decoder_gs": ["74", 2], "slat": ["70", 0]}
+  Node 72: SAM3DMeshDecode
+    Inputs: {"with_postprocess": true, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "use_sparse_flexicubes": true, "slat_decoder_mesh": ["74", 3], "slat": ["70", 0]}
+  Node 73: SAM3DTextureBake
+    Inputs: {"glb_path": ["72", 0], "ply_path": ["71", 0], "texture_mode": "fast", "texture_size": 1024, "rendering_engine": "nvdiffrast"}
+  Node 74: LoadSAM3DModel
+    Inputs: {"attn_backend": "flash_attn", "compile": false, "precision": "auto"}
+Generated prompt_id: a8b9999a-f311-4cf9-b448-2c85710c570c
+Calling execution.validate_prompt()...
+Validation result: valid=True
+=== Validation PASSED ===
+got prompt
+[comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
+[VRAM] Before LoadSAM3DModel: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: failed
+[ComfyUI-SAM3DObjects] Socket unhealthy, restarting worker...
+[comfy-env] sam3dobjects-nodes: Library/bin has 648 DLLs
+[ComfyUI-SAM3DObjects] python: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\python.exe
+[ComfyUI-SAM3DObjects] sys_path sent to worker: ['C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI', 'C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages', 'C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects']
+[SubprocessWorker] is_pixi=True, python=C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\python.exe
+[SubprocessWorker] launching cmd=['C:\\Users\\ContainerAdministrator\\.pixi\\bin\\pixi.exe', 'run', '--as-is', '--manifest-path', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\pixi.toml', '-e', 'sam3dobjects-nodes', 'python', 'C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py', 'tcp://127.0.0.1:64981']...
+[worker:ComfyUI-SAM3DObjects] ERROR: Failed to import comfy_kitchen, Error: No module named 'comfy_kitchen', fp8 and fp4 support will not be available.
+[SubprocessWorker] worker started/confirmed
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=3 sending call_method
+[SubprocessWorker] got response: ok
+[comfy-env] LoadSAM3DModel done (4.18s): result: NodeOutput
+[VRAM] After LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
+[VRAM] Before SAM3D_DepthEstimate: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 1062, 1600, 3])
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=4 sending call_method
+[worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
+[worker:ComfyUI-SAM3DObjects] WARNING: No comfy kitchen, using old apply_rope functions.
+[SubprocessWorker] got response: error
+!!! Exception during processing !!! No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+Traceback (most recent call last):
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 535, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 335, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 297, in process_inputs
+    result = f(**inputs)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\metadata.py", line 556, in proxy
+    result = worker.call_method(
+        module_name=mod,
+    ...<4 lines>...
+        timeout=600.0,
+    )
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 674, in call_method
+    raise WorkerError(
+    ...<2 lines>...
+    )
+comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+
+Prompt executed in 6.86 seconds
+=== /validate endpoint called ===
+Received JSON with keys: ['prompt']
+Prompt has 8 nodes
+  Node 4: LoadImage
+    Inputs: {"image": "elephant.png"}
+  Node 28: InvertMask
+    Inputs: {"mask": ["4", 1]}
+  Node 53: MaskPreview
+    Inputs: {"mask": ["28", 0]}
+  Node 59: SAM3D_DepthEstimate
+    Inputs: {"depth_model": ["60", 0], "image": ["4", 0]}
+  Node 60: LoadSAM3DModel
+    Inputs: {"attn_backend": "flash_attn", "compile": false, "precision": "auto"}
+  Node 61: SAM3DGenerateSLAT
+    Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "use_distillation": false, "generator": ["60", 1], "image": ["4", 0], "mask": ["28", 0], "p
+  Node 62: SAM3D_PreviewPointCloud
+    Inputs: {"file_path": ["63", 0], "preview_vtk": ""}
+  Node 63: SAM3DGaussianDecode
+    Inputs: {"up_axis": "Y-up (standard)", "world_coordinates": false, "slat_decoder_gs": ["60", 2], "slat": ["61", 0]}
+Generated prompt_id: 0d7428d4-7054-4585-b001-a7690f714410
+Calling execution.validate_prompt()...
+Validation result: valid=True
+=== Validation PASSED ===
+got prompt
+[comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
+[VRAM] Before LoadSAM3DModel: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=5 sending call_method
+[SubprocessWorker] got response: ok
+[comfy-env] LoadSAM3DModel done (0.04s): result: NodeOutput
+[VRAM] After LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
+[VRAM] Before SAM3D_DepthEstimate: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 1062, 1600, 3])
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=6 sending call_method
+[worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
+[SubprocessWorker] got response: error
+!!! Exception during processing !!! No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+Traceback (most recent call last):
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 535, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 335, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 297, in process_inputs
+    result = f(**inputs)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\metadata.py", line 556, in proxy
+    result = worker.call_method(
+        module_name=mod,
+    ...<4 lines>...
+        timeout=600.0,
+    )
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 674, in call_method
+    raise WorkerError(
+    ...<2 lines>...
+    )
+comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+
+Prompt executed in 0.31 seconds
+=== /validate endpoint called ===
+Received JSON with keys: ['prompt']
+Prompt has 8 nodes
+  Node 4: LoadImage
+    Inputs: {"image": "elephant.png"}
+  Node 28: InvertMask
+    Inputs: {"mask": ["4", 1]}
+  Node 53: MaskPreview
+    Inputs: {"mask": ["28", 0]}
+  Node 59: SAM3D_DepthEstimate
+    Inputs: {"depth_model": ["60", 0], "image": ["4", 0]}
+  Node 60: LoadSAM3DModel
+    Inputs: {"attn_backend": "flash_attn", "compile": false, "precision": "auto"}
+  Node 61: SAM3DGenerateSLAT
+    Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "use_distillation": true, "generator": ["60", 1], "image": ["4", 0], "mask": ["28", 0], "po
+  Node 64: SAM3DMeshDecode
+    Inputs: {"with_postprocess": false, "simplify": 0.95, "up_axis": "Y-up (standard)", "world_coordinates": false, "use_sparse_flexicubes": true, "slat_decoder_mesh": ["60", 3], "slat": ["61", 0]}
+  Node 65: Preview3D
+    Inputs: {"model_file": ["64", 0], "image": ""}
+Generated prompt_id: ffe63919-9c53-4fd2-9744-1ccf75c91b6e
+Calling execution.validate_prompt()...
+Validation result: valid=True
+=== Validation PASSED ===
+got prompt
+[comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: False, precision: 'auto'
+[VRAM] Before LoadSAM3DModel: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=7 sending call_method
+[SubprocessWorker] got response: ok
+[comfy-env] LoadSAM3DModel done (0.04s): result: NodeOutput
+[VRAM] After LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,1062,1600,3] cpu
+[VRAM] Before SAM3D_DepthEstimate: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 1062, 1600, 3])
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=8 sending call_method
+[worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 1062, 1600, 3]
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 1062, 1600, 3])
+[SubprocessWorker] got response: error
+!!! Exception during processing !!! No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+Traceback (most recent call last):
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 535, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 335, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 297, in process_inputs
+    result = f(**inputs)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\metadata.py", line 556, in proxy
+    result = worker.call_method(
+        module_name=mod,
+    ...<4 lines>...
+        timeout=600.0,
+    )
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 674, in call_method
+    raise WorkerError(
+    ...<2 lines>...
+    )
+comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+
+Prompt executed in 0.31 seconds
+=== /validate endpoint called ===
+Received JSON with keys: ['prompt']
+Prompt has 13 nodes
+  Node 59: SAM3D_DepthEstimate
+    Inputs: {"depth_model": ["74", 0], "image": ["77", 0]}
+  Node 74: LoadSAM3DModel
+    Inputs: {"attn_backend": "flash_attn", "compile": true, "precision": "auto"}
+  Node 75: MultibandLoad
+    Inputs: {"image": "scene_multiband.npz", "normalize": true}
+  Node 77: MultibandToImage
+    Inputs: {"channels": "0,1,2", "multiband": ["75", 0]}
+  Node 78: MultibandToMasks
+    Inputs: {"channels": "", "auto_detect_masks": true, "multiband": ["75", 0]}
+  Node 80: SAM3DSceneGenerate
+    Inputs: {"seed": 42, "stage1_steps": 12, "stage1_cfg": 7.5, "stage1_cfg_pm": 0, "stage2_steps": 12, "stage2_cfg": 5, "with_postprocess": false, "simplify": 0.95, "add_textures": false, "texture_mode": "fast",
+  Node 82: SAM3D_ScenePoseOptimize
+    Inputs: {"output_folder": ["80", 0], "optimization_mode": "pose_only"}
+  Node 85: GeomPackPreviewMeshVTK
+    Inputs: {"mode": "texture", "preview_vtk": "{\"show_edges\":false,\"camera_state\":\"{\\\"position\\\":[1.1789228144992419,1.3637070517428993,-0.6859388036148804],\\\"focalPoint\\\":[-0.29605234414339066,0.01
+  Node 87: GeomPackCombineMeshesBatch
+    Inputs: {"report_panel": "false", "meshes": ["106", 0]}
+  Node 99: PreviewImage
+    Inputs: {"images": ["77", 0]}
+  Node 100: SAM3D_ProjectionOverlay
+    Inputs: {"pose_opt_folder": ["82", 0], "render_mode": "3d_mesh_textured", "point_size": 2, "alpha": 0.6}
+  Node 106: GeomPackLoadMeshBatch
+    Inputs: {"folder_path": ["82", 0], "start_index": 0, "max_meshes": -1}
+  Node 108: SaveImage
+    Inputs: {"filename_prefix": "overlay", "images": ["100", 0]}
+Generated prompt_id: 58b27a6b-d9a8-4d39-8902-4a43dd9b2cad
+Calling execution.validate_prompt()...
+Validation result: valid=True
+=== Validation PASSED ===
+got prompt
+LoadMultibandImage: Loaded C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\input\scene_multiband.npz
+  Shape: (1, 10, 2240, 3360)
+  Channels: 10
+  Names: img_01_r,img_01_g,img_01_b,mask_01,mask_02,mask_03,mask_04,mask_05,mask_06,mask_07
+[comfy-env] Running LoadSAM3DModel: attn_backend: 'flash_attn', compile: True, precision: 'auto'
+[VRAM] Before LoadSAM3DModel: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.load_model.LoadSAM3DModel.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=9 sending call_method
+[SubprocessWorker] got response: ok
+[comfy-env] LoadSAM3DModel done (0.04s): result: NodeOutput
+[VRAM] After LoadSAM3DModel: 1042 / 12287 MB
+[comfy-env] Running SAM3D_DepthEstimate: depth_model: dict, image: torch.float32 [1,2240,3360,3] cpu
+[VRAM] Before SAM3D_DepthEstimate: 1042 / 12287 MB
+[SubprocessWorker] call_method: nodes.depth_estimate.SAM3D_DepthEstimate.EXECUTE_NORMALIZED
+[SubprocessWorker] acquired lock, ensuring started...
+[ComfyUI-SAM3DObjects] Health check: ping (timeout=5.0s)...
+[ComfyUI-SAM3DObjects] Health check: ok
+[SubprocessWorker] worker started/confirmed
+[comfy-env] PRE-SERIALIZE 'image' shape: torch.Size([1, 2240, 3360, 3])
+[SubprocessWorker] serializing kwargs to shm...
+[SubprocessWorker] created 0 shm blocks
+[SubprocessWorker] sending request via socket...
+[SubprocessWorker] call_id=10 sending call_method
+[worker:ComfyUI-SAM3DObjects] [comfy-env] _from_shm got dict with keys: ['__type__', 'strategy', 'manager_path', 'storage_key', 'storage_size']
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZE TensorRef: tensor_size=[1, 2240, 3360, 3]
+[worker:ComfyUI-SAM3DObjects] [comfy-env] DESERIALIZED tensor shape: torch.Size([1, 2240, 3360, 3])
+[SubprocessWorker] got response: error
+!!! Exception during processing !!! No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+Traceback (most recent call last):
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 535, in execute
+    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 335, in get_output_data
+    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 309, in _async_map_node_over_list
+    await process_inputs(input_dict, i)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\execution.py", line 297, in process_inputs
+    result = f(**inputs)
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\metadata.py", line 556, in proxy
+    result = worker.call_method(
+        module_name=mod,
+    ...<4 lines>...
+        timeout=600.0,
+    )
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\Lib\site-packages\comfy_env\isolation\workers\subprocess.py", line 674, in call_method
+    raise WorkerError(
+    ...<2 lines>...
+    )
+comfy_env.isolation.workers.base.WorkerError: No module named 'transformers'
+
+Worker traceback:
+Traceback (most recent call last):
+  File "C:\Users\ContainerAdministrator\AppData\Local\Temp\comfyui_pvenv_uta83s1e\persistent_worker.py", line 1762, in main
+    result = method(**inputs)
+             ^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy_api\latest\_io.py", line 1833, in EXECUTE_NORMALIZED
+    to_return = cls.execute(*args, **kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\.pixi\envs\sam3dobjects-nodes\Lib\site-packages\torch\utils\_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\nodes\depth_estimate.py", line 95, in execute
+    import comfy.model_patcher
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_patcher.py", line 32, in <module>
+    import comfy.hooks
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\hooks.py", line 14, in <module>
+    import comfy.lora
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\lora.py", line 23, in <module>
+    import comfy.model_base
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\model_base.py", line 61, in <module>
+    import comfy.ldm.hidream_o1.model
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\ldm\hidream_o1\model.py", line 20, in <module>
+    from comfy.text_encoders.qwen35 import Qwen35VisionModel
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\text_encoders\qwen35.py", line 10, in <module>
+    from comfy import sd1_clip
+  File "C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\comfy\sd1_clip.py", line 3, in <module>
+    from transformers import CLIPTokenizer
+ModuleNotFoundError: No module named 'transformers'
+
+
+Prompt executed in 2.27 seconds
