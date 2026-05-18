@@ -1,14 +1,4 @@
 Capturing execution frames: mesh_generation.json
-  [ComfyUI] Exception in callback _ProactorBasePipeTransport._call_connection_lost()
-  [ComfyUI] handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
-  [ComfyUI] Traceback (most recent call last):
-  [ComfyUI]   File "C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\asyncio\events.py", line 89, in _run
-  [ComfyUI]     self._context.run(self._callback, *self._args)
-  [ComfyUI]     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  [ComfyUI]   File "C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
-  [ComfyUI]     self._sock.shutdown(socket.SHUT_RDWR)
-  [ComfyUI]     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
-  [ComfyUI] ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
   Frame 1 saved (frame_000.jpg, t=0.0s)
   Validating workflow...
   Validation failed: graphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,64], sample: {"inputs":{"image":"elephant.png"},"class_type":"LoadImage","_meta":{"title":"Load Image"}}
