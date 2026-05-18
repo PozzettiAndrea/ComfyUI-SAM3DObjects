@@ -1,4 +1,4 @@
-[00:00] Crash dump logging enabled: C:\logs\SAM3DObjects-1552\dev\windows-portable-gpu\crash_dump.log
+[00:00] Crash dump logging enabled: C:\logs\SAM3DObjects-2121\dev\windows-portable-gpu\crash_dump.log
 [00:00] 
 [00:00] [1/4] INSTALL
 [00:00] ----------------------------------------
@@ -9,446 +9,902 @@ Setting up ComfyUI...
 [00:00] Fetching latest release version...
 [00:00] Latest version: v0.21.1
 [00:00] Downloading portable ComfyUI from https://github.com/comfyanonymous/ComfyUI/releases/download/v0.21.1/ComfyUI_windows_portable_nvidia.7z...
-[00:14]   Downloaded: 10%
-[00:29]   Downloaded: 20%
-[00:44]   Downloaded: 30%
-[00:58]   Downloaded: 40%
-[01:14]   Downloaded: 50%
-[01:30]   Downloaded: 60%
-[01:46]   Downloaded: 70%
-[02:02]   Downloaded: 80%
-[02:17]   Downloaded: 90%
-[02:34]   Downloaded: 100%
-[02:34] Downloaded to C:\Users\ContainerAdministrator\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1.7z
-[02:34] Extracting to cache: C:\Users\ContainerAdministrator\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1
-[02:34] Extracting ComfyUI_portable_v0.21.1.7z...
-[02:34] Using 7z: C:\Program Files\7-Zip\7z.exe
-[04:08] Extracted to C:\Users\ContainerAdministrator\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1
-[04:08] Copying from cache to: C:\workspaces\SAM3DObjects-1552\portable-comfyui
-[04:24] Installing uv into embedded Python...
-[04:24] Running: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m pip install uv
-[04:31] Installing ComfyUI requirements...
-[04:31] Running: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m uv pip install -r C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\requirements.txt
-[04:32] 
+[00:05]   Downloaded: 10%
+[00:09]   Downloaded: 20%
+[00:13]   Downloaded: 30%
+[00:17]   Downloaded: 40%
+[00:20]   Downloaded: 50%
+[00:25]   Downloaded: 60%
+[00:30]   Downloaded: 70%
+[00:35]   Downloaded: 80%
+[00:40]   Downloaded: 90%
+[00:44]   Downloaded: 100%
+[00:44] Downloaded to C:\Users\ContainerUser\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1.7z
+[00:44] Extracting to cache: C:\Users\ContainerUser\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1
+[00:44] Extracting ComfyUI_portable_v0.21.1.7z...
+[00:44] Using 7z: C:\Program Files\7-Zip\7z.exe
+[01:43] Extracted to C:\Users\ContainerUser\.comfy-test\cache\portable\ComfyUI_portable_v0.21.1
+[01:43] Copying from cache to: C:\workspaces\SAM3DObjects-2121\portable-comfyui
+[02:05] Installing uv into embedded Python...
+[02:05] Running: C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m pip install uv
+[02:09] Installing ComfyUI requirements...
+[02:09] Running: C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m uv pip install -r C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\requirements.txt
+[02:11] 
 Installing custom node...
-[04:32] Copying ComfyUI-SAM3DObjects to custom_nodes/...
-[04:32] Installing node requirements...
-[04:32] Running: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m pip install -r C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\requirements.txt
-[04:37] 
+[02:11] Copying ComfyUI-SAM3DObjects to custom_nodes/...
+[02:11] Installing node requirements...
+[02:11] Running: C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe -m pip install -r C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\requirements.txt
+[02:15] 
 Running install.py...
-[04:37] Running: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\install.py
-[04:38]   
-[04:38]   Installing 2 node dependencies...
-[04:38]     Cloning ComfyUI-Multiband...
-[04:39]     Installing requirements for ComfyUI-Multiband...
-[04:39]     Cloning ComfyUI-GeometryPack...
-[04:46]     Installing requirements for ComfyUI-GeometryPack...
-[04:49]     Running install.py for ComfyUI-GeometryPack...
-[04:56]   [comfy-env] _discover: scanning C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes
-[04:56]   [comfy-env] _discover: ComfyUI-GeometryPack -> geometrypack-nodes (custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml)
-[04:56]   [comfy-env] _discover: ComfyUI-Multiband: no comfy-env.toml found
-[04:56]   [comfy-env] _discover: ComfyUI-SAM3DObjects -> sam3dobjects-nodes (custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml)
-[04:56]   [comfy-env] Workspace: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env
-[04:56]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI
-[04:56]   [comfy-env] Found 2 node config(s):
-[04:56]     - geometrypack-nodes <- custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml (python=host)
-[04:56]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
-[04:57]   [comfy-env] Bootstrap interpreter has python 3.13 + torch 2.11.0 (cu130). Looking for cuda-only wheels matching cu130/torch2.11/cp313.
-[05:22]   [comfy-env] GPU: Detection: torch
-[05:22]   Recommended: CUDA 13.0
-[05:22]   
-[05:22]     GPU 0: NVIDIA GeForce RTX 3060 (sm_86) [Ampere] 12287MB
-[05:22]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu130 (CUDA 13.0 via bootstrap torch)
-[05:22]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
-[05:22]   [comfy-env] cuda-wheels: checking across Python versions: cp3.13, cp3.12
-[05:22]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu13.0/torch2.11/cp313
-[05:22]   [cuda-wheels] Looking up cumesh: cu130 torch2.11 cp313 win_amd64
-[05:23]   [cuda-wheels]   Found: cumesh-0.0.1+cu130torch2.11-cp313-cp313-win_amd64.whl
-[05:23]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu13.0/torch2.11/cp312
-[05:23]   [cuda-wheels] Looking up pytorch3d: cu130 torch2.11 cp312 win_amd64
-[05:23]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu130torch2.11-cp312-cp312-win_amd64.whl
-[05:23]   [cuda-wheels] Looking up gsplat: cu130 torch2.11 cp312 win_amd64
-[05:23]   [cuda-wheels]   Found: gsplat-1.5.3+cu130torch2.11-cp312-cp312-win_amd64.whl
-[05:23]   [cuda-wheels] Looking up nvdiffrast: cu130 torch2.11 cp312 win_amd64
-[05:24]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu130torch2.11-cp312-cp312-win_amd64.whl
-[05:24]   [cuda-wheels] Looking up flash-attn: cu130 torch2.11 cp312 win_amd64
-[05:25]   [cuda-wheels]   Found: flash_attn-2.8.3+cu130torch2.11-cp312-cp312-win_amd64.whl
-[05:25]   [cuda-wheels] Looking up sageattention: cu130 torch2.11 cp312 win_amd64
-[05:25]   [cuda-wheels]   Found: sageattention-2.2.0+cu130torch2.11-cp312-cp312-win_amd64.whl
-[05:25]   [cuda-wheels] Looking up spconv: cu130 torch2.11 cp312 win_amd64
-[05:26]   [cuda-wheels]   GH Pages index unreachable, falling back to GitHub Releases API...
-[05:29]   [cuda-wheels]   No wheel found via index or API. If your network blocks
-[05:29]   [cuda-wheels]   *.github.io / fastly, set HTTPS_PROXY to a working proxy.
-[05:29]   [comfy-env] cuda-wheels tier 1 incomplete: `spconv` not built for cu13.0+torch2.11; falling back
-[05:29]   [comfy-env] cuda-wheels tier 2 (fallback): probing cu12.8/torch2.8/cp313
-[05:29]   [cuda-wheels] Looking up cumesh: cu128 torch2.8 cp313 win_amd64
-[05:30]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.8-cp313-cp313-win_amd64.whl
-[05:30]   [comfy-env] cuda-wheels tier 2 (fallback): probing cu12.8/torch2.8/cp312
-[05:30]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.8 cp312 win_amd64
-[05:30]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:30]   [cuda-wheels] Looking up gsplat: cu128 torch2.8 cp312 win_amd64
-[05:30]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:30]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.8 cp312 win_amd64
-[05:31]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:31]   [cuda-wheels] Looking up flash-attn: cu128 torch2.8 cp312 win_amd64
-[05:31]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:31]   [cuda-wheels] Looking up sageattention: cu128 torch2.8 cp312 win_amd64
-[05:32]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:32]   [cuda-wheels] Looking up spconv: cu128 torch2.8 cp312 win_amd64
-[05:32]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:32]   [cuda-wheels] Looking up cumm: cu128 torch2.8 cp312 win_amd64
-[05:33]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:33]   [comfy-env] cuda-wheels combo: cu12.8/torch2.8 (fallback; per-node cuda envs will override torch to this combo while comfyui keeps bootstrap torch)
-[05:33]   [cuda-wheels] Looking up cumesh: cu128 torch2.8 cp313 win_amd64
-[05:33]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.8-cp313-cp313-win_amd64.whl
-[05:33]   [comfy-env] geometrypack-nodes: cuda-wheels deferred for post-pixi install (cumesh)
-[05:33]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.8 cp312 win_amd64
-[05:33]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:33]   [cuda-wheels] Looking up gsplat: cu128 torch2.8 cp312 win_amd64
-[05:34]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:34]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.8 cp312 win_amd64
-[05:34]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:34]   [cuda-wheels] Looking up flash-attn: cu128 torch2.8 cp312 win_amd64
-[05:35]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:35]   [cuda-wheels] Looking up sageattention: cu128 torch2.8 cp312 win_amd64
-[05:35]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:35]   [cuda-wheels] Looking up spconv: cu128 torch2.8 cp312 win_amd64
-[05:35]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:35]   [cuda-wheels] Looking up cumm: cu128 torch2.8 cp312 win_amd64
-[05:36]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.8-cp312-cp312-win_amd64.whl
-[05:36]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
-[05:36]   Generated C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\pixi.toml
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.10.20-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.11.15-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Patched C:\Users\ContainerAdministrator\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
-[05:36]   [comfy-env] Installing 2 environment(s):
-[05:36]     - geometrypack-nodes (python=host, 14 pypi deps, 1 cuda wheels)
-[05:36]     - sam3dobjects-nodes (python=3.12, 9 pypi deps, 7 cuda wheels)
-[05:36]   [comfy-env] Running `pixi install -e geometrypack-nodes -e sam3dobjects-nodes`...
-[05:40]      WARN The package `fsspec==2026.4.0` does not have an extra named `http`
-[06:52]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[06:52]     	- Scripts/.librsvg-pre-unlink.bat
-[06:52]     To enable them, run:
-[06:52]     	pixi config set --local run-post-link-scripts insecure
-[06:52]     More info:
-[06:52]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[07:38]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
-[07:38]     	- Scripts/.librsvg-pre-unlink.bat
-[07:38]     To enable them, run:
-[07:38]     	pixi config set --local run-post-link-scripts insecure
-[07:38]     More info:
-[07:38]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
-[09:33]     The following environments have been installed: geometrypack-nodes, sam3dobjects-nodes.
-[09:33]   [comfy-env] geometrypack-nodes: installing cuda-wheels with --no-deps (cumesh)
-[09:33]     Using Python 3.13.13 environment at: .pixi\envs\geometrypack-nodes
-[09:35]     Resolved 1 package in 1.69s
-[09:35]     Downloading cumesh (10.2MiB)
-[09:37]      Downloaded cumesh
-[09:37]     Prepared 1 package in 1.59s
-[09:37]     Installed 1 package in 11ms
-[09:37]      + cumesh==0.0.1+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/cumesh-latest/cumesh-0.0.1%2Bcu128torch2.8-cp313-cp313-win_amd64.whl)
-[09:37]   [comfy-env] sam3dobjects-nodes: installing cuda-wheels with --no-deps (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
-[09:37]     Using Python 3.12.13 environment at: .pixi\envs\sam3dobjects-nodes
-[09:53]     Resolved 7 packages in 16.19s
-[09:53]     Downloading pytorch3d (18.0MiB)
-[09:53]     Downloading cumm (5.3MiB)
-[09:53]     Downloading sageattention (41.6MiB)
-[09:53]     Downloading spconv (69.3MiB)
-[09:53]     Downloading gsplat (29.4MiB)
-[09:53]     Downloading nvdiffrast (4.4MiB)
-[09:53]     Downloading flash-attn (239.2MiB)
-[09:56]      Downloaded nvdiffrast
-[09:57]      Downloaded cumm
-[10:04]      Downloaded pytorch3d
-[10:08]      Downloaded gsplat
-[10:12]      Downloaded sageattention
-[10:16]      Downloaded spconv
-[10:29]      Downloaded flash-attn
-[10:29]     Prepared 7 packages in 35.66s
-[10:29]     Installed 7 packages in 546ms
-[10:29]      + cumm==0.8.2+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/cumm-latest/cumm-0.8.2%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + flash-attn==2.8.3+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/flash_attn-latest/flash_attn-2.8.3%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + gsplat==1.5.3+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/gsplat-latest/gsplat-1.5.3%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + nvdiffrast==0.4.0+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/nvdiffrast-latest/nvdiffrast-0.4.0%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + pytorch3d==0.7.9+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/pytorch3d-latest/pytorch3d-0.7.9%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + sageattention==2.2.0+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/sageattention-latest/sageattention-2.2.0%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:29]      + spconv==2.3.8+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/spconv-latest/spconv-2.3.8%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
-[10:30]   [comfy-env] Recorded install hash bcb1162fef62 -> C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\install.hash
-[10:30]   [comfy-env] Install log: C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\install.log
-[10:30]   
-[10:30]   Installation complete!
-[10:31]   
-[10:31]   [requirements] Re-installing main package requirements...
-[10:31]     Installing requirements for ComfyUI-SAM3DObjects...
-[10:31]   [comfy-env] _discover: scanning C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes
-[10:31]   [comfy-env] _discover: ComfyUI-GeometryPack -> geometrypack-nodes (custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml)
-[10:31]   [comfy-env] _discover: ComfyUI-Multiband: no comfy-env.toml found
-[10:31]   [comfy-env] _discover: ComfyUI-SAM3DObjects -> sam3dobjects-nodes (custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml)
-[10:31]   [comfy-env] Workspace inputs unchanged (hash bcb1162fef62) -- skipping install. Delete C:\Users\ContainerAdministrator\AppData\Local\Programs\comfy-env\install.hash to force.
-[10:31]   
-[10:31]   Installation complete!
-[10:31] Installing 2 node dependency(ies)...
-[10:31]   ComfyUI-Multiband from PozzettiAndrea/ComfyUI-Multiband
-[10:31]   ComfyUI-Multiband already exists, skipping...
-[10:31]   ComfyUI-GeometryPack from PozzettiAndrea/ComfyUI-GeometryPack
-[10:31]   ComfyUI-GeometryPack already exists, skipping...
-[10:31] Installing validation endpoint...
-[10:31]   Cloning PozzettiAndrea/ComfyUI-validate-endpoint...
-[10:31] Running: git clone --depth 1 https://x-access-token:***@github.com/PozzettiAndrea/ComfyUI-validate-endpoint.git C:\workspaces\SAM3DObjects-1552\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
-[10:32] CUDA packages absent (will mock): pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
-[10:32] [INSTALL] PASSED
-[10:32] 
-[10:32] [2/4] REGISTRATION
-[10:32] ----------------------------------------
-[10:32] 
+[02:15] Running: C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\python_embeded\python.exe C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-SAM3DObjects\install.py
+[02:16]   
+[02:16]   Installing 2 node dependencies...
+[02:16]     Cloning ComfyUI-Multiband...
+[02:16]     Installing requirements for ComfyUI-Multiband...
+[02:17]     Cloning ComfyUI-GeometryPack...
+[02:22]     Installing requirements for ComfyUI-GeometryPack...
+[02:23]     Running install.py for ComfyUI-GeometryPack...
+[02:25]   [comfy-env] _discover: scanning C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes
+[02:25]   [comfy-env] _discover: ComfyUI-GeometryPack -> geometrypack-nodes (custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml)
+[02:25]   [comfy-env] _discover: ComfyUI-Multiband: no comfy-env.toml found
+[02:25]   [comfy-env] _discover: ComfyUI-SAM3DObjects -> sam3dobjects-nodes (custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml)
+[02:25]   [comfy-env] Workspace: C:\Users\ContainerUser\AppData\Local\Programs\comfy-env
+[02:25]   [comfy-env] ComfyUI: C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI
+[02:25]   [comfy-env] Found 2 node config(s):
+[02:25]     - geometrypack-nodes <- custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml (python=host)
+[02:25]     - sam3dobjects-nodes <- custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml (python=3.12)
+[02:26]   [comfy-env] Bootstrap interpreter has python 3.13 + torch 2.11.0 (cu130). Looking for cuda-only wheels matching cu130/torch2.11/cp313.
+[02:38]   [comfy-env] GPU: Detection: torch
+[02:38]   Recommended: CUDA 13.1
+[02:38]   
+[02:38]     GPU 0: NVIDIA GeForce RTX 5060 (sm_120) [Blackwell] 8150MB
+[02:38]   [comfy-env] Comfyui feature -> torch 2.11.0 from https://download.pytorch.org/whl/cu130 (CUDA 13.0 via bootstrap torch)
+[02:38]   [comfy-env] cuda-wheels: 8 package(s) need a matched (cuda, torch, python) combo: ['cumesh', 'pytorch3d', 'gsplat', 'nvdiffrast', 'flash-attn', 'sageattention', 'spconv', 'cumm']
+[02:38]   [comfy-env] cuda-wheels: checking across Python versions: cp3.13, cp3.12
+[02:38]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu13.0/torch2.11/cp313
+[02:38]   [cuda-wheels] Looking up cumesh: cu130 torch2.11 cp313 win_amd64
+[02:38]   [cuda-wheels]   GH Pages index unreachable, falling back to GitHub Releases API...
+[02:42]   [cuda-wheels]   Found via API: cumesh-0.0.1+cu130torch2.11-cp313-cp313-win_amd64.whl
+[02:42]   [comfy-env] cuda-wheels tier 1 (bootstrap): probing cu13.0/torch2.11/cp312
+[02:42]   [cuda-wheels] Looking up pytorch3d: cu130 torch2.11 cp312 win_amd64
+[02:43]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu130torch2.11-cp312-cp312-win_amd64.whl
+[02:43]   [cuda-wheels] Looking up gsplat: cu130 torch2.11 cp312 win_amd64
+[02:43]   [cuda-wheels]   Found: gsplat-1.5.3+cu130torch2.11-cp312-cp312-win_amd64.whl
+[02:43]   [cuda-wheels] Looking up nvdiffrast: cu130 torch2.11 cp312 win_amd64
+[02:43]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu130torch2.11-cp312-cp312-win_amd64.whl
+[02:43]   [cuda-wheels] Looking up flash-attn: cu130 torch2.11 cp312 win_amd64
+[02:44]   [cuda-wheels]   Found: flash_attn-2.8.3+cu130torch2.11-cp312-cp312-win_amd64.whl
+[02:44]   [cuda-wheels] Looking up sageattention: cu130 torch2.11 cp312 win_amd64
+[02:44]   [cuda-wheels]   Found: sageattention-2.2.0+cu130torch2.11-cp312-cp312-win_amd64.whl
+[02:44]   [cuda-wheels] Looking up spconv: cu130 torch2.11 cp312 win_amd64
+[02:44]   [cuda-wheels]   GH Pages index unreachable, falling back to GitHub Releases API...
+[02:45]   [cuda-wheels]   No wheel found via index or API. If your network blocks
+[02:45]   [cuda-wheels]   *.github.io / fastly, set HTTPS_PROXY to a working proxy.
+[02:45]   [comfy-env] cuda-wheels tier 1 incomplete: `spconv` not built for cu13.0+torch2.11; falling back
+[02:45]   [comfy-env] cuda-wheels tier 2 (fallback): probing cu12.8/torch2.8/cp313
+[02:45]   [cuda-wheels] Looking up cumesh: cu128 torch2.8 cp313 win_amd64
+[02:46]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.8-cp313-cp313-win_amd64.whl
+[02:46]   [comfy-env] cuda-wheels tier 2 (fallback): probing cu12.8/torch2.8/cp312
+[02:46]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.8 cp312 win_amd64
+[02:46]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:46]   [cuda-wheels] Looking up gsplat: cu128 torch2.8 cp312 win_amd64
+[02:46]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:46]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.8 cp312 win_amd64
+[02:47]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:47]   [cuda-wheels] Looking up flash-attn: cu128 torch2.8 cp312 win_amd64
+[02:47]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:47]   [cuda-wheels] Looking up sageattention: cu128 torch2.8 cp312 win_amd64
+[02:48]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:48]   [cuda-wheels] Looking up spconv: cu128 torch2.8 cp312 win_amd64
+[02:48]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:48]   [cuda-wheels] Looking up cumm: cu128 torch2.8 cp312 win_amd64
+[02:48]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:48]   [comfy-env] cuda-wheels combo: cu12.8/torch2.8 (fallback; per-node cuda envs will override torch to this combo while comfyui keeps bootstrap torch)
+[02:48]   [cuda-wheels] Looking up cumesh: cu128 torch2.8 cp313 win_amd64
+[02:48]   [cuda-wheels]   Found: cumesh-0.0.1+cu128torch2.8-cp313-cp313-win_amd64.whl
+[02:48]   [comfy-env] geometrypack-nodes: cuda-wheels deferred for post-pixi install (cumesh)
+[02:48]   [cuda-wheels] Looking up pytorch3d: cu128 torch2.8 cp312 win_amd64
+[02:49]   [cuda-wheels]   Found: pytorch3d-0.7.9+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:49]   [cuda-wheels] Looking up gsplat: cu128 torch2.8 cp312 win_amd64
+[02:49]   [cuda-wheels]   Found: gsplat-1.5.3+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:49]   [cuda-wheels] Looking up nvdiffrast: cu128 torch2.8 cp312 win_amd64
+[02:49]   [cuda-wheels]   Found: nvdiffrast-0.4.0+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:49]   [cuda-wheels] Looking up flash-attn: cu128 torch2.8 cp312 win_amd64
+[02:50]   [cuda-wheels]   Found: flash_attn-2.8.3+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:50]   [cuda-wheels] Looking up sageattention: cu128 torch2.8 cp312 win_amd64
+[02:50]   [cuda-wheels]   Found: sageattention-2.2.0+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:50]   [cuda-wheels] Looking up spconv: cu128 torch2.8 cp312 win_amd64
+[02:51]   [cuda-wheels]   Found: spconv-2.3.8+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:51]   [cuda-wheels] Looking up cumm: cu128 torch2.8 cp312 win_amd64
+[02:51]   [cuda-wheels]   Found: cumm-0.8.2+cu128torch2.8-cp312-cp312-win_amd64.whl
+[02:51]   [comfy-env] sam3dobjects-nodes: cuda-wheels deferred for post-pixi install (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
+[02:51]   Generated C:\Users\ContainerUser\AppData\Local\Programs\comfy-env\pixi.toml
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.10.20-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.11.15-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Patched C:\Users\ContainerUser\AppData\Roaming\uv\python\cpython-3.13.13-windows-x86_64-none\Lib\platform.py for conda-forge compat
+[02:51]   [comfy-env] Installing 2 environment(s):
+[02:51]     - geometrypack-nodes (python=host, 14 pypi deps, 1 cuda wheels)
+[02:51]     - sam3dobjects-nodes (python=3.12, 10 pypi deps, 7 cuda wheels)
+[02:51]   [comfy-env] Running `pixi install -e geometrypack-nodes -e sam3dobjects-nodes`...
+[02:54]      WARN The package `fsspec==2026.4.0` does not have an extra named `http`
+[04:11]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[04:11]     	- Scripts/.librsvg-pre-unlink.bat
+[04:11]     To enable them, run:
+[04:11]     	pixi config set --local run-post-link-scripts insecure
+[04:11]     More info:
+[04:11]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[05:04]      WARN Skipped running the post-link scripts because `run-post-link-scripts` = `false`
+[05:04]     	- Scripts/.librsvg-pre-unlink.bat
+[05:04]     To enable them, run:
+[05:04]     	pixi config set --local run-post-link-scripts insecure
+[05:04]     More info:
+[05:04]     	https://pixi.sh/latest/reference/pixi_configuration/#run-post-link-scripts
+[06:34]     The following environments have been installed: geometrypack-nodes, sam3dobjects-nodes.
+[06:34]   [comfy-env] geometrypack-nodes: installing cuda-wheels with --no-deps (cumesh)
+[06:34]     Using Python 3.13.13 environment at: .pixi\envs\geometrypack-nodes
+[06:35]     Resolved 1 package in 789ms
+[06:35]     Downloading cumesh (10.2MiB)
+[06:35]      Downloaded cumesh
+[06:35]     Prepared 1 package in 220ms
+[06:35]     Installed 1 package in 8ms
+[06:35]      + cumesh==0.0.1+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/cumesh-latest/cumesh-0.0.1%2Bcu128torch2.8-cp313-cp313-win_amd64.whl)
+[06:35]   [comfy-env] sam3dobjects-nodes: installing cuda-wheels with --no-deps (pytorch3d, gsplat, nvdiffrast, flash-attn, sageattention, spconv, cumm)
+[06:35]     Using Python 3.12.13 environment at: .pixi\envs\sam3dobjects-nodes
+[06:39]     Resolved 7 packages in 3.85s
+[06:39]     Downloading pytorch3d (18.0MiB)
+[06:39]     Downloading cumm (5.3MiB)
+[06:39]     Downloading spconv (69.3MiB)
+[06:39]     Downloading sageattention (41.6MiB)
+[06:39]     Downloading nvdiffrast (4.4MiB)
+[06:39]     Downloading gsplat (29.4MiB)
+[06:39]     Downloading flash-attn (239.2MiB)
+[06:40]      Downloaded nvdiffrast
+[06:40]      Downloaded cumm
+[06:41]      Downloaded pytorch3d
+[06:42]      Downloaded gsplat
+[06:43]      Downloaded sageattention
+[06:44]      Downloaded spconv
+[06:48]      Downloaded flash-attn
+[06:48]     Prepared 7 packages in 9.24s
+[06:49]     Installed 7 packages in 372ms
+[06:49]      + cumm==0.8.2+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/cumm-latest/cumm-0.8.2%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + flash-attn==2.8.3+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/flash_attn-latest/flash_attn-2.8.3%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + gsplat==1.5.3+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/gsplat-latest/gsplat-1.5.3%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + nvdiffrast==0.4.0+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/nvdiffrast-latest/nvdiffrast-0.4.0%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + pytorch3d==0.7.9+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/pytorch3d-latest/pytorch3d-0.7.9%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + sageattention==2.2.0+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/sageattention-latest/sageattention-2.2.0%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]      + spconv==2.3.8+cu128torch2.8 (from https://github.com/PozzettiAndrea/cuda-wheels/releases/download/spconv-latest/spconv-2.3.8%2Bcu128torch2.8-cp312-cp312-win_amd64.whl)
+[06:49]   [comfy-env] Recorded install hash 740f9dfe3956 -> C:\Users\ContainerUser\AppData\Local\Programs\comfy-env\install.hash
+[06:49]   [comfy-env] Install log: C:\Users\ContainerUser\AppData\Local\Programs\comfy-env\install.log
+[06:49]   
+[06:49]   Installation complete!
+[06:50]   
+[06:50]   [requirements] Re-installing main package requirements...
+[06:50]     Installing requirements for ComfyUI-SAM3DObjects...
+[06:50]   [comfy-env] _discover: scanning C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes
+[06:50]   [comfy-env] _discover: ComfyUI-GeometryPack -> geometrypack-nodes (custom_nodes\ComfyUI-GeometryPack\nodes\comfy-env.toml)
+[06:50]   [comfy-env] _discover: ComfyUI-Multiband: no comfy-env.toml found
+[06:50]   [comfy-env] _discover: ComfyUI-SAM3DObjects -> sam3dobjects-nodes (custom_nodes\ComfyUI-SAM3DObjects\nodes\comfy-env.toml)
+[06:50]   [comfy-env] Workspace inputs unchanged (hash 740f9dfe3956) -- skipping install. Delete C:\Users\ContainerUser\AppData\Local\Programs\comfy-env\install.hash to force.
+[06:50]   
+[06:50]   Installation complete!
+[06:50] Installing 2 node dependency(ies)...
+[06:50]   ComfyUI-Multiband from PozzettiAndrea/ComfyUI-Multiband
+[06:50]   ComfyUI-Multiband already exists, skipping...
+[06:50]   ComfyUI-GeometryPack from PozzettiAndrea/ComfyUI-GeometryPack
+[06:50]   ComfyUI-GeometryPack already exists, skipping...
+[06:50] Installing validation endpoint...
+[06:50]   Cloning PozzettiAndrea/ComfyUI-validate-endpoint...
+[06:50] Running: git clone --depth 1 https://x-access-token:***@github.com/PozzettiAndrea/ComfyUI-validate-endpoint.git C:\workspaces\SAM3DObjects-2121\portable-comfyui\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-validate-endpoint
+[06:51] CUDA packages absent (will mock): pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
+[06:51] [INSTALL] PASSED
+[06:51] 
+[06:51] [2/4] REGISTRATION
+[06:51] ----------------------------------------
+[06:51] 
 [DEBUG] server=None, api=None
-[10:32] 
+[06:51] 
 Starting ComfyUI server...
-[10:32] Starting ComfyUI server on port 41890...
-[10:32] CUDA mock packages: pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
-[10:32] Starting ComfyUI server on port 41890...
-[10:32] Server stdout/stderr -> C:\workspaces\SAM3DObjects-1552\server.log
-[10:32] Waiting for server to be ready (timeout: 600s)...
-[10:32]   [ComfyUI:stdout] reader thread died: AttributeError("'NoneType' object has no attribute 'readline'")
-[10:32]   [ComfyUI:stderr] reader thread died: AttributeError("'NoneType' object has no attribute 'readline'")
-[13:29] Server responding, waiting for nodes to load...
-[13:49] Server is ready!
-[13:50] Checking for import errors in server logs...
-[13:50] No import errors detected
-[13:50] Found 868 registered nodes
-[13:50] [REGISTRATION] PASSED
-[13:50] 
-[13:50] [3/4] INSTANTIATION
-[13:50] ----------------------------------------
-[13:50] 
-[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000018227085940>, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000018227086270>
-[13:50] Testing node constructors...
-[13:50] All 13 node(s) instantiated successfully!
-[13:50] [INSTANTIATION] PASSED
-[13:50] 
-[13:50] [4/4] EXECUTION
-[13:50] ----------------------------------------
-[13:50] 
-[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x0000018227085940>, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x0000018227086270>
-[13:50] GPU runner - will execute 5 workflow(s)
-[13:50] Running 5 workflow(s) (all with videos)...
-[13:50] Installing screenshot dependencies (playwright, pillow)...
-[13:56]   Packages installed, downloading chromium browser...
-[14:14]   Screenshot dependencies installed successfully
-[14:15] Starting headless browser...
-[14:16]   Downloading Mesa llvmpipe for Windows...
-[14:16]   Mesa download error: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)>
-[14:16]   Mesa unavailable -- falling back to SwiftShader
-[14:21] Capturing execution frames: debug_large_image_results.json
-[14:28]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[14:28]   Validating workflow...
-[14:28]   Queuing workflow for execution...
-[14:30]   Frame 2 saved (frame_001.jpg, t=2.4s)
-[14:30]   [capture-periodic] freeze=4ms shot=151ms unfreeze=64ms saved=True
-[14:30]   Node executed (1 total), capturing...
-[14:31]   Frame 3 saved (frame_002.jpg, t=3.0s)
-[14:31]   [capture-node] freeze=5ms shot=140ms unfreeze=4ms saved=True
-[14:31]   Node executed (2 total), capturing...
-[14:31]   Frame 4 saved (frame_003.jpg, t=3.5s)
-[14:31]   [capture-node] freeze=4ms shot=142ms unfreeze=9ms saved=True
-[14:33]   Frame 5 saved (frame_004.jpg, t=5.7s)
-[14:33]   [capture-periodic] freeze=4ms shot=154ms unfreeze=5ms saved=True
-[14:35]   [capture-loop] iter=50 t=7.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.1/31.9GB (28%) swap=0.4/5.0GB (9%) cpu=5% browser_rss=0.82GB
-[14:41]   [capture-loop] iter=100 t=13.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.8/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=4% browser_rss=0.82GB
-[14:47]   [capture-loop] iter=150 t=19.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.7/31.9GB (34%) swap=0.4/5.0GB (9%) cpu=4% browser_rss=0.83GB
-[14:53]   [capture-loop] iter=200 t=25.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.0/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=4% browser_rss=0.77GB
-[14:59]   [capture-loop] iter=250 t=31.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.0/31.9GB (28%) swap=0.4/5.0GB (9%) cpu=4% browser_rss=0.77GB
-[15:00]   Frame 6 saved (frame_005.jpg, t=32.5s)
-[15:00]   [capture-periodic] freeze=8ms shot=178ms unfreeze=5ms saved=True
-[15:02]   Frame 7 saved (frame_006.jpg, t=34.7s)
-[15:02]   [capture-periodic] freeze=4ms shot=138ms unfreeze=5ms saved=True
-[15:05]   Frame 8 saved (frame_007.jpg, t=37.0s)
-[15:05]   [capture-periodic] freeze=5ms shot=175ms unfreeze=8ms saved=True
-[15:05]   [capture-loop] iter=300 t=37.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.4/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=11% browser_rss=0.77GB
-[15:07]   Frame 9 saved (frame_008.jpg, t=39.2s)
-[15:07]   [capture-periodic] freeze=5ms shot=179ms unfreeze=5ms saved=True
-[15:09]   Frame 10 saved (frame_009.jpg, t=41.6s)
-[15:09]   [capture-periodic] freeze=9ms shot=159ms unfreeze=10ms saved=True
-[15:11]   [capture-loop] iter=350 t=43.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=10 ram=10.0/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=21% browser_rss=0.78GB
-[15:12]   Frame 11 saved (frame_010.jpg, t=43.9s)
-[15:12]   [capture-periodic] freeze=4ms shot=171ms unfreeze=5ms saved=True
-[15:14]   Frame 12 saved (frame_011.jpg, t=46.2s)
-[15:14]   [capture-periodic] freeze=4ms shot=176ms unfreeze=5ms saved=True
-[15:16]   Frame 13 saved (frame_012.jpg, t=48.5s)
-[15:16]   [capture-periodic] freeze=5ms shot=179ms unfreeze=5ms saved=True
-[15:18]   [capture-loop] iter=400 t=50.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.5/31.9GB (33%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.78GB
-[15:19]   Frame 14 saved (frame_013.jpg, t=50.8s)
-[15:19]   [capture-periodic] freeze=5ms shot=194ms unfreeze=9ms saved=True
-[15:21]   Frame 15 saved (frame_014.jpg, t=53.1s)
-[15:21]   [capture-periodic] freeze=4ms shot=188ms unfreeze=8ms saved=True
-[15:23]   Frame 16 saved (frame_015.jpg, t=55.4s)
-[15:23]   [capture-periodic] freeze=4ms shot=176ms unfreeze=5ms saved=True
-[15:25]   [capture-loop] iter=450 t=57.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.9/31.9GB (34%) swap=0.4/5.0GB (9%) cpu=22% browser_rss=0.76GB
-[15:25]   Frame 17 saved (frame_016.jpg, t=57.6s)
-[15:25]   [capture-periodic] freeze=6ms shot=169ms unfreeze=5ms saved=True
-[15:31]   [capture-loop] iter=500 t=63.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=11.1/31.9GB (35%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.75GB
-[15:37]   [capture-loop] iter=550 t=69.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=11.6/31.9GB (36%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.74GB
-[15:41]   Frame 18 saved (frame_017.jpg, t=73.5s)
-[15:41]   [capture-periodic] freeze=8ms shot=172ms unfreeze=6ms saved=True
-[15:44]   Frame 19 saved (frame_018.jpg, t=75.8s)
-[15:44]   [capture-periodic] freeze=5ms shot=176ms unfreeze=5ms saved=True
-[15:44]   [capture-loop] iter=600 t=76.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=11.0/31.9GB (34%) swap=0.4/5.0GB (9%) cpu=22% browser_rss=0.75GB
-[15:46]   Frame 20 saved (frame_019.jpg, t=78.1s)
-[15:46]   [capture-periodic] freeze=5ms shot=186ms unfreeze=11ms saved=True
-[15:48]   Frame 21 saved (frame_020.jpg, t=80.4s)
-[15:48]   [capture-periodic] freeze=4ms shot=166ms unfreeze=5ms saved=True
-[15:50]   [capture-loop] iter=650 t=82.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.5/31.9GB (33%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.75GB
-[15:55]   Frame 22 saved (frame_021.jpg, t=87.2s)
-[15:55]   [capture-periodic] freeze=4ms shot=150ms unfreeze=4ms saved=True
-[15:57]   [capture-loop] iter=700 t=89.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=8.8/31.9GB (28%) swap=0.4/5.0GB (9%) cpu=15% browser_rss=0.75GB
-[15:57]   Frame 23 saved (frame_022.jpg, t=89.4s)
-[15:57]   [capture-periodic] freeze=4ms shot=182ms unfreeze=6ms saved=True
-[15:59]   Frame 24 saved (frame_023.jpg, t=91.7s)
-[15:59]   [capture-periodic] freeze=4ms shot=140ms unfreeze=5ms saved=True
-[16:02]   Frame 25 saved (frame_024.jpg, t=94.0s)
-[16:02]   [capture-periodic] freeze=4ms shot=158ms unfreeze=6ms saved=True
-[16:03]   [capture-loop] iter=750 t=95.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=8.9/31.9GB (28%) swap=0.4/5.0GB (9%) cpu=10% browser_rss=0.75GB
-[16:04]   Frame 26 saved (frame_025.jpg, t=96.2s)
-[16:04]   [capture-periodic] freeze=5ms shot=187ms unfreeze=10ms saved=True
-[16:06]   Frame 27 saved (frame_026.jpg, t=98.5s)
-[16:06]   [capture-periodic] freeze=4ms shot=185ms unfreeze=5ms saved=True
-[16:09]   Frame 28 saved (frame_027.jpg, t=100.9s)
-[16:09]   [capture-periodic] freeze=5ms shot=167ms unfreeze=9ms saved=True
-[16:10]   [capture-loop] iter=800 t=102.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.4/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=19% browser_rss=0.75GB
-[16:11]   Frame 29 saved (frame_028.jpg, t=103.1s)
-[16:11]   [capture-periodic] freeze=4ms shot=175ms unfreeze=8ms saved=True
-[16:13]   Frame 30 saved (frame_029.jpg, t=105.4s)
-[16:13]   [capture-periodic] freeze=4ms shot=178ms unfreeze=7ms saved=True
-[16:15]   Frame 31 saved (frame_030.jpg, t=107.6s)
-[16:15]   [capture-periodic] freeze=13ms shot=172ms unfreeze=9ms saved=True
-[16:16]   [capture-loop] iter=850 t=108.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=7 ram=9.9/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.75GB
-[16:18]   Frame 32 saved (frame_031.jpg, t=110.0s)
-[16:18]   [capture-periodic] freeze=4ms shot=174ms unfreeze=5ms saved=True
-[16:22]   Frame 33 saved (frame_032.jpg, t=114.6s)
-[16:22]   [capture-periodic] freeze=4ms shot=173ms unfreeze=6ms saved=True
-[16:23]   [capture-loop] iter=900 t=115.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.5/31.9GB (33%) swap=0.4/5.0GB (9%) cpu=22% browser_rss=0.75GB
-[16:25]   Frame 34 saved (frame_033.jpg, t=116.9s)
-[16:25]   [capture-periodic] freeze=4ms shot=164ms unfreeze=8ms saved=True
-[16:29]   [capture-loop] iter=950 t=121.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=11.0/31.9GB (34%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.75GB
-[16:35]   [capture-loop] iter=1000 t=127.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=6 ram=11.2/31.9GB (35%) swap=0.4/5.0GB (9%) cpu=19% browser_rss=0.75GB
-[16:36]   Frame 35 saved (frame_034.jpg, t=128.2s)
-[16:36]   [capture-periodic] freeze=9ms shot=184ms unfreeze=5ms saved=True
-[16:38]   Frame 36 saved (frame_035.jpg, t=130.5s)
-[16:38]   [capture-periodic] freeze=4ms shot=174ms unfreeze=5ms saved=True
-[16:42]   [capture-loop] iter=1050 t=134.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.3/31.9GB (29%) swap=0.4/5.0GB (9%) cpu=17% browser_rss=0.75GB
-[16:43]   Frame 37 saved (frame_036.jpg, t=135.1s)
-[16:43]   [capture-periodic] freeze=6ms shot=159ms unfreeze=5ms saved=True
-[16:45]   Frame 38 saved (frame_037.jpg, t=137.4s)
-[16:45]   [capture-periodic] freeze=4ms shot=176ms unfreeze=6ms saved=True
-[16:47]   Frame 39 saved (frame_038.jpg, t=139.7s)
-[16:47]   [capture-periodic] freeze=4ms shot=158ms unfreeze=4ms saved=True
-[16:48]   [capture-loop] iter=1100 t=140.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.5/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=15% browser_rss=0.75GB
-[16:50]   Frame 40 saved (frame_039.jpg, t=141.9s)
-[16:50]   [capture-periodic] freeze=4ms shot=200ms unfreeze=9ms saved=True
-[16:52]   Frame 41 saved (frame_040.jpg, t=144.2s)
-[16:52]   [capture-periodic] freeze=4ms shot=175ms unfreeze=5ms saved=True
-[16:54]   Frame 42 saved (frame_041.jpg, t=146.5s)
-[16:54]   [capture-periodic] freeze=4ms shot=169ms unfreeze=5ms saved=True
-[16:55]   [capture-loop] iter=1150 t=147.2s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.9/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=20% browser_rss=0.75GB
-[16:57]   Frame 43 saved (frame_042.jpg, t=148.8s)
-[16:57]   [capture-periodic] freeze=4ms shot=156ms unfreeze=13ms saved=True
-[16:59]   Frame 44 saved (frame_043.jpg, t=151.1s)
-[16:59]   [capture-periodic] freeze=5ms shot=174ms unfreeze=6ms saved=True
-[17:01]   [capture-loop] iter=1200 t=153.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.7/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=12% browser_rss=0.75GB
-[17:01]   Frame 45 saved (frame_044.jpg, t=153.4s)
-[17:01]   [capture-periodic] freeze=5ms shot=192ms unfreeze=6ms saved=True
-[17:04]   Frame 46 saved (frame_045.jpg, t=155.8s)
-[17:04]   [capture-periodic] freeze=5ms shot=150ms unfreeze=5ms saved=True
-[17:06]   Frame 47 saved (frame_046.jpg, t=158.1s)
-[17:06]   [capture-periodic] freeze=4ms shot=201ms unfreeze=5ms saved=True
-[17:07]   [capture-loop] iter=1250 t=159.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.7/31.9GB (31%) swap=0.4/5.0GB (9%) cpu=18% browser_rss=0.76GB
-[17:08]   Frame 48 saved (frame_047.jpg, t=160.4s)
-[17:08]   [capture-periodic] freeze=5ms shot=181ms unfreeze=6ms saved=True
-[17:10]   Frame 49 saved (frame_048.jpg, t=162.7s)
-[17:10]   [capture-periodic] freeze=4ms shot=143ms unfreeze=4ms saved=True
-[17:13]   Frame 50 saved (frame_049.jpg, t=164.9s)
-[17:13]   [capture-periodic] freeze=4ms shot=140ms unfreeze=4ms saved=True
-[17:14]   [capture-loop] iter=1300 t=166.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.5/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=12% browser_rss=0.76GB
-[17:15]   Frame 51 saved (frame_050.jpg, t=167.1s)
-[17:15]   [capture-periodic] freeze=4ms shot=151ms unfreeze=4ms saved=True
-[17:20]   [capture-loop] iter=1350 t=172.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.4/31.9GB (30%) swap=0.4/5.0GB (9%) cpu=4% browser_rss=0.76GB
-[17:23]   Execution complete (t=175.2s)
-[17:23]   Execution error: {'prompt_id': '6f4dbf23-7d53-45a5-8bfb-ab49bfaa8f62', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['95', '88', '78', '75', '74', '77'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\n          [0.9175, 0.8354, 0.7295],\n          [0.9253, 0.8433, 0.7373],\n          ...,\n          [0.8037, 0.6587, 0.4863],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9136, 0.8315, 0.7256],\n          [0.9175, 0.8354, 0.7295],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7959, 0.6509, 0.4785],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9214, 0.8276, 0.7178],\n          [0.9253, 0.8433, 0.7373],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7920, 0.6470, 0.4746],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         ...,\n\n         [[0.8745, 0.6860, 0.4980],\n          [0.8745, 0.6860, 0.4980],\n          [0.8667, 0.6782, 0.4902],\n          ...,\n          [0.6392, 0.4353, 0.2471],\n          [0.6431, 0.4392, 0.2510],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8667, 0.6782, 0.4902],\n          [0.8706, 0.6821, 0.4941],\n          [0.8706, 0.6821, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6470, 0.4431, 0.2549],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8628, 0.6743, 0.4863],\n          [0.8784, 0.6904, 0.5020],\n          [0.8784, 0.6904, 0.5020],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6353, 0.4314, 0.2432],\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['93', '95', '88', '78', '94', '74', '75', '59', '92', '77'], 'timestamp': 1778854169980}
-[17:23] Capturing execution frames: full_generation.json
-[17:31]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[17:31]   Validating workflow...
-[17:31]   Queuing workflow for execution...
-[17:31]   Node executed (1 total), capturing...
-[17:31]   Frame 2 saved (frame_001.jpg, t=0.6s)
-[17:31]   [capture-node] freeze=5ms shot=128ms unfreeze=5ms saved=True
-[17:34]   Frame 3 saved (frame_002.jpg, t=2.8s)
-[17:34]   [capture-periodic] freeze=4ms shot=127ms unfreeze=4ms saved=True
-[17:36]   Frame 4 saved (frame_003.jpg, t=5.0s)
-[17:36]   [capture-periodic] freeze=4ms shot=136ms unfreeze=6ms saved=True
-[17:37]   [capture-loop] iter=50 t=6.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=8.8/31.9GB (28%) swap=0.4/5.0GB (9%) cpu=7% browser_rss=0.90GB
-[17:38]   Execution complete (t=7.1s)
-[17:38]   Execution error: {'prompt_id': '6a1abaa1-0034-422a-aff6-df71bf53f12e', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '4', '74'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '28', '73', '74', '70', '59', '72', '54', '48', '4', '71'], 'timestamp': 1778854184992}
-[17:38] Capturing execution frames: gaussian_generation.json
-[17:45]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[17:45]   Validating workflow...
-[17:45]   Queuing workflow for execution...
-[17:45]   Node executed (1 total), capturing...
-[17:45]   Frame 2 saved (frame_001.jpg, t=0.6s)
-[17:45]   [capture-node] freeze=5ms shot=154ms unfreeze=5ms saved=True
-[17:45]   Execution complete (t=0.9s)
-[17:45]   Execution error: {'prompt_id': '08f0b7b8-5268-498c-9dec-f3859b230701', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '60', '4'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '63', '28', '60', '62', '61', '59', '4'], 'timestamp': 1778854192412}
-[17:46] Capturing execution frames: mesh_generation.json
-[17:52]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[17:52]   Validating workflow...
-[17:52]   Queuing workflow for execution...
-[17:52]   Node executed (1 total), capturing...
-[17:53]   Frame 2 saved (frame_001.jpg, t=0.6s)
-[17:53]   [capture-node] freeze=6ms shot=157ms unfreeze=5ms saved=True
-[17:53]   Execution complete (t=0.9s)
-[17:53]   Execution error: {'prompt_id': 'f5ea2f8b-17d6-4044-97c9-7f9aae345279', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '60', '4'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '28', '60', '65', '61', '59', '64', '4'], 'timestamp': 1778854199653}
-[17:53] Capturing execution frames: scene_generation.json
-[17:59]   Frame 1 saved (frame_000.jpg, t=0.0s)
-[17:59]   Validating workflow...
-[17:59]   Queuing workflow for execution...
-[18:02]   Node executed (1 total), capturing...
-[18:02]   Frame 2 saved (frame_001.jpg, t=2.5s)
-[18:02]   [capture-node] freeze=117ms shot=232ms unfreeze=4ms saved=True
-[18:02]   Execution complete (t=3.0s)
-[18:02]   Execution error: {'prompt_id': '32800249-0333-4a24-852f-10f143bed07c', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['74', '99', '75', '77'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': True, 'precision': 'bf16'}"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\n          [0.9175, 0.8354, 0.7295],\n          [0.9253, 0.8433, 0.7373],\n          ...,\n          [0.8037, 0.6587, 0.4863],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9136, 0.8315, 0.7256],\n          [0.9175, 0.8354, 0.7295],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7959, 0.6509, 0.4785],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9214, 0.8276, 0.7178],\n          [0.9253, 0.8433, 0.7373],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7920, 0.6470, 0.4746],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         ...,\n\n         [[0.8745, 0.6860, 0.4980],\n          [0.8745, 0.6860, 0.4980],\n          [0.8667, 0.6782, 0.4902],\n          ...,\n          [0.6392, 0.4353, 0.2471],\n          [0.6431, 0.4392, 0.2510],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8667, 0.6782, 0.4902],\n          [0.8706, 0.6821, 0.4941],\n          [0.8706, 0.6821, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6470, 0.4431, 0.2549],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8628, 0.6743, 0.4863],\n          [0.8784, 0.6904, 0.5020],\n          [0.8784, 0.6904, 0.5020],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6353, 0.4314, 0.2432],\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['80', '106', '78', '85', '74', '75', '82', '59', '99', '87', '100', '77', '108'], 'timestamp': 1778854209046}
-[18:03] Results saved to C:\logs\SAM3DObjects-1552\dev\windows-portable-gpu\results.json
-[18:03] Model report: 42 files, 13.9 GB -> C:\logs\SAM3DObjects-1552\dev\windows-portable-gpu\models.json
-[18:03] Saved: C:\logs\SAM3DObjects-1552\dev\windows-portable-gpu\index.html
-[18:03] 
-windows_portable: FAILED
-[18:03] Error: Workflow execution failed (5 error(s))
-[18:03] Details: debug_large_image_results.json: Workflow execution failed: {'prompt_id': '6f4dbf23-7d53-45a5-8bfb-ab49bfaa8f62', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['95', '88', '78', '75', '74', '77'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\n          [0.9175, 0.8354, 0.7295],\n          [0.9253, 0.8433, 0.7373],\n          ...,\n          [0.8037, 0.6587, 0.4863],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9136, 0.8315, 0.7256],\n          [0.9175, 0.8354, 0.7295],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7959, 0.6509, 0.4785],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9214, 0.8276, 0.7178],\n          [0.9253, 0.8433, 0.7373],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7920, 0.6470, 0.4746],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         ...,\n\n         [[0.8745, 0.6860, 0.4980],\n          [0.8745, 0.6860, 0.4980],\n          [0.8667, 0.6782, 0.4902],\n          ...,\n          [0.6392, 0.4353, 0.2471],\n          [0.6431, 0.4392, 0.2510],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8667, 0.6782, 0.4902],\n          [0.8706, 0.6821, 0.4941],\n          [0.8706, 0.6821, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6470, 0.4431, 0.2549],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8628, 0.6743, 0.4863],\n          [0.8784, 0.6904, 0.5020],\n          [0.8784, 0.6904, 0.5020],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6353, 0.4314, 0.2432],\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['93', '95', '88', '78', '94', '74', '75', '59', '92', '77'], 'timestamp': 1778854169980}
-
-Details:
-Workflow: C:\ComfyUI-SAM3DObjects\workflows\debug_large_image_results.json
-Node error: SAM3D_DepthEstimate
-full_generation.json: Workflow execution failed: {'prompt_id': '6a1abaa1-0034-422a-aff6-df71bf53f12e', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '4', '74'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '28', '73', '74', '70', '59', '72', '54', '48', '4', '71'], 'timestamp': 1778854184992}
-
-Details:
-Workflow: C:\ComfyUI-SAM3DObjects\workflows\full_generation.json
-Node error: SAM3D_DepthEstimate
-gaussian_generation.json: Workflow execution failed: {'prompt_id': '08f0b7b8-5268-498c-9dec-f3859b230701', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '60', '4'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '63', '28', '60', '62', '61', '59', '4'], 'timestamp': 1778854192412}
-
-Details:
-Workflow: C:\ComfyUI-SAM3DObjects\workflows\gaussian_generation.json
-Node error: SAM3D_DepthEstimate
-mesh_generation.json: Workflow execution failed: {'prompt_id': 'f5ea2f8b-17d6-4044-97c9-7f9aae345279', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['53', '28', '60', '4'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': False, 'precision': 'bf16'}"], 'image': ['tensor([[[[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         ...,\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]],\n\n         [[0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.],\n          ...,\n          [0., 0., 0.],\n          [0., 0., 0.],\n          [0., 0., 0.]]]])']}, 'current_outputs': ['53', '28', '60', '65', '61', '59', '64', '4'], 'timestamp': 1778854199653}
-
-Details:
-Workflow: C:\ComfyUI-SAM3DObjects\workflows\mesh_generation.json
-Node error: SAM3D_DepthEstimate
-scene_generation.json: Workflow execution failed: {'prompt_id': '32800249-0333-4a24-852f-10f143bed07c', 'node_id': '59', 'node_type': 'SAM3D_DepthEstimate', 'executed': ['74', '99', '75', '77'], 'exception_message': 'No module named \'transformers\'\n\nWorker traceback:\nTraceback (most recent call last):\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Temp\\comfyui_pvenv_uta83s1e\\persistent_worker.py", line 1762, in main\n    result = method(**inputs)\n             ^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy_api\\latest\\_io.py", line 1833, in EXECUTE_NORMALIZED\n    to_return = cls.execute(*args, **kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\Users\\ContainerAdministrator\\AppData\\Local\\Programs\\comfy-env\\.pixi\\envs\\sam3dobjects-nodes\\Lib\\site-packages\\torch\\utils\\_contextlib.py", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\ComfyUI-SAM3DObjects\\nodes\\depth_estimate.py", line 95, in execute\n    import comfy.model_patcher\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_patcher.py", line 32, in <module>\n    import comfy.hooks\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\hooks.py", line 14, in <module>\n    import comfy.lora\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\lora.py", line 23, in <module>\n    import comfy.model_base\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\model_base.py", line 61, in <module>\n    import comfy.ldm.hidream_o1.model\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\ldm\\hidream_o1\\model.py", line 20, in <module>\n    from comfy.text_encoders.qwen35 import Qwen35VisionModel\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\text_encoders\\qwen35.py", line 10, in <module>\n    from comfy import sd1_clip\n  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\comfy\\sd1_clip.py", line 3, in <module>\n    from transformers import CLIPTokenizer\nModuleNotFoundError: No module named \'transformers\'\n\n', 'exception_type': 'comfy_env.isolation.workers.base.WorkerError', 'traceback': ['  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 535, in execute\n    output_data, output_ui, has_subgraph, has_pending_tasks = await get_output_data(prompt_id, unique_id, obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 335, in get_output_data\n    return_values = await _async_map_node_over_list(prompt_id, unique_id, obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb, v3_data=v3_data)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 309, in _async_map_node_over_list\n    await process_inputs(input_dict, i)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\ComfyUI\\execution.py", line 297, in process_inputs\n    result = f(**inputs)\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\metadata.py", line 556, in proxy\n    result = worker.call_method(\n        module_name=mod,\n    ...<4 lines>...\n        timeout=600.0,\n    )\n', '  File "C:\\workspaces\\SAM3DObjects-1552\\portable-comfyui\\ComfyUI_windows_portable\\python_embeded\\Lib\\site-packages\\comfy_env\\isolation\\workers\\subprocess.py", line 674, in call_method\n    raise WorkerError(\n    ...<2 lines>...\n    )\n'], 'current_inputs': {'depth_model': ["{'config_path': 'C:\\\\workspaces\\\\SAM3DObjects-1552\\\\portable-comfyui\\\\ComfyUI_windows_portable\\\\ComfyUI\\\\models\\\\sam3dobjects\\\\pipeline.yaml', 'compile': True, 'precision': 'bf16'}"], 'image': ['tensor([[[[0.9175, 0.8394, 0.7334],\n          [0.9175, 0.8354, 0.7295],\n          [0.9253, 0.8433, 0.7373],\n          ...,\n          [0.8037, 0.6587, 0.4863],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9136, 0.8315, 0.7256],\n          [0.9175, 0.8354, 0.7295],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7959, 0.6509, 0.4785],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.9214, 0.8276, 0.7178],\n          [0.9253, 0.8433, 0.7373],\n          [0.9175, 0.8354, 0.7295],\n          ...,\n          [0.7920, 0.6470, 0.4746],\n          [0.8076, 0.6626, 0.4902],\n          [0.0000, 0.0000, 0.0000]],\n\n         ...,\n\n         [[0.8745, 0.6860, 0.4980],\n          [0.8745, 0.6860, 0.4980],\n          [0.8667, 0.6782, 0.4902],\n          ...,\n          [0.6392, 0.4353, 0.2471],\n          [0.6431, 0.4392, 0.2510],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8667, 0.6782, 0.4902],\n          [0.8706, 0.6821, 0.4941],\n          [0.8706, 0.6821, 0.4941],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6470, 0.4431, 0.2549],\n          [0.0000, 0.0000, 0.0000]],\n\n         [[0.8628, 0.6743, 0.4863],\n          [0.8784, 0.6904, 0.5020],\n          [0.8784, 0.6904, 0.5020],\n          ...,\n          [0.6431, 0.4392, 0.2510],\n          [0.6353, 0.4314, 0.2432],\n          [0.0000, 0.0000, 0.0000]]]])']}, 'current_outputs': ['80', '106', '78', '85', '74', '75', '82', '59', '99', '87', '100', '77', '108'], 'timestamp': 1778854209046}
-
-Details:
-Workflow: C:\ComfyUI-SAM3DObjects\workflows\scene_generation.json
-Node error: SAM3D_DepthEstimate
-[18:03] Stopping ComfyUI server...
+[06:51] Starting ComfyUI server on port 41889...
+[06:51] CUDA mock packages: pytorch3d, gsplat, nvdiffrast, flash_attn, sageattention, spconv, cumm
+[06:51] Starting ComfyUI server on port 41889...
+[06:51] Server stdout/stderr -> C:\workspaces\SAM3DObjects-2121\server.log
+[06:51]   [ComfyUI:stdout] reader thread died: AttributeError("'NoneType' object has no attribute 'readline'")
+[06:51]   [ComfyUI:stderr] reader thread died: AttributeError("'NoneType' object has no attribute 'readline'")
+[09:03] Server responding, waiting for nodes to load...
+[09:23] Server is ready!
+[09:23] Checking for import errors in server logs...
+[09:23] No import errors detected
+[09:23] Found 868 registered nodes
+[09:23] [REGISTRATION] PASSED
+[09:23] 
+[09:23] [3/4] INSTANTIATION
+[09:23] ----------------------------------------
+[09:23] 
+[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x00000156DB181940>, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x00000156DB182270>
+[09:23] Testing node constructors...
+[09:23] All 13 node(s) instantiated successfully!
+[09:23] [INSTANTIATION] PASSED
+[09:23] 
+[09:23] [4/4] EXECUTION
+[09:23] ----------------------------------------
+[09:23] 
+[DEBUG] server=<comfy_test.comfyui.server.ComfyUIServer object at 0x00000156DB181940>, api=<comfy_test.comfyui.api.ComfyUIAPI object at 0x00000156DB182270>
+[09:23] GPU runner - will execute 5 workflow(s)
+[09:23] Running 5 workflow(s) (all with videos)...
+[09:23] Installing screenshot dependencies (playwright, pillow)...
+[09:24]   Packages installed, downloading chromium browser...
+[09:40]   Screenshot dependencies installed successfully
+[09:41] Starting headless browser...
+[09:41]   Downloading Mesa llvmpipe for Windows...
+[09:41]   Mesa download error: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)>
+[09:41]   Mesa unavailable -- falling back to SwiftShader
+[09:44] Capturing execution frames: debug_large_image_results.json
+[09:51]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[09:51]   Validating workflow...
+[09:51]   Queuing workflow for execution...
+[09:53]   Node executed (1 total), capturing...
+[09:53]   Frame 2 saved (frame_001.jpg, t=1.8s)
+[09:53]   [capture-node] freeze=70ms shot=110ms unfreeze=5ms saved=True
+[09:53]   Node executed (2 total), capturing...
+[09:54]   Frame 3 saved (frame_002.jpg, t=2.3s)
+[09:54]   [capture-node] freeze=3ms shot=106ms unfreeze=5ms saved=True
+[09:56]   Frame 4 saved (frame_003.jpg, t=4.5s)
+[09:56]   [capture-periodic] freeze=2ms shot=118ms unfreeze=3ms saved=True
+[09:58]   [capture-loop] iter=50 t=6.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.1/23.9GB (38%) swap=0.0/3.9GB (0%) cpu=17% browser_rss=0.84GB
+[09:58]   Frame 5 saved (frame_004.jpg, t=6.4s)
+[09:58]   [capture-periodic] freeze=4ms shot=105ms unfreeze=4ms saved=True
+[10:00]   Frame 6 saved (frame_005.jpg, t=8.9s)
+[10:00]   [capture-periodic] freeze=3ms shot=113ms unfreeze=5ms saved=True
+[10:02]   Frame 7 saved (frame_006.jpg, t=11.1s)
+[10:02]   [capture-periodic] freeze=3ms shot=108ms unfreeze=3ms saved=True
+[10:04]   [capture-loop] iter=100 t=12.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.4/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=22% browser_rss=0.84GB
+[10:09]   Frame 8 saved (frame_007.jpg, t=17.6s)
+[10:09]   [capture-periodic] freeze=4ms shot=116ms unfreeze=4ms saved=True
+[10:10]   [capture-loop] iter=150 t=19.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=9.9/23.9GB (41%) swap=0.0/3.9GB (0%) cpu=26% browser_rss=0.85GB
+[10:11]   Frame 9 saved (frame_008.jpg, t=19.8s)
+[10:11]   [capture-periodic] freeze=4ms shot=127ms unfreeze=5ms saved=True
+[10:13]   Frame 10 saved (frame_009.jpg, t=22.0s)
+[10:13]   [capture-periodic] freeze=4ms shot=132ms unfreeze=6ms saved=True
+[10:16]   Frame 11 saved (frame_010.jpg, t=24.2s)
+[10:16]   [capture-periodic] freeze=7ms shot=155ms unfreeze=7ms saved=True
+[10:17]   [capture-loop] iter=200 t=25.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.1/23.9GB (42%) swap=0.0/3.9GB (0%) cpu=39% browser_rss=0.77GB
+[10:18]   Frame 12 saved (frame_011.jpg, t=26.4s)
+[10:18]   [capture-periodic] freeze=5ms shot=129ms unfreeze=8ms saved=True
+[10:20]   Frame 13 saved (frame_012.jpg, t=28.7s)
+[10:20]   [capture-periodic] freeze=5ms shot=121ms unfreeze=4ms saved=True
+[10:22]   Frame 14 saved (frame_013.jpg, t=30.9s)
+[10:22]   [capture-periodic] freeze=5ms shot=154ms unfreeze=7ms saved=True
+[10:23]   [capture-loop] iter=250 t=32.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=6 ram=10.5/23.9GB (44%) swap=0.0/3.9GB (0%) cpu=41% browser_rss=0.78GB
+[10:25]   Frame 15 saved (frame_014.jpg, t=33.3s)
+[10:25]   [capture-periodic] freeze=5ms shot=160ms unfreeze=8ms saved=True
+[10:29]   Frame 16 saved (frame_015.jpg, t=37.8s)
+[10:29]   [capture-periodic] freeze=4ms shot=130ms unfreeze=5ms saved=True
+[10:30]   [capture-loop] iter=300 t=38.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.7/23.9GB (45%) swap=0.0/3.9GB (0%) cpu=43% browser_rss=0.78GB
+[10:34]   Frame 17 saved (frame_016.jpg, t=42.2s)
+[10:34]   [capture-periodic] freeze=5ms shot=145ms unfreeze=7ms saved=True
+[10:36]   [capture-loop] iter=350 t=45.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.3/23.9GB (43%) swap=0.0/3.9GB (0%) cpu=45% browser_rss=0.78GB
+[10:43]   [capture-loop] iter=400 t=51.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=11.0/23.9GB (46%) swap=0.0/3.9GB (0%) cpu=42% browser_rss=0.78GB
+[10:47]   Frame 18 saved (frame_017.jpg, t=55.5s)
+[10:47]   [capture-periodic] freeze=9ms shot=120ms unfreeze=5ms saved=True
+[10:49]   Frame 19 saved (frame_018.jpg, t=57.7s)
+[10:49]   [capture-periodic] freeze=4ms shot=136ms unfreeze=5ms saved=True
+[10:49]   [capture-loop] iter=450 t=58.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.0/23.9GB (42%) swap=0.0/3.9GB (0%) cpu=49% browser_rss=0.76GB
+[10:56]   Frame 20 saved (frame_019.jpg, t=64.4s)
+[10:56]   [capture-periodic] freeze=5ms shot=142ms unfreeze=8ms saved=True
+[10:56]   [capture-loop] iter=500 t=64.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.6/23.9GB (44%) swap=0.0/3.9GB (0%) cpu=46% browser_rss=0.75GB
+[10:58]   Frame 21 saved (frame_020.jpg, t=66.7s)
+[10:58]   [capture-periodic] freeze=3ms shot=136ms unfreeze=4ms saved=True
+[11:00]   Frame 22 saved (frame_021.jpg, t=68.9s)
+[11:00]   [capture-periodic] freeze=2ms shot=102ms unfreeze=4ms saved=True
+[11:02]   [capture-loop] iter=550 t=70.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.0/23.9GB (42%) swap=0.0/3.9GB (0%) cpu=31% browser_rss=0.75GB
+[11:02]   Frame 23 saved (frame_022.jpg, t=71.1s)
+[11:02]   [capture-periodic] freeze=3ms shot=114ms unfreeze=10ms saved=True
+[11:07]   Frame 24 saved (frame_023.jpg, t=75.5s)
+[11:07]   [capture-periodic] freeze=4ms shot=122ms unfreeze=5ms saved=True
+[11:08]   [capture-loop] iter=600 t=76.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.9/23.9GB (42%) swap=0.0/3.9GB (0%) cpu=35% browser_rss=0.75GB
+[11:09]   Frame 25 saved (frame_024.jpg, t=77.7s)
+[11:09]   [capture-periodic] freeze=4ms shot=129ms unfreeze=5ms saved=True
+[11:11]   Frame 26 saved (frame_025.jpg, t=79.9s)
+[11:11]   [capture-periodic] freeze=5ms shot=141ms unfreeze=14ms saved=True
+[11:13]   Frame 27 saved (frame_026.jpg, t=82.2s)
+[11:13]   [capture-periodic] freeze=5ms shot=134ms unfreeze=6ms saved=True
+[11:14]   [capture-loop] iter=650 t=83.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.2/23.9GB (43%) swap=0.0/3.9GB (0%) cpu=38% browser_rss=0.75GB
+[11:18]   Frame 28 saved (frame_027.jpg, t=86.5s)
+[11:18]   [capture-periodic] freeze=4ms shot=159ms unfreeze=8ms saved=True
+[11:20]   Frame 29 saved (frame_028.jpg, t=88.8s)
+[11:20]   [capture-periodic] freeze=5ms shot=147ms unfreeze=9ms saved=True
+[11:21]   [capture-loop] iter=700 t=89.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=10.7/23.9GB (45%) swap=0.0/3.9GB (0%) cpu=43% browser_rss=0.75GB
+[11:25]   Frame 30 saved (frame_029.jpg, t=93.2s)
+[11:25]   [capture-periodic] freeze=3ms shot=149ms unfreeze=12ms saved=True
+[11:27]   Frame 31 saved (frame_030.jpg, t=95.5s)
+[11:27]   [capture-periodic] freeze=7ms shot=155ms unfreeze=10ms saved=True
+[11:27]   [capture-loop] iter=750 t=96.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=11.1/23.9GB (46%) swap=0.0/3.9GB (0%) cpu=43% browser_rss=0.75GB
+[11:31]   Frame 32 saved (frame_031.jpg, t=100.0s)
+[11:31]   [capture-periodic] freeze=4ms shot=155ms unfreeze=7ms saved=True
+[11:34]   [capture-loop] iter=800 t=102.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=47% browser_rss=0.75GB
+[11:36]   Frame 33 saved (frame_032.jpg, t=104.5s)
+[11:36]   [capture-periodic] freeze=5ms shot=138ms unfreeze=5ms saved=True
+[11:38]   Frame 34 saved (frame_033.jpg, t=106.8s)
+[11:38]   [capture-periodic] freeze=4ms shot=112ms unfreeze=6ms saved=True
+[11:40]   [capture-loop] iter=850 t=108.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.8/23.9GB (41%) swap=0.0/3.9GB (0%) cpu=32% browser_rss=0.75GB
+[11:40]   Frame 35 saved (frame_034.jpg, t=108.9s)
+[11:40]   [capture-periodic] freeze=3ms shot=99ms unfreeze=5ms saved=True
+[11:42]   Frame 36 saved (frame_035.jpg, t=111.1s)
+[11:42]   [capture-periodic] freeze=3ms shot=117ms unfreeze=4ms saved=True
+[11:45]   Frame 37 saved (frame_036.jpg, t=113.3s)
+[11:45]   [capture-periodic] freeze=3ms shot=104ms unfreeze=4ms saved=True
+[11:46]   [capture-loop] iter=900 t=115.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.8/23.9GB (41%) swap=0.0/3.9GB (0%) cpu=28% browser_rss=0.75GB
+[11:47]   Frame 38 saved (frame_037.jpg, t=115.5s)
+[11:47]   [capture-periodic] freeze=5ms shot=115ms unfreeze=9ms saved=True
+[11:49]   Frame 39 saved (frame_038.jpg, t=117.8s)
+[11:49]   [capture-periodic] freeze=3ms shot=125ms unfreeze=6ms saved=True
+[11:51]   Frame 40 saved (frame_039.jpg, t=120.0s)
+[11:51]   [capture-periodic] freeze=4ms shot=112ms unfreeze=8ms saved=True
+[11:52]   [capture-loop] iter=950 t=121.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=10 ram=9.9/23.9GB (41%) swap=0.0/3.9GB (0%) cpu=36% browser_rss=0.75GB
+[11:53]   Frame 41 saved (frame_040.jpg, t=122.2s)
+[11:53]   [capture-periodic] freeze=3ms shot=115ms unfreeze=4ms saved=True
+[11:56]   Frame 42 saved (frame_041.jpg, t=124.4s)
+[11:56]   [capture-periodic] freeze=3ms shot=113ms unfreeze=8ms saved=True
+[11:58]   Frame 43 saved (frame_042.jpg, t=126.6s)
+[11:58]   [capture-periodic] freeze=4ms shot=127ms unfreeze=4ms saved=True
+[11:59]   [capture-loop] iter=1000 t=127.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.7/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=28% browser_rss=0.75GB
+[12:00]   Frame 44 saved (frame_043.jpg, t=128.8s)
+[12:00]   [capture-periodic] freeze=3ms shot=117ms unfreeze=11ms saved=True
+[12:02]   Frame 45 saved (frame_044.jpg, t=131.0s)
+[12:02]   [capture-periodic] freeze=3ms shot=136ms unfreeze=10ms saved=True
+[12:04]   Frame 46 saved (frame_045.jpg, t=133.2s)
+[12:04]   [capture-periodic] freeze=3ms shot=123ms unfreeze=5ms saved=True
+[12:05]   [capture-loop] iter=1050 t=133.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=9.8/23.9GB (41%) swap=0.0/3.9GB (0%) cpu=33% browser_rss=0.76GB
+[12:07]   Frame 47 saved (frame_046.jpg, t=135.3s)
+[12:07]   [capture-periodic] freeze=4ms shot=134ms unfreeze=4ms saved=True
+[12:09]   Frame 48 saved (frame_047.jpg, t=137.6s)
+[12:09]   [capture-periodic] freeze=3ms shot=102ms unfreeze=5ms saved=True
+[12:11]   [capture-loop] iter=1100 t=139.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.6/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=32% browser_rss=0.77GB
+[12:17]   [capture-loop] iter=1150 t=145.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.1/23.9GB (38%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.76GB
+[12:23]   [capture-loop] iter=1200 t=151.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.1/23.9GB (38%) swap=0.0/3.9GB (0%) cpu=26% browser_rss=0.76GB
+[12:28]   [capture-loop] iter=1250 t=157.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.2/23.9GB (38%) swap=0.0/3.9GB (0%) cpu=24% browser_rss=0.76GB
+[12:34]   [capture-loop] iter=1300 t=162.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.2/23.9GB (39%) swap=0.0/3.9GB (0%) cpu=20% browser_rss=0.76GB
+[12:40]   [capture-loop] iter=1350 t=168.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=9.3/23.9GB (39%) swap=0.0/3.9GB (0%) cpu=20% browser_rss=0.76GB
+[12:41]   Frame 49 saved (frame_048.jpg, t=170.1s)
+[12:41]   [capture-periodic] freeze=2ms shot=109ms unfreeze=3ms saved=True
+[12:43]   Frame 50 saved (frame_049.jpg, t=172.2s)
+[12:43]   [capture-periodic] freeze=3ms shot=99ms unfreeze=4ms saved=True
+[12:46]   [capture-loop] iter=1400 t=174.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.1/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=24% browser_rss=0.76GB
+[12:51]   [capture-loop] iter=1450 t=180.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.1/23.9GB (46%) swap=0.0/3.9GB (0%) cpu=15% browser_rss=0.76GB
+[12:57]   [capture-loop] iter=1500 t=186.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.1/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.76GB
+[13:03]   [capture-loop] iter=1550 t=191.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.2/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.76GB
+[13:08]   [capture-loop] iter=1600 t=197.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.2/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.76GB
+[13:12]   Frame 51 saved (frame_050.jpg, t=200.5s)
+[13:12]   [capture-periodic] freeze=4ms shot=132ms unfreeze=5ms saved=True
+[13:14]   Frame 52 saved (frame_051.jpg, t=202.7s)
+[13:14]   [capture-periodic] freeze=4ms shot=125ms unfreeze=4ms saved=True
+[13:14]   [capture-loop] iter=1650 t=203.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=13.1/23.9GB (55%) swap=0.0/3.9GB (0%) cpu=41% browser_rss=0.77GB
+[13:20]   [capture-loop] iter=1700 t=209.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=11.7/23.9GB (49%) swap=0.0/3.9GB (0%) cpu=30% browser_rss=0.76GB
+[13:26]   [capture-loop] iter=1750 t=214.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=13.0/23.9GB (54%) swap=0.0/8.0GB (0%) cpu=17% browser_rss=0.76GB
+[13:27]   Frame 53 saved (frame_052.jpg, t=215.8s)
+[13:27]   [capture-periodic] freeze=2ms shot=100ms unfreeze=6ms saved=True
+[13:29]   Frame 54 saved (frame_053.jpg, t=217.9s)
+[13:29]   [capture-periodic] freeze=3ms shot=102ms unfreeze=5ms saved=True
+[13:31]   Frame 55 saved (frame_054.jpg, t=220.2s)
+[13:31]   [capture-periodic] freeze=2ms shot=88ms unfreeze=7ms saved=True
+[13:32]   [capture-loop] iter=1800 t=220.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=13.0/23.9GB (54%) swap=0.0/3.9GB (0%) cpu=11% browser_rss=0.77GB
+[13:34]   Frame 56 saved (frame_055.jpg, t=222.4s)
+[13:34]   [capture-periodic] freeze=2ms shot=89ms unfreeze=7ms saved=True
+[13:36]   Frame 57 saved (frame_056.jpg, t=224.5s)
+[13:36]   [capture-periodic] freeze=2ms shot=102ms unfreeze=4ms saved=True
+[13:38]   [capture-loop] iter=1850 t=226.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=15.4/23.9GB (64%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.77GB
+[13:38]   Frame 58 saved (frame_057.jpg, t=226.8s)
+[13:38]   [capture-periodic] freeze=3ms shot=111ms unfreeze=5ms saved=True
+[13:40]   Frame 59 saved (frame_058.jpg, t=229.0s)
+[13:40]   [capture-periodic] freeze=2ms shot=115ms unfreeze=3ms saved=True
+[13:44]   [capture-loop] iter=1900 t=232.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.8/23.9GB (70%) swap=0.0/12.5GB (0%) cpu=50% browser_rss=0.73GB
+[13:50]   [capture-loop] iter=1950 t=238.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.4/23.9GB (77%) swap=0.0/6.8GB (0%) cpu=15% browser_rss=0.73GB
+[13:55]   [capture-loop] iter=2000 t=244.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=17.8/23.9GB (74%) swap=0.0/6.5GB (0%) cpu=12% browser_rss=0.73GB
+[14:01]   [capture-loop] iter=2050 t=249.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=17.9/23.9GB (75%) swap=0.0/13.8GB (0%) cpu=19% browser_rss=0.73GB
+[14:07]   [capture-loop] iter=2100 t=255.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=17.9/23.9GB (75%) swap=0.0/9.5GB (0%) cpu=13% browser_rss=0.73GB
+[14:09]   Frame 60 saved (frame_059.jpg, t=257.3s)
+[14:09]   [capture-periodic] freeze=3ms shot=107ms unfreeze=3ms saved=True
+[14:11]   Frame 61 saved (frame_060.jpg, t=259.5s)
+[14:11]   [capture-periodic] freeze=3ms shot=107ms unfreeze=5ms saved=True
+[14:12]   [capture-loop] iter=2150 t=261.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=17.9/23.9GB (75%) swap=0.0/9.5GB (0%) cpu=26% browser_rss=0.73GB
+[14:13]   Frame 62 saved (frame_061.jpg, t=261.7s)
+[14:13]   [capture-periodic] freeze=2ms shot=107ms unfreeze=3ms saved=True
+[14:15]   Frame 63 saved (frame_062.jpg, t=263.9s)
+[14:15]   [capture-periodic] freeze=2ms shot=101ms unfreeze=4ms saved=True
+[14:17]   Frame 64 saved (frame_063.jpg, t=266.1s)
+[14:17]   [capture-periodic] freeze=3ms shot=100ms unfreeze=4ms saved=True
+[14:18]   [capture-loop] iter=2200 t=267.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=17.9/23.9GB (75%) swap=0.0/9.5GB (0%) cpu=27% browser_rss=0.73GB
+[14:20]   Frame 65 saved (frame_064.jpg, t=268.4s)
+[14:20]   [capture-periodic] freeze=3ms shot=121ms unfreeze=5ms saved=True
+[14:22]   Frame 66 saved (frame_065.jpg, t=270.6s)
+[14:22]   [capture-periodic] freeze=3ms shot=104ms unfreeze=5ms saved=True
+[14:24]   Frame 67 saved (frame_066.jpg, t=272.8s)
+[14:24]   [capture-periodic] freeze=2ms shot=95ms unfreeze=6ms saved=True
+[14:24]   [capture-loop] iter=2250 t=273.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=19.8/23.9GB (83%) swap=0.0/9.5GB (0%) cpu=23% browser_rss=0.72GB
+[14:30]   [capture-loop] iter=2300 t=278.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=20.0/23.9GB (84%) swap=0.0/9.5GB (0%) cpu=14% browser_rss=0.72GB
+[14:30]   Node executed (3 total), capturing...
+[14:32]   Frame 68 saved (frame_067.jpg, t=279.2s)
+[14:32]   [capture-node] freeze=1076ms shot=109ms unfreeze=0ms saved=True
+[14:32]   Execution complete (t=279.2s)
+[14:32]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[14:32]   [3d-wait] Phase 1 done in 0.0s
+[14:32]   [3d-wait] Phase 2: iframes=0
+[14:32]   [3d-wait] Total 3D wait: 0.0s
+[14:32]   Captured 68 unique frames over 280.44s
+[14:32]   [debug] iframes: 0
+[14:32]   [timing] trigger_3d_previews: 0.0s
+[14:34]   Saved high-quality screenshot: debug_large_image_results_executed.png
+[14:34]   [timing] final_screenshot: 0.3s
+[14:34] Capturing execution frames: full_generation.json
+[14:40]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[14:40]   Validating workflow...
+[14:40]   Queuing workflow for execution...
+[14:41]   Node executed (1 total), capturing...
+[14:41]   Frame 2 saved (frame_001.jpg, t=0.5s)
+[14:41]   [capture-node] freeze=3ms shot=93ms unfreeze=7ms saved=True
+[14:43]   Frame 3 saved (frame_002.jpg, t=2.7s)
+[14:43]   [capture-periodic] freeze=2ms shot=95ms unfreeze=6ms saved=True
+[14:45]   Frame 4 saved (frame_003.jpg, t=4.9s)
+[14:45]   [capture-periodic] freeze=2ms shot=88ms unfreeze=5ms saved=True
+[14:46]   [capture-loop] iter=50 t=6.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=8.2/23.9GB (34%) swap=0.0/3.9GB (0%) cpu=24% browser_rss=0.79GB
+[14:52]   Frame 5 saved (frame_004.jpg, t=11.4s)
+[14:52]   [capture-periodic] freeze=3ms shot=102ms unfreeze=5ms saved=True
+[14:52]   [capture-loop] iter=100 t=12.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.6/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=20% browser_rss=0.71GB
+[14:54]   Frame 6 saved (frame_005.jpg, t=13.7s)
+[14:54]   [capture-periodic] freeze=5ms shot=122ms unfreeze=11ms saved=True
+[14:56]   Node executed (2 total), capturing...
+[14:56]   Frame 7 saved (frame_006.jpg, t=15.6s)
+[14:56]   [capture-node] freeze=4ms shot=111ms unfreeze=10ms saved=True
+[15:00]   [capture-loop] iter=150 t=19.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=10.1/23.9GB (42%) swap=0.0/6.4GB (0%) cpu=55% browser_rss=0.90GB
+[15:06]   [capture-loop] iter=200 t=25.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=13.9/23.9GB (58%) swap=0.0/3.9GB (0%) cpu=15% browser_rss=0.75GB
+[15:09]   Frame 8 saved (frame_007.jpg, t=28.7s)
+[15:09]   [capture-periodic] freeze=3ms shot=93ms unfreeze=5ms saved=True
+[15:11]   Frame 9 saved (frame_008.jpg, t=30.9s)
+[15:11]   [capture-periodic] freeze=2ms shot=102ms unfreeze=5ms saved=True
+[15:12]   [capture-loop] iter=250 t=31.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=11.2/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.76GB
+[15:14]   Frame 10 saved (frame_009.jpg, t=33.1s)
+[15:14]   [capture-periodic] freeze=2ms shot=101ms unfreeze=7ms saved=True
+[15:16]   Frame 11 saved (frame_010.jpg, t=35.4s)
+[15:16]   [capture-periodic] freeze=4ms shot=93ms unfreeze=6ms saved=True
+[15:18]   [capture-loop] iter=300 t=37.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.76GB
+[15:18]   Frame 12 saved (frame_011.jpg, t=37.6s)
+[15:18]   [capture-periodic] freeze=2ms shot=100ms unfreeze=5ms saved=True
+[15:20]   Frame 13 saved (frame_012.jpg, t=39.8s)
+[15:20]   [capture-periodic] freeze=5ms shot=126ms unfreeze=7ms saved=True
+[15:24]   [capture-loop] iter=350 t=43.4s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=17.3/23.9GB (73%) swap=0.0/3.9GB (0%) cpu=42% browser_rss=0.76GB
+[15:30]   [capture-loop] iter=400 t=49.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.3/23.9GB (68%) swap=0.0/5.0GB (0%) cpu=20% browser_rss=0.76GB
+[15:35]   [capture-loop] iter=450 t=55.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.3/23.9GB (77%) swap=0.0/12.4GB (0%) cpu=16% browser_rss=0.76GB
+[15:40]   Frame 14 saved (frame_013.jpg, t=59.4s)
+[15:40]   [capture-periodic] freeze=3ms shot=113ms unfreeze=3ms saved=True
+[15:41]   [capture-loop] iter=500 t=61.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=16.4/23.9GB (68%) swap=0.0/7.9GB (0%) cpu=36% browser_rss=0.76GB
+[15:42]   Frame 15 saved (frame_014.jpg, t=61.6s)
+[15:42]   [capture-periodic] freeze=3ms shot=113ms unfreeze=4ms saved=True
+[15:44]   Frame 16 saved (frame_015.jpg, t=63.8s)
+[15:44]   [capture-periodic] freeze=2ms shot=107ms unfreeze=3ms saved=True
+[15:47]   [capture-loop] iter=550 t=67.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=5 ram=18.7/23.9GB (78%) swap=0.0/7.9GB (0%) cpu=28% browser_rss=0.76GB
+[15:49]   Frame 17 saved (frame_016.jpg, t=68.1s)
+[15:49]   [capture-periodic] freeze=2ms shot=103ms unfreeze=4ms saved=True
+[15:53]   [capture-loop] iter=600 t=72.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.8/23.9GB (78%) swap=0.0/7.9GB (0%) cpu=14% browser_rss=0.76GB
+[15:59]   [capture-loop] iter=650 t=78.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.8/23.9GB (78%) swap=0.0/7.9GB (0%) cpu=13% browser_rss=0.76GB
+[16:05]   [capture-loop] iter=700 t=84.3s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.8/23.9GB (78%) swap=0.0/7.9GB (0%) cpu=12% browser_rss=0.76GB
+[16:10]   Frame 18 saved (frame_017.jpg, t=89.8s)
+[16:10]   [capture-periodic] freeze=3ms shot=89ms unfreeze=6ms saved=True
+[16:10]   [capture-loop] iter=750 t=90.0s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.7/23.9GB (78%) swap=0.0/7.9GB (0%) cpu=15% browser_rss=0.76GB
+[16:12]   Frame 19 saved (frame_018.jpg, t=92.0s)
+[16:12]   [capture-periodic] freeze=2ms shot=109ms unfreeze=4ms saved=True
+[16:16]   [capture-loop] iter=800 t=95.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=18.9/23.9GB (79%) swap=0.0/7.9GB (0%) cpu=15% browser_rss=0.76GB
+[16:19]   Frame 20 saved (frame_019.jpg, t=98.6s)
+[16:19]   [capture-periodic] freeze=4ms shot=104ms unfreeze=6ms saved=True
+[16:22]   [capture-loop] iter=850 t=101.5s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=19.0/23.9GB (79%) swap=0.0/7.9GB (0%) cpu=19% browser_rss=0.76GB
+[16:27]   [capture-loop] iter=900 t=107.1s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=19.0/23.9GB (79%) swap=0.0/7.9GB (0%) cpu=11% browser_rss=0.76GB
+[16:33]   [capture-loop] iter=950 t=112.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=19.1/23.9GB (80%) swap=0.0/7.9GB (0%) cpu=16% browser_rss=0.76GB
+[16:39]   [capture-loop] iter=1000 t=118.9s state={'complete': True, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=15 ram=19.0/23.9GB (80%) swap=0.0/7.9GB (0%) cpu=37% browser_rss=0.77GB
+[16:39]   Node executed (3 total), capturing...
+[16:40]   Frame 21 saved (frame_020.jpg, t=119.1s)
+[16:40]   [capture-node] freeze=4ms shot=109ms unfreeze=0ms saved=True
+[16:40]   Execution complete (t=119.1s)
+[16:40]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[17:40]   [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
+[17:40]   [3d-wait] Phase 2: iframes=1
+[17:40]   [3d-wait] iframe viewer_ready=True (matched 1 console logs)
+[17:40]   [3d-wait] Unfrozen in 0.003s, rendering for 5s...
+[17:45]   [3d-wait] JS halted via CDP after 5.0s
+[17:46]   [3d-wait] Re-frozen in 6.0s
+[17:46]   [3d-wait] Total 3D wait: 66.1s
+[17:46]   Captured 21 unique frames over 185.39s
+[17:46]   [debug] iframes: 1
+[17:46]   [debug]   iframe[0]: src=http://127.0.0.1:41889/extensions/ComfyUI-SAM3DObjects/viewer_vtk.html?v=1779132, canvas=486x405, rafFrozen=True
+[17:46]   [timing] trigger_3d_previews: 0.0s
+[17:48]   Saved high-quality screenshot: full_generation_executed.png
+[17:48]   [timing] final_screenshot: 0.2s
+[17:48] Capturing execution frames: gaussian_generation.json
+[17:54]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[17:54]   Validating workflow...
+[17:54]   Queuing workflow for execution...
+[17:55]   Node executed (1 total), capturing...
+[17:55]   Frame 2 saved (frame_001.jpg, t=0.5s)
+[17:55]   [capture-node] freeze=4ms shot=87ms unfreeze=4ms saved=True
+[17:59]   Frame 3 saved (frame_002.jpg, t=4.9s)
+[17:59]   [capture-periodic] freeze=3ms shot=85ms unfreeze=6ms saved=True
+[18:00]   [capture-loop] iter=50 t=6.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=7.8/23.9GB (32%) swap=0.0/3.9GB (0%) cpu=5% browser_rss=0.79GB
+[18:06]   [capture-loop] iter=100 t=11.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.9/23.9GB (33%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.78GB
+[18:08]   Frame 4 saved (frame_003.jpg, t=13.6s)
+[18:08]   [capture-periodic] freeze=3ms shot=88ms unfreeze=4ms saved=True
+[18:10]   Frame 5 saved (frame_004.jpg, t=15.8s)
+[18:10]   [capture-periodic] freeze=3ms shot=97ms unfreeze=5ms saved=True
+[18:12]   [capture-loop] iter=150 t=17.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=10.6/23.9GB (44%) swap=0.0/3.9GB (0%) cpu=33% browser_rss=0.70GB
+[18:18]   [capture-loop] iter=200 t=23.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=10.9/23.9GB (46%) swap=0.0/10.2GB (0%) cpu=30% browser_rss=0.69GB
+[18:24]   [capture-loop] iter=250 t=29.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.0/23.9GB (46%) swap=0.0/6.7GB (0%) cpu=18% browser_rss=0.69GB
+[18:25]   Frame 6 saved (frame_005.jpg, t=30.8s)
+[18:25]   [capture-periodic] freeze=2ms shot=71ms unfreeze=6ms saved=True
+[18:27]   Frame 7 saved (frame_006.jpg, t=33.0s)
+[18:27]   [capture-periodic] freeze=2ms shot=76ms unfreeze=4ms saved=True
+[18:29]   [capture-loop] iter=300 t=35.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.0/23.9GB (46%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.70GB
+[18:30]   Frame 8 saved (frame_007.jpg, t=35.2s)
+[18:30]   [capture-periodic] freeze=3ms shot=73ms unfreeze=6ms saved=True
+[18:32]   Frame 9 saved (frame_008.jpg, t=37.4s)
+[18:32]   [capture-periodic] freeze=3ms shot=81ms unfreeze=4ms saved=True
+[18:34]   Frame 10 saved (frame_009.jpg, t=39.5s)
+[18:34]   [capture-periodic] freeze=2ms shot=86ms unfreeze=5ms saved=True
+[18:35]   [capture-loop] iter=350 t=40.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=15.0/23.9GB (63%) swap=0.0/3.9GB (0%) cpu=16% browser_rss=0.70GB
+[18:41]   [capture-loop] iter=400 t=46.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=14.9/23.9GB (63%) swap=0.0/9.2GB (0%) cpu=42% browser_rss=0.70GB
+[18:47]   [capture-loop] iter=450 t=52.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.1/23.9GB (67%) swap=0.0/5.0GB (0%) cpu=12% browser_rss=0.70GB
+[18:53]   [capture-loop] iter=500 t=58.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.2/23.9GB (68%) swap=0.0/7.8GB (0%) cpu=18% browser_rss=0.70GB
+[18:53]   Frame 11 saved (frame_010.jpg, t=58.9s)
+[18:53]   [capture-periodic] freeze=7ms shot=89ms unfreeze=4ms saved=True
+[18:55]   Frame 12 saved (frame_011.jpg, t=61.0s)
+[18:55]   [capture-periodic] freeze=2ms shot=88ms unfreeze=5ms saved=True
+[18:58]   Frame 13 saved (frame_012.jpg, t=63.2s)
+[18:58]   [capture-periodic] freeze=3ms shot=104ms unfreeze=5ms saved=True
+[18:59]   [capture-loop] iter=550 t=64.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.2/23.9GB (76%) swap=0.0/7.8GB (0%) cpu=44% browser_rss=0.68GB
+[19:00]   Frame 14 saved (frame_013.jpg, t=65.5s)
+[19:00]   [capture-periodic] freeze=2ms shot=94ms unfreeze=5ms saved=True
+[19:04]   [capture-loop] iter=600 t=70.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.2/23.9GB (76%) swap=0.0/7.8GB (0%) cpu=19% browser_rss=0.68GB
+[19:10]   [capture-loop] iter=650 t=75.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.2/23.9GB (76%) swap=0.0/7.8GB (0%) cpu=12% browser_rss=0.67GB
+[19:16]   [capture-loop] iter=700 t=81.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.2/23.9GB (76%) swap=0.0/7.8GB (0%) cpu=12% browser_rss=0.67GB
+[19:21]   Node executed (2 total), capturing...
+[19:22]   Frame 15 saved (frame_014.jpg, t=87.3s)
+[19:22]   [capture-node] freeze=3ms shot=84ms unfreeze=0ms saved=True
+[19:22]   Execution complete (t=87.3s)
+[19:22]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[19:23]   [3d-wait] Phase 1 done in 1.7s
+[19:23]   [3d-wait] Phase 2: iframes=1
+[19:23]   [3d-wait] iframe viewer_ready=True (matched 1 console logs)
+[19:23]   [3d-wait] Unfrozen in 0.003s, rendering for 5s...
+[19:28]   [3d-wait] JS halted via CDP after 5.0s
+[19:29]   [3d-wait] Re-frozen in 6.0s
+[19:29]   [3d-wait] Total 3D wait: 7.7s
+[19:29]   Captured 15 unique frames over 95.17s
+[19:29]   [debug] iframes: 1
+[19:29]   [debug]   iframe[0]: src=http://127.0.0.1:41889/extensions/ComfyUI-SAM3DObjects/viewer_vtk.html?v=1779133, canvas=486x405, rafFrozen=True
+[19:29]   [timing] trigger_3d_previews: 0.0s
+[19:32]   Saved high-quality screenshot: gaussian_generation_executed.png
+[19:32]   [timing] final_screenshot: 0.2s
+[19:32] Capturing execution frames: mesh_generation.json
+[19:38]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[19:38]   Validating workflow...
+[19:38]   Queuing workflow for execution...
+[19:38]   Node executed (1 total), capturing...
+[19:38]   Frame 2 saved (frame_001.jpg, t=0.5s)
+[19:38]   [capture-node] freeze=4ms shot=120ms unfreeze=6ms saved=True
+[19:41]   Frame 3 saved (frame_002.jpg, t=2.8s)
+[19:41]   [capture-periodic] freeze=4ms shot=124ms unfreeze=6ms saved=True
+[19:43]   Frame 4 saved (frame_003.jpg, t=5.0s)
+[19:43]   [capture-periodic] freeze=6ms shot=125ms unfreeze=3ms saved=True
+[19:44]   [capture-loop] iter=50 t=6.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=17.7/23.9GB (74%) swap=0.0/7.8GB (0%) cpu=16% browser_rss=0.76GB
+[19:47]   Frame 5 saved (frame_004.jpg, t=9.4s)
+[19:47]   [capture-periodic] freeze=3ms shot=100ms unfreeze=7ms saved=True
+[19:49]   Frame 6 saved (frame_005.jpg, t=11.7s)
+[19:49]   [capture-periodic] freeze=3ms shot=89ms unfreeze=7ms saved=True
+[19:50]   [capture-loop] iter=100 t=12.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=14.8/23.9GB (62%) swap=0.0/7.8GB (0%) cpu=14% browser_rss=0.74GB
+[19:52]   Frame 7 saved (frame_006.jpg, t=13.8s)
+[19:52]   [capture-periodic] freeze=3ms shot=97ms unfreeze=4ms saved=True
+[19:54]   Frame 8 saved (frame_007.jpg, t=16.0s)
+[19:54]   [capture-periodic] freeze=2ms shot=102ms unfreeze=5ms saved=True
+[19:56]   [capture-loop] iter=150 t=18.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=14.8/23.9GB (62%) swap=0.0/7.8GB (0%) cpu=12% browser_rss=0.75GB
+[19:56]   Frame 9 saved (frame_008.jpg, t=18.3s)
+[19:56]   [capture-periodic] freeze=3ms shot=91ms unfreeze=4ms saved=True
+[19:58]   Frame 10 saved (frame_009.jpg, t=20.5s)
+[19:58]   [capture-periodic] freeze=2ms shot=119ms unfreeze=4ms saved=True
+[20:01]   Frame 11 saved (frame_010.jpg, t=22.7s)
+[20:01]   [capture-periodic] freeze=4ms shot=106ms unfreeze=4ms saved=True
+[20:02]   [capture-loop] iter=200 t=24.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=16.3/23.9GB (68%) swap=0.0/7.8GB (0%) cpu=34% browser_rss=0.76GB
+[20:03]   Frame 12 saved (frame_011.jpg, t=24.9s)
+[20:03]   [capture-periodic] freeze=5ms shot=118ms unfreeze=5ms saved=True
+[20:05]   Frame 13 saved (frame_012.jpg, t=27.2s)
+[20:05]   [capture-periodic] freeze=5ms shot=114ms unfreeze=8ms saved=True
+[20:07]   Frame 14 saved (frame_013.jpg, t=29.3s)
+[20:07]   [capture-periodic] freeze=2ms shot=98ms unfreeze=3ms saved=True
+[20:08]   [capture-loop] iter=250 t=30.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.4/23.9GB (77%) swap=0.0/7.8GB (0%) cpu=36% browser_rss=0.68GB
+[20:09]   Node executed (2 total), capturing...
+[20:10]   Frame 15 saved (frame_014.jpg, t=31.2s)
+[20:10]   [capture-node] freeze=170ms shot=505ms unfreeze=0ms saved=True
+[20:10]   Execution complete (t=31.2s)
+[20:10]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[21:10]   [3d-wait] Phase 1 exception after 60.0s: Page.wait_for_function: Timeout 60000ms exceeded.
+[21:10]   [3d-wait] Phase 2: iframes=0
+[21:10]   [3d-wait] Total 3D wait: 60.0s
+[21:10]   Captured 15 unique frames over 91.96s
+[21:10]   [debug] iframes: 0
+[21:10]   [timing] trigger_3d_previews: 0.0s
+[21:12]   Saved high-quality screenshot: mesh_generation_executed.png
+[21:12]   [timing] final_screenshot: 0.2s
+[21:12] Capturing execution frames: scene_generation.json
+[21:18]   Frame 1 saved (frame_000.jpg, t=0.0s)
+[21:18]   Validating workflow...
+[21:18]   Queuing workflow for execution...
+[21:20]   Node executed (1 total), capturing...
+[21:20]   Frame 2 saved (frame_001.jpg, t=1.8s)
+[21:20]   [capture-node] freeze=4ms shot=154ms unfreeze=14ms saved=True
+[21:24]   [capture-loop] iter=50 t=6.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.5/23.9GB (31%) swap=0.0/3.9GB (0%) cpu=6% browser_rss=0.87GB
+[21:25]   Frame 3 saved (frame_002.jpg, t=6.2s)
+[21:25]   [capture-periodic] freeze=2ms shot=119ms unfreeze=3ms saved=True
+[21:30]   [capture-loop] iter=100 t=12.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.7/23.9GB (32%) swap=0.0/3.9GB (0%) cpu=15% browser_rss=0.86GB
+[21:33]   Frame 4 saved (frame_003.jpg, t=15.0s)
+[21:33]   [capture-periodic] freeze=2ms shot=119ms unfreeze=4ms saved=True
+[21:36]   [capture-loop] iter=150 t=17.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=9.6/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=16% browser_rss=0.87GB
+[21:42]   [capture-loop] iter=200 t=23.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.6/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.86GB
+[21:47]   [capture-loop] iter=250 t=29.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=9.6/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.77GB
+[21:53]   [capture-loop] iter=300 t=35.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=9.5/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.77GB
+[21:59]   [capture-loop] iter=350 t=40.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.5/23.9GB (40%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.77GB
+[22:02]   Frame 5 saved (frame_004.jpg, t=43.4s)
+[22:02]   [capture-periodic] freeze=3ms shot=127ms unfreeze=3ms saved=True
+[22:05]   [capture-loop] iter=400 t=46.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=7.9/23.9GB (33%) swap=0.0/3.9GB (0%) cpu=20% browser_rss=0.77GB
+[22:11]   [capture-loop] iter=450 t=52.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=9.2/23.9GB (38%) swap=0.0/3.9GB (0%) cpu=17% browser_rss=0.77GB
+[22:17]   [capture-loop] iter=500 t=58.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=10.0/23.9GB (42%) swap=0.0/5.7GB (0%) cpu=42% browser_rss=0.77GB
+[22:23]   [capture-loop] iter=550 t=64.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=14.4/23.9GB (60%) swap=0.0/5.0GB (0%) cpu=14% browser_rss=0.77GB
+[22:26]   Frame 6 saved (frame_005.jpg, t=67.8s)
+[22:26]   [capture-periodic] freeze=3ms shot=120ms unfreeze=7ms saved=True
+[22:28]   Frame 7 saved (frame_006.jpg, t=70.0s)
+[22:28]   [capture-periodic] freeze=2ms shot=119ms unfreeze=3ms saved=True
+[22:29]   [capture-loop] iter=600 t=70.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.0/23.9GB (46%) swap=0.0/5.0GB (0%) cpu=18% browser_rss=0.77GB
+[22:31]   Frame 8 saved (frame_007.jpg, t=72.3s)
+[22:31]   [capture-periodic] freeze=2ms shot=124ms unfreeze=5ms saved=True
+[22:33]   Frame 9 saved (frame_008.jpg, t=74.5s)
+[22:33]   [capture-periodic] freeze=3ms shot=126ms unfreeze=3ms saved=True
+[22:35]   [capture-loop] iter=650 t=76.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=11.0/23.9GB (46%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.78GB
+[22:35]   Frame 10 saved (frame_009.jpg, t=76.7s)
+[22:35]   [capture-periodic] freeze=4ms shot=126ms unfreeze=8ms saved=True
+[22:41]   [capture-loop] iter=700 t=82.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (48%) swap=0.0/3.9GB (0%) cpu=27% browser_rss=0.78GB
+[22:42]   Frame 11 saved (frame_010.jpg, t=83.4s)
+[22:42]   [capture-periodic] freeze=2ms shot=129ms unfreeze=4ms saved=True
+[22:44]   Frame 12 saved (frame_011.jpg, t=85.6s)
+[22:44]   [capture-periodic] freeze=3ms shot=113ms unfreeze=4ms saved=True
+[22:46]   Frame 13 saved (frame_012.jpg, t=87.9s)
+[22:46]   [capture-periodic] freeze=3ms shot=114ms unfreeze=3ms saved=True
+[22:47]   [capture-loop] iter=750 t=88.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.78GB
+[22:48]   Frame 14 saved (frame_013.jpg, t=90.0s)
+[22:48]   [capture-periodic] freeze=3ms shot=123ms unfreeze=4ms saved=True
+[22:51]   Frame 15 saved (frame_014.jpg, t=92.2s)
+[22:51]   [capture-periodic] freeze=3ms shot=117ms unfreeze=3ms saved=True
+[22:53]   [capture-loop] iter=800 t=94.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=10 ram=15.6/23.9GB (66%) swap=0.0/3.9GB (0%) cpu=22% browser_rss=0.78GB
+[22:53]   Frame 16 saved (frame_015.jpg, t=94.5s)
+[22:53]   [capture-periodic] freeze=4ms shot=203ms unfreeze=4ms saved=True
+[22:57]   Frame 17 saved (frame_016.jpg, t=99.0s)
+[22:57]   [capture-periodic] freeze=3ms shot=111ms unfreeze=3ms saved=True
+[22:59]   [capture-loop] iter=850 t=100.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=17% browser_rss=0.78GB
+[23:00]   Frame 18 saved (frame_017.jpg, t=101.2s)
+[23:00]   [capture-periodic] freeze=3ms shot=118ms unfreeze=4ms saved=True
+[23:02]   Frame 19 saved (frame_018.jpg, t=103.5s)
+[23:02]   [capture-periodic] freeze=3ms shot=119ms unfreeze=4ms saved=True
+[23:04]   Frame 20 saved (frame_019.jpg, t=105.7s)
+[23:04]   [capture-periodic] freeze=3ms shot=117ms unfreeze=3ms saved=True
+[23:05]   [capture-loop] iter=900 t=106.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=13% browser_rss=0.78GB
+[23:06]   Frame 21 saved (frame_020.jpg, t=107.9s)
+[23:06]   [capture-periodic] freeze=3ms shot=125ms unfreeze=6ms saved=True
+[23:11]   [capture-loop] iter=950 t=112.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=26% browser_rss=0.78GB
+[23:13]   Frame 22 saved (frame_021.jpg, t=114.6s)
+[23:13]   [capture-periodic] freeze=2ms shot=111ms unfreeze=4ms saved=True
+[23:15]   Frame 23 saved (frame_022.jpg, t=116.8s)
+[23:15]   [capture-periodic] freeze=2ms shot=112ms unfreeze=4ms saved=True
+[23:17]   [capture-loop] iter=1000 t=118.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.78GB
+[23:17]   Frame 24 saved (frame_023.jpg, t=119.0s)
+[23:17]   [capture-periodic] freeze=2ms shot=128ms unfreeze=5ms saved=True
+[23:20]   Frame 25 saved (frame_024.jpg, t=121.2s)
+[23:20]   [capture-periodic] freeze=3ms shot=113ms unfreeze=3ms saved=True
+[23:22]   Frame 26 saved (frame_025.jpg, t=123.5s)
+[23:22]   [capture-periodic] freeze=4ms shot=139ms unfreeze=7ms saved=True
+[23:23]   [capture-loop] iter=1050 t=124.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=15.5/23.9GB (65%) swap=0.0/3.9GB (0%) cpu=16% browser_rss=0.78GB
+[23:28]   Frame 27 saved (frame_026.jpg, t=130.1s)
+[23:28]   [capture-periodic] freeze=2ms shot=129ms unfreeze=3ms saved=True
+[23:29]   [capture-loop] iter=1100 t=130.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=22% browser_rss=0.78GB
+[23:31]   Frame 28 saved (frame_027.jpg, t=132.4s)
+[23:31]   [capture-periodic] freeze=3ms shot=122ms unfreeze=4ms saved=True
+[23:33]   Frame 29 saved (frame_028.jpg, t=134.6s)
+[23:33]   [capture-periodic] freeze=3ms shot=113ms unfreeze=4ms saved=True
+[23:35]   [capture-loop] iter=1150 t=136.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.78GB
+[23:35]   Frame 30 saved (frame_029.jpg, t=136.9s)
+[23:35]   [capture-periodic] freeze=2ms shot=133ms unfreeze=3ms saved=True
+[23:37]   Frame 31 saved (frame_030.jpg, t=139.1s)
+[23:37]   [capture-periodic] freeze=3ms shot=138ms unfreeze=8ms saved=True
+[23:41]   [capture-loop] iter=1200 t=142.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=12.0/23.9GB (50%) swap=0.0/3.9GB (0%) cpu=24% browser_rss=0.78GB
+[23:44]   Frame 32 saved (frame_031.jpg, t=145.6s)
+[23:44]   [capture-periodic] freeze=3ms shot=124ms unfreeze=4ms saved=True
+[23:46]   Frame 33 saved (frame_032.jpg, t=147.8s)
+[23:46]   [capture-periodic] freeze=3ms shot=112ms unfreeze=4ms saved=True
+[23:47]   [capture-loop] iter=1250 t=148.7s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=12% browser_rss=0.78GB
+[23:48]   Frame 34 saved (frame_033.jpg, t=150.1s)
+[23:48]   [capture-periodic] freeze=3ms shot=120ms unfreeze=5ms saved=True
+[23:51]   Frame 35 saved (frame_034.jpg, t=152.3s)
+[23:51]   [capture-periodic] freeze=2ms shot=123ms unfreeze=4ms saved=True
+[23:53]   [capture-loop] iter=1300 t=154.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=13.8/23.9GB (58%) swap=0.0/3.9GB (0%) cpu=13% browser_rss=0.78GB
+[23:53]   Frame 36 saved (frame_035.jpg, t=154.6s)
+[23:53]   [capture-periodic] freeze=3ms shot=132ms unfreeze=6ms saved=True
+[23:59]   [capture-loop] iter=1350 t=160.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=24% browser_rss=0.78GB
+[24:00]   Frame 37 saved (frame_036.jpg, t=161.2s)
+[24:00]   [capture-periodic] freeze=4ms shot=114ms unfreeze=3ms saved=True
+[24:02]   Frame 38 saved (frame_037.jpg, t=163.5s)
+[24:02]   [capture-periodic] freeze=3ms shot=119ms unfreeze=5ms saved=True
+[24:04]   Frame 39 saved (frame_038.jpg, t=165.7s)
+[24:04]   [capture-periodic] freeze=2ms shot=123ms unfreeze=4ms saved=True
+[24:05]   [capture-loop] iter=1400 t=166.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=11.3/23.9GB (47%) swap=0.0/3.9GB (0%) cpu=14% browser_rss=0.78GB
+[24:06]   Frame 40 saved (frame_039.jpg, t=167.9s)
+[24:06]   [capture-periodic] freeze=2ms shot=124ms unfreeze=4ms saved=True
+[24:08]   Frame 41 saved (frame_040.jpg, t=170.1s)
+[24:08]   [capture-periodic] freeze=4ms shot=130ms unfreeze=5ms saved=True
+[24:10]   [capture-loop] iter=1450 t=172.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.1/23.9GB (68%) swap=0.0/3.9GB (0%) cpu=29% browser_rss=0.78GB
+[24:17]   [capture-loop] iter=1500 t=178.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.1/23.9GB (68%) swap=0.0/8.8GB (0%) cpu=33% browser_rss=0.78GB
+[24:22]   [capture-loop] iter=1550 t=184.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.9/23.9GB (71%) swap=0.0/13.0GB (0%) cpu=16% browser_rss=0.78GB
+[24:28]   [capture-loop] iter=1600 t=190.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.2/23.9GB (68%) swap=0.0/8.8GB (0%) cpu=15% browser_rss=0.78GB
+[24:30]   Frame 42 saved (frame_041.jpg, t=192.1s)
+[24:30]   [capture-periodic] freeze=3ms shot=134ms unfreeze=7ms saved=True
+[24:33]   Frame 43 saved (frame_042.jpg, t=194.3s)
+[24:33]   [capture-periodic] freeze=2ms shot=129ms unfreeze=3ms saved=True
+[24:34]   [capture-loop] iter=1650 t=196.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.2/23.9GB (68%) swap=0.0/8.8GB (0%) cpu=27% browser_rss=0.78GB
+[24:35]   Frame 44 saved (frame_043.jpg, t=196.6s)
+[24:35]   [capture-periodic] freeze=3ms shot=137ms unfreeze=3ms saved=True
+[24:37]   Frame 45 saved (frame_044.jpg, t=198.8s)
+[24:37]   [capture-periodic] freeze=3ms shot=132ms unfreeze=5ms saved=True
+[24:39]   Frame 46 saved (frame_045.jpg, t=201.1s)
+[24:39]   [capture-periodic] freeze=4ms shot=128ms unfreeze=4ms saved=True
+[24:40]   [capture-loop] iter=1700 t=202.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=16.2/23.9GB (68%) swap=0.0/8.8GB (0%) cpu=27% browser_rss=0.78GB
+[24:42]   Frame 47 saved (frame_046.jpg, t=203.3s)
+[24:42]   [capture-periodic] freeze=3ms shot=152ms unfreeze=11ms saved=True
+[24:46]   [capture-loop] iter=1750 t=208.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.8GB (0%) cpu=27% browser_rss=0.74GB
+[24:48]   Frame 48 saved (frame_047.jpg, t=210.0s)
+[24:48]   [capture-periodic] freeze=2ms shot=126ms unfreeze=3ms saved=True
+[24:50]   Frame 49 saved (frame_048.jpg, t=212.2s)
+[24:50]   [capture-periodic] freeze=3ms shot=120ms unfreeze=4ms saved=True
+[24:52]   [capture-loop] iter=1800 t=213.9s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.8GB (0%) cpu=24% browser_rss=0.74GB
+[24:53]   Frame 50 saved (frame_049.jpg, t=214.4s)
+[24:53]   [capture-periodic] freeze=2ms shot=138ms unfreeze=8ms saved=True
+[24:55]   Frame 51 saved (frame_050.jpg, t=216.6s)
+[24:55]   [capture-periodic] freeze=2ms shot=127ms unfreeze=4ms saved=True
+[24:57]   Frame 52 saved (frame_051.jpg, t=218.8s)
+[24:57]   [capture-periodic] freeze=2ms shot=124ms unfreeze=5ms saved=True
+[24:58]   [capture-loop] iter=1850 t=219.8s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.8GB (0%) cpu=23% browser_rss=0.74GB
+[24:59]   Frame 53 saved (frame_052.jpg, t=221.1s)
+[24:59]   [capture-periodic] freeze=2ms shot=121ms unfreeze=6ms saved=True
+[25:02]   Frame 54 saved (frame_053.jpg, t=223.3s)
+[25:02]   [capture-periodic] freeze=2ms shot=126ms unfreeze=3ms saved=True
+[25:04]   Frame 55 saved (frame_054.jpg, t=225.6s)
+[25:04]   [capture-periodic] freeze=5ms shot=152ms unfreeze=7ms saved=True
+[25:04]   [capture-loop] iter=1900 t=226.0s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=17.5/23.9GB (73%) swap=0.0/8.8GB (0%) cpu=23% browser_rss=0.74GB
+[25:08]   Frame 56 saved (frame_055.jpg, t=230.0s)
+[25:08]   [capture-periodic] freeze=2ms shot=133ms unfreeze=10ms saved=True
+[25:10]   [capture-loop] iter=1950 t=232.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.8GB (0%) cpu=37% browser_rss=0.74GB
+[25:11]   Frame 57 saved (frame_056.jpg, t=232.2s)
+[25:11]   [capture-periodic] freeze=4ms shot=150ms unfreeze=9ms saved=True
+[25:13]   Frame 58 saved (frame_057.jpg, t=234.5s)
+[25:13]   [capture-periodic] freeze=3ms shot=142ms unfreeze=4ms saved=True
+[25:15]   Frame 59 saved (frame_058.jpg, t=236.8s)
+[25:15]   [capture-periodic] freeze=4ms shot=141ms unfreeze=7ms saved=True
+[25:17]   [capture-loop] iter=2000 t=238.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=15.9/23.9GB (66%) swap=0.0/8.6GB (0%) cpu=37% browser_rss=0.74GB
+[25:19]   Frame 60 saved (frame_059.jpg, t=241.2s)
+[25:19]   [capture-periodic] freeze=3ms shot=125ms unfreeze=3ms saved=True
+[25:22]   Frame 61 saved (frame_060.jpg, t=243.5s)
+[25:22]   [capture-periodic] freeze=2ms shot=115ms unfreeze=4ms saved=True
+[25:23]   [capture-loop] iter=2050 t=244.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.6GB (0%) cpu=23% browser_rss=0.74GB
+[25:24]   Frame 62 saved (frame_061.jpg, t=245.7s)
+[25:24]   [capture-periodic] freeze=3ms shot=113ms unfreeze=5ms saved=True
+[25:26]   Frame 63 saved (frame_062.jpg, t=247.9s)
+[25:26]   [capture-periodic] freeze=2ms shot=127ms unfreeze=4ms saved=True
+[25:28]   [capture-loop] iter=2100 t=250.1s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=15.9/23.9GB (66%) swap=0.0/8.6GB (0%) cpu=25% browser_rss=0.74GB
+[25:28]   Frame 64 saved (frame_063.jpg, t=250.1s)
+[25:28]   [capture-periodic] freeze=3ms shot=125ms unfreeze=5ms saved=True
+[25:31]   Frame 65 saved (frame_064.jpg, t=252.3s)
+[25:31]   [capture-periodic] freeze=2ms shot=127ms unfreeze=4ms saved=True
+[25:33]   Frame 66 saved (frame_065.jpg, t=254.6s)
+[25:33]   [capture-periodic] freeze=3ms shot=126ms unfreeze=3ms saved=True
+[25:34]   [capture-loop] iter=2150 t=256.2s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=18.4/23.9GB (77%) swap=0.0/8.6GB (0%) cpu=24% browser_rss=0.74GB
+[25:35]   Frame 67 saved (frame_066.jpg, t=256.8s)
+[25:35]   [capture-periodic] freeze=3ms shot=128ms unfreeze=7ms saved=True
+[25:39]   Frame 68 saved (frame_067.jpg, t=261.2s)
+[25:39]   [capture-periodic] freeze=7ms shot=120ms unfreeze=3ms saved=True
+[25:40]   [capture-loop] iter=2200 t=262.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (67%) swap=0.0/8.6GB (0%) cpu=28% browser_rss=0.74GB
+[25:42]   Frame 69 saved (frame_068.jpg, t=263.4s)
+[25:42]   [capture-periodic] freeze=2ms shot=128ms unfreeze=4ms saved=True
+[25:44]   Frame 70 saved (frame_069.jpg, t=265.6s)
+[25:44]   [capture-periodic] freeze=2ms shot=124ms unfreeze=4ms saved=True
+[25:46]   Frame 71 saved (frame_070.jpg, t=267.7s)
+[25:46]   [capture-periodic] freeze=2ms shot=119ms unfreeze=3ms saved=True
+[25:46]   [capture-loop] iter=2250 t=268.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (67%) swap=0.0/8.6GB (0%) cpu=28% browser_rss=0.74GB
+[25:48]   Frame 72 saved (frame_071.jpg, t=269.9s)
+[25:48]   [capture-periodic] freeze=2ms shot=118ms unfreeze=4ms saved=True
+[25:50]   Frame 73 saved (frame_072.jpg, t=272.1s)
+[25:50]   [capture-periodic] freeze=2ms shot=145ms unfreeze=5ms saved=True
+[25:52]   [capture-loop] iter=2300 t=274.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (67%) swap=0.0/8.6GB (0%) cpu=27% browser_rss=0.74GB
+[25:55]   Frame 74 saved (frame_073.jpg, t=276.6s)
+[25:55]   [capture-periodic] freeze=4ms shot=130ms unfreeze=8ms saved=True
+[25:57]   Frame 75 saved (frame_074.jpg, t=278.7s)
+[25:57]   [capture-periodic] freeze=2ms shot=117ms unfreeze=4ms saved=True
+[25:58]   [capture-loop] iter=2350 t=280.4s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=17.5/23.9GB (73%) swap=0.0/8.6GB (0%) cpu=23% browser_rss=0.75GB
+[25:59]   Frame 76 saved (frame_075.jpg, t=280.9s)
+[25:59]   [capture-periodic] freeze=2ms shot=130ms unfreeze=6ms saved=True
+[26:01]   Frame 77 saved (frame_076.jpg, t=283.1s)
+[26:01]   [capture-periodic] freeze=2ms shot=124ms unfreeze=4ms saved=True
+[26:04]   Frame 78 saved (frame_077.jpg, t=285.3s)
+[26:04]   [capture-periodic] freeze=3ms shot=113ms unfreeze=3ms saved=True
+[26:05]   [capture-loop] iter=2400 t=286.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=15.9/23.9GB (66%) swap=0.0/8.6GB (0%) cpu=30% browser_rss=0.74GB
+[26:06]   Frame 79 saved (frame_078.jpg, t=287.5s)
+[26:06]   [capture-periodic] freeze=2ms shot=114ms unfreeze=4ms saved=True
+[26:08]   Frame 80 saved (frame_079.jpg, t=289.7s)
+[26:08]   [capture-periodic] freeze=4ms shot=137ms unfreeze=5ms saved=True
+[26:10]   Frame 81 saved (frame_080.jpg, t=291.9s)
+[26:10]   [capture-periodic] freeze=10ms shot=152ms unfreeze=5ms saved=True
+[26:11]   [capture-loop] iter=2450 t=292.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=10 ram=18.3/23.9GB (77%) swap=0.0/8.6GB (0%) cpu=32% browser_rss=0.75GB
+[26:12]   Frame 82 saved (frame_081.jpg, t=294.1s)
+[26:12]   [capture-periodic] freeze=2ms shot=126ms unfreeze=3ms saved=True
+[26:16]   [capture-loop] iter=2500 t=298.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=18.1/23.9GB (76%) swap=0.0/8.6GB (0%) cpu=17% browser_rss=0.74GB
+[26:19]   Frame 83 saved (frame_082.jpg, t=300.7s)
+[26:19]   [capture-periodic] freeze=7ms shot=138ms unfreeze=6ms saved=True
+[26:21]   Frame 84 saved (frame_083.jpg, t=303.0s)
+[26:21]   [capture-periodic] freeze=4ms shot=184ms unfreeze=4ms saved=True
+[26:22]   [capture-loop] iter=2550 t=304.3s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=18.5/23.9GB (77%) swap=0.0/9.7GB (0%) cpu=24% browser_rss=0.74GB
+[26:24]   Frame 85 saved (frame_084.jpg, t=305.3s)
+[26:24]   [capture-periodic] freeze=2ms shot=125ms unfreeze=4ms saved=True
+[26:26]   Frame 86 saved (frame_085.jpg, t=307.5s)
+[26:26]   [capture-periodic] freeze=5ms shot=156ms unfreeze=3ms saved=True
+[26:28]   Frame 87 saved (frame_086.jpg, t=309.7s)
+[26:28]   [capture-periodic] freeze=3ms shot=139ms unfreeze=3ms saved=True
+[26:29]   [capture-loop] iter=2600 t=310.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=4 ram=18.9/23.9GB (79%) swap=0.0/9.7GB (0%) cpu=32% browser_rss=0.75GB
+[26:35]   [capture-loop] iter=2650 t=316.6s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=5 ram=20.1/23.9GB (84%) swap=0.0/9.7GB (0%) cpu=16% browser_rss=0.74GB
+[26:41]   [capture-loop] iter=2700 t=322.5s state={'complete': False, 'error': None, 'executedCount': 1, 'wsState': 1} eval_ms=3 ram=19.9/23.9GB (83%) swap=0.0/9.7GB (0%) cpu=31% browser_rss=0.74GB
+[26:41]   Node executed (2 total), capturing...
+[26:41]   Frame 88 saved (frame_087.jpg, t=322.8s)
+[26:41]   [capture-node] freeze=4ms shot=139ms unfreeze=3ms saved=True
+[26:47]   [capture-loop] iter=2750 t=328.6s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=20.5/23.9GB (86%) swap=0.0/9.7GB (0%) cpu=14% browser_rss=0.75GB
+[26:53]   [capture-loop] iter=2800 t=334.7s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=21.3/23.9GB (89%) swap=0.0/9.7GB (0%) cpu=16% browser_rss=0.75GB
+[26:59]   [capture-loop] iter=2850 t=340.8s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=21.2/23.9GB (88%) swap=0.6/9.7GB (7%) cpu=19% browser_rss=0.75GB
+[27:01]   Frame 89 saved (frame_088.jpg, t=342.7s)
+[27:01]   [capture-periodic] freeze=4ms shot=163ms unfreeze=7ms saved=True
+[27:05]   [capture-loop] iter=2900 t=346.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=4 ram=22.6/23.9GB (95%) swap=0.6/11.7GB (6%) cpu=22% browser_rss=0.68GB
+[27:11]   [capture-loop] iter=2950 t=352.9s state={'complete': False, 'error': None, 'executedCount': 2, 'wsState': 1} eval_ms=3 ram=22.8/23.9GB (96%) swap=0.6/11.7GB (6%) cpu=19% browser_rss=0.62GB
+[27:15]   Node executed (3 total), capturing...
+[27:16]   Frame 90 saved (frame_089.jpg, t=357.3s)
+[27:16]   [capture-node] freeze=3ms shot=150ms unfreeze=7ms saved=True
+[27:17]   [capture-loop] iter=3000 t=359.2s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=5 ram=23.3/23.9GB (98%) swap=0.6/12.7GB (5%) cpu=21% browser_rss=0.59GB
+[27:24]   [capture-loop] iter=3050 t=365.5s state={'complete': False, 'error': None, 'executedCount': 3, 'wsState': 1} eval_ms=3 ram=21.8/23.9GB (91%) swap=1.0/12.7GB (8%) cpu=23% browser_rss=0.56GB
+[27:28]   Node executed (4 total), capturing...
+[27:28]   Frame 91 saved (frame_090.jpg, t=369.6s)
+[27:28]   [capture-node] freeze=3ms shot=143ms unfreeze=0ms saved=True
+[27:28]   Execution complete (t=369.6s)
+[27:28]   [3d-wait] Phase 1: Waiting for 'Loading 3D Model' text to disappear...
+[27:28]   [3d-wait] Phase 1 done in 0.0s
+[27:28]   [3d-wait] Phase 2: iframes=1
+[27:28]   [3d-wait] iframe viewer_ready=False (matched 0 console logs)
+[27:28]   [3d-wait] Waiting for 'Loaded successfully' console message (timeout=60s)...
+[27:28]   [3d-wait] Got 'Loaded successfully' after 0.5s
+[27:28]   [3d-wait] Unfrozen in 0.040s, rendering for 5s...
+[27:37]   [3d-wait] JS halted via CDP after 8.1s
+[27:38]   [3d-wait] Re-frozen in 9.1s
+[27:38]   [3d-wait] Total 3D wait: 9.6s
+[27:38]   Captured 91 unique frames over 379.45s
+[27:38]   [debug] iframes: 1
+[27:38]   [debug]   iframe[0]: src=http://127.0.0.1:41889/extensions/ComfyUI-GeometryPack/viewer_vtk_textured.html?, canvas=486x356, rafFrozen=True
+[27:38]   [timing] trigger_3d_previews: 0.0s
+[27:40]   Saved high-quality screenshot: scene_generation_executed.png
+[27:40]   [timing] final_screenshot: 0.3s
+[27:40] Results saved to C:\logs\SAM3DObjects-2121\dev\windows-portable-gpu\results.json
+[27:40] Model report: 42 files, 13.9 GB -> C:\logs\SAM3DObjects-2121\dev\windows-portable-gpu\models.json
+[27:41] Saved: C:\logs\SAM3DObjects-2121\dev\windows-portable-gpu\index.html
+[27:41] [EXECUTION] PASSED
+[27:41] 
+windows_portable: PASSED
+[27:41] Stopping ComfyUI server...
