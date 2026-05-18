@@ -1,107 +1,107 @@
 {
-  "timestamp": "2026-05-18T17:33:40.682745+00:00",
+  "timestamp": "2026-05-18T19:44:06.038892+00:00",
   "platform": "windows",
   "hardware": {
     "os": "Windows-11-10.0.26100-SP0",
-    "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+    "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
   },
-  "commit_hash": "5a3e9de9d9bc72fa827e828afc8e416acb87c36d",
-  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/26045552234",
-  "success": false,
+  "commit_hash": "71f913bf76ffd37c7be882a25e83b76cd242e509",
+  "run_url": "https://github.com/PozzettiAndrea/comfy-gpu-ci/actions/runs/26055218364",
+  "success": true,
   "summary": {
     "total": 5,
-    "passed": 0,
-    "failed": 5
+    "passed": 5,
+    "failed": 0
   },
   "workflows": [
     {
       "name": "debug_large_image_results",
-      "status": "fail",
-      "duration_seconds": 7.22,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 10 nodes, missing class_type: [59,74,92,93], sample: {\"inputs\":{\"depth_model\":[\"74\",0],\"image\":[\"77\",0]},\"_meta\":{}}",
+      "status": "pass",
+      "duration_seconds": 305.04,
+      "error": null,
       "hardware": {
         "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 0.95,
-          "avg": 0.95
+          "peak": 13.2,
+          "avg": 6.27
         },
-        "total_ram_gb": 23.9,
-        "samples": 8
+        "total_ram_gb": 31.9,
+        "samples": 302
       }
     },
     {
       "name": "full_generation",
-      "status": "fail",
-      "duration_seconds": 5.71,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 11 nodes, missing class_type: [54,59,70,71,72,73,74], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 159.9,
+      "error": null,
       "hardware": {
         "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 0.95,
-          "avg": 0.95
+          "peak": 13.19,
+          "avg": 10.62
         },
-        "total_ram_gb": 23.9,
-        "samples": 6
+        "total_ram_gb": 31.9,
+        "samples": 158
       }
     },
     {
       "name": "gaussian_generation",
-      "status": "fail",
-      "duration_seconds": 5.6,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,62,63], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 74.34,
+      "error": null,
       "hardware": {
         "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 0.95,
-          "avg": 0.95
+          "peak": 12.71,
+          "avg": 8.74
         },
-        "total_ram_gb": 23.9,
-        "samples": 6
+        "total_ram_gb": 31.9,
+        "samples": 74
       }
     },
     {
       "name": "mesh_generation",
-      "status": "fail",
-      "duration_seconds": 5.57,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 8 nodes, missing class_type: [59,60,61,64], sample: {\"inputs\":{\"image\":\"elephant.png\"},\"class_type\":\"LoadImage\",\"_meta\":{\"title\":\"Load Image\"}}",
+      "status": "pass",
+      "duration_seconds": 113.18,
+      "error": null,
       "hardware": {
         "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 0.95,
-          "avg": 0.95
+          "peak": 12.43,
+          "avg": 9.64
         },
-        "total_ram_gb": 23.9,
-        "samples": 6
+        "total_ram_gb": 31.9,
+        "samples": 112
       }
     },
     {
       "name": "scene_generation",
-      "status": "fail",
-      "duration_seconds": 5.9,
-      "error": "Workflow validation failed\n\nDetails:\ngraphToPrompt produced nodes without class_type: graphToPrompt: 13 nodes, missing class_type: [59,74,80,82,100], sample: {\"inputs\":{\"depth_model\":[\"74\",0],\"image\":[\"77\",0]},\"_meta\":{}}",
+      "status": "pass",
+      "duration_seconds": 308.77,
+      "error": null,
       "hardware": {
         "os": "Windows-11-10.0.26100-SP0",
-        "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD"
       },
       "resources": {
         "ram": {
-          "peak": 0.95,
-          "avg": 0.95
+          "peak": 18.76,
+          "avg": 8.85
         },
-        "total_ram_gb": 23.9,
-        "samples": 6
+        "total_ram_gb": 31.9,
+        "samples": 305
       }
     }
   ]
