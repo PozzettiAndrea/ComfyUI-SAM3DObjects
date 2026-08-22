@@ -1,17 +1,10 @@
 [test]
-levels = ["install", "registration", "instantiation", "execution"]
+levels = ["install", "registration", "instantiation", "execution", "javascript"]
 publish = true
 
 [test.workflows]
 cpu = []
-gpu = "all"
+cuda = "all"
 
 [test.platforms]
-linux = false
-macos = false
-windows = false
-windows_portable = false
-linux_gpu = true
-windows_gpu = true
-windows_portable_gpu = true
-windows_desktop_gpu = true
+platforms = ["linux_cuda", "windows_cuda", "windows_portable_cuda", "windows_desktop_cuda"]

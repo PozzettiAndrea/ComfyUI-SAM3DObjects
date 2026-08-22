@@ -2132,7 +2132,7 @@ class EmbedderFuser(torch.nn.Module):
     def _make_projection_net(self, input_embed_dim, output_embed_dim, multiplier,
                              dtype=None, device=None, operations=ops):
         if self.projection_pre_norm:
-            pre_norm = nn.LayerNorm(input_embed_dim)
+            pre_norm = operations.LayerNorm(input_embed_dim, dtype=dtype, device=device)
         else:
             pre_norm = nn.Identity()
         ff_net = FeedForward(
